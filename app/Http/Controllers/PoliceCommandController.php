@@ -157,6 +157,32 @@ class PoliceCommandController extends Controller
     }
 
     /**
+     * API: Live YouTube search by hashtag or keyword
+     */
+    public function apiSearchLive(Request $request, \App\Services\YouTubeScraperService $scraperService)
+    {
+        $query = $request->input('q') ?? $request->query('q') ?? '';
+        $query = trim($query);
+
+        if (empty($query) || strlen($query) < 2) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kata kunci pencarian minimal 2 karakter.',
+                'data' => [],
+            ], 422);
+        }
+
+        $results = $scraperService->searchLiveStreams($query, 20);
+
+        return response()->json([
+            'status' => 'success',
+            'query' => $query,
+            'count' => count($results),
+            'data' => $results,
+        ]);
+    }
+
+    /**
      * Sync active stream statuses with a 2-minute cooldown lock.
      */
     protected function syncStreamsIfNeeded(): void

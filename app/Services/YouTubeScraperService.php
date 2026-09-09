@@ -150,6 +150,108 @@ class YouTubeScraperService
     }
 
     /**
+     * Search YouTube for live streams matching a keyword or hashtag.
+     *
+     * @param string $query Keyword or hashtag (e.g. '#imeroleplay burgenk')
+     * @param int $limit Maximum number of live streams to return
+     * @return array List of live stream records
+     */
+    public function searchLiveStreams(string $query, int $limit = 15): array
+    {
+        $cleanQuery = trim($query);
+        if (empty($cleanQuery)) {
+            return [];
+        }
+
+        try {
+            $encodedQuery = urlencode($cleanQuery);
+            // sp=EgJAAQ%3D%3D is the YouTube search filter specifically for "Live"
+            $url = "https://www.youtube.com/results?search_query={$encodedQuery}&sp=EgJAAQ%3D%3D";
+
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            ])->timeout(8)->get($url);
+
+            if (!$response->successful()) {
+                Log::warning("YouTube search request failed for query: {$cleanQuery} with status: " . $response->status());
+                return [];
+            }
+
+            $html = $response->body();
+            $data = null;
+
+            if (preg_match('/var ytInitialData = ({.*?});<\/script>/s', $html, $matches) || preg_match('/ytInitialData\s*=\s*({.+?});/s', $html, $matches)) {
+                $data = json_decode($matches[1], true);
+            }
+
+            if (!$data) {
+                return [];
+            }
+
+            $contents = $data['contents']['twoColumnSearchResultsRenderer']['primaryContents']['sectionListRenderer']['contents'] ?? [];
+            $videos = [];
+
+            foreach ($contents as $section) {
+                $items = $section['itemSectionRenderer']['contents'] ?? [];
+                foreach ($items as $item) {
+                    if (isset($item['videoRenderer'])) {
+                        $v = $item['videoRenderer'];
+                        $videoId = $v['videoId'] ?? null;
+                        if (!$videoId) {
+                            continue;
+                        }
+
+                        $badges = $v['badges'] ?? [];
+                        $overlays = $v['thumbnailOverlays'] ?? [];
+                        
+                        $isLive = false;
+                        foreach ($overlays as $overlay) {
+                            if (isset($overlay['thumbnailOverlayTimeStatusRenderer'])) {
+                                $style = $overlay['thumbnailOverlayTimeStatusRenderer']['style'] ?? '';
+                                if ($style === 'LIVE' || $style === 'LIVE_NOW') {
+                                    $isLive = true;
+                                }
+                            }
+                        }
+                        foreach ($badges as $b) {
+                            $label = $b['metadataBadgeRenderer']['label'] ?? '';
+                            $style = $b['metadataBadgeRenderer']['style'] ?? '';
+                            if (stripos($label, 'LIVE') !== false || stripos($style, 'LIVE') !== false) {
+                                $isLive = true;
+                            }
+                        }
+
+                        if ($isLive) {
+                            $title = $v['title']['runs'][0]['text'] ?? ($v['headline']['simpleText'] ?? 'Live Stream');
+                            $channelName = $v['ownerText']['runs'][0]['text'] ?? ($v['shortBylineText']['runs'][0]['text'] ?? 'Streamer');
+                            $viewers = $v['viewCountText']['runs'][0]['text'] ?? ($v['viewCountText']['simpleText'] ?? 'Live');
+
+                            $videos[] = [
+                                'video_id' => $videoId,
+                                'title' => $title,
+                                'channel_name' => $channelName,
+                                'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
+                                'viewers' => $viewers,
+                                'status' => 'LIVE',
+                            ];
+
+                            if (count($videos) >= $limit) {
+                                break 2;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return $videos;
+        } catch (\Exception $e) {
+            Log::error("YouTube live search failed for query {$cleanQuery}: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
      * Extract title from YouTube HTML.
      */
     private function extractTitle(string $html): ?string

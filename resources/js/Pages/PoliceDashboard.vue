@@ -183,7 +183,7 @@ const openSubscribePopup = (channelIdOrHandle, officerName = '') => {
 const isQuickAddModalOpen = ref(false);
 const activeChatVideoId = ref(null);
 
-// Personal Category & Custom Ad-hoc Streams (Browser LocalStorage, Max 6 Videos)
+// Personal Category & Custom Ad-hoc Streams (Browser LocalStorage, Max 6 Active Videos)
 const MAX_PERSONAL_STREAMS = 6;
 const personalVideoIds = ref([]);
 const customStreams = ref([]);
@@ -216,7 +216,28 @@ const savePersonalStreamsToStorage = () => {
     }
 };
 
+// All combined streams (Scraped DB streams + Ad-hoc custom added streams)
+const allActiveStreams = computed(() => {
+    return [...streams.value, ...customStreams.value];
+});
+
+// Currently active/online personal streams (matches video_id, officer channel/handle, or custom stream)
+const activePersonalStreams = computed(() => {
+    return allActiveStreams.value.filter(s => 
+        personalVideoIds.value.includes(s.video_id) || 
+        (s.officer?.channel_id && personalVideoIds.value.includes(s.officer.channel_id)) ||
+        (s.officer?.handle && personalVideoIds.value.includes(s.officer.handle)) ||
+        customStreams.value.some(cs => cs.video_id === s.video_id)
+    );
+});
+
+// Total count of currently active/online personal streams (0 to 6)
 const totalPersonalCount = computed(() => {
+    return activePersonalStreams.value.length;
+});
+
+// Total count of all saved personal entries (active + offline)
+const totalSavedPersonalCount = computed(() => {
     const combined = new Set([
         ...personalVideoIds.value,
         ...customStreams.value.map(s => s.video_id)
@@ -224,18 +245,27 @@ const totalPersonalCount = computed(() => {
     return combined.size;
 });
 
-const isPersonalStream = (videoId) => {
-    return personalVideoIds.value.includes(videoId) || customStreams.value.some(s => s.video_id === videoId);
+const isPersonalStream = (streamOrId) => {
+    if (!streamOrId) return false;
+    if (typeof streamOrId === 'string') {
+        return personalVideoIds.value.includes(streamOrId) || customStreams.value.some(s => s.video_id === streamOrId);
+    }
+    const s = streamOrId;
+    return personalVideoIds.value.includes(s.video_id) || 
+           (s.officer?.channel_id && personalVideoIds.value.includes(s.officer.channel_id)) ||
+           (s.officer?.handle && personalVideoIds.value.includes(s.officer.handle)) ||
+           customStreams.value.some(cs => cs.video_id === s.video_id);
 };
 
 const togglePersonalStream = (videoId) => {
     const idx = personalVideoIds.value.indexOf(videoId);
     if (idx !== -1) {
         personalVideoIds.value.splice(idx, 1);
+        customStreams.value = customStreams.value.filter(s => s.video_id !== videoId);
         savePersonalStreamsToStorage();
     } else {
-        if (totalPersonalCount.value >= MAX_PERSONAL_STREAMS) {
-            alert(`Maksimal ${MAX_PERSONAL_STREAMS} video untuk kategori Personal! Hapus salah satu video terlebih dahulu.`);
+        if (activePersonalStreams.value.length >= MAX_PERSONAL_STREAMS) {
+            alert(`Maksimal ${MAX_PERSONAL_STREAMS} video aktif untuk kategori Personal! Hapus atau unpin salah satu video aktif terlebih dahulu.`);
             return;
         }
         personalVideoIds.value.push(videoId);
@@ -243,11 +273,110 @@ const togglePersonalStream = (videoId) => {
     }
 };
 
-const removeCustomStream = (videoId) => {
-    customStreams.value = customStreams.value.filter(s => s.video_id !== videoId);
-    personalVideoIds.value = personalVideoIds.value.filter(id => id !== videoId);
+const removePersonalStream = (id) => {
+    personalVideoIds.value = personalVideoIds.value.filter(itemId => itemId !== id);
+    customStreams.value = customStreams.value.filter(s => s.video_id !== id && s.id !== id);
     savePersonalStreamsToStorage();
 };
+
+const clearAllPersonalStreams = () => {
+    if (confirm('Apakah Anda yakin ingin mengosongkan seluruh daftar pin / feed tersimpan di kategori Personal?')) {
+        personalVideoIds.value = [];
+        customStreams.value = [];
+        savePersonalStreamsToStorage();
+    }
+};
+
+// Unified list of saved personal items with online/offline status for drawer management
+const savedPersonalList = computed(() => {
+    const list = [];
+    const seen = new Set();
+
+    // 1. Add from customStreams
+    customStreams.value.forEach(cs => {
+        if (!seen.has(cs.video_id)) {
+            seen.add(cs.video_id);
+            const isOnline = allActiveStreams.value.some(s => s.video_id === cs.video_id);
+            list.push({
+                id: cs.video_id,
+                rawId: cs.video_id,
+                video_id: cs.video_id,
+                name: cs.officer?.officer_name || cs.title || 'Custom Stream',
+                subtext: cs.officer?.callsign || cs.video_id,
+                thumbnail: cs.thumbnail,
+                isOnline: isOnline,
+            });
+        }
+    });
+
+    // 2. Add from personalVideoIds
+    personalVideoIds.value.forEach(id => {
+        if (!seen.has(id)) {
+            seen.add(id);
+            const activeStream = allActiveStreams.value.find(s => 
+                s.video_id === id || s.officer?.channel_id === id || s.officer?.handle === id
+            );
+            const offlineOfficer = offlineOfficers.value.find(o => 
+                o.channel_id === id || o.handle === id
+            );
+
+            if (activeStream) {
+                list.push({
+                    id: id,
+                    rawId: id,
+                    video_id: activeStream.video_id,
+                    name: activeStream.officer?.officer_name || activeStream.title || id,
+                    subtext: activeStream.officer?.callsign || activeStream.officer?.handle || id,
+                    thumbnail: activeStream.thumbnail,
+                    isOnline: true,
+                });
+            } else if (offlineOfficer) {
+                list.push({
+                    id: id,
+                    rawId: id,
+                    video_id: id,
+                    name: offlineOfficer.officer_name,
+                    subtext: `${offlineOfficer.department} • ${offlineOfficer.callsign}`,
+                    thumbnail: offlineOfficer.avatar_url,
+                    isOnline: false,
+                });
+            } else {
+                list.push({
+                    id: id,
+                    rawId: id,
+                    video_id: id,
+                    name: id.length === 11 ? `Video (${id})` : id,
+                    subtext: 'Ended / Offline Stream',
+                    thumbnail: id.length === 11 ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null,
+                    isOnline: false,
+                });
+            }
+        }
+    });
+
+    return list;
+});
+
+// Quick Add Live Hashtag / Keyword Search State
+const quickAddMode = ref('SEARCH'); // 'SEARCH' or 'MANUAL'
+const liveSearchQuery = ref('#imeroleplay');
+const isLiveSearching = ref(false);
+const liveSearchResults = ref([]);
+const liveSearchError = ref('');
+const liveSearchSuccessNotice = ref('');
+
+// Popular / Gang Hashtag Preset Chips
+const popularHashtagPresets = [
+    { label: '#imeroleplay', query: '#imeroleplay' },
+    { label: '#burgenk', query: '#imeroleplay #burgenk' },
+    { label: '#swag', query: '#imeroleplay #swag' },
+    { label: '#4blood', query: '#imeroleplay #4blood' },
+    { label: '#nakama', query: '#imeroleplay #nakamamc' },
+    { label: '#couganfams', query: '#imeroleplay #couganfams' },
+    { label: '#24s', query: '#imeroleplay #24s' },
+    { label: '#claudefamillia', query: '#imeroleplay #claudefamillia' },
+    { label: '#kcg', query: '#imeroleplay #kcg' },
+];
 
 const quickAddInput = ref({
     urlOrId: '',
@@ -280,11 +409,6 @@ onUnmounted(() => {
     if (timeInterval) clearInterval(timeInterval);
 });
 
-// All combined streams (Scraped DB streams + Ad-hoc custom added streams)
-const allActiveStreams = computed(() => {
-    return [...streams.value, ...customStreams.value];
-});
-
 // Department List & Color Definitions (Core Departments + Local Personal Category)
 const departments = [
     { id: 'ALL', name: 'ALL UNITS', icon: '🛡️', color: 'border-slate-600 text-slate-300' },
@@ -309,7 +433,7 @@ const filteredStreams = computed(() => {
     let result = allActiveStreams.value;
 
     if (selectedDepartment.value === 'PERSONAL') {
-        result = result.filter(s => personalVideoIds.value.includes(s.video_id) || customStreams.value.some(cs => cs.video_id === s.video_id));
+        result = activePersonalStreams.value;
     } else if (selectedDepartment.value !== 'ALL') {
         result = result.filter(s => s.officer && s.officer.department === selectedDepartment.value);
     }
@@ -781,8 +905,8 @@ const handleQuickAddStream = () => {
         return;
     }
 
-    if (totalPersonalCount.value >= MAX_PERSONAL_STREAMS && !customStreams.value.some(s => s.video_id === videoId)) {
-        alert(`Maksimal ${MAX_PERSONAL_STREAMS} video pada kategori Personal / Custom! Hapus salah satu video terlebih dahulu.`);
+    if (activePersonalStreams.value.length >= MAX_PERSONAL_STREAMS && !customStreams.value.some(s => s.video_id === videoId)) {
+        alert(`Maksimal ${MAX_PERSONAL_STREAMS} video aktif pada kategori Personal / Custom! Hapus salah satu video terlebih dahulu.`);
         return;
     }
 
@@ -826,12 +950,104 @@ const handleQuickAddStream = () => {
     };
 };
 
+// Live Hashtag Search Action
+const handleSearchLiveStreams = async (searchOverride = null) => {
+    const queryToSearch = (typeof searchOverride === 'string' ? searchOverride : liveSearchQuery.value).trim();
+    if (!queryToSearch) return;
+
+    if (typeof searchOverride === 'string') {
+        liveSearchQuery.value = searchOverride;
+    }
+
+    isLiveSearching.value = true;
+    liveSearchError.value = '';
+    liveSearchResults.value = [];
+
+    try {
+        const response = await fetch('/api/v1/search-live', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-XSRF-TOKEN': getCsrfToken(),
+            },
+            body: JSON.stringify({ q: queryToSearch }),
+        });
+
+        const data = await response.json();
+        if (data.status === 'success') {
+            liveSearchResults.value = data.data || [];
+            if (liveSearchResults.value.length === 0) {
+                liveSearchError.value = `Tidak ada stream YouTube yang sedang LIVE untuk "${queryToSearch}". Coba kata kunci atau hashtag lain.`;
+            }
+        } else {
+            liveSearchError.value = data.message || 'Gagal mencari live stream YouTube.';
+        }
+    } catch (err) {
+        liveSearchError.value = 'Terjadi kendala jaringan saat mencari live stream.';
+    } finally {
+        isLiveSearching.value = false;
+    }
+};
+
+const handleAddLiveStreamToPersonal = (streamItem) => {
+    const videoId = streamItem.video_id;
+    if (!videoId) return;
+
+    if (activePersonalStreams.value.length >= MAX_PERSONAL_STREAMS && !isPersonalStream(videoId)) {
+        alert(`Maksimal ${MAX_PERSONAL_STREAMS} video aktif untuk kategori Personal! Hapus salah satu video terlebih dahulu.`);
+        return;
+    }
+
+    const existingCustomIdx = customStreams.value.findIndex(s => s.video_id === videoId);
+    if (existingCustomIdx === -1) {
+        const newStream = {
+            id: 'search-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+            video_id: videoId,
+            title: streamItem.title,
+            thumbnail: streamItem.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+            status: 'LIVE',
+            incident_code: 'Target / Gang Feed',
+            viewers_count: 0,
+            live_chat_url: `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${chatEmbedDomain.value}`,
+            officer: {
+                id: 9999,
+                channel_id: 'target-' + videoId,
+                handle: streamItem.channel_name ? ('@' + streamItem.channel_name.replace(/\s+/g, '')) : '@Target',
+                streamer_name: streamItem.channel_name || 'Gang / Target Streamer',
+                officer_name: streamItem.channel_name || 'Target Unit',
+                callsign: 'TARGET',
+                badge_number: '#GANG',
+                department: 'PERSONAL',
+                rank: 'Opponent / Gang',
+                patrol_zone: 'Target Sector',
+                avatar_url: null,
+            }
+        };
+        customStreams.value.push(newStream);
+    }
+
+    if (!personalVideoIds.value.includes(videoId)) {
+        personalVideoIds.value.push(videoId);
+    }
+    savePersonalStreamsToStorage();
+
+    liveSearchSuccessNotice.value = `✓ "${streamItem.channel_name}" berhasil ditambahkan ke 📌 Personal!`;
+    setTimeout(() => {
+        liveSearchSuccessNotice.value = '';
+    }, 3500);
+};
+
 // Unified Right Slide-Over Drawer State ('QUICK_ADD', 'FEEDBACK', 'ROSTER', or null)
 const activeRightDrawer = ref(null);
 
 const openRightDrawer = (drawerName, extra = null) => {
     activeRightDrawer.value = drawerName;
-    if (drawerName === 'FEEDBACK') {
+    if (drawerName === 'QUICK_ADD') {
+        if (liveSearchResults.value.length === 0) {
+            handleSearchLiveStreams('#imeroleplay');
+        }
+    } else if (drawerName === 'FEEDBACK') {
         feedbackForm.value = {
             type: extra || 'CHANNEL_REQUEST',
             sender_name: '',
@@ -1322,23 +1538,35 @@ const submitFeedbackForm = async () => {
                         <span>{{ selectedDepartment === 'PERSONAL' ? '📌' : '📡' }}</span>
                     </div>
                     <h2 class="text-lg font-bold text-slate-200 tracking-wide uppercase">
-                        {{ selectedDepartment === 'PERSONAL' ? 'BELUM ADA VIDEO DI KATEGORI PERSONAL' : 'NO ACTIVE 10-8 PATROL UNITS ONLINE' }}
+                        {{ selectedDepartment === 'PERSONAL' ? 'TIDAK ADA STREAM LIVE DI KATEGORI PERSONAL' : 'NO ACTIVE 10-8 PATROL UNITS ONLINE' }}
                     </h2>
                     <p class="text-xs text-slate-400 max-w-md mt-1 mb-6">
                         <span v-if="selectedDepartment === 'PERSONAL'">
-                            Kategori Personal menyimpan maksimal 6 video stream secara lokal di browser Anda. Klik tombol 📌 pada video manapun atau gunakan tombol Quick Feed.
+                            <template v-if="totalSavedPersonalCount > 0">
+                                Terdapat {{ totalSavedPersonalCount }} feed / pin tersimpan di watchlist Personal, namun seluruhnya saat ini sedang offline (10-7) atau telah selesai streaming.
+                            </template>
+                            <template v-else>
+                                Kategori Personal menyimpan maksimal 6 video stream aktif secara lokal di browser Anda. Klik tombol 📌 pada video manapun atau gunakan tombol Quick Feed.
+                            </template>
                         </span>
                         <span v-else>
                             No registered IME Roleplay police streamers are currently broadcasting in the selected department filter.
                         </span>
                     </p>
-                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-3 flex-wrap justify-center gap-2">
                         <button 
                             @click="openRightDrawer('QUICK_ADD')" 
                             :class="selectedDepartment === 'PERSONAL' ? 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/30' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/30'"
                             class="px-4 py-2 text-white text-xs font-semibold rounded-lg shadow-lg transition flex items-center gap-2"
                         >
                             <span>➕ Add Quick Feed</span>
+                        </button>
+                        <button 
+                            v-if="selectedDepartment === 'PERSONAL' && totalSavedPersonalCount > 0"
+                            @click="clearAllPersonalStreams"
+                            class="px-4 py-2 bg-red-950/80 hover:bg-red-900 text-red-300 text-xs font-semibold rounded-lg border border-red-500/40 transition flex items-center gap-2"
+                        >
+                            <span>🗑️ Reset Watchlist Personal</span>
                         </button>
                         <button 
                             v-if="selectedDepartment !== 'ALL'"
@@ -1993,89 +2221,312 @@ const submitFeedbackForm = async () => {
             <!-- DRAWER CONTENT BODY -->
             <div class="flex-1 overflow-y-auto scrollbar-thin flex flex-col min-h-0 bg-[#060a12]">
                 
-                <!-- 1. QUICK ADD STREAM PANEL -->
-                <div v-if="activeRightDrawer === 'QUICK_ADD'" class="p-4 flex flex-col gap-4">
-                    <div class="bg-purple-950/30 border border-purple-500/40 rounded-xl p-3 text-xs text-purple-200/90 leading-relaxed">
-                        <div class="font-bold flex items-center gap-1.5 mb-1 text-purple-300">
-                            <span>📌</span>
-                            <span>Petunjuk Quick Feed & Personal</span>
-                        </div>
-                        Gunakan menu ini untuk menambahkan stream YouTube live sementara. Video yang ditambahkan akan otomatis tersimpan di tab <strong>📌 PERSONAL</strong> browser lokal Anda (Maksimal 6 video).
+                <!-- 1. QUICK ADD STREAM PANEL (Hashtag Search + Manual URL Input) -->
+                <div v-if="activeRightDrawer === 'QUICK_ADD'" class="p-4 flex flex-col gap-3.5">
+                    
+                    <!-- Notification Toast -->
+                    <div v-if="liveSearchSuccessNotice" class="bg-emerald-950/90 border border-emerald-500/60 rounded-xl px-3.5 py-2 text-xs text-emerald-300 font-mono flex items-center gap-2 shadow-lg animate-in fade-in duration-200">
+                        <span>✓</span>
+                        <span>{{ liveSearchSuccessNotice }}</span>
                     </div>
 
-                    <form @submit.prevent="handleQuickAddStream" class="flex flex-col gap-3.5">
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">YouTube Live URL or 11-char Video ID *</label>
-                            <input 
-                                v-model="quickAddInput.urlOrId" 
-                                type="text" 
-                                required
-                                placeholder="https://youtube.com/watch?v=xxxxxxxxxxx or dQw4w9WgXcQ"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono placeholder-slate-600"
-                            />
+                    <!-- Personal Info Banner -->
+                    <div class="bg-purple-950/30 border border-purple-500/40 rounded-xl p-3 text-xs text-purple-200/90 leading-relaxed">
+                        <div class="font-bold flex items-center justify-between mb-1 text-purple-300">
+                            <span class="flex items-center gap-1.5">
+                                <span>📌</span>
+                                <span>Quick Watchlist & Personal</span>
+                            </span>
+                            <span class="text-[10px] bg-purple-900/60 px-2 py-0.5 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30">
+                                {{ totalPersonalCount }}/6 Video
+                            </span>
+                        </div>
+                        Cari lawan/gang atau masukkan live stream YouTube. Stream yang dipilih akan langsung masuk ke tab <strong>📌 PERSONAL</strong> browser lokal Anda.
+                    </div>
+
+                    <!-- Mode Toggle: 🔍 Cari Live Hashtag vs 🔗 Input Manual -->
+                    <div class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
+                        <button 
+                            type="button" 
+                            @click="quickAddMode = 'SEARCH'"
+                            :class="quickAddMode === 'SEARCH' ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30' : 'text-slate-400 hover:text-slate-200'"
+                            class="py-1.5 px-3 text-xs rounded-lg transition flex items-center justify-center gap-1.5"
+                        >
+                            <span>🔍</span>
+                            <span>Cari Live Hashtag</span>
+                        </button>
+                        <button 
+                            type="button" 
+                            @click="quickAddMode = 'MANUAL'"
+                            :class="quickAddMode === 'MANUAL' ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30' : 'text-slate-400 hover:text-slate-200'"
+                            class="py-1.5 px-3 text-xs rounded-lg transition flex items-center justify-center gap-1.5"
+                        >
+                            <span>🔗</span>
+                            <span>Input Manual</span>
+                        </button>
+                    </div>
+
+                    <!-- TAB 1: HASHTAG / KEYWORD LIVE SEARCH -->
+                    <div v-if="quickAddMode === 'SEARCH'" class="flex flex-col gap-3">
+                        
+                        <!-- Search Form -->
+                        <form @submit.prevent="handleSearchLiveStreams()" class="flex flex-col gap-2">
+                            <div class="relative">
+                                <input 
+                                    v-model="liveSearchQuery" 
+                                    type="text" 
+                                    required
+                                    placeholder="Ketik hashtag misal #imeroleplay #burgenk..."
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-20 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 font-mono placeholder-slate-500"
+                                />
+                                <span class="absolute left-2.5 top-3 text-xs text-slate-500">🔍</span>
+                                <button 
+                                    type="submit" 
+                                    :disabled="isLiveSearching"
+                                    class="absolute right-1.5 top-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-1"
+                                >
+                                    <span v-if="isLiveSearching" class="animate-spin text-xs">🔄</span>
+                                    <span>{{ isLiveSearching ? 'Mencari...' : 'Cari' }}</span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Quick Hashtag Preset Chips -->
+                        <div class="flex flex-col gap-1.5">
+                            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Hashtag / Gang Populer:</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                <button 
+                                    v-for="preset in popularHashtagPresets" 
+                                    :key="preset.label"
+                                    type="button" 
+                                    @click="handleSearchLiveStreams(preset.query)"
+                                    class="text-[11px] px-2.5 py-1 rounded-lg border font-mono transition"
+                                    :class="liveSearchQuery === preset.query ? 'bg-purple-600 text-white font-bold border-purple-400' : 'bg-slate-900 text-purple-300 hover:bg-purple-950/60 border-purple-500/30 hover:border-purple-400/50'"
+                                >
+                                    {{ preset.label }}
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-xs font-semibold text-slate-300 block mb-1">Officer / Unit Name</label>
-                                <input 
-                                    v-model="quickAddInput.officerName" 
-                                    type="text" 
-                                    placeholder="Ofc. Raymond"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600"
-                                />
+                        <!-- Search Error / Empty State -->
+                        <div v-if="liveSearchError" class="p-3 bg-red-950/30 border border-red-500/40 rounded-xl text-xs text-red-300">
+                            {{ liveSearchError }}
+                        </div>
+
+                        <!-- Live Searching Loading Spinner -->
+                        <div v-if="isLiveSearching" class="py-8 flex flex-col items-center justify-center text-slate-400 gap-2">
+                            <div class="w-7 h-7 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                            <span class="text-xs font-mono">Sedang mencari stream YouTube live aktif...</span>
+                        </div>
+
+                        <!-- Live Search Results List -->
+                        <div v-else-if="liveSearchResults.length > 0" class="flex flex-col gap-2.5">
+                            <div class="flex items-center justify-between text-xs text-slate-400 font-mono px-0.5">
+                                <span>Ditemukan: <strong class="text-slate-200">{{ liveSearchResults.length }}</strong> Live Stream</span>
+                                <span class="text-[10px] text-emerald-400 font-bold">🔴 10-8 LIVE</span>
                             </div>
+
+                            <div class="space-y-2.5">
+                                <div 
+                                    v-for="item in liveSearchResults" 
+                                    :key="item.video_id"
+                                    class="bg-slate-900/90 border border-slate-800 hover:border-purple-500/60 rounded-xl p-2.5 transition flex gap-3 items-start"
+                                >
+                                    <!-- Thumbnail -->
+                                    <div class="w-28 aspect-video bg-black rounded-lg overflow-hidden shrink-0 relative">
+                                        <img :src="item.thumbnail_url" class="w-full h-full object-cover" loading="lazy" />
+                                        <div class="absolute bottom-1 right-1 bg-black/80 px-1 py-0.2 rounded text-[9px] font-mono text-red-400 font-bold">
+                                            LIVE
+                                        </div>
+                                    </div>
+
+                                    <!-- Stream Info -->
+                                    <div class="flex-1 min-w-0 flex flex-col justify-between h-full">
+                                        <div>
+                                            <h4 class="text-xs font-bold text-slate-100 line-clamp-2 leading-snug" :title="item.title">
+                                                {{ item.title }}
+                                            </h4>
+                                            <div class="text-[11px] text-slate-400 truncate mt-0.5">
+                                                👤 <span class="text-slate-200 font-semibold">{{ item.channel_name }}</span>
+                                            </div>
+                                            <div class="text-[10px] text-red-400 font-mono mt-0.5">
+                                                👁 {{ item.viewers || 'Live' }}
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-2 flex items-center justify-between gap-2">
+                                            <button 
+                                                type="button" 
+                                                @click="handleAddLiveStreamToPersonal(item)"
+                                                :class="isPersonalStream(item.video_id) ? 'bg-purple-950 text-purple-300 border-purple-500/50' : 'bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/30'"
+                                                class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition flex items-center gap-1 font-mono border border-transparent"
+                                            >
+                                                <span>{{ isPersonalStream(item.video_id) ? '✓ Pinned' : '📌 + Pin ke Personal' }}</span>
+                                            </button>
+
+                                            <a 
+                                                :href="`https://www.youtube.com/watch?v=${item.video_id}`" 
+                                                target="_blank" 
+                                                class="text-[10px] text-blue-400 hover:underline font-mono"
+                                            >
+                                                YT ↗
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB 2: MANUAL URL / VIDEO ID INJECTION -->
+                    <div v-else-if="quickAddMode === 'MANUAL'">
+                        <form @submit.prevent="handleQuickAddStream" class="flex flex-col gap-3.5">
                             <div>
-                                <label class="text-xs font-semibold text-slate-300 block mb-1">Callsign</label>
+                                <label class="text-xs font-semibold text-slate-300 block mb-1">YouTube Live URL or 11-char Video ID *</label>
                                 <input 
-                                    v-model="quickAddInput.callsign" 
+                                    v-model="quickAddInput.urlOrId" 
                                     type="text" 
-                                    placeholder="1-ADAM-99"
+                                    required
+                                    placeholder="https://youtube.com/watch?v=xxxxxxxxxxx or dQw4w9WgXcQ"
                                     class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono placeholder-slate-600"
                                 />
                             </div>
-                        </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-xs font-semibold text-slate-300 block mb-1">Department</label>
-                                <select 
-                                    v-model="quickAddInput.department"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-300 block mb-1">Officer / Unit Name</label>
+                                    <input 
+                                        v-model="quickAddInput.officerName" 
+                                        type="text" 
+                                        placeholder="Ofc. Raymond"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-300 block mb-1">Callsign</label>
+                                    <input 
+                                        v-model="quickAddInput.callsign" 
+                                        type="text" 
+                                        placeholder="1-ADAM-99"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono placeholder-slate-600"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-300 block mb-1">Department</label>
+                                    <select 
+                                        v-model="quickAddInput.department"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                                    >
+                                        <option value="LSPD">LSPD (Police)</option>
+                                        <option value="BCSO">BCSO (Sheriff)</option>
+                                        <option value="SASP">SASP (State Police)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-300 block mb-1">Patrol Zone</label>
+                                    <input 
+                                        v-model="quickAddInput.patrolZone" 
+                                        type="text" 
+                                        placeholder="Mission Row"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-end space-x-2">
+                                <button 
+                                    type="button" 
+                                    @click="closeRightDrawer" 
+                                    class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg transition"
                                 >
-                                    <option value="LSPD">LSPD (Police)</option>
-                                    <option value="BCSO">BCSO (Sheriff)</option>
-                                    <option value="SASP">SASP (State Police)</option>
-                                </select>
+                                    Batal
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5"
+                                >
+                                    <span>➕</span>
+                                    <span>Inject Live Feed</span>
+                                </button>
                             </div>
-                            <div>
-                                <label class="text-xs font-semibold text-slate-300 block mb-1">Patrol Zone</label>
-                                <input 
-                                    v-model="quickAddInput.patrolZone" 
-                                    type="text" 
-                                    placeholder="Mission Row"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600"
-                                />
+                        </form>
+                    </div>
+
+                    <!-- TAB 3 / SECTION: SAVED PERSONAL WATCHLIST MANAGER -->
+                    <div class="mt-2 pt-3 border-t border-slate-800/80 flex flex-col gap-2.5">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-slate-200 uppercase font-mono tracking-wide">
+                                    📋 Watchlist Tersimpan
+                                </span>
+                                <span class="text-[10px] bg-purple-950/80 px-2 py-0.5 rounded-full font-mono text-purple-300 border border-purple-500/40 font-bold">
+                                    {{ totalPersonalCount }}/6 Online ({{ totalSavedPersonalCount }} Total)
+                                </span>
                             </div>
+                            <button 
+                                v-if="totalSavedPersonalCount > 0"
+                                type="button" 
+                                @click="clearAllPersonalStreams"
+                                class="text-[11px] text-red-400 hover:text-red-300 font-mono flex items-center gap-1 hover:underline"
+                                title="Kosongkan seluruh pin personal"
+                            >
+                                <span>🗑️ Reset Semua</span>
+                            </button>
                         </div>
 
-                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-end space-x-2">
-                            <button 
-                                type="button" 
-                                @click="closeRightDrawer" 
-                                class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg transition"
-                            >
-                                Batal
-                            </button>
-                            <button 
-                                type="submit" 
-                                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5"
-                            >
-                                <span>➕</span>
-                                <span>Inject Live Feed</span>
-                            </button>
+                        <!-- Empty saved list -->
+                        <div v-if="totalSavedPersonalCount === 0" class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-center text-xs text-slate-500 font-mono">
+                            Belum ada video atau channel yang disimpan di Personal.
                         </div>
-                    </form>
+
+                        <!-- Saved List items -->
+                        <div v-else class="space-y-2 max-h-60 overflow-y-auto scrollbar-thin pr-0.5">
+                            <div 
+                                v-for="savedItem in savedPersonalList" 
+                                :key="savedItem.id"
+                                class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-2.5 transition hover:border-slate-700"
+                            >
+                                <div class="flex items-center space-x-2.5 min-w-0">
+                                    <img 
+                                        v-if="savedItem.thumbnail"
+                                        :src="savedItem.thumbnail" 
+                                        class="w-12 h-8 rounded object-cover bg-black shrink-0 border border-slate-800"
+                                    />
+                                    <div v-else class="w-12 h-8 rounded bg-slate-950 border border-slate-800 flex items-center justify-center text-xs text-slate-500 shrink-0">
+                                        📺
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-1.5">
+                                            <span 
+                                                class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold shrink-0"
+                                                :class="savedItem.isOnline ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40' : 'bg-slate-950 text-slate-500 border border-slate-800'"
+                                            >
+                                                {{ savedItem.isOnline ? '● 10-8 LIVE' : '○ 10-7 OFFLINE' }}
+                                            </span>
+                                            <span class="text-[11px] font-bold text-slate-200 truncate" :title="savedItem.name">{{ savedItem.name }}</span>
+                                        </div>
+                                        <div class="text-[10px] text-slate-400 font-mono truncate mt-0.5">
+                                            {{ savedItem.subtext }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    type="button" 
+                                    @click="removePersonalStream(savedItem.rawId)"
+                                    class="p-1.5 text-slate-400 hover:text-red-400 bg-slate-950 hover:bg-red-950/50 border border-slate-800 hover:border-red-500/40 rounded-lg text-xs transition shrink-0"
+                                    title="Hapus dari daftar personal"
+                                >
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- 2. VISITOR FEEDBACK & CHANNEL REQUEST PANEL (DISCORD WEBHOOK) -->
