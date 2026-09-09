@@ -96,8 +96,6 @@ class PoliceCommandController extends Controller
             'lspd_live' => $activeStreams->where('officer.department', 'LSPD')->count(),
             'bcso_live' => $activeStreams->where('officer.department', 'BCSO')->count(),
             'sasp_live' => $activeStreams->where('officer.department', 'SASP')->count(),
-            'swat_live' => $activeStreams->where('officer.department', 'SWAT')->count(),
-            'air_live' => $activeStreams->where('officer.department', 'AIR_SUPPORT')->count(),
         ];
 
         return Inertia::render('PoliceDashboard', [

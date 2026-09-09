@@ -31,8 +31,6 @@ const selectedLayout = ref('auto'); // 'auto', 'grid-2x2', 'grid-3x3', 'grid-4x4
 const activeAudioVideoId = ref(null);
 const searchFilter = ref('');
 const focusedStreamId = ref(null);
-const isSyncing = ref(false);
-const syncFeedback = ref('');
 
 // Focus Mode Right-Column Live Chat State
 const isRightChatOpen = ref(false);
@@ -55,12 +53,25 @@ const handleFullscreenChange = () => {
     isFullscreen.value = !!document.fullscreenElement;
 };
 
+const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+        if (showOfficerFormModal.value) {
+            showOfficerFormModal.value = false;
+        } else if (activeRightDrawer.value) {
+            closeRightDrawer();
+        }
+    }
+};
+
 onMounted(() => {
     document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('keydown', handleKeyDown);
+    loadPersonalStreamsFromStorage();
 });
 
 onUnmounted(() => {
     document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    window.removeEventListener('keydown', handleKeyDown);
 });
 
 // Origin URL & Embed Domain for YouTube API Handshake
@@ -172,8 +183,72 @@ const openSubscribePopup = (channelIdOrHandle, officerName = '') => {
 const isQuickAddModalOpen = ref(false);
 const activeChatVideoId = ref(null);
 
-// Custom Ad-hoc Streams
+// Personal Category & Custom Ad-hoc Streams (Browser LocalStorage, Max 6 Videos)
+const MAX_PERSONAL_STREAMS = 6;
+const personalVideoIds = ref([]);
 const customStreams = ref([]);
+
+const loadPersonalStreamsFromStorage = () => {
+    try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+            const savedIds = localStorage.getItem('ime_personal_video_ids');
+            if (savedIds) {
+                personalVideoIds.value = JSON.parse(savedIds);
+            }
+            const savedCustom = localStorage.getItem('ime_personal_custom_streams');
+            if (savedCustom) {
+                customStreams.value = JSON.parse(savedCustom);
+            }
+        }
+    } catch (e) {
+        console.warn('Failed to read personal streams from localStorage:', e);
+    }
+};
+
+const savePersonalStreamsToStorage = () => {
+    try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem('ime_personal_video_ids', JSON.stringify(personalVideoIds.value));
+            localStorage.setItem('ime_personal_custom_streams', JSON.stringify(customStreams.value));
+        }
+    } catch (e) {
+        console.warn('Failed to save personal streams to localStorage:', e);
+    }
+};
+
+const totalPersonalCount = computed(() => {
+    const combined = new Set([
+        ...personalVideoIds.value,
+        ...customStreams.value.map(s => s.video_id)
+    ]);
+    return combined.size;
+});
+
+const isPersonalStream = (videoId) => {
+    return personalVideoIds.value.includes(videoId) || customStreams.value.some(s => s.video_id === videoId);
+};
+
+const togglePersonalStream = (videoId) => {
+    const idx = personalVideoIds.value.indexOf(videoId);
+    if (idx !== -1) {
+        personalVideoIds.value.splice(idx, 1);
+        savePersonalStreamsToStorage();
+    } else {
+        if (totalPersonalCount.value >= MAX_PERSONAL_STREAMS) {
+            alert(`Maksimal ${MAX_PERSONAL_STREAMS} video untuk kategori Personal! Hapus salah satu video terlebih dahulu.`);
+            return;
+        }
+        personalVideoIds.value.push(videoId);
+        savePersonalStreamsToStorage();
+    }
+};
+
+const removeCustomStream = (videoId) => {
+    customStreams.value = customStreams.value.filter(s => s.video_id !== videoId);
+    personalVideoIds.value = personalVideoIds.value.filter(id => id !== videoId);
+    savePersonalStreamsToStorage();
+};
+
 const quickAddInput = ref({
     urlOrId: '',
     officerName: 'External Unit',
@@ -210,16 +285,13 @@ const allActiveStreams = computed(() => {
     return [...streams.value, ...customStreams.value];
 });
 
-// Department List & Color Definitions
+// Department List & Color Definitions (Core Departments + Local Personal Category)
 const departments = [
     { id: 'ALL', name: 'ALL UNITS', icon: '🛡️', color: 'border-slate-600 text-slate-300' },
+    { id: 'PERSONAL', name: 'PERSONAL', icon: '📌', color: 'border-purple-500 text-purple-300 bg-purple-950/40' },
     { id: 'LSPD', name: 'LSPD', icon: '👮', color: 'border-blue-500 text-blue-400 bg-blue-950/40' },
     { id: 'BCSO', name: 'BCSO', icon: '⭐', color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'SASP', name: 'SASP', icon: '🦅', color: 'border-teal-500 text-teal-400 bg-teal-950/40' },
-    { id: 'SWAT', name: 'SWAT', icon: '🎯', color: 'border-red-500 text-red-400 bg-red-950/40' },
-    { id: 'AIR_SUPPORT', name: 'AIR-1', icon: '🚁', color: 'border-sky-500 text-sky-400 bg-sky-950/40' },
-    { id: 'TRAFFIC', name: 'TRAFFIC', icon: '🏍️', color: 'border-orange-500 text-orange-400 bg-orange-950/40' },
-    { id: 'K9', name: 'K9 UNIT', icon: '🐕', color: 'border-emerald-500 text-emerald-400 bg-emerald-950/40' },
 ];
 
 // Department styling helper
@@ -228,10 +300,6 @@ const getDeptBadgeClass = (dept) => {
         case 'LSPD': return 'bg-blue-600/30 text-blue-300 border-blue-500/50';
         case 'BCSO': return 'bg-amber-600/30 text-amber-300 border-amber-500/50';
         case 'SASP': return 'bg-teal-600/30 text-teal-300 border-teal-500/50';
-        case 'SWAT': return 'bg-red-600/30 text-red-300 border-red-500/50';
-        case 'AIR_SUPPORT': return 'bg-sky-600/30 text-sky-300 border-sky-500/50';
-        case 'TRAFFIC': return 'bg-orange-600/30 text-orange-300 border-orange-500/50';
-        case 'K9': return 'bg-emerald-600/30 text-emerald-300 border-emerald-500/50';
         default: return 'bg-slate-700/40 text-slate-300 border-slate-600';
     }
 };
@@ -240,7 +308,9 @@ const getDeptBadgeClass = (dept) => {
 const filteredStreams = computed(() => {
     let result = allActiveStreams.value;
 
-    if (selectedDepartment.value !== 'ALL') {
+    if (selectedDepartment.value === 'PERSONAL') {
+        result = result.filter(s => personalVideoIds.value.includes(s.video_id) || customStreams.value.some(cs => cs.video_id === s.video_id));
+    } else if (selectedDepartment.value !== 'ALL') {
         result = result.filter(s => s.officer && s.officer.department === selectedDepartment.value);
     }
 
@@ -263,7 +333,9 @@ const filteredStreams = computed(() => {
 const filteredOfflineOfficers = computed(() => {
     let result = offlineOfficers.value;
 
-    if (selectedDepartment.value !== 'ALL') {
+    if (selectedDepartment.value === 'PERSONAL') {
+        result = result.filter(o => personalVideoIds.value.includes(o.channel_id) || (o.handle && personalVideoIds.value.includes(o.handle)));
+    } else if (selectedDepartment.value !== 'ALL') {
         result = result.filter(o => o.department === selectedDepartment.value);
     }
 
@@ -608,19 +680,38 @@ const layoutGridClass = computed(() => {
     return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5';
 });
 
+// Prioritize Personal Streams in Focus Mode (Personal units appear first)
+const sortedFocusStreams = computed(() => {
+    const list = [...visibleStreams.value];
+    return list.sort((a, b) => {
+        const aIsPersonal = isPersonalStream(a.video_id);
+        const bIsPersonal = isPersonalStream(b.video_id);
+        if (aIsPersonal && !bIsPersonal) return -1;
+        if (!aIsPersonal && bIsPersonal) return 1;
+        if (aIsPersonal && bIsPersonal) {
+            const aIdx = personalVideoIds.value.indexOf(a.video_id);
+            const bIdx = personalVideoIds.value.indexOf(b.video_id);
+            if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+            if (aIdx !== -1) return -1;
+            if (bIdx !== -1) return 1;
+        }
+        return 0;
+    });
+});
+
 // Focus mode stream selector
 const primaryFocusedStream = computed(() => {
-    if (!visibleStreams.value.length) return null;
+    if (!sortedFocusStreams.value.length) return null;
     if (focusedStreamId.value) {
-        const found = visibleStreams.value.find(s => s.video_id === focusedStreamId.value);
+        const found = sortedFocusStreams.value.find(s => s.video_id === focusedStreamId.value);
         if (found) return found;
     }
-    return visibleStreams.value[0];
+    return sortedFocusStreams.value[0];
 });
 
 const secondaryStreams = computed(() => {
     if (!primaryFocusedStream.value) return [];
-    return visibleStreams.value.filter(s => s.video_id !== primaryFocusedStream.value.video_id);
+    return sortedFocusStreams.value.filter(s => s.video_id !== primaryFocusedStream.value.video_id);
 });
 
 // Swap or set focus stream (Safe re-target with Auto-Audio Follow & Auto-HD)
@@ -675,30 +766,7 @@ const setFocusStream = (videoId) => {
     });
 };
 
-// Manual Sync Action
-const triggerSync = async () => {
-    isSyncing.value = true;
-    syncFeedback.value = 'Syncing police patrol feeds...';
-    try {
-        const response = await fetch('/api/v1/sync', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-        const data = await response.json();
-        if (data.status === 'success') {
-            syncFeedback.value = `✓ Sync complete: ${data.active_units} units 10-8 online`;
-            setTimeout(() => {
-                router.reload({ preserveScroll: true });
-            }, 800);
-        }
-    } catch (e) {
-        syncFeedback.value = 'Sync failed. Rechecking in 60s.';
-    } finally {
-        setTimeout(() => {
-            isSyncing.value = false;
-            syncFeedback.value = '';
-        }, 3000);
-    }
-};
-
-// Quick Add Feed
+// Quick Add Feed (Saves to local Personal list)
 const handleQuickAddStream = () => {
     if (!quickAddInput.value.urlOrId) return;
 
@@ -709,7 +777,12 @@ const handleQuickAddStream = () => {
     }
 
     if (videoId.length !== 11) {
-        alert('Invalid YouTube Video ID or URL. Please enter an 11-character video ID or valid YouTube watch URL.');
+        alert('Invalid YouTube Video ID atau URL. Masukkan 11-digit Video ID atau URL YouTube yang valid.');
+        return;
+    }
+
+    if (totalPersonalCount.value >= MAX_PERSONAL_STREAMS && !customStreams.value.some(s => s.video_id === videoId)) {
+        alert(`Maksimal ${MAX_PERSONAL_STREAMS} video pada kategori Personal / Custom! Hapus salah satu video terlebih dahulu.`);
         return;
     }
 
@@ -738,7 +811,12 @@ const handleQuickAddStream = () => {
     };
 
     customStreams.value.push(newStream);
-    isQuickAddModalOpen.value = false;
+    if (!personalVideoIds.value.includes(videoId)) {
+        personalVideoIds.value.push(videoId);
+    }
+    savePersonalStreamsToStorage();
+
+    closeRightDrawer();
     quickAddInput.value = {
         urlOrId: '',
         officerName: 'External Unit',
@@ -748,8 +826,33 @@ const handleQuickAddStream = () => {
     };
 };
 
+// Unified Right Slide-Over Drawer State ('QUICK_ADD', 'FEEDBACK', 'ROSTER', or null)
+const activeRightDrawer = ref(null);
+
+const openRightDrawer = (drawerName, extra = null) => {
+    activeRightDrawer.value = drawerName;
+    if (drawerName === 'FEEDBACK') {
+        feedbackForm.value = {
+            type: extra || 'CHANNEL_REQUEST',
+            sender_name: '',
+            handle_or_url: '',
+            officer_name: '',
+            callsign: '',
+            department: 'LSPD',
+            message: '',
+        };
+        feedbackSuccessToast.value = '';
+    } else if (drawerName === 'ROSTER') {
+        fetchRosterOfficers();
+    }
+};
+
+const closeRightDrawer = () => {
+    activeRightDrawer.value = null;
+    showOfficerFormModal.value = false;
+};
+
 // Admin Roster Management State & Methods (Protected for Admin)
-const isRosterModalOpen = ref(false);
 const rosterOfficers = ref([]);
 const isRosterLoading = ref(false);
 const rosterSearch = ref('');
@@ -773,8 +876,7 @@ const officerForm = ref({
 });
 
 const openRosterManager = async () => {
-    isRosterModalOpen.value = true;
-    await fetchRosterOfficers();
+    openRightDrawer('ROSTER');
 };
 
 const fetchRosterOfficers = async () => {
@@ -919,7 +1021,6 @@ const handleAdminLogout = () => {
 };
 
 // Visitor Feedback & Channel Request State & Methods (Option 1 Discord Webhook)
-const isFeedbackModalOpen = ref(false);
 const isSubmittingFeedback = ref(false);
 const feedbackSuccessToast = ref('');
 const feedbackForm = ref({
@@ -931,20 +1032,6 @@ const feedbackForm = ref({
     department: 'LSPD',
     message: '',
 });
-
-const openFeedbackModal = (type = 'CHANNEL_REQUEST') => {
-    feedbackForm.value = {
-        type: type,
-        sender_name: '',
-        handle_or_url: '',
-        officer_name: '',
-        callsign: '',
-        department: 'LSPD',
-        message: '',
-    };
-    feedbackSuccessToast.value = '';
-    isFeedbackModalOpen.value = true;
-};
 
 const submitFeedbackForm = async () => {
     isSubmittingFeedback.value = true;
@@ -962,7 +1049,7 @@ const submitFeedbackForm = async () => {
         if (res.ok) {
             feedbackSuccessToast.value = data.message || 'Laporan berhasil dikirim ke Command Center!';
             setTimeout(() => {
-                isFeedbackModalOpen.value = false;
+                closeRightDrawer();
                 feedbackSuccessToast.value = '';
             }, 3000);
         } else {
@@ -977,6 +1064,7 @@ const submitFeedbackForm = async () => {
 
 
 
+
 </script>
 
 <template>
@@ -987,24 +1075,14 @@ const submitFeedbackForm = async () => {
         <!-- Tactical Header Bar -->
         <header class="bg-[#0b1320] border-b border-blue-900/40 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-40 shadow-xl backdrop-blur-md">
             
-            <!-- Left Branding: IME Roleplay Police Command -->
+            <!-- Left Branding: IME Roleplay Police Division -->
             <div class="flex items-center space-x-3">
-                <div class="relative flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-900 to-slate-900 border border-blue-500/40 shadow-inner">
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-900 to-slate-900 border border-blue-500/40 shadow-inner">
                     <span class="text-xl">🚔</span>
-                    <span class="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                    </span>
                 </div>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-black tracking-wider text-blue-400 uppercase">IME ROLEPLAY</span>
-                        <span class="text-xs font-semibold px-1.5 py-0.2 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded">POLICE DIVISION</span>
-                    </div>
-                    <h1 class="text-xs text-slate-400 font-medium tracking-tight flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                        <span>Tactical CCTV & Bodycam Command Center</span>
-                    </h1>
+                <div class="flex flex-col">
+                    <span class="text-sm font-black tracking-wider text-blue-400 uppercase leading-tight">IME ROLEPLAY</span>
+                    <span class="text-[11px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DIVISION</span>
                 </div>
             </div>
 
@@ -1118,7 +1196,7 @@ const submitFeedbackForm = async () => {
                 <div class="flex items-center space-x-1.5">
                     <!-- Visitor Feedback / Channel Request Button -->
                     <button 
-                        @click="openFeedbackModal('CHANNEL_REQUEST')"
+                        @click="openRightDrawer('FEEDBACK')"
                         class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-sky-900/40 text-sky-300 border border-sky-500/30 transition flex items-center gap-1.5 shadow-sm"
                         title="Usul Streamer Baru, Koreksi Pangkat/Callsign, atau Lapor Kendala"
                     >
@@ -1127,21 +1205,12 @@ const submitFeedbackForm = async () => {
                     </button>
 
                     <button 
-                        @click="isQuickAddModalOpen = true"
+                        @click="openRightDrawer('QUICK_ADD')"
                         class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-emerald-900/40 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1.5"
                         title="Add Custom YouTube Stream / Video ID"
                     >
                         <span>➕</span>
                         <span class="hidden sm:inline">Quick Feed</span>
-                    </button>
-
-                    <button 
-                        @click="triggerSync" 
-                        :disabled="isSyncing"
-                        class="p-1.5 text-xs rounded bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition"
-                        :title="syncFeedback || 'Re-sync live streams'"
-                    >
-                        <span :class="{'inline-block animate-spin': isSyncing}">🔄</span>
                     </button>
 
                     <!-- Fullscreen Browser Button -->
@@ -1158,7 +1227,7 @@ const submitFeedbackForm = async () => {
                     <!-- Admin Only Controls (Visible only after logging in via /login or /admin) -->
                     <div v-if="$page.props.auth?.user" class="flex items-center space-x-1 bg-amber-950/40 p-0.5 rounded-lg border border-amber-500/50">
                         <button 
-                            @click="openRosterManager"
+                            @click="openRightDrawer('ROSTER')"
                             class="px-2.5 py-1 text-xs font-bold rounded bg-amber-600 hover:bg-amber-500 text-white shadow-md shadow-amber-600/30 transition flex items-center gap-1.5"
                             title="Manage Officer Database (MySQL)"
                         >
@@ -1188,12 +1257,15 @@ const submitFeedbackForm = async () => {
                     v-for="dept in departments" 
                     :key="dept.id"
                     @click="selectedDepartment = dept.id"
-                    :class="selectedDepartment === dept.id ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                    :class="selectedDepartment === dept.id ? (dept.id === 'PERSONAL' ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400' : 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400') : (dept.id === 'PERSONAL' ? 'bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 border-purple-500/40' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800')"
                     class="px-3 py-1 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap"
                 >
                     <span>{{ dept.icon }}</span>
                     <span>{{ dept.name }}</span>
-                    <span v-if="dept.id !== 'ALL'" class="text-[10px] px-1 py-0.2 bg-black/40 rounded-full font-mono">
+                    <span v-if="dept.id === 'PERSONAL'" class="text-[10px] px-1.5 py-0.2 bg-black/50 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30">
+                        {{ totalPersonalCount }}/6
+                    </span>
+                    <span v-else-if="dept.id !== 'ALL'" class="text-[10px] px-1 py-0.2 bg-black/40 rounded-full font-mono">
                         {{ allActiveStreams.filter(s => s.officer?.department === dept.id).length }}
                     </span>
                 </button>
@@ -1243,25 +1315,37 @@ const submitFeedbackForm = async () => {
                 
                 <!-- Zero Feeds Fallback -->
                 <div v-if="visibleStreams.length === 0" class="min-h-[60vh] flex flex-col items-center justify-center text-center p-8 bg-slate-950/40 rounded-2xl border border-slate-800/80">
-                    <div class="w-16 h-16 rounded-full bg-blue-950/60 border border-blue-500/30 flex items-center justify-center text-3xl mb-4">
-                        📡
+                    <div 
+                        class="w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-4 border"
+                        :class="selectedDepartment === 'PERSONAL' ? 'bg-purple-950/60 border-purple-500/50 text-purple-300' : 'bg-blue-950/60 border-blue-500/30'"
+                    >
+                        <span>{{ selectedDepartment === 'PERSONAL' ? '📌' : '📡' }}</span>
                     </div>
-                    <h2 class="text-lg font-bold text-slate-200 tracking-wide">NO ACTIVE 10-8 PATROL UNITS ONLINE</h2>
+                    <h2 class="text-lg font-bold text-slate-200 tracking-wide uppercase">
+                        {{ selectedDepartment === 'PERSONAL' ? 'BELUM ADA VIDEO DI KATEGORI PERSONAL' : 'NO ACTIVE 10-8 PATROL UNITS ONLINE' }}
+                    </h2>
                     <p class="text-xs text-slate-400 max-w-md mt-1 mb-6">
-                        No registered IME Roleplay police streamers are currently broadcasting in the selected department filter.
+                        <span v-if="selectedDepartment === 'PERSONAL'">
+                            Kategori Personal menyimpan maksimal 6 video stream secara lokal di browser Anda. Klik tombol 📌 pada video manapun atau gunakan tombol Quick Feed.
+                        </span>
+                        <span v-else>
+                            No registered IME Roleplay police streamers are currently broadcasting in the selected department filter.
+                        </span>
                     </p>
                     <div class="flex items-center space-x-3">
                         <button 
-                            @click="isQuickAddModalOpen = true" 
-                            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-blue-600/30 transition flex items-center gap-2"
+                            @click="openRightDrawer('QUICK_ADD')" 
+                            :class="selectedDepartment === 'PERSONAL' ? 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/30' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/30'"
+                            class="px-4 py-2 text-white text-xs font-semibold rounded-lg shadow-lg transition flex items-center gap-2"
                         >
-                            <span>➕ Add Temporary Live Stream</span>
+                            <span>➕ Add Quick Feed</span>
                         </button>
                         <button 
-                            @click="triggerSync" 
+                            v-if="selectedDepartment !== 'ALL'"
+                            @click="selectedDepartment = 'ALL'" 
                             class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center gap-2"
                         >
-                            <span>🔄 Refresh Roster</span>
+                            <span>🛡️ Lihat Semua Unit</span>
                         </button>
                     </div>
                 </div>
@@ -1286,10 +1370,6 @@ const submitFeedbackForm = async () => {
                                 </div>
                                 
                                 <div class="flex items-center space-x-2.5 shrink-0">
-                                    <span class="text-xs text-red-400 font-mono font-bold flex items-center gap-1.5 bg-red-950/40 px-2 py-0.5 rounded border border-red-500/40">
-                                        <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                                        PRIMARY LEAD
-                                    </span>
                                     <button 
                                         @click="toggleAudio(primaryFocusedStream.video_id)" 
                                         :class="activeAudioVideoId === primaryFocusedStream.video_id ? 'bg-emerald-600 text-white shadow-emerald-500/50' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
@@ -1310,11 +1390,6 @@ const submitFeedbackForm = async () => {
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                     allowfullscreen
                                 ></iframe>
-
-                                <!-- Tactical Overlay Badge -->
-                                <div class="absolute top-3 right-3 pointer-events-none opacity-90 font-mono text-[10px] text-white/80 bg-black/70 px-2 py-1 rounded border border-white/10">
-                                    AXON BODY 3 • TACTICAL LEAD
-                                </div>
                             </div>
 
                             <!-- Stream HUD Bottom Bar -->
@@ -1327,6 +1402,17 @@ const submitFeedbackForm = async () => {
                                     <span class="font-mono text-slate-400 truncate hidden sm:inline">Streamer: {{ primaryFocusedStream.officer?.streamer_name }}</span>
                                 </div>
                                 <div class="flex items-center space-x-2.5 shrink-0">
+                                    <!-- Pin / Personal Toggle Button -->
+                                    <button 
+                                        @click="togglePersonalStream(primaryFocusedStream.video_id)" 
+                                        :class="isPersonalStream(primaryFocusedStream.video_id) ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 border-purple-400' : 'bg-slate-800 text-slate-300 hover:text-purple-300 hover:bg-slate-700 border-slate-700'"
+                                        class="px-2.5 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1 font-mono border"
+                                        :title="isPersonalStream(primaryFocusedStream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
+                                    >
+                                        <span>📌</span>
+                                        <span class="hidden md:inline">{{ isPersonalStream(primaryFocusedStream.video_id) ? 'Personal' : '+Personal' }}</span>
+                                    </button>
+
                                     <!-- 1-Click YouTube Subscribe Popup Button -->
                                     <button 
                                         v-if="primaryFocusedStream.officer?.channel_id || primaryFocusedStream.officer?.handle"
@@ -1447,6 +1533,15 @@ const submitFeedbackForm = async () => {
                                     
                                     <!-- Action Buttons -->
                                     <div class="flex items-center space-x-1 shrink-0">
+                                        <!-- Personal Pin Toggle -->
+                                        <button 
+                                            @click="togglePersonalStream(stream.video_id)" 
+                                            :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/70 border border-purple-500/50' : 'text-slate-400 hover:text-purple-300 bg-slate-800'"
+                                            class="px-1.5 py-0.5 text-[10px] rounded transition font-mono"
+                                            :title="isPersonalStream(stream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
+                                        >
+                                            📌
+                                        </button>
                                         <button 
                                             v-if="activePreviewVideoIds.includes(stream.video_id) || !isDataSaverEnabled"
                                             @click="toggleAudio(stream.video_id)" 
@@ -1508,27 +1603,13 @@ const submitFeedbackForm = async () => {
                                                 <span>10-8 LIVE</span>
                                             </div>
 
-                                            <div class="flex items-center space-x-2">
-                                                <button 
-                                                    @click="setFocusStream(stream.video_id)"
-                                                    class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-blue-600/40 transition flex items-center gap-1.5 transform hover:scale-105"
-                                                    title="Play on Main Focus Screen"
-                                                >
-                                                    <span>🎯 Set Lead Screen</span>
-                                                </button>
-                                                
-                                                <button 
-                                                    @click="toggleSidebarPreview(stream.video_id)"
-                                                    class="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1"
-                                                    title="Play stream"
-                                                >
-                                                    <span>▶ Play</span>
-                                                </button>
-                                            </div>
-
-                                            <span class="text-[10px] text-slate-400 font-mono mt-2">
-                                                ⚡ Saver Standby
-                                            </span>
+                                            <button 
+                                                @click="toggleSidebarPreview(stream.video_id)"
+                                                class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1 transform hover:scale-105"
+                                                title="Play stream"
+                                            >
+                                                <span>▶ Play</span>
+                                            </button>
                                         </div>
                                     </template>
                                 </div>
@@ -1609,22 +1690,28 @@ const submitFeedbackForm = async () => {
                                     </div>
                                 </div>
 
-                                <!-- Bodycam REC & Live Audio State -->
-                                <div class="flex items-center space-x-2 shrink-0">
-                                    <div class="flex items-center space-x-1 font-mono text-[10px] text-red-400 bg-red-950/40 px-1.5 py-0.5 rounded border border-red-500/30">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
-                                        <span>REC ●</span>
-                                    </div>
-                                    
-                                    <!-- Audio Button -->
+                                <!-- Bodycam Actions: Audio Button & Top Personal Pin Button -->
+                                <div class="flex items-center space-x-1.5 shrink-0">
+                                    <!-- Audio Button (In Live / Active Mode) -->
                                     <button 
-                                        v-if="!isDataSaverEnabled || activeGridVideoIds.includes(stream.video_id)"
+                                        v-if="!isDataSaverEnabled || activeGridVideoIds.includes(stream.video_id) || activeAudioVideoId === stream.video_id"
                                         @click="toggleAudio(stream.video_id)" 
                                         :class="activeAudioVideoId === stream.video_id ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/40' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
                                         class="px-2 py-0.5 text-[11px] rounded transition flex items-center gap-1 font-mono"
                                         :title="activeAudioVideoId === stream.video_id ? 'Mute audio' : 'Unmute audio (auto-mutes all others)'"
                                     >
                                         <span>{{ activeAudioVideoId === stream.video_id ? '🔊 ON' : '🔇' }}</span>
+                                    </button>
+
+                                    <!-- Top Personal Pin Button -->
+                                    <button 
+                                        @click="togglePersonalStream(stream.video_id)"
+                                        class="px-2 py-0.5 text-[11px] rounded transition flex items-center gap-1 font-mono border"
+                                        :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/70 border-purple-500/50' : 'text-slate-400 hover:text-purple-300 bg-slate-800 border-slate-700'"
+                                        :title="isPersonalStream(stream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
+                                    >
+                                        <span>📌</span>
+                                        <span class="text-[10px] hidden sm:inline">{{ isPersonalStream(stream.video_id) ? 'Personal' : '+Personal' }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -1650,11 +1737,6 @@ const submitFeedbackForm = async () => {
                                     >
                                         ✕ Stop Feed
                                     </button>
-
-                                    <!-- Tactical Bodycam Watermark HUD -->
-                                    <div class="absolute top-2 right-2 pointer-events-none opacity-80 font-mono text-[9px] text-white/70 bg-black/60 px-1.5 py-0.5 rounded border border-white/10 hidden sm:block">
-                                        AXON BODY 3 • LIVE
-                                    </div>
                                 </template>
 
                                 <template v-else>
@@ -1688,10 +1770,6 @@ const submitFeedbackForm = async () => {
                                                 <span>▶ Play</span>
                                             </button>
                                         </div>
-
-                                        <span class="text-[10px] text-slate-400 font-mono mt-2">
-                                            ⚡ Saver Standby
-                                        </span>
                                     </div>
                                 </template>
                             </div>
@@ -1805,7 +1883,15 @@ const submitFeedbackForm = async () => {
                                 </div>
                                 <div class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500">
                                     <div class="truncate mr-2">Streamer: <span class="text-slate-300 font-semibold">{{ officer.streamer_name }}</span></div>
-                                    <div class="flex items-center space-x-2 shrink-0">
+                                    <div class="flex items-center space-x-1.5 shrink-0">
+                                        <button 
+                                            @click="togglePersonalStream(officer.channel_id || officer.handle)"
+                                            class="p-1 rounded transition flex items-center gap-0.5 text-[10px]"
+                                            :class="isPersonalStream(officer.channel_id || officer.handle) ? 'text-purple-300 bg-purple-950/70 border border-purple-500/50' : 'text-slate-400 hover:text-purple-300 hover:bg-slate-800'"
+                                            :title="isPersonalStream(officer.channel_id || officer.handle) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
+                                        >
+                                            <span>📌</span>
+                                        </button>
                                         <button 
                                             @click="openSubscribePopup(officer.channel_id || officer.handle, officer.officer_name)"
                                             class="bg-red-600/90 hover:bg-red-600 text-white font-bold px-2 py-0.5 rounded text-[10px] transition flex items-center gap-1 shadow-sm shadow-red-600/30"
@@ -1828,120 +1914,319 @@ const submitFeedbackForm = async () => {
 
         </main>
 
-        <!-- QUICK ADD CUSTOM STREAM MODAL -->
-        <div v-if="isQuickAddModalOpen" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-[#0b1320] border border-emerald-500/40 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-                
-                <div class="bg-slate-900/90 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-lg">➕</span>
-                        <h2 class="text-sm font-bold text-emerald-300 tracking-wide uppercase">QUICK ADD PATROL STREAM</h2>
+        <!-- UNIFIED RIGHT SLIDE-OVER SIDEBAR / DRAWER -->
+        <!-- 1. Backdrop Overlay -->
+        <div 
+            v-if="activeRightDrawer" 
+            @click="closeRightDrawer"
+            class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300"
+        ></div>
+
+        <!-- 2. Sliding Drawer Panel -->
+        <aside 
+            class="fixed inset-y-0 right-0 z-50 bg-[#080d17]/98 border-l border-slate-800/90 shadow-2xl backdrop-blur-2xl flex flex-col transition-all duration-300 ease-in-out"
+            :class="[
+                activeRightDrawer ? 'translate-x-0' : 'translate-x-full pointer-events-none',
+                activeRightDrawer === 'ROSTER' ? 'w-full sm:w-[580px] md:w-[740px] lg:w-[860px]' : 'w-full sm:w-[440px] md:w-[480px]'
+            ]"
+        >
+            <!-- Drawer Top Header Bar -->
+            <div class="bg-slate-900/95 px-4 py-3.5 border-b border-slate-800 flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                    <div 
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 border"
+                        :class="{
+                            'bg-emerald-950/80 border-emerald-500/60 text-emerald-400': activeRightDrawer === 'QUICK_ADD',
+                            'bg-sky-950/80 border-sky-500/60 text-sky-400': activeRightDrawer === 'FEEDBACK',
+                            'bg-amber-950/80 border-amber-500/60 text-amber-400': activeRightDrawer === 'ROSTER',
+                        }"
+                    >
+                        <span v-if="activeRightDrawer === 'QUICK_ADD'">➕</span>
+                        <span v-else-if="activeRightDrawer === 'FEEDBACK'">💬</span>
+                        <span v-else-if="activeRightDrawer === 'ROSTER'">⚙️</span>
                     </div>
-                    <button @click="isQuickAddModalOpen = false" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 rounded bg-slate-800">
-                        ✕ Close
-                    </button>
+                    <div class="truncate">
+                        <div class="flex items-center space-x-2">
+                            <h2 
+                                class="text-xs font-black tracking-wider uppercase font-mono truncate"
+                                :class="{
+                                    'text-emerald-300': activeRightDrawer === 'QUICK_ADD',
+                                    'text-sky-300': activeRightDrawer === 'FEEDBACK',
+                                    'text-amber-300': activeRightDrawer === 'ROSTER',
+                                }"
+                            >
+                                <span v-if="activeRightDrawer === 'QUICK_ADD'">QUICK ADD LIVE FEED</span>
+                                <span v-else-if="activeRightDrawer === 'FEEDBACK'">LAPOR & USULAN STREAMER</span>
+                                <span v-else-if="activeRightDrawer === 'ROSTER'">TACTICAL ROSTER MANAGER</span>
+                            </h2>
+                            <span 
+                                class="text-[9px] px-1.5 py-0.2 rounded-full border font-mono uppercase"
+                                :class="{
+                                    'bg-emerald-500/20 text-emerald-300 border-emerald-500/40': activeRightDrawer === 'QUICK_ADD',
+                                    'bg-sky-500/20 text-sky-300 border-sky-500/40': activeRightDrawer === 'FEEDBACK',
+                                    'bg-amber-500/20 text-amber-300 border-amber-500/40': activeRightDrawer === 'ROSTER',
+                                }"
+                            >
+                                {{ activeRightDrawer === 'ROSTER' ? 'Admin DB' : (activeRightDrawer === 'FEEDBACK' ? 'Discord' : 'Temporary') }}
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 truncate">
+                            <span v-if="activeRightDrawer === 'QUICK_ADD'">Inject external YouTube live patrol feed into multifeed</span>
+                            <span v-else-if="activeRightDrawer === 'FEEDBACK'">Kirim usul streamer atau perbaikan data ke Discord tim</span>
+                            <span v-else-if="activeRightDrawer === 'ROSTER'">Master MySQL database streamer & officer CRUD control</span>
+                        </p>
+                    </div>
                 </div>
 
-                <form @submit.prevent="handleQuickAddStream" class="p-4 bg-slate-950 flex flex-col gap-3">
-                    <div>
-                        <label class="text-xs font-semibold text-slate-300 block mb-1">YouTube Live URL or 11-char Video ID *</label>
-                        <input 
-                            v-model="quickAddInput.urlOrId" 
-                            type="text" 
-                            required
-                            placeholder="https://youtube.com/watch?v=xxxxxxxxxxx or dQw4w9WgXcQ"
-                            class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono"
-                        />
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Officer / Unit Name</label>
-                            <input 
-                                v-model="quickAddInput.officerName" 
-                                type="text" 
-                                placeholder="Ofc. Raymond"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-                            />
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Callsign</label>
-                            <input 
-                                v-model="quickAddInput.callsign" 
-                                type="text" 
-                                placeholder="1-ADAM-99"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Department</label>
-                            <select 
-                                v-model="quickAddInput.department"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-                            >
-                                <option value="LSPD">LSPD</option>
-                                <option value="BCSO">BCSO</option>
-                                <option value="SASP">SASP</option>
-                                <option value="SWAT">SWAT</option>
-                                <option value="AIR_SUPPORT">AIR-1</option>
-                                <option value="TRAFFIC">TRAFFIC</option>
-                                <option value="K9">K9</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Patrol Zone</label>
-                            <input 
-                                v-model="quickAddInput.patrolZone" 
-                                type="text" 
-                                placeholder="Mission Row"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="mt-3 flex items-center justify-end space-x-2">
-                        <button 
-                            type="button" 
-                            @click="isQuickAddModalOpen = false" 
-                            class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg"
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            type="submit" 
-                            class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-600/30"
-                        >
-                            ➕ Inject Live Feed
-                        </button>
-                    </div>
-                </form>
-
+                <!-- Header Actions: Close Button -->
+                <div class="flex items-center space-x-1.5 shrink-0 ml-2">
+                    <button 
+                        @click="closeRightDrawer" 
+                        class="p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-800/80 hover:bg-slate-700 transition text-xs font-bold"
+                        title="Tutup Panel (Esc)"
+                    >
+                        ✕
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <!-- ADMIN ONLY: TACTICAL ROSTER MANAGER MODAL (MYSQL DATABASE CRUD) -->
-        <div v-if="isRosterModalOpen" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5">
-            <div class="bg-[#090f1a] border border-amber-500/50 rounded-2xl w-full max-w-5xl shadow-2xl shadow-amber-950/40 overflow-hidden max-h-[92vh] flex flex-col">
+            <!-- DRAWER CONTENT BODY -->
+            <div class="flex-1 overflow-y-auto scrollbar-thin flex flex-col min-h-0 bg-[#060a12]">
                 
-                <!-- Modal Header -->
-                <div class="bg-slate-900 px-4 py-3 border-b border-amber-500/30 flex items-center justify-between flex-wrap gap-2 shrink-0">
-                    <div class="flex items-center space-x-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-amber-950/70 border border-amber-500/60 flex items-center justify-center text-base">
-                            ⚙️
+                <!-- 1. QUICK ADD STREAM PANEL -->
+                <div v-if="activeRightDrawer === 'QUICK_ADD'" class="p-4 flex flex-col gap-4">
+                    <div class="bg-purple-950/30 border border-purple-500/40 rounded-xl p-3 text-xs text-purple-200/90 leading-relaxed">
+                        <div class="font-bold flex items-center gap-1.5 mb-1 text-purple-300">
+                            <span>📌</span>
+                            <span>Petunjuk Quick Feed & Personal</span>
                         </div>
-                        <div>
-                            <h2 class="text-sm font-bold text-amber-400 tracking-wider uppercase font-mono flex items-center gap-2">
-                                <span>TACTICAL ROSTER DATABASE MANAGER</span>
-                                <span class="text-[10px] px-2 py-0.2 bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/40 font-normal">MySQL Master</span>
-                            </h2>
-                            <p class="text-[11px] text-slate-400">Add, edit, delete, or toggle live stream monitoring for all police units</p>
-                        </div>
+                        Gunakan menu ini untuk menambahkan stream YouTube live sementara. Video yang ditambahkan akan otomatis tersimpan di tab <strong>📌 PERSONAL</strong> browser lokal Anda (Maksimal 6 video).
                     </div>
+
+                    <form @submit.prevent="handleQuickAddStream" class="flex flex-col gap-3.5">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">YouTube Live URL or 11-char Video ID *</label>
+                            <input 
+                                v-model="quickAddInput.urlOrId" 
+                                type="text" 
+                                required
+                                placeholder="https://youtube.com/watch?v=xxxxxxxxxxx or dQw4w9WgXcQ"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono placeholder-slate-600"
+                            />
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-300 block mb-1">Officer / Unit Name</label>
+                                <input 
+                                    v-model="quickAddInput.officerName" 
+                                    type="text" 
+                                    placeholder="Ofc. Raymond"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600"
+                                />
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-300 block mb-1">Callsign</label>
+                                <input 
+                                    v-model="quickAddInput.callsign" 
+                                    type="text" 
+                                    placeholder="1-ADAM-99"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono placeholder-slate-600"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-300 block mb-1">Department</label>
+                                <select 
+                                    v-model="quickAddInput.department"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                                >
+                                    <option value="LSPD">LSPD (Police)</option>
+                                    <option value="BCSO">BCSO (Sheriff)</option>
+                                    <option value="SASP">SASP (State Police)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-300 block mb-1">Patrol Zone</label>
+                                <input 
+                                    v-model="quickAddInput.patrolZone" 
+                                    type="text" 
+                                    placeholder="Mission Row"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-end space-x-2">
+                            <button 
+                                type="button" 
+                                @click="closeRightDrawer" 
+                                class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg transition"
+                            >
+                                Batal
+                            </button>
+                            <button 
+                                type="submit" 
+                                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5"
+                            >
+                                <span>➕</span>
+                                <span>Inject Live Feed</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 2. VISITOR FEEDBACK & CHANNEL REQUEST PANEL (DISCORD WEBHOOK) -->
+                <div v-if="activeRightDrawer === 'FEEDBACK'" class="p-4 flex flex-col gap-4">
                     
-                    <div class="flex items-center space-x-2">
+                    <!-- Success Notification Toast -->
+                    <div v-if="feedbackSuccessToast" class="bg-emerald-950/90 border border-emerald-500/50 rounded-xl px-4 py-2.5 text-xs text-emerald-300 font-mono flex items-center gap-2 shadow-lg">
+                        <span class="text-base">✓</span>
+                        <span>{{ feedbackSuccessToast }}</span>
+                    </div>
+
+                    <div class="bg-sky-950/20 border border-sky-500/30 rounded-xl p-3 text-xs text-sky-200/90 leading-relaxed">
+                        <div class="font-bold flex items-center gap-1.5 mb-1 text-sky-300">
+                            <span>📡</span>
+                            <span>Direct Dispatcher Line</span>
+                        </div>
+                        Formulir ini akan otomatis mengirim pesan langsung ke channel Discord Dispatcher IME Roleplay.
+                    </div>
+
+                    <form @submit.prevent="submitFeedbackForm" class="flex flex-col gap-3.5">
+                        
+                        <!-- Feedback Type Selector -->
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1.5 font-mono">Kategori Masukan *</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button 
+                                    type="button" 
+                                    @click="feedbackForm.type = 'CHANNEL_REQUEST'"
+                                    :class="feedbackForm.type === 'CHANNEL_REQUEST' ? 'bg-sky-600 text-white font-bold border-sky-400 shadow-md shadow-sky-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                    class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
+                                >
+                                    <span>➕</span>
+                                    <span class="truncate">Usul Streamer</span>
+                                </button>
+                                <button 
+                                    type="button" 
+                                    @click="feedbackForm.type = 'DATA_CORRECTION'"
+                                    :class="feedbackForm.type === 'DATA_CORRECTION' ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-md shadow-amber-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                    class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
+                                >
+                                    <span>✏️</span>
+                                    <span class="truncate">Koreksi Data</span>
+                                </button>
+                                <button 
+                                    type="button" 
+                                    @click="feedbackForm.type = 'BUG_REPORT'"
+                                    :class="feedbackForm.type === 'BUG_REPORT' ? 'bg-red-600 text-white font-bold border-red-400 shadow-md shadow-red-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                    class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
+                                >
+                                    <span>🐞</span>
+                                    <span class="truncate">Lapor Bug</span>
+                                </button>
+                                <button 
+                                    type="button" 
+                                    @click="feedbackForm.type = 'OTHER'"
+                                    :class="feedbackForm.type === 'OTHER' ? 'bg-purple-600 text-white font-bold border-purple-400 shadow-md shadow-purple-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                    class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
+                                >
+                                    <span>💬</span>
+                                    <span class="truncate">Lainnya</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-300 block mb-1">Nama Pengirim (Opsional)</label>
+                                <input 
+                                    v-model="feedbackForm.sender_name" 
+                                    type="text" 
+                                    placeholder="Warga / Nama Anda"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600"
+                                />
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-300 block mb-1">Handle / Link YouTube</label>
+                                <input 
+                                    v-model="feedbackForm.handle_or_url" 
+                                    type="text" 
+                                    placeholder="@NamaStreamer atau URL"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 font-mono placeholder-slate-600"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" v-if="feedbackForm.type === 'CHANNEL_REQUEST' || feedbackForm.type === 'DATA_CORRECTION'">
+                            <div class="sm:col-span-2">
+                                <label class="text-xs font-semibold text-slate-300 block mb-1">Nama Karakter / Callsign</label>
+                                <input 
+                                    v-model="feedbackForm.officer_name" 
+                                    type="text" 
+                                    placeholder="Ofc. Budi / 1-ADAM-12"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600"
+                                />
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-slate-300 block mb-1">Departemen</label>
+                                <select 
+                                    v-model="feedbackForm.department"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                                >
+                                    <option value="LSPD">LSPD (Police)</option>
+                                    <option value="BCSO">BCSO (Sheriff)</option>
+                                    <option value="SASP">SASP (State Police)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Pesan / Catatan Detail *</label>
+                            <textarea 
+                                v-model="feedbackForm.message" 
+                                required
+                                rows="4"
+                                :placeholder="feedbackForm.type === 'CHANNEL_REQUEST' ? 'Jelaskan jadwal live rutin streamer atau link channel YouTube resminya...' : (feedbackForm.type === 'DATA_CORRECTION' ? 'Jelaskan data apa yang perlu dikoreksi (misal pangkat naik jadi Sergeant, ganti callsign)...' : 'Tuliskan detail masukan atau kendala Anda...')"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600"
+                            ></textarea>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-end space-x-2">
+                            <button 
+                                type="button" 
+                                @click="closeRightDrawer" 
+                                class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg transition"
+                            >
+                                Batal
+                            </button>
+                            <button 
+                                type="submit" 
+                                :disabled="isSubmittingFeedback"
+                                class="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-lg shadow-sky-600/30 flex items-center gap-1.5 transition"
+                            >
+                                <span v-if="isSubmittingFeedback" class="animate-spin">🔄</span>
+                                <span v-else>🚀</span>
+                                <span>{{ isSubmittingFeedback ? 'Mengirim...' : 'Kirim ke Discord' }}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 3. ADMIN TACTICAL ROSTER MANAGER PANEL (MYSQL CRUD) -->
+                <div v-if="activeRightDrawer === 'ROSTER'" class="flex-1 flex flex-col min-h-0">
+                    
+                    <!-- Feedback Toast -->
+                    <div v-if="rosterFeedback" class="bg-blue-950/90 border-b border-blue-500/40 px-4 py-2 text-xs text-blue-300 font-mono text-center shrink-0 flex items-center justify-center gap-2">
+                        <span>⚡</span>
+                        <span>{{ rosterFeedback }}</span>
+                    </div>
+
+                    <!-- Filter, Add Officer & Search Toolbar -->
+                    <div class="bg-slate-950/90 px-4 py-2.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 shrink-0">
                         <!-- Add Officer Button -->
                         <button 
                             @click="openAddOfficerModal"
@@ -1950,31 +2235,27 @@ const submitFeedbackForm = async () => {
                             <span>➕</span>
                             <span>Add Officer / Streamer</span>
                         </button>
-                        
-                        <button 
-                            @click="isRosterModalOpen = false" 
-                            class="text-slate-400 hover:text-white text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition"
-                        >
-                            ✕ Close
-                        </button>
+
+                        <!-- Search Input -->
+                        <div class="relative flex-1 sm:w-64 max-w-xs">
+                            <input 
+                                v-model="rosterSearch" 
+                                @input="fetchRosterOfficers"
+                                type="text" 
+                                placeholder="Filter name, callsign, handle..."
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-7 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
+                            />
+                            <span class="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Feedback Toast -->
-                <div v-if="rosterFeedback" class="bg-blue-950/80 border-b border-blue-500/40 px-4 py-1.5 text-xs text-blue-300 font-mono text-center shrink-0 flex items-center justify-center gap-2">
-                    <span>⚡</span>
-                    <span>{{ rosterFeedback }}</span>
-                </div>
-
-                <!-- Filter & Search Toolbar -->
-                <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                    <!-- Dept Filter Tabs -->
-                    <div class="flex items-center space-x-1.5 overflow-x-auto max-w-full scrollbar-none py-0.5">
+                    <!-- Department Sub-tabs -->
+                    <div class="bg-slate-900/60 px-4 py-2 border-b border-slate-800 flex items-center space-x-1.5 overflow-x-auto scrollbar-none shrink-0">
                         <button 
                             v-for="dept in departments" 
                             :key="dept.id"
                             @click="rosterDept = dept.id; fetchRosterOfficers();"
-                            :class="rosterDept === dept.id ? 'bg-amber-600 text-white font-bold border-amber-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                            :class="rosterDept === dept.id ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-sm shadow-amber-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
                             class="px-2.5 py-1 text-xs rounded-full border transition flex items-center space-x-1 whitespace-nowrap"
                         >
                             <span>{{ dept.icon }}</span>
@@ -1982,113 +2263,103 @@ const submitFeedbackForm = async () => {
                         </button>
                     </div>
 
-                    <!-- Search Input -->
-                    <div class="relative w-full sm:w-64">
-                        <input 
-                            v-model="rosterSearch" 
-                            @input="fetchRosterOfficers"
-                            type="text" 
-                            placeholder="Filter by name, callsign, handle..."
-                            class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
-                        />
-                        <span class="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
-                    </div>
-                </div>
+                    <!-- Officers List -->
+                    <div class="flex-1 overflow-y-auto p-4 space-y-2.5 scrollbar-thin">
+                        <div v-if="isRosterLoading" class="py-12 text-center text-slate-400 font-mono text-xs flex items-center justify-center gap-2">
+                            <span class="animate-spin text-lg">🔄</span>
+                            <span>Loading officer records from MySQL...</span>
+                        </div>
 
-                <!-- Officers Table List -->
-                <div class="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin">
-                    <div v-if="isRosterLoading" class="py-12 text-center text-slate-400 font-mono text-xs flex items-center justify-center gap-2">
-                        <span class="animate-spin text-lg">🔄</span>
-                        <span>Loading officer records from MySQL...</span>
-                    </div>
+                        <div v-else-if="rosterOfficers.length === 0" class="py-12 text-center text-slate-500 text-xs font-mono">
+                            No officers found in database matching criteria.
+                        </div>
 
-                    <div v-else-if="rosterOfficers.length === 0" class="py-12 text-center text-slate-500 text-xs font-mono">
-                        No officers found in database matching criteria.
-                    </div>
-
-                    <div v-else class="space-y-2">
-                        <div 
-                            v-for="officer in rosterOfficers" 
-                            :key="officer.id"
-                            class="bg-slate-900/80 hover:bg-slate-900 border rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 transition"
-                            :class="officer.is_active ? 'border-slate-800' : 'border-red-900/40 bg-red-950/10 opacity-70'"
-                        >
-                            <!-- Officer Card Left -->
-                            <div class="flex items-center space-x-3 min-w-0">
-                                <img 
-                                    :src="officer.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${officer.handle}`" 
-                                    :alt="officer.officer_name"
-                                    class="w-10 h-10 rounded-full border border-slate-700 bg-slate-950 shrink-0"
-                                />
-                                <div class="min-w-0">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="px-1.5 py-0.2 text-[10px] font-black rounded border font-mono" :class="getDeptBadgeClass(officer.department)">
-                                            {{ officer.department }}
-                                        </span>
-                                        <span class="font-mono text-xs font-bold text-amber-400">{{ officer.callsign }}</span>
-                                        <span class="text-xs font-mono text-slate-400">{{ officer.badge_number }}</span>
-                                    </div>
-                                    <h3 class="text-xs font-bold text-slate-100 truncate mt-0.5">{{ officer.officer_name }}</h3>
-                                    <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
-                                        <span>{{ officer.rank }}</span>
-                                        <span>•</span>
-                                        <span class="text-blue-400 font-mono">{{ officer.handle }}</span>
-                                        <span v-if="officer.streamer_name" class="text-slate-500 truncate">({{ officer.streamer_name }})</span>
+                        <div v-else class="space-y-2">
+                            <div 
+                                v-for="officer in rosterOfficers" 
+                                :key="officer.id"
+                                class="bg-slate-900/80 hover:bg-slate-900 border rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 transition"
+                                :class="officer.is_active ? 'border-slate-800' : 'border-red-900/40 bg-red-950/10 opacity-70'"
+                            >
+                                <!-- Officer Card Left -->
+                                <div class="flex items-center space-x-3 min-w-0">
+                                    <img 
+                                        :src="officer.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${officer.handle}`" 
+                                        :alt="officer.officer_name"
+                                        class="w-10 h-10 rounded-full border border-slate-700 bg-slate-950 shrink-0"
+                                    />
+                                    <div class="min-w-0">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="px-1.5 py-0.2 text-[10px] font-black rounded border font-mono" :class="getDeptBadgeClass(officer.department)">
+                                                {{ officer.department }}
+                                            </span>
+                                            <span class="font-mono text-xs font-bold text-amber-400">{{ officer.callsign }}</span>
+                                            <span class="text-xs font-mono text-slate-400">{{ officer.badge_number }}</span>
+                                        </div>
+                                        <h3 class="text-xs font-bold text-slate-100 truncate mt-0.5">{{ officer.officer_name }}</h3>
+                                        <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                                            <span>{{ officer.rank }}</span>
+                                            <span>•</span>
+                                            <span class="text-blue-400 font-mono">{{ officer.handle }}</span>
+                                            <span v-if="officer.streamer_name" class="text-slate-500 truncate">({{ officer.streamer_name }})</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Officer Card Right: Zone, Status, Actions -->
-                            <div class="flex items-center space-x-3 shrink-0 ml-auto">
-                                <div class="text-[11px] font-mono text-slate-400 hidden md:block">
-                                    📍 {{ officer.patrol_zone || 'Los Santos' }}
+                                <!-- Officer Card Right: Zone, Status, Actions -->
+                                <div class="flex items-center space-x-2.5 shrink-0 ml-auto">
+                                    <div class="text-[11px] font-mono text-slate-400 hidden md:block">
+                                        📍 {{ officer.patrol_zone || 'Los Santos' }}
+                                    </div>
+
+                                    <!-- Toggle Active Switch -->
+                                    <button 
+                                        @click="toggleOfficerActive(officer)"
+                                        :class="officer.is_active ? 'bg-emerald-950 border-emerald-500/50 text-emerald-300' : 'bg-slate-950 border-slate-800 text-slate-500'"
+                                        class="px-2 py-1 rounded-lg border text-[11px] font-mono font-bold transition flex items-center gap-1.5"
+                                        title="Toggle Monitoring Active/Disabled"
+                                    >
+                                        <span :class="officer.is_active ? 'text-emerald-400' : 'text-slate-600'">●</span>
+                                        <span>{{ officer.is_active ? 'ACTIVE' : 'DISABLED' }}</span>
+                                    </button>
+
+                                    <!-- Action Buttons: Edit & Delete -->
+                                    <div class="flex items-center space-x-1">
+                                        <button 
+                                            @click="openEditOfficerModal(officer)"
+                                            class="p-1.5 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-blue-300 text-xs transition"
+                                            title="Edit Officer Record"
+                                        >
+                                            ✏️
+                                        </button>
+                                        <button 
+                                            @click="deleteOfficerConfirm(officer)"
+                                            class="p-1.5 rounded-lg bg-red-950 hover:bg-red-900 border border-red-500/40 text-red-300 text-xs transition"
+                                            title="Delete from MySQL"
+                                        >
+                                            🗑️
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <!-- Toggle Active Switch -->
-                                <button 
-                                    @click="toggleOfficerActive(officer)"
-                                    :class="officer.is_active ? 'bg-emerald-950 border-emerald-500/50 text-emerald-300' : 'bg-slate-950 border-slate-800 text-slate-500'"
-                                    class="px-2.5 py-1 rounded-lg border text-[11px] font-mono font-bold transition flex items-center gap-1.5"
-                                    title="Toggle Monitoring Active/Disabled"
-                                >
-                                    <span :class="officer.is_active ? 'text-emerald-400' : 'text-slate-600'">●</span>
-                                    <span>{{ officer.is_active ? 'ACTIVE' : 'DISABLED' }}</span>
-                                </button>
-
-                                <!-- Action Buttons: Edit & Delete -->
-                                <div class="flex items-center space-x-1">
-                                    <button 
-                                        @click="openEditOfficerModal(officer)"
-                                        class="p-1.5 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-blue-300 text-xs transition"
-                                        title="Edit Officer Record"
-                                    >
-                                        ✏️ Edit
-                                    </button>
-                                    <button 
-                                        @click="deleteOfficerConfirm(officer)"
-                                        class="p-1.5 rounded-lg bg-red-950 hover:bg-red-900 border border-red-500/40 text-red-300 text-xs transition"
-                                        title="Delete from MySQL"
-                                    >
-                                        🗑️ Delete
-                                    </button>
-                                </div>
                             </div>
-
                         </div>
                     </div>
-                </div>
 
-                <!-- Modal Footer Info -->
-                <div class="bg-slate-950 px-4 py-2 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between font-mono shrink-0">
-                    <span>Total Database Units: {{ rosterOfficers.length }}</span>
-                    <span>Direct MySQL Sync Enabled</span>
+                    <!-- Roster Panel Footer Info -->
+                    <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between font-mono shrink-0">
+                        <span>Units in DB: {{ rosterOfficers.length }}</span>
+                        <span>Direct MySQL Sync Active</span>
+                    </div>
+
                 </div>
 
             </div>
-        </div>
 
-        <!-- SUB-MODAL: ADD / EDIT OFFICER FORM -->
-        <div v-if="showOfficerFormModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[60] flex items-center justify-center p-3 sm:p-4">
+        </aside>
+
+        <!-- SUB-DRAWER / MODAL: ADD / EDIT OFFICER FORM (OVERLAY ON TOP OF ROSTER DRAWER) -->
+        <div v-if="showOfficerFormModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[60] flex items-center justify-center p-3 sm:p-4">
             <div class="bg-[#0b1320] border border-amber-500/60 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
                 
                 <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
@@ -2161,11 +2432,6 @@ const submitFeedbackForm = async () => {
                                 <option value="LSPD">LSPD (Police)</option>
                                 <option value="BCSO">BCSO (Sheriff)</option>
                                 <option value="SASP">SASP (State Police)</option>
-                                <option value="SWAT">SWAT (Tactical)</option>
-                                <option value="AIR_SUPPORT">AIR-1 (Aviation)</option>
-                                <option value="TRAFFIC">TRAFFIC (Highway)</option>
-                                <option value="K9">K9 (Canine)</option>
-                                <option value="DISPATCH">DISPATCH (Central)</option>
                             </select>
                         </div>
                         <div>
@@ -2225,162 +2491,6 @@ const submitFeedbackForm = async () => {
                             class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-amber-600/30 font-mono"
                         >
                             💾 Save to MySQL
-                        </button>
-                    </div>
-                </form>
-
-            </div>
-        </div>
-
-        <!-- VISITOR FEEDBACK & CHANNEL REQUEST MODAL (DISCORD NOTIFICATION) -->
-        <div v-if="isFeedbackModalOpen" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
-            <div class="bg-[#090f1a] border border-sky-500/50 rounded-2xl w-full max-w-lg shadow-2xl shadow-sky-950/40 overflow-hidden flex flex-col">
-                
-                <!-- Modal Header -->
-                <div class="bg-slate-900 px-4 py-3 border-b border-sky-500/30 flex items-center justify-between">
-                    <div class="flex items-center space-x-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-sky-950/80 border border-sky-500/50 flex items-center justify-center text-base">
-                            💬
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-bold text-sky-400 tracking-wider uppercase font-mono">
-                                MASUKAN & USULAN STREAMER
-                            </h3>
-                            <p class="text-[11px] text-slate-400">Pesan akan diteruskan langsung ke Discord Tim Dispatch</p>
-                        </div>
-                    </div>
-                    <button @click="isFeedbackModalOpen = false" class="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-slate-800">
-                        ✕
-                    </button>
-                </div>
-
-                <!-- Success Toast -->
-                <div v-if="feedbackSuccessToast" class="bg-emerald-950/90 border-b border-emerald-500/40 px-4 py-2 text-xs text-emerald-300 font-mono text-center flex items-center justify-center gap-2">
-                    <span>✓</span>
-                    <span>{{ feedbackSuccessToast }}</span>
-                </div>
-
-                <form @submit.prevent="submitFeedbackForm" class="p-4 bg-slate-950 flex flex-col gap-3.5 max-h-[80vh] overflow-y-auto scrollbar-thin">
-                    
-                    <!-- Feedback Type Selector -->
-                    <div>
-                        <label class="text-xs font-semibold text-slate-300 block mb-1.5 font-mono">Kategori Masukan *</label>
-                        <div class="grid grid-cols-2 gap-1.5">
-                            <button 
-                                type="button" 
-                                @click="feedbackForm.type = 'CHANNEL_REQUEST'"
-                                :class="feedbackForm.type === 'CHANNEL_REQUEST' ? 'bg-sky-600 text-white font-bold border-sky-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
-                                class="px-2.5 py-1.5 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
-                            >
-                                <span>➕</span>
-                                <span class="truncate">Usul Channel Baru</span>
-                            </button>
-                            <button 
-                                type="button" 
-                                @click="feedbackForm.type = 'DATA_CORRECTION'"
-                                :class="feedbackForm.type === 'DATA_CORRECTION' ? 'bg-amber-600 text-white font-bold border-amber-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
-                                class="px-2.5 py-1.5 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
-                            >
-                                <span>✏️</span>
-                                <span class="truncate">Koreksi Data / Pangkat</span>
-                            </button>
-                            <button 
-                                type="button" 
-                                @click="feedbackForm.type = 'BUG_REPORT'"
-                                :class="feedbackForm.type === 'BUG_REPORT' ? 'bg-red-600 text-white font-bold border-red-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
-                                class="px-2.5 py-1.5 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
-                            >
-                                <span>🐞</span>
-                                <span class="truncate">Lapor Bug / Kendala</span>
-                            </button>
-                            <button 
-                                type="button" 
-                                @click="feedbackForm.type = 'OTHER'"
-                                :class="feedbackForm.type === 'OTHER' ? 'bg-purple-600 text-white font-bold border-purple-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
-                                class="px-2.5 py-1.5 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
-                            >
-                                <span>💬</span>
-                                <span class="truncate">Lainnya</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Nama Pengirim (Opsional)</label>
-                            <input 
-                                v-model="feedbackForm.sender_name" 
-                                type="text" 
-                                placeholder="Warga / Nama Anda"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                            />
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Handle / Link YouTube</label>
-                            <input 
-                                v-model="feedbackForm.handle_or_url" 
-                                type="text" 
-                                placeholder="@NamaStreamer atau URL"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500 font-mono"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-2" v-if="feedbackForm.type === 'CHANNEL_REQUEST' || feedbackForm.type === 'DATA_CORRECTION'">
-                        <div class="col-span-2">
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Nama Karakter / Callsign</label>
-                            <input 
-                                v-model="feedbackForm.officer_name" 
-                                type="text" 
-                                placeholder="Ofc. Budi / 1-ADAM-12"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                            />
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Departemen</label>
-                            <select 
-                                v-model="feedbackForm.department"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                            >
-                                <option value="LSPD">LSPD</option>
-                                <option value="BCSO">BCSO</option>
-                                <option value="SASP">SASP</option>
-                                <option value="SWAT">SWAT</option>
-                                <option value="AIR_SUPPORT">AIR-1</option>
-                                <option value="TRAFFIC">TRAFFIC</option>
-                                <option value="K9">K9</option>
-                                <option value="DISPATCH">DISPATCH</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="text-xs font-semibold text-slate-300 block mb-1">Pesan / Catatan Detail *</label>
-                        <textarea 
-                            v-model="feedbackForm.message" 
-                            required
-                            rows="3"
-                            :placeholder="feedbackForm.type === 'CHANNEL_REQUEST' ? 'Jelaskan jadwal live rutin streamer atau link channel YouTube resminya...' : (feedbackForm.type === 'DATA_CORRECTION' ? 'Jelaskan data apa yang perlu dikoreksi (misal pangkat naik jadi Sergeant, ganti callsign)...' : 'Tuliskan detail masukan atau kendala Anda...')"
-                            class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
-                        ></textarea>
-                    </div>
-
-                    <div class="mt-2 flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
-                        <button 
-                            type="button" 
-                            @click="isFeedbackModalOpen = false" 
-                            class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg"
-                        >
-                            Batal
-                        </button>
-                        <button 
-                            type="submit" 
-                            :disabled="isSubmittingFeedback"
-                            class="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-lg shadow-sky-600/30 flex items-center gap-1.5"
-                        >
-                            <span v-if="isSubmittingFeedback" class="animate-spin">🔄</span>
-                            <span v-else>🚀</span>
-                            <span>{{ isSubmittingFeedback ? 'Mengirim...' : 'Kirim ke Discord' }}</span>
                         </button>
                     </div>
                 </form>
