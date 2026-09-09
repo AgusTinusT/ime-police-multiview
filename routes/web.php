@@ -26,6 +26,8 @@ Route::prefix('api/v1')->group(function () {
     Route::get('/streams', [PoliceCommandController::class, 'apiStreams']);
     Route::post('/sync', [PoliceCommandController::class, 'apiSync']);
     Route::match(['get', 'post'], '/search-live', [PoliceCommandController::class, 'apiSearchLive']);
+    Route::get('/stream-details', [PoliceCommandController::class, 'apiStreamDetails']);
+    Route::match(['get', 'post'], '/telemetry', [PoliceCommandController::class, 'apiTelemetry']);
     Route::post('/feedback', [FeedbackController::class, 'submit'])->middleware('throttle:5,1');
 });
 

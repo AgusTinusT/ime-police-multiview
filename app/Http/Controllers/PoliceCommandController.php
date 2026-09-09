@@ -184,6 +184,63 @@ class PoliceCommandController extends Controller
     }
 
     /**
+     * API: Get full stream details (title, full description, viewers) by video ID.
+     */
+    public function apiStreamDetails(Request $request, \App\Services\YouTubeScraperService $scraperService)
+    {
+        $videoId = $request->query('video_id') ?? $request->input('video_id') ?? '';
+        $videoId = trim($videoId);
+
+        if (strlen($videoId) !== 11) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Video ID tidak valid.',
+            ], 422);
+        }
+
+        $details = $scraperService->scrapeVideoDetails($videoId);
+
+        if (!$details) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengambil detail video YouTube.',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $details,
+        ]);
+    }
+
+    /**
+     * API: Batch Live Telemetry (viewers count & live status) for active stream video IDs.
+     */
+    public function apiTelemetry(Request $request, \App\Services\YouTubeScraperService $scraperService)
+    {
+        $videoIds = $request->input('video_ids') ?? $request->query('video_ids') ?? [];
+        if (is_string($videoIds)) {
+            $videoIds = explode(',', $videoIds);
+        }
+
+        if (!is_array($videoIds)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'video_ids must be an array or comma-separated string.',
+            ], 422);
+        }
+
+        $telemetry = $scraperService->getBatchStreamsTelemetry($videoIds);
+
+        return response()->json([
+            'status' => 'success',
+            'count' => count($telemetry),
+            'data' => $telemetry,
+            'synced_at' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
      * Sync active stream statuses with a 2-minute cooldown lock.
      */
     protected function syncStreamsIfNeeded(): void

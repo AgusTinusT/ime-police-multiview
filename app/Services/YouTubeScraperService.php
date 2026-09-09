@@ -4,9 +4,90 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class YouTubeScraperService
 {
+    /**
+     * Get live telemetry (viewers count & status) for a batch of video IDs with 60s cache.
+     *
+     * @param array $videoIds Array of YouTube video IDs
+     * @return array Map of videoId => telemetry data
+     */
+    public function getBatchStreamsTelemetry(array $videoIds): array
+    {
+        // 1. Filter and sanitize 11-char video IDs (max 30 per request)
+        $cleanIds = array_values(array_unique(array_filter(array_map('trim', $videoIds), function ($id) {
+            return strlen($id) === 11 && preg_match('/^[A-Za-z0-9_-]{11}$/', $id);
+        })));
+        $cleanIds = array_slice($cleanIds, 0, 30);
+
+        if (empty($cleanIds)) {
+            return [];
+        }
+
+        $results = [];
+        $uncachedIds = [];
+
+        // 2. Check server-side cache for each video ID (60s TTL)
+        foreach ($cleanIds as $id) {
+            $cached = Cache::get("yt_telemetry_{$id}");
+            if ($cached !== null && is_array($cached)) {
+                $results[$id] = $cached;
+            } else {
+                $uncachedIds[] = $id;
+            }
+        }
+
+        // 3. Parallel fetch uncached video IDs using Http::pool
+        if (!empty($uncachedIds)) {
+            try {
+                $responses = Http::pool(function ($pool) use ($uncachedIds) {
+                    foreach ($uncachedIds as $id) {
+                        $pool->as($id)->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+                        ])->timeout(6)->get("https://www.youtube.com/watch?v={$id}");
+                    }
+                });
+
+                foreach ($uncachedIds as $id) {
+                    $res = $responses[$id] ?? null;
+                    if ($res && $res->successful()) {
+                        $body = $res->body();
+                        $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, 'STREAM_OFFLINE');
+                        $isPlayable = str_contains($body, '"playabilityStatus":{"status":"OK"');
+                        $viewersCount = $this->extractViewersCount($body);
+
+                        $telemetry = [
+                            'video_id' => $id,
+                            'viewers_count' => $viewersCount,
+                            'status' => ($isPlayable && !$isOffline) ? 'LIVE' : 'OFFLINE',
+                            'updated_at' => now()->toIso8601String(),
+                        ];
+
+                        // Cache result for 60 seconds
+                        Cache::put("yt_telemetry_{$id}", $telemetry, 60);
+                        $results[$id] = $telemetry;
+                    } else {
+                        // Fallback placeholder with short 20s cache
+                        $fallback = [
+                            'video_id' => $id,
+                            'viewers_count' => 0,
+                            'status' => 'LIVE',
+                            'updated_at' => now()->toIso8601String(),
+                        ];
+                        Cache::put("yt_telemetry_{$id}", $fallback, 20);
+                        $results[$id] = $fallback;
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error("Batch stream telemetry fetch failed: " . $e->getMessage());
+            }
+        }
+
+        return $results;
+    }
     /**
      * Check if a YouTube channel is currently streaming live.
      *
@@ -286,6 +367,44 @@ class YouTubeScraperService
     }
 
     /**
+     * Fetch complete details (full description, title, viewers) for a specific video ID.
+     */
+    public function scrapeVideoDetails(string $videoId): ?array
+    {
+        $cleanId = trim($videoId);
+        if (strlen($cleanId) !== 11) {
+            return null;
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            ])->timeout(8)->get("https://www.youtube.com/watch?v={$cleanId}");
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $body = $response->body();
+            $title = $this->extractTitle($body);
+            $description = $this->extractDescription($body);
+            $viewersCount = $this->extractViewersCount($body);
+
+            return [
+                'video_id' => $cleanId,
+                'title' => $title,
+                'description' => $description,
+                'viewers_count' => $viewersCount,
+                'thumbnail_url' => "https://i.ytimg.com/vi/{$cleanId}/hqdefault.jpg",
+            ];
+        } catch (\Exception $e) {
+            Log::error("Failed to scrape video details for {$cleanId}: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Extract title from YouTube HTML.
      */
     private function extractTitle(string $html): ?string
@@ -298,16 +417,39 @@ class YouTubeScraperService
     }
 
     /**
-     * Extract stream description from YouTube HTML.
+     * Extract stream description from YouTube HTML with full multi-line formatting preserved.
      */
-    private function extractDescription(string $html): string
+    public function extractDescription(string $html): string
     {
+        // 1. Try to extract shortDescription from JSON (contains full newlines and unescaped text)
+        if (preg_match('/"shortDescription":\s*"((?:[^"\\\\]|\\\\.)*)"/s', $html, $matches)) {
+            $decoded = json_decode('"' . $matches[1] . '"');
+            if (is_string($decoded) && trim($decoded) !== '') {
+                return trim($decoded);
+            }
+            $stripped = stripcslashes($matches[1]);
+            if (trim($stripped) !== '') {
+                return trim($stripped);
+            }
+        }
+
+        // 2. Try to extract attributedDescription / description text
+        if (preg_match('/"attributedDescription":\s*\{\s*"content":\s*"((?:[^"\\\\]|\\\\.)*)"/s', $html, $matches)) {
+            $decoded = json_decode('"' . $matches[1] . '"');
+            if (is_string($decoded) && trim($decoded) !== '') {
+                return trim($decoded);
+            }
+            $stripped = stripcslashes($matches[1]);
+            if (trim($stripped) !== '') {
+                return trim($stripped);
+            }
+        }
+
+        // 3. Fallback to meta tag if JSON is not present
         if (preg_match('/<meta name="description" content="([^"]*)">/i', $html, $matches)) {
-            return html_entity_decode($matches[1], ENT_QUOTES, 'UTF-8');
+            return trim(html_entity_decode($matches[1], ENT_QUOTES, 'UTF-8'));
         }
-        if (preg_match('/"shortDescription":"(.*?)"(?=,"isCrawlable")/s', $html, $matches)) {
-            return stripcslashes($matches[1]);
-        }
+
         return '';
     }
 
