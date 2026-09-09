@@ -171,8 +171,8 @@ QUEUE_CONNECTION=database
 
 ### 5.4. Install Dependensi PHP & Build Frontend (Inertia/Vue)
 ```bash
-# 1. Install dependensi PHP untuk production
-composer install --optimize-autoloader --no-dev
+# 1. Install dependensi PHP untuk production (gunakan --ignore-platform-reqs untuk kompatibilitas Windows -> Linux)
+composer install --optimize-autoloader --no-dev --ignore-platform-reqs
 
 # 2. Generate Application Key
 php artisan key:generate
