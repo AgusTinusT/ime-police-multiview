@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PoliceCommandController;
 use App\Http\Controllers\OfficerManagementController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ProfileController;
 use Inertia\Inertia;
 
@@ -20,11 +21,13 @@ Route::get('/register', function () {
     return redirect()->route('home');
 });
 
-// REST API Endpoints (Public Stream Telemetry)
+// REST API Endpoints (Public Stream Telemetry & Visitor Feedback)
 Route::prefix('api/v1')->group(function () {
     Route::get('/streams', [PoliceCommandController::class, 'apiStreams']);
     Route::post('/sync', [PoliceCommandController::class, 'apiSync']);
+    Route::post('/feedback', [FeedbackController::class, 'submit'])->middleware('throttle:5,1');
 });
+
 
 // Admin-Protected Officer Master Management API (MySQL)
 Route::middleware('auth')->prefix('api/v1/officers')->group(function () {

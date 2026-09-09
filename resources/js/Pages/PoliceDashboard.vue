@@ -918,6 +918,64 @@ const handleAdminLogout = () => {
     router.post('/logout');
 };
 
+// Visitor Feedback & Channel Request State & Methods (Option 1 Discord Webhook)
+const isFeedbackModalOpen = ref(false);
+const isSubmittingFeedback = ref(false);
+const feedbackSuccessToast = ref('');
+const feedbackForm = ref({
+    type: 'CHANNEL_REQUEST', // 'CHANNEL_REQUEST', 'DATA_CORRECTION', 'BUG_REPORT', 'OTHER'
+    sender_name: '',
+    handle_or_url: '',
+    officer_name: '',
+    callsign: '',
+    department: 'LSPD',
+    message: '',
+});
+
+const openFeedbackModal = (type = 'CHANNEL_REQUEST') => {
+    feedbackForm.value = {
+        type: type,
+        sender_name: '',
+        handle_or_url: '',
+        officer_name: '',
+        callsign: '',
+        department: 'LSPD',
+        message: '',
+    };
+    feedbackSuccessToast.value = '';
+    isFeedbackModalOpen.value = true;
+};
+
+const submitFeedbackForm = async () => {
+    isSubmittingFeedback.value = true;
+    try {
+        const res = await fetch('/api/v1/feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-XSRF-TOKEN': getCsrfToken(),
+            },
+            body: JSON.stringify(feedbackForm.value),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            feedbackSuccessToast.value = data.message || 'Laporan berhasil dikirim ke Command Center!';
+            setTimeout(() => {
+                isFeedbackModalOpen.value = false;
+                feedbackSuccessToast.value = '';
+            }, 3000);
+        } else {
+            alert(data.message || 'Gagal mengirim masukan. Silakan coba lagi.');
+        }
+    } catch (e) {
+        alert('Terjadi kesalahan jaringan saat mengirim laporan.');
+    } finally {
+        isSubmittingFeedback.value = false;
+    }
+};
+
+
 
 </script>
 
@@ -1056,8 +1114,18 @@ const handleAdminLogout = () => {
                     </button>
                 </div>
 
-                <!-- Action Buttons: Quick Add, Sync, Fullscreen -->
-                <div class="flex items-center space-x-1">
+                <!-- Action Buttons: Feedback, Quick Add, Sync, Fullscreen -->
+                <div class="flex items-center space-x-1.5">
+                    <!-- Visitor Feedback / Channel Request Button -->
+                    <button 
+                        @click="openFeedbackModal('CHANNEL_REQUEST')"
+                        class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-sky-900/40 text-sky-300 border border-sky-500/30 transition flex items-center gap-1.5 shadow-sm"
+                        title="Usul Streamer Baru, Koreksi Pangkat/Callsign, atau Lapor Kendala"
+                    >
+                        <span>💬</span>
+                        <span class="hidden sm:inline">Lapor / Usul</span>
+                    </button>
+
                     <button 
                         @click="isQuickAddModalOpen = true"
                         class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-emerald-900/40 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1.5"
@@ -2157,6 +2225,162 @@ const handleAdminLogout = () => {
                             class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-amber-600/30 font-mono"
                         >
                             💾 Save to MySQL
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- VISITOR FEEDBACK & CHANNEL REQUEST MODAL (DISCORD NOTIFICATION) -->
+        <div v-if="isFeedbackModalOpen" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-[#090f1a] border border-sky-500/50 rounded-2xl w-full max-w-lg shadow-2xl shadow-sky-950/40 overflow-hidden flex flex-col">
+                
+                <!-- Modal Header -->
+                <div class="bg-slate-900 px-4 py-3 border-b border-sky-500/30 flex items-center justify-between">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-sky-950/80 border border-sky-500/50 flex items-center justify-center text-base">
+                            💬
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-sky-400 tracking-wider uppercase font-mono">
+                                MASUKAN & USULAN STREAMER
+                            </h3>
+                            <p class="text-[11px] text-slate-400">Pesan akan diteruskan langsung ke Discord Tim Dispatch</p>
+                        </div>
+                    </div>
+                    <button @click="isFeedbackModalOpen = false" class="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-slate-800">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Success Toast -->
+                <div v-if="feedbackSuccessToast" class="bg-emerald-950/90 border-b border-emerald-500/40 px-4 py-2 text-xs text-emerald-300 font-mono text-center flex items-center justify-center gap-2">
+                    <span>✓</span>
+                    <span>{{ feedbackSuccessToast }}</span>
+                </div>
+
+                <form @submit.prevent="submitFeedbackForm" class="p-4 bg-slate-950 flex flex-col gap-3.5 max-h-[80vh] overflow-y-auto scrollbar-thin">
+                    
+                    <!-- Feedback Type Selector -->
+                    <div>
+                        <label class="text-xs font-semibold text-slate-300 block mb-1.5 font-mono">Kategori Masukan *</label>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <button 
+                                type="button" 
+                                @click="feedbackForm.type = 'CHANNEL_REQUEST'"
+                                :class="feedbackForm.type === 'CHANNEL_REQUEST' ? 'bg-sky-600 text-white font-bold border-sky-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                class="px-2.5 py-1.5 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
+                            >
+                                <span>➕</span>
+                                <span class="truncate">Usul Channel Baru</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                @click="feedbackForm.type = 'DATA_CORRECTION'"
+                                :class="feedbackForm.type === 'DATA_CORRECTION' ? 'bg-amber-600 text-white font-bold border-amber-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                class="px-2.5 py-1.5 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
+                            >
+                                <span>✏️</span>
+                                <span class="truncate">Koreksi Data / Pangkat</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                @click="feedbackForm.type = 'BUG_REPORT'"
+                                :class="feedbackForm.type === 'BUG_REPORT' ? 'bg-red-600 text-white font-bold border-red-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                class="px-2.5 py-1.5 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
+                            >
+                                <span>🐞</span>
+                                <span class="truncate">Lapor Bug / Kendala</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                @click="feedbackForm.type = 'OTHER'"
+                                :class="feedbackForm.type === 'OTHER' ? 'bg-purple-600 text-white font-bold border-purple-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                class="px-2.5 py-1.5 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
+                            >
+                                <span>💬</span>
+                                <span class="truncate">Lainnya</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Nama Pengirim (Opsional)</label>
+                            <input 
+                                v-model="feedbackForm.sender_name" 
+                                type="text" 
+                                placeholder="Warga / Nama Anda"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                            />
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Handle / Link YouTube</label>
+                            <input 
+                                v-model="feedbackForm.handle_or_url" 
+                                type="text" 
+                                placeholder="@NamaStreamer atau URL"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500 font-mono"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2" v-if="feedbackForm.type === 'CHANNEL_REQUEST' || feedbackForm.type === 'DATA_CORRECTION'">
+                        <div class="col-span-2">
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Nama Karakter / Callsign</label>
+                            <input 
+                                v-model="feedbackForm.officer_name" 
+                                type="text" 
+                                placeholder="Ofc. Budi / 1-ADAM-12"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                            />
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Departemen</label>
+                            <select 
+                                v-model="feedbackForm.department"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                            >
+                                <option value="LSPD">LSPD</option>
+                                <option value="BCSO">BCSO</option>
+                                <option value="SASP">SASP</option>
+                                <option value="SWAT">SWAT</option>
+                                <option value="AIR_SUPPORT">AIR-1</option>
+                                <option value="TRAFFIC">TRAFFIC</option>
+                                <option value="K9">K9</option>
+                                <option value="DISPATCH">DISPATCH</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-slate-300 block mb-1">Pesan / Catatan Detail *</label>
+                        <textarea 
+                            v-model="feedbackForm.message" 
+                            required
+                            rows="3"
+                            :placeholder="feedbackForm.type === 'CHANNEL_REQUEST' ? 'Jelaskan jadwal live rutin streamer atau link channel YouTube resminya...' : (feedbackForm.type === 'DATA_CORRECTION' ? 'Jelaskan data apa yang perlu dikoreksi (misal pangkat naik jadi Sergeant, ganti callsign)...' : 'Tuliskan detail masukan atau kendala Anda...')"
+                            class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                        ></textarea>
+                    </div>
+
+                    <div class="mt-2 flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+                        <button 
+                            type="button" 
+                            @click="isFeedbackModalOpen = false" 
+                            class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg"
+                        >
+                            Batal
+                        </button>
+                        <button 
+                            type="submit" 
+                            :disabled="isSubmittingFeedback"
+                            class="px-4 py-1.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-lg shadow-sky-600/30 flex items-center gap-1.5"
+                        >
+                            <span v-if="isSubmittingFeedback" class="animate-spin">🔄</span>
+                            <span v-else>🚀</span>
+                            <span>{{ isSubmittingFeedback ? 'Mengirim...' : 'Kirim ke Discord' }}</span>
                         </button>
                     </div>
                 </form>
