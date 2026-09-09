@@ -136,9 +136,9 @@ cd /var/www/ime-police-multiview
 ```
 
 ### 5.2. Atur Hak Akses Folder (Permissions)
-Laravel membutuhkan izin tulis (*write permission*) untuk folder `storage` dan `bootstrap/cache`:
+Laravel membutuhkan izin tulis (*write permission*) untuk folder `storage` dan `bootstrap/cache`, sementara file project tetap milik akun SSH Anda:
 ```bash
-sudo chown -R www-data:www-data /var/www/ime-police-multiview
+sudo chown -R $USER:www-data /var/www/ime-police-multiview
 sudo chmod -R 775 /var/www/ime-police-multiview/storage
 sudo chmod -R 775 /var/www/ime-police-multiview/bootstrap/cache
 ```
