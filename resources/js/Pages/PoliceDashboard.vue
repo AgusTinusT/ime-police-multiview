@@ -2,6 +2,40 @@
 import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 
+// SVG Icon Assets
+import iconLspd from '@/Components/Icons/LSPD_HD.svg';
+import iconBcso from '@/Components/Icons/Logo_LSCSD.svg';
+import iconSasp from '@/Components/Icons/SASP_HD.svg';
+import iconAllUnits from '@/Components/Icons/category-svgrepo-com.svg';
+import iconPersonal from '@/Components/Icons/star-svgrepo-com.svg';
+import iconSaver from '@/Components/Icons/gauge-low-svgrepo-com.svg';
+import iconPlayAll from '@/Components/Icons/play-full-svgrepo-com.svg';
+import iconMute from '@/Components/Icons/mute-svgrepo-com.svg';
+import iconUnmute from '@/Components/Icons/unmute-svgrepo-com.svg';
+import iconFeedback from '@/Components/Icons/report-svgrepo-com.svg';
+import iconQuickAdd from '@/Components/Icons/button-plus-svgrepo-com.svg';
+import iconFullscreen from '@/Components/Icons/full-screen-svgrepo-com.svg';
+import iconExitFullscreen from '@/Components/Icons/minimize-svgrepo-com.svg';
+import iconFocus from '@/Components/Icons/focus-point-round-844-svgrepo-com.svg';
+import iconLogout from '@/Components/Icons/leave-svgrepo-com.svg';
+import iconSearch from '@/Components/Icons/search-svgrepo-com.svg';
+import iconRefresh from '@/Components/Icons/refresh-cw-svgrepo-com.svg';
+import iconPinPlus from '@/Components/Icons/star-line-svgrepo-com.svg';
+import iconPinMinus from '@/Components/Icons/star-svgrepo-com.svg';
+import iconEdit from '@/Components/Icons/edit-2-svgrepo-com.svg';
+import iconDelete from '@/Components/Icons/delete-2-svgrepo-com.svg';
+import iconClock from '@/Components/Icons/time-svgrepo-com.svg';
+import iconUser from '@/Components/Icons/user-svgrepo-com.svg';
+import iconRoster from '@/Components/Icons/doc-svgrepo-com.svg';
+import iconBug from '@/Components/Icons/bug-svgrepo-com.svg';
+import iconExternal from '@/Components/Icons/link-external-svgrepo-com.svg';
+import iconRadio from '@/Components/Icons/radio-svgrepo-com.svg';
+import iconReset from '@/Components/Icons/reset-svgrepo-com.svg';
+import iconSend from '@/Components/Icons/send-svgrepo-com.svg';
+import iconUrl from '@/Components/Icons/url-checker-svgrepo-com.svg';
+import iconChat from '@/Components/Icons/chat-svgrepo-com.svg';
+import iconChatRemove from '@/Components/Icons/chat-remove-svgrepo-com.svg';
+
 const props = defineProps({
     initialStreams: {
         type: Array,
@@ -491,12 +525,22 @@ onUnmounted(() => {
 
 // Department List & Color Definitions (Core Departments + Local Personal Category)
 const departments = [
-    { id: 'ALL', name: 'ALL UNITS', icon: '🛡️', color: 'border-slate-600 text-slate-300' },
-    { id: 'PERSONAL', name: 'PERSONAL', icon: '📌', color: 'border-purple-500 text-purple-300 bg-purple-950/40' },
-    { id: 'LSPD', name: 'LSPD', icon: '👮', color: 'border-blue-500 text-blue-400 bg-blue-950/40' },
-    { id: 'BCSO', name: 'BCSO', icon: '⭐', color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
-    { id: 'SASP', name: 'SASP', icon: '🦅', color: 'border-teal-500 text-teal-400 bg-teal-950/40' },
+    { id: 'ALL', name: 'ALL UNITS', icon: iconAllUnits, isSvg: true, color: 'border-slate-600 text-slate-300' },
+    { id: 'PERSONAL', name: 'PERSONAL', icon: iconPersonal, isSvg: true, color: 'border-purple-500 text-purple-300 bg-purple-950/40' },
+    { id: 'LSPD', name: 'LSPD', icon: iconLspd, isSvg: true, color: 'border-blue-500 text-blue-400 bg-blue-950/40' },
+    { id: 'BCSO', name: 'BCSO', icon: iconBcso, isSvg: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
+    { id: 'SASP', name: 'SASP', icon: iconSasp, isSvg: true, color: 'border-teal-500 text-teal-400 bg-teal-950/40' },
 ];
+
+const getDeptIcon = (dept) => {
+    switch (dept) {
+        case 'LSPD': return iconLspd;
+        case 'BCSO': return iconBcso;
+        case 'SASP': return iconSasp;
+        case 'PERSONAL': return iconPersonal;
+        default: return iconAllUnits;
+    }
+};
 
 // Department styling helper
 const getDeptBadgeClass = (dept) => {
@@ -1382,8 +1426,8 @@ const submitFeedbackForm = async () => {
             
             <!-- Left Branding: IME Roleplay Police Division -->
             <div class="flex items-center space-x-3">
-                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-900 to-slate-900 border border-blue-500/40 shadow-inner">
-                    <span class="text-xl">🚔</span>
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-900 to-slate-900 border border-blue-500/40 shadow-inner p-1.5">
+                    <img :src="iconLspd" class="w-full h-full object-contain brightness-0 invert" alt="LSPD Badge" />
                 </div>
                 <div class="flex flex-col">
                     <span class="text-sm font-black tracking-wider text-blue-400 uppercase leading-tight">IME ROLEPLAY</span>
@@ -1395,7 +1439,7 @@ const submitFeedbackForm = async () => {
             <div class="hidden lg:flex items-center space-x-4 bg-slate-950/80 px-4 py-1.5 rounded-lg border border-slate-800/80 shadow-inner">
                 <!-- Clock -->
                 <div class="flex items-center space-x-2 border-r border-slate-800 pr-3">
-                    <span class="text-slate-500 text-xs">🕒</span>
+                    <img :src="iconClock" class="w-3.5 h-3.5 inline-block opacity-70 invert" alt="Clock" />
                     <span class="font-mono text-sm font-bold text-slate-200 tracking-wider">{{ currentTime }}</span>
                     <span class="text-[10px] text-blue-400 font-mono font-semibold uppercase">WIB (UTC+7)</span>
                 </div>
@@ -1456,10 +1500,11 @@ const submitFeedbackForm = async () => {
                     <button 
                         @click="selectedLayout = 'focus'" 
                         :class="selectedLayout === 'focus' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'"
-                        class="px-2.5 py-1 text-xs font-medium rounded transition"
+                        class="px-2.5 py-1 text-xs font-medium rounded transition flex items-center gap-1.5"
                         title="Focus Priority Lead + Right Sidebar Units"
                     >
-                        🎯 Focus
+                        <img :src="iconFocus" class="w-3.5 h-3.5 invert opacity-90" alt="Focus" />
+                        <span>Focus</span>
                     </button>
                 </div>
 
@@ -1471,7 +1516,7 @@ const submitFeedbackForm = async () => {
                         class="px-2.5 py-1 text-xs rounded transition flex items-center gap-1.5"
                         title="Saver Mode: Keeps feeds in standby until clicked to save bandwidth and prevent lag"
                     >
-                        <span>⚡</span>
+                        <img :src="iconSaver" class="w-3.5 h-3.5 invert" alt="Saver" />
                         <span class="hidden sm:inline">Saver</span>
                     </button>
                     <button 
@@ -1480,20 +1525,8 @@ const submitFeedbackForm = async () => {
                         class="px-2.5 py-1 text-xs rounded transition flex items-center gap-1.5"
                         title="Play All: Streams all video feeds simultaneously"
                     >
-                        <span>▶</span>
+                        <img :src="iconPlayAll" class="w-3 h-3 invert" alt="Play All" />
                         <span class="hidden sm:inline">Play All</span>
-                    </button>
-                </div>
-
-                <!-- Global Audio Actions -->
-                <div class="flex items-center space-x-1 bg-slate-900/90 rounded-lg p-0.5 border border-slate-800">
-                    <button 
-                        @click="muteAll" 
-                        class="px-2.5 py-1 text-xs rounded text-slate-300 hover:text-amber-400 hover:bg-slate-800 transition flex items-center gap-1 font-semibold"
-                        title="Mute All Feeds"
-                    >
-                        <span>🔇</span>
-                        <span class="hidden sm:inline">Mute All</span>
                     </button>
                 </div>
 
@@ -1505,7 +1538,7 @@ const submitFeedbackForm = async () => {
                         class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-sky-900/40 text-sky-300 border border-sky-500/30 transition flex items-center gap-1.5 shadow-sm"
                         title="Usul Streamer Baru, Koreksi Pangkat/Callsign, atau Lapor Kendala"
                     >
-                        <span>💬</span>
+                        <img :src="iconFeedback" class="w-3.5 h-3.5 invert opacity-90" alt="Feedback" />
                         <span class="hidden sm:inline">Lapor / Usul</span>
                     </button>
 
@@ -1514,7 +1547,7 @@ const submitFeedbackForm = async () => {
                         class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-emerald-900/40 text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1.5"
                         title="Add Custom YouTube Stream / Video ID"
                     >
-                        <span>➕</span>
+                        <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert opacity-90" alt="Quick Feed" />
                         <span class="hidden sm:inline">Quick Feed</span>
                     </button>
 
@@ -1525,7 +1558,7 @@ const submitFeedbackForm = async () => {
                         class="px-2.5 py-1 text-xs font-bold rounded border transition flex items-center gap-1.5"
                         :title="isFullscreen ? 'Exit Fullscreen Mode (Esc)' : 'Enter Fullscreen CCTV Wall Mode'"
                     >
-                        <span>{{ isFullscreen ? '🗗' : '⛶' }}</span>
+                        <img :src="isFullscreen ? iconExitFullscreen : iconFullscreen" class="w-3.5 h-3.5 invert opacity-90" alt="Fullscreen" />
                         <span class="hidden md:inline">{{ isFullscreen ? 'Exit Fullscreen' : 'Fullscreen' }}</span>
                     </button>
 
@@ -1536,7 +1569,7 @@ const submitFeedbackForm = async () => {
                             class="px-2.5 py-1 text-xs font-bold rounded bg-amber-600 hover:bg-amber-500 text-white shadow-md shadow-amber-600/30 transition flex items-center gap-1.5"
                             title="Manage Officer Database (MySQL)"
                         >
-                            <span>⚙️</span>
+                            <img :src="iconRoster" class="w-3.5 h-3.5 invert" alt="Roster" />
                             <span class="hidden sm:inline">Roster Manager</span>
                         </button>
                         <button 
@@ -1544,7 +1577,7 @@ const submitFeedbackForm = async () => {
                             class="px-2 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-red-900/50 text-red-400 hover:text-red-200 border border-slate-700 transition flex items-center gap-1"
                             title="Logout Admin Session"
                         >
-                            <span>🚪</span>
+                            <img :src="iconLogout" class="w-3.5 h-3.5 invert opacity-80" alt="Logout" />
                             <span class="hidden sm:inline">Logout</span>
                         </button>
                     </div>
@@ -1563,9 +1596,10 @@ const submitFeedbackForm = async () => {
                     :key="dept.id"
                     @click="selectedDepartment = dept.id"
                     :class="selectedDepartment === dept.id ? (dept.id === 'PERSONAL' ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400' : 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400') : (dept.id === 'PERSONAL' ? 'bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 border-purple-500/40' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800')"
-                    class="px-3 py-1 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap"
+                    class="px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap"
                 >
-                    <span>{{ dept.icon }}</span>
+                    <img v-if="dept.isSvg" :src="dept.icon" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90" alt="" />
+                    <span v-else>{{ dept.icon }}</span>
                     <span>{{ dept.name }}</span>
                     <span v-if="dept.id === 'PERSONAL'" class="text-[10px] px-1.5 py-0.2 bg-black/50 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30">
                         {{ totalPersonalCount }}/6
@@ -1584,9 +1618,9 @@ const submitFeedbackForm = async () => {
                         v-model="searchFilter" 
                         type="text" 
                         placeholder="Search callsign, badge, officer..."
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
-                    <span class="absolute left-2.5 top-1.5 text-xs text-slate-500">🔍</span>
+                    <img :src="iconSearch" class="absolute left-2.5 top-2.5 w-3.5 h-3.5 opacity-50 invert pointer-events-none" alt="Search" />
                 </div>
 
                 <!-- Tab Toggle: 10-8 Feeds vs 10-7 Roster -->
@@ -1594,17 +1628,19 @@ const submitFeedbackForm = async () => {
                     <button 
                         @click="activeTab = '10-8'"
                         :class="activeTab === '10-8' ? 'bg-emerald-600 text-white font-semibold' : 'text-slate-400 hover:text-slate-200'"
-                        class="px-2.5 py-1 text-xs rounded transition flex items-center gap-1"
+                        class="px-2.5 py-1 text-xs rounded transition flex items-center gap-1.5"
                     >
-                        <span>🔴 10-8 Feeds</span>
+                        <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                        <span>10-8 Feeds</span>
                         <span class="text-[10px] bg-black/40 px-1 rounded">{{ visibleStreams.length }}</span>
                     </button>
                     <button 
                         @click="activeTab = '10-7'"
                         :class="activeTab === '10-7' ? 'bg-slate-800 text-white font-semibold' : 'text-slate-400 hover:text-slate-200'"
-                        class="px-2.5 py-1 text-xs rounded transition flex items-center gap-1"
+                        class="px-2.5 py-1 text-xs rounded transition flex items-center gap-1.5"
                     >
-                        <span>⚪ 10-7 Roster</span>
+                        <img :src="iconRoster" class="w-3 h-3 invert opacity-70" alt="" />
+                        <span>10-7 Roster</span>
                         <span class="text-[10px] bg-black/40 px-1 rounded">{{ filteredOfflineOfficers.length }}</span>
                     </button>
                 </div>
@@ -1624,7 +1660,7 @@ const submitFeedbackForm = async () => {
                         class="w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-4 border"
                         :class="selectedDepartment === 'PERSONAL' ? 'bg-purple-950/60 border-purple-500/50 text-purple-300' : 'bg-blue-950/60 border-blue-500/30'"
                     >
-                        <span>{{ selectedDepartment === 'PERSONAL' ? '📌' : '📡' }}</span>
+                        <img :src="selectedDepartment === 'PERSONAL' ? iconPersonal : iconAllUnits" class="w-8 h-8 object-contain invert opacity-85" alt="" />
                     </div>
                     <h2 class="text-lg font-bold text-slate-200 tracking-wide uppercase">
                         {{ selectedDepartment === 'PERSONAL' ? 'TIDAK ADA STREAM LIVE DI KATEGORI PERSONAL' : 'NO ACTIVE 10-8 PATROL UNITS ONLINE' }}
@@ -1635,7 +1671,7 @@ const submitFeedbackForm = async () => {
                                 Terdapat {{ totalSavedPersonalCount }} feed / pin tersimpan di watchlist Personal, namun seluruhnya saat ini sedang offline (10-7) atau telah selesai streaming.
                             </template>
                             <template v-else>
-                                Kategori Personal menyimpan maksimal 6 video stream aktif secara lokal di browser Anda. Klik tombol 📌 pada video manapun atau gunakan tombol Quick Feed.
+                                Kategori Personal menyimpan maksimal 6 video stream aktif secara lokal di browser Anda. Klik tombol pin pada video manapun atau gunakan tombol Quick Feed.
                             </template>
                         </span>
                         <span v-else>
@@ -1648,21 +1684,24 @@ const submitFeedbackForm = async () => {
                             :class="selectedDepartment === 'PERSONAL' ? 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/30' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/30'"
                             class="px-4 py-2 text-white text-xs font-semibold rounded-lg shadow-lg transition flex items-center gap-2"
                         >
-                            <span>➕ Add Quick Feed</span>
+                            <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert" alt="" />
+                            <span>Add Quick Feed</span>
                         </button>
                         <button 
                             v-if="selectedDepartment === 'PERSONAL' && totalSavedPersonalCount > 0"
                             @click="clearAllPersonalStreams"
                             class="px-4 py-2 bg-red-950/80 hover:bg-red-900 text-red-300 text-xs font-semibold rounded-lg border border-red-500/40 transition flex items-center gap-2"
                         >
-                            <span>🗑️ Reset Watchlist Personal</span>
+                            <img :src="iconReset" class="w-3.5 h-3.5 invert" alt="" />
+                            <span>Reset Watchlist Personal</span>
                         </button>
                         <button 
                             v-if="selectedDepartment !== 'ALL'"
                             @click="selectedDepartment = 'ALL'" 
                             class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center gap-2"
                         >
-                            <span>🛡️ Lihat Semua Unit</span>
+                            <img :src="iconAllUnits" class="w-3.5 h-3.5 invert opacity-80" alt="" />
+                            <span>Lihat Semua Unit</span>
                         </button>
                     </div>
                 </div>
@@ -1692,7 +1731,8 @@ const submitFeedbackForm = async () => {
                                         :class="activeAudioVideoId === primaryFocusedStream.video_id ? 'bg-emerald-600 text-white shadow-emerald-500/50' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
                                         class="px-3 py-1 text-xs font-bold rounded transition flex items-center gap-1.5"
                                     >
-                                        <span>{{ activeAudioVideoId === primaryFocusedStream.video_id ? '🔊 LIVE AUDIO' : '🔇 MUTED' }}</span>
+                                        <img :src="activeAudioVideoId === primaryFocusedStream.video_id ? iconUnmute : iconMute" class="w-3.5 h-3.5 invert" alt="" />
+                                        <span>{{ activeAudioVideoId === primaryFocusedStream.video_id ? 'LIVE AUDIO' : 'MUTED' }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -1723,11 +1763,11 @@ const submitFeedbackForm = async () => {
                                     <button 
                                         @click="togglePersonalStream(primaryFocusedStream.video_id)" 
                                         :class="isPersonalStream(primaryFocusedStream.video_id) ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 border-purple-400' : 'bg-slate-800 text-slate-300 hover:text-purple-300 hover:bg-slate-700 border-slate-700'"
-                                        class="px-2.5 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1 font-mono border"
+                                        class="px-2.5 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1.5 font-mono border"
                                         :title="isPersonalStream(primaryFocusedStream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
                                     >
-                                        <span>📌</span>
-                                        <span class="hidden md:inline">{{ isPersonalStream(primaryFocusedStream.video_id) ? 'Personal' : '+Personal' }}</span>
+                                        <img :src="isPersonalStream(primaryFocusedStream.video_id) ? iconPinMinus : iconPinPlus" class="w-3.5 h-3.5 invert" alt="" />
+                                        <span class="hidden md:inline">Personal</span>
                                     </button>
 
                                     <!-- 1-Click YouTube Subscribe Popup Button -->
@@ -1747,10 +1787,10 @@ const submitFeedbackForm = async () => {
                                     <button 
                                         @click="isRightChatOpen = !isRightChatOpen" 
                                         :class="isRightChatOpen ? 'text-amber-400 font-bold bg-amber-950/40 border border-amber-500/30' : 'text-slate-400 hover:text-amber-300'"
-                                        class="font-mono text-xs px-2 py-0.5 rounded flex items-center gap-1 transition"
+                                        class="font-mono text-xs px-2 py-0.5 rounded flex items-center gap-1.5 transition"
                                         title="Toggle Live Chat in Support Column"
                                     >
-                                        <span>💬</span>
+                                        <img :src="isRightChatOpen ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-80" alt="" />
                                         <span>{{ isRightChatOpen ? 'Chat Open' : 'Live Chat' }}</span>
                                     </button>
                                     
@@ -1759,7 +1799,8 @@ const submitFeedbackForm = async () => {
                                         target="_blank" 
                                         class="text-blue-400 hover:text-blue-300 underline font-mono text-xs flex items-center gap-1"
                                     >
-                                        <span>Open YT ↗</span>
+                                        <img :src="iconExternal" class="w-3 h-3 invert opacity-80" alt="" />
+                                        <span>Open YT</span>
                                     </a>
                                 </div>
                             </div>
@@ -1768,7 +1809,7 @@ const submitFeedbackForm = async () => {
                             <div class="bg-[#080d16] px-4 py-2 border-t border-slate-800/80 flex flex-col gap-1">
                                 <div class="flex items-center justify-between gap-2">
                                     <div class="text-xs font-bold text-slate-200 truncate flex items-center gap-1.5 min-w-0">
-                                        <span class="text-blue-400 shrink-0">📺</span>
+                                        <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-70 shrink-0" alt="" />
                                         <span class="truncate" :title="primaryFocusedStream.title">{{ primaryFocusedStream.title }}</span>
                                     </div>
                                     <button 
@@ -1795,7 +1836,7 @@ const submitFeedbackForm = async () => {
                         <!-- Supporting Units & Chat Header Bar -->
                         <div class="bg-slate-900/90 px-3.5 py-2 rounded-xl border border-slate-800 flex items-center justify-between flex-wrap gap-2">
                             <div class="flex items-center space-x-2">
-                                <span class="text-sm">📡</span>
+                                <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-80" alt="" />
                                 <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">
                                     SUPPORT UNITS ({{ secondaryStreams.length }})
                                 </h3>
@@ -1809,7 +1850,7 @@ const submitFeedbackForm = async () => {
                                     class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1 transition"
                                     title="Toggle YouTube Live Chat for Lead Stream"
                                 >
-                                    <span>💬</span>
+                                    <img :src="isRightChatOpen ? iconChatRemove : iconChat" class="w-3 h-3 invert opacity-90" alt="" />
                                     <span>{{ isRightChatOpen ? 'HIDE CHAT' : 'LIVE CHAT' }}</span>
                                 </button>
 
@@ -1820,7 +1861,8 @@ const submitFeedbackForm = async () => {
                                     class="text-[10px] font-mono px-2 py-0.5 rounded border flex items-center gap-1 transition font-bold"
                                     :title="isDataSaverEnabled ? 'Click to Play All support feeds' : 'Click to enable Saver Mode'"
                                 >
-                                    <span>{{ isDataSaverEnabled ? '⚡ SAVER' : '▶ PLAY ALL' }}</span>
+                                    <img :src="isDataSaverEnabled ? iconSaver : iconPlayAll" class="w-3 h-3 invert" alt="" />
+                                    <span>{{ isDataSaverEnabled ? 'SAVER' : 'PLAY ALL' }}</span>
                                 </button>
                             </div>
                         </div>
@@ -1829,7 +1871,7 @@ const submitFeedbackForm = async () => {
                         <div v-if="isRightChatOpen && primaryFocusedStream" class="bg-slate-950 rounded-xl overflow-hidden border border-amber-500/50 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
                             <div class="bg-slate-900/95 px-3 py-1.5 flex items-center justify-between border-b border-slate-800 text-xs">
                                 <div class="flex items-center space-x-1.5 text-amber-300 font-bold truncate">
-                                    <span>💬</span>
+                                    <img :src="iconChat" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                                     <span class="truncate">Live Chat: {{ primaryFocusedStream.officer?.officer_name }}</span>
                                 </div>
                                 <button 
@@ -1876,26 +1918,26 @@ const submitFeedbackForm = async () => {
                                         <button 
                                             @click="togglePersonalStream(stream.video_id)" 
                                             :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/70 border border-purple-500/50' : 'text-slate-400 hover:text-purple-300 bg-slate-800'"
-                                            class="px-1.5 py-0.5 text-[10px] rounded transition font-mono"
+                                            class="p-1 rounded transition font-mono"
                                             :title="isPersonalStream(stream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
                                         >
-                                            📌
+                                            <img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" alt="" />
                                         </button>
                                         <button 
                                             v-if="activePreviewVideoIds.includes(stream.video_id) || !isDataSaverEnabled"
                                             @click="toggleAudio(stream.video_id)" 
                                             :class="activeAudioVideoId === stream.video_id ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-                                            class="px-1.5 py-0.5 text-[10px] rounded transition font-mono"
+                                            class="p-1 rounded transition font-mono"
                                             title="Audio Switch"
                                         >
-                                            {{ activeAudioVideoId === stream.video_id ? '🔊' : '🔇' }}
+                                            <img :src="activeAudioVideoId === stream.video_id ? iconUnmute : iconMute" class="w-3 h-3 invert" alt="" />
                                         </button>
                                         <button 
                                             @click="setFocusStream(stream.video_id)" 
-                                            class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow transition flex items-center gap-0.5"
+                                            class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow transition flex items-center gap-1"
                                             title="Set as Main Large Focus Video"
                                         >
-                                            <span>🎯</span>
+                                            <img :src="iconFocus" class="w-2.5 h-2.5 invert" alt="" />
                                             <span>Focus</span>
                                         </button>
                                     </div>
@@ -1947,7 +1989,8 @@ const submitFeedbackForm = async () => {
                                                 class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1 transform hover:scale-105"
                                                 title="Play stream"
                                             >
-                                                <span>▶ Play</span>
+                                                <img :src="iconPlayAll" class="w-3 h-3 invert" alt="" />
+                                                <span>Play</span>
                                             </button>
                                         </div>
                                     </template>
@@ -1963,11 +2006,16 @@ const submitFeedbackForm = async () => {
                                             class="text-red-400 hover:text-red-300 hover:bg-red-950/60 px-1 py-0.2 rounded transition flex items-center gap-0.5 font-bold"
                                             title="Subscribe to channel without leaving page"
                                         >
-                                            <span>🔴</span>
+                                            <span class="w-2 h-2 rounded-full bg-red-500 mr-0.5"></span>
                                             <span>Sub</span>
                                         </button>
-                                        <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="hover:text-white underline">
-                                            YT ↗
+                                        <a 
+                                            :href="`https://www.youtube.com/watch?v=${stream.video_id}`" 
+                                            target="_blank" 
+                                            class="p-1 hover:text-white text-slate-400 hover:bg-slate-800 rounded transition flex items-center justify-center"
+                                            title="Open on YouTube"
+                                        >
+                                            <img :src="iconExternal" class="w-3 h-3 invert opacity-70 hover:opacity-100" alt="Open on YouTube" />
                                         </a>
                                     </div>
                                 </div>
@@ -1985,26 +2033,27 @@ const submitFeedbackForm = async () => {
                     <!-- DATA SAVER HELPER BAR (When in Saver Mode) -->
                     <div v-if="isDataSaverEnabled" class="bg-slate-900/90 border border-slate-800/90 px-3.5 py-2.5 rounded-xl flex items-center justify-between flex-wrap gap-2.5 shadow-lg">
                         <div class="flex items-center space-x-2 text-xs font-mono">
-                            <span class="text-emerald-400 font-bold flex items-center gap-1">
-                                <span>⚡</span>
+                            <span class="text-emerald-400 font-bold flex items-center gap-1.5">
+                                <img :src="iconSaver" class="w-3.5 h-3.5 invert" alt="" />
                                 <span>SAVER MODE ACTIVE:</span>
                             </span>
-                            <span class="text-slate-300">Feeds are in standby. Click ▶ to play any feed, or switch to Play All.</span>
+                            <span class="text-slate-300">Feeds are in standby. Click Play to view any feed, or switch to Play All.</span>
                         </div>
                         <div class="flex items-center space-x-2 shrink-0">
                             <button 
                                 @click="disableDataSaverAndPlayAll" 
                                 class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow"
                             >
-                                <span>▶</span>
+                                <img :src="iconPlayAll" class="w-3 h-3 invert" alt="" />
                                 <span>Play All Videos</span>
                             </button>
                             <button 
                                 v-if="activeGridVideoIds.length > 0" 
                                 @click="enableDataSaver" 
-                                class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-mono transition"
+                                class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-mono transition flex items-center gap-1"
                             >
-                                <span>✕ Reset to Saver</span>
+                                <img :src="iconReset" class="w-3 h-3 invert opacity-70" alt="" />
+                                <span>Reset to Saver</span>
                             </button>
                         </div>
                     </div>
@@ -2039,7 +2088,8 @@ const submitFeedbackForm = async () => {
                                         class="px-2 py-0.5 text-[11px] rounded transition flex items-center gap-1 font-mono"
                                         :title="activeAudioVideoId === stream.video_id ? 'Mute audio' : 'Unmute audio (auto-mutes all others)'"
                                     >
-                                        <span>{{ activeAudioVideoId === stream.video_id ? '🔊 ON' : '🔇' }}</span>
+                                        <img :src="activeAudioVideoId === stream.video_id ? iconUnmute : iconMute" class="w-3 h-3 invert" alt="" />
+                                        <span>{{ activeAudioVideoId === stream.video_id ? 'ON' : 'MUTED' }}</span>
                                     </button>
 
                                     <!-- Top Personal Pin Button -->
@@ -2049,8 +2099,8 @@ const submitFeedbackForm = async () => {
                                         :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/70 border-purple-500/50' : 'text-slate-400 hover:text-purple-300 bg-slate-800 border-slate-700'"
                                         :title="isPersonalStream(stream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
                                     >
-                                        <span>📌</span>
-                                        <span class="text-[10px] hidden sm:inline">{{ isPersonalStream(stream.video_id) ? 'Personal' : '+Personal' }}</span>
+                                        <img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" alt="" />
+                                        <span class="text-[10px] hidden sm:inline">Personal</span>
                                     </button>
                                 </div>
                             </div>
@@ -2098,7 +2148,8 @@ const submitFeedbackForm = async () => {
                                                 class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-blue-600/40 transition flex items-center gap-1.5 transform hover:scale-105"
                                                 title="Focus as Main Screen"
                                             >
-                                                <span>🎯 Focus</span>
+                                                <img :src="iconFocus" class="w-3.5 h-3.5 invert" alt="" />
+                                                <span>Focus</span>
                                             </button>
                                             
                                             <button 
@@ -2106,7 +2157,8 @@ const submitFeedbackForm = async () => {
                                                 class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow transition flex items-center gap-1.5 hover:scale-105"
                                                 title="Play this stream"
                                             >
-                                                <span>▶ Play</span>
+                                                <img :src="iconPlayAll" class="w-3.5 h-3.5 invert" alt="" />
+                                                <span>Play</span>
                                             </button>
                                         </div>
                                     </div>
@@ -2130,30 +2182,30 @@ const submitFeedbackForm = async () => {
                                         class="p-1 hover:text-red-400 text-slate-400 hover:bg-red-950/40 rounded transition flex items-center gap-0.5 text-[10px] font-bold"
                                         title="Subscribe without leaving page"
                                     >
-                                        <span>🔴</span>
+                                        <span class="w-2 h-2 rounded-full bg-red-500 mr-0.5"></span>
                                         <span class="hidden sm:inline">Sub</span>
                                     </button>
                                     <button 
                                         @click="selectedLayout = 'focus'; setFocusStream(stream.video_id)"
-                                        class="p-1 hover:text-blue-400 text-slate-400 rounded hover:bg-slate-800 transition"
+                                        class="p-1.5 hover:text-blue-400 text-slate-400 rounded hover:bg-slate-800 transition"
                                         title="Focus This Stream as Tactical Lead"
                                     >
-                                        🎯
+                                        <img :src="iconFocus" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Focus" />
                                     </button>
                                     <button 
                                         @click="activeChatVideoId = activeChatVideoId === stream.video_id ? null : stream.video_id"
-                                        class="p-1 hover:text-amber-400 text-slate-400 rounded hover:bg-slate-800 transition"
+                                        class="p-1.5 hover:text-amber-400 text-slate-400 rounded hover:bg-slate-800 transition"
                                         title="Toggle YouTube Live Chat Drawer"
                                     >
-                                        💬
+                                        <img :src="activeChatVideoId === stream.video_id ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Chat" />
                                     </button>
                                     <a 
                                         :href="`https://www.youtube.com/watch?v=${stream.video_id}`" 
                                         target="_blank" 
-                                        class="p-1 hover:text-white text-slate-400 rounded hover:bg-slate-800 transition"
+                                        class="p-1.5 hover:text-white text-slate-400 rounded hover:bg-slate-800 transition"
                                         title="Open on YouTube"
                                     >
-                                        ↗
+                                        <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="External" />
                                     </a>
                                 </div>
                             </div>
@@ -2179,7 +2231,7 @@ const submitFeedbackForm = async () => {
                     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4 mb-4">
                         <div>
                             <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                                <span>📋</span>
+                                <img :src="iconRoster" class="w-4 h-4 invert opacity-90" alt="" />
                                 <span>IME ROLEPLAY POLICE DEPARTMENT ROSTER (10-7 OFFLINE)</span>
                             </h2>
                             <p class="text-xs text-slate-400 mt-0.5">
@@ -2198,9 +2250,9 @@ const submitFeedbackForm = async () => {
                             class="bg-[#0b121e] rounded-xl p-3.5 border border-slate-800 hover:border-slate-700 transition flex items-start space-x-3"
                         >
                             <!-- Avatar / Badge -->
-                            <div class="w-11 h-11 rounded-lg bg-slate-900 border border-slate-800 overflow-hidden shrink-0 flex items-center justify-center text-xl">
-                                <img v-if="officer.avatar_url" :src="officer.avatar_url" class="w-full h-full object-cover" />
-                                <span v-else>👮</span>
+                            <div class="w-11 h-11 rounded-lg bg-slate-900 border border-slate-800 overflow-hidden shrink-0 flex items-center justify-center p-1.5">
+                                <img v-if="officer.avatar_url" :src="officer.avatar_url" class="w-full h-full object-cover rounded" />
+                                <img v-else :src="getDeptIcon(officer.department)" class="w-full h-full object-contain" alt="" />
                             </div>
 
                             <!-- Officer Info -->
@@ -2229,18 +2281,19 @@ const submitFeedbackForm = async () => {
                                             :class="isPersonalStream(officer.channel_id || officer.handle) ? 'text-purple-300 bg-purple-950/70 border border-purple-500/50' : 'text-slate-400 hover:text-purple-300 hover:bg-slate-800'"
                                             :title="isPersonalStream(officer.channel_id || officer.handle) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
                                         >
-                                            <span>📌</span>
+                                            <img :src="isPersonalStream(officer.channel_id || officer.handle) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" alt="" />
                                         </button>
                                         <button 
                                             @click="openSubscribePopup(officer.channel_id || officer.handle, officer.officer_name)"
                                             class="bg-red-600/90 hover:bg-red-600 text-white font-bold px-2 py-0.5 rounded text-[10px] transition flex items-center gap-1 shadow-sm shadow-red-600/30"
                                             title="Subscribe to channel without leaving page"
                                         >
-                                            <span>🔴</span>
+                                            <span class="w-2 h-2 rounded-full bg-white mr-0.5"></span>
                                             <span>Sub</span>
                                         </button>
-                                        <a :href="`https://www.youtube.com/${officer.handle}`" target="_blank" class="text-blue-400 hover:underline">
-                                            {{ officer.handle }} ↗
+                                        <a :href="`https://www.youtube.com/${officer.handle}`" target="_blank" class="text-blue-400 hover:underline flex items-center gap-0.5">
+                                            <span>{{ officer.handle }}</span>
+                                            <img :src="iconExternal" class="w-2.5 h-2.5 invert opacity-70" alt="" />
                                         </a>
                                     </div>
                                 </div>
@@ -2280,9 +2333,9 @@ const submitFeedbackForm = async () => {
                             'bg-amber-950/80 border-amber-500/60 text-amber-400': activeRightDrawer === 'ROSTER',
                         }"
                     >
-                        <span v-if="activeRightDrawer === 'QUICK_ADD'">➕</span>
-                        <span v-else-if="activeRightDrawer === 'FEEDBACK'">💬</span>
-                        <span v-else-if="activeRightDrawer === 'ROSTER'">⚙️</span>
+                        <img v-if="activeRightDrawer === 'QUICK_ADD'" :src="iconQuickAdd" class="w-4 h-4 invert" alt="" />
+                        <img v-else-if="activeRightDrawer === 'FEEDBACK'" :src="iconFeedback" class="w-4 h-4 invert" alt="" />
+                        <img v-else-if="activeRightDrawer === 'ROSTER'" :src="iconRoster" class="w-4 h-4 invert" alt="" />
                     </div>
                     <div class="truncate">
                         <div class="flex items-center space-x-2">
@@ -2292,7 +2345,7 @@ const submitFeedbackForm = async () => {
                                     'text-emerald-300': activeRightDrawer === 'QUICK_ADD',
                                     'text-sky-300': activeRightDrawer === 'FEEDBACK',
                                     'text-amber-300': activeRightDrawer === 'ROSTER',
-                                }"
+                                    }"
                             >
                                 <span v-if="activeRightDrawer === 'QUICK_ADD'">QUICK ADD LIVE FEED</span>
                                 <span v-else-if="activeRightDrawer === 'FEEDBACK'">LAPOR & USULAN STREAMER</span>
@@ -2345,17 +2398,17 @@ const submitFeedbackForm = async () => {
                     <div class="bg-purple-950/30 border border-purple-500/40 rounded-xl p-3 text-xs text-purple-200/90 leading-relaxed">
                         <div class="font-bold flex items-center justify-between mb-1 text-purple-300">
                             <span class="flex items-center gap-1.5">
-                                <span>📌</span>
+                                <img :src="iconPersonal" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                                 <span>Quick Watchlist & Personal</span>
                             </span>
                             <span class="text-[10px] bg-purple-900/60 px-2 py-0.5 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30">
                                 {{ totalPersonalCount }}/6 Video
                             </span>
                         </div>
-                        Cari lawan/gang atau masukkan live stream YouTube. Stream yang dipilih akan langsung masuk ke tab <strong>📌 PERSONAL</strong> browser lokal Anda.
+                        Cari lawan/gang atau masukkan live stream YouTube. Stream yang dipilih akan langsung masuk ke tab <strong>PERSONAL</strong> browser lokal Anda.
                     </div>
 
-                    <!-- Mode Toggle: 🔍 Cari Live Hashtag vs 🔗 Input Manual -->
+                    <!-- Mode Toggle: Cari Live Hashtag vs Input Manual -->
                     <div class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
                         <button 
                             type="button" 
@@ -2363,7 +2416,7 @@ const submitFeedbackForm = async () => {
                             :class="quickAddMode === 'SEARCH' ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30' : 'text-slate-400 hover:text-slate-200'"
                             class="py-1.5 px-3 text-xs rounded-lg transition flex items-center justify-center gap-1.5"
                         >
-                            <span>🔍</span>
+                            <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-80" alt="" />
                             <span>Cari Live Hashtag</span>
                         </button>
                         <button 
@@ -2372,7 +2425,7 @@ const submitFeedbackForm = async () => {
                             :class="quickAddMode === 'MANUAL' ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30' : 'text-slate-400 hover:text-slate-200'"
                             class="py-1.5 px-3 text-xs rounded-lg transition flex items-center justify-center gap-1.5"
                         >
-                            <span>🔗</span>
+                            <img :src="iconUrl" class="w-3.5 h-3.5 invert opacity-80" alt="" />
                             <span>Input Manual</span>
                         </button>
                     </div>
@@ -2390,13 +2443,13 @@ const submitFeedbackForm = async () => {
                                     placeholder="Ketik hashtag misal #imeroleplay #burgenk..."
                                     class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-20 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 font-mono placeholder-slate-500"
                                 />
-                                <span class="absolute left-2.5 top-3 text-xs text-slate-500">🔍</span>
+                                <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-3" alt="" />
                                 <button 
                                     type="submit" 
                                     :disabled="isLiveSearching"
                                     class="absolute right-1.5 top-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-1"
                                 >
-                                    <span v-if="isLiveSearching" class="animate-spin text-xs">🔄</span>
+                                    <img v-if="isLiveSearching" :src="iconRefresh" class="w-3 h-3 animate-spin invert" alt="" />
                                     <span>{{ isLiveSearching ? 'Mencari...' : 'Cari' }}</span>
                                 </button>
                             </div>
@@ -2434,7 +2487,7 @@ const submitFeedbackForm = async () => {
                         <div v-else-if="liveSearchResults.length > 0" class="flex flex-col gap-2.5">
                             <div class="flex items-center justify-between text-xs text-slate-400 font-mono px-0.5">
                                 <span>Ditemukan: <strong class="text-slate-200">{{ liveSearchResults.length }}</strong> Live Stream</span>
-                                <span class="text-[10px] text-emerald-400 font-bold">🔴 10-8 LIVE</span>
+                                <span class="text-[10px] text-emerald-400 font-bold">● 10-8 LIVE</span>
                             </div>
 
                             <div class="space-y-2.5">
@@ -2460,7 +2513,7 @@ const submitFeedbackForm = async () => {
                                                 </h4>
                                             </div>
                                             <div class="text-[11px] text-slate-400 truncate mt-1 flex items-center gap-1.5">
-                                                <span>👤</span>
+                                                <img :src="iconUser" class="w-3 h-3 invert opacity-60" alt="" />
                                                 <span class="text-purple-300 font-semibold truncate">{{ item.channel_name }}</span>
                                             </div>
                                         </div>
@@ -2470,17 +2523,18 @@ const submitFeedbackForm = async () => {
                                                 type="button" 
                                                 @click="handleAddLiveStreamToPersonal(item)"
                                                 :class="isPersonalStream(item.video_id) ? 'bg-purple-950 text-purple-300 border-purple-500/50' : 'bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/30'"
-                                                class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition flex items-center gap-1 font-mono border border-transparent"
+                                                class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition flex items-center justify-center font-mono border border-transparent"
                                             >
-                                                <span>{{ isPersonalStream(item.video_id) ? '✓ Pinned' : '📌 + Pin ke Personal' }}</span>
+                                                <span>{{ isPersonalStream(item.video_id) ? '✓ Pinned' : 'Pin ke Personal' }}</span>
                                             </button>
 
                                             <a 
                                                 :href="`https://www.youtube.com/watch?v=${item.video_id}`" 
                                                 target="_blank" 
-                                                class="text-[10px] text-blue-400 hover:underline font-mono"
+                                                class="p-1 hover:text-white text-slate-400 hover:bg-slate-800 rounded transition flex items-center justify-center"
+                                                title="Open on YouTube"
                                             >
-                                                YT ↗
+                                                <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Open on YouTube" />
                                             </a>
                                         </div>
                                     </div>
@@ -2529,7 +2583,7 @@ const submitFeedbackForm = async () => {
                                 <div>
                                     <label class="text-xs font-semibold text-slate-300 block mb-1">Department</label>
                                     <select 
-                                        v-model="quickAddInput.department"
+                                        v-model="quickAddInput.department" 
                                         class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
                                     >
                                         <option value="LSPD">LSPD (Police)</option>
@@ -2560,7 +2614,7 @@ const submitFeedbackForm = async () => {
                                     type="submit" 
                                     class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5"
                                 >
-                                    <span>➕</span>
+                                    <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert" alt="" />
                                     <span>Inject Live Feed</span>
                                 </button>
                             </div>
@@ -2571,8 +2625,9 @@ const submitFeedbackForm = async () => {
                     <div class="mt-2 pt-3 border-t border-slate-800/80 flex flex-col gap-2.5">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2">
+                                <img :src="iconPersonal" class="w-3.5 h-3.5 invert opacity-80" alt="" />
                                 <span class="text-xs font-bold text-slate-200 uppercase font-mono tracking-wide">
-                                    📋 Watchlist Tersimpan
+                                    Watchlist Tersimpan
                                 </span>
                                 <span class="text-[10px] bg-purple-950/80 px-2 py-0.5 rounded-full font-mono text-purple-300 border border-purple-500/40 font-bold">
                                     {{ totalPersonalCount }}/6 Online ({{ totalSavedPersonalCount }} Total)
@@ -2585,7 +2640,8 @@ const submitFeedbackForm = async () => {
                                 class="text-[11px] text-red-400 hover:text-red-300 font-mono flex items-center gap-1 hover:underline"
                                 title="Kosongkan seluruh pin personal"
                             >
-                                <span>🗑️ Reset Semua</span>
+                                <img :src="iconReset" class="w-3 h-3 invert opacity-80" alt="" />
+                                <span>Reset Semua</span>
                             </button>
                         </div>
 
@@ -2603,12 +2659,12 @@ const submitFeedbackForm = async () => {
                             >
                                 <div class="flex items-center space-x-2.5 min-w-0">
                                     <img 
-                                        v-if="savedItem.thumbnail"
+                                        v-if="savedItem.thumbnail" 
                                         :src="savedItem.thumbnail" 
                                         class="w-12 h-8 rounded object-cover bg-black shrink-0 border border-slate-800"
                                     />
                                     <div v-else class="w-12 h-8 rounded bg-slate-950 border border-slate-800 flex items-center justify-center text-xs text-slate-500 shrink-0">
-                                        📺
+                                        <img :src="iconPersonal" class="w-4 h-4 invert opacity-40" alt="" />
                                     </div>
                                     <div class="min-w-0">
                                         <div class="flex items-center gap-1.5">
@@ -2629,10 +2685,10 @@ const submitFeedbackForm = async () => {
                                 <button 
                                     type="button" 
                                     @click="removePersonalStream(savedItem.rawId)"
-                                    class="p-1.5 text-slate-400 hover:text-red-400 bg-slate-950 hover:bg-red-950/50 border border-slate-800 hover:border-red-500/40 rounded-lg text-xs transition shrink-0"
+                                    class="p-1.5 text-slate-400 hover:text-red-400 bg-slate-950 hover:bg-red-950/50 border border-slate-800 hover:border-red-500/40 rounded-lg text-xs transition shrink-0 flex items-center justify-center"
                                     title="Hapus dari daftar personal"
                                 >
-                                    🗑️
+                                    <img :src="iconDelete" class="w-3.5 h-3.5 invert opacity-80 group-hover:opacity-100" alt="Delete" />
                                 </button>
                             </div>
                         </div>
@@ -2651,7 +2707,7 @@ const submitFeedbackForm = async () => {
 
                     <div class="bg-sky-950/20 border border-sky-500/30 rounded-xl p-3 text-xs text-sky-200/90 leading-relaxed">
                         <div class="font-bold flex items-center gap-1.5 mb-1 text-sky-300">
-                            <span>📡</span>
+                            <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                             <span>Direct Dispatcher Line</span>
                         </div>
                         Formulir ini akan otomatis mengirim pesan langsung ke channel Discord Dispatcher IME Roleplay.
@@ -2669,7 +2725,7 @@ const submitFeedbackForm = async () => {
                                     :class="feedbackForm.type === 'CHANNEL_REQUEST' ? 'bg-sky-600 text-white font-bold border-sky-400 shadow-md shadow-sky-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
                                     class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
                                 >
-                                    <span>➕</span>
+                                    <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                                     <span class="truncate">Usul Streamer</span>
                                 </button>
                                 <button 
@@ -2678,7 +2734,7 @@ const submitFeedbackForm = async () => {
                                     :class="feedbackForm.type === 'DATA_CORRECTION' ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-md shadow-amber-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
                                     class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
                                 >
-                                    <span>✏️</span>
+                                    <img :src="iconEdit" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                                     <span class="truncate">Koreksi Data</span>
                                 </button>
                                 <button 
@@ -2687,7 +2743,7 @@ const submitFeedbackForm = async () => {
                                     :class="feedbackForm.type === 'BUG_REPORT' ? 'bg-red-600 text-white font-bold border-red-400 shadow-md shadow-red-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
                                     class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
                                 >
-                                    <span>🐞</span>
+                                    <img :src="iconBug" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                                     <span class="truncate">Lapor Bug</span>
                                 </button>
                                 <button 
@@ -2696,7 +2752,7 @@ const submitFeedbackForm = async () => {
                                     :class="feedbackForm.type === 'OTHER' ? 'bg-purple-600 text-white font-bold border-purple-400 shadow-md shadow-purple-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
                                     class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
                                 >
-                                    <span>💬</span>
+                                    <img :src="iconFeedback" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                                     <span class="truncate">Lainnya</span>
                                 </button>
                             </div>
@@ -2736,7 +2792,7 @@ const submitFeedbackForm = async () => {
                             <div>
                                 <label class="text-xs font-semibold text-slate-300 block mb-1">Departemen</label>
                                 <select 
-                                    v-model="feedbackForm.department"
+                                    v-model="feedbackForm.department" 
                                     class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
                                 >
                                     <option value="LSPD">LSPD (Police)</option>
@@ -2750,8 +2806,8 @@ const submitFeedbackForm = async () => {
                             <label class="text-xs font-semibold text-slate-300 block mb-1">Pesan / Catatan Detail *</label>
                             <textarea 
                                 v-model="feedbackForm.message" 
-                                required
-                                rows="4"
+                                required 
+                                rows="4" 
                                 :placeholder="feedbackForm.type === 'CHANNEL_REQUEST' ? 'Jelaskan jadwal live rutin streamer atau link channel YouTube resminya...' : (feedbackForm.type === 'DATA_CORRECTION' ? 'Jelaskan data apa yang perlu dikoreksi (misal pangkat naik jadi Sergeant, ganti callsign)...' : 'Tuliskan detail masukan atau kendala Anda...')"
                                 class="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600"
                             ></textarea>
@@ -2767,11 +2823,11 @@ const submitFeedbackForm = async () => {
                             </button>
                             <button 
                                 type="submit" 
-                                :disabled="isSubmittingFeedback"
+                                :disabled="isSubmittingFeedback" 
                                 class="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-lg shadow-sky-600/30 flex items-center gap-1.5 transition"
                             >
-                                <span v-if="isSubmittingFeedback" class="animate-spin">🔄</span>
-                                <span v-else>🚀</span>
+                                <img v-if="isSubmittingFeedback" :src="iconRefresh" class="w-3.5 h-3.5 animate-spin invert" alt="" />
+                                <img v-else :src="iconSend" class="w-3.5 h-3.5 invert" alt="" />
                                 <span>{{ isSubmittingFeedback ? 'Mengirim...' : 'Kirim ke Discord' }}</span>
                             </button>
                         </div>
@@ -2791,10 +2847,10 @@ const submitFeedbackForm = async () => {
                     <div class="bg-slate-950/90 px-4 py-2.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 shrink-0">
                         <!-- Add Officer Button -->
                         <button 
-                            @click="openAddOfficerModal"
+                            @click="openAddOfficerModal" 
                             class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-md shadow-emerald-600/30"
                         >
-                            <span>➕</span>
+                            <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert" alt="" />
                             <span>Add Officer / Streamer</span>
                         </button>
 
@@ -2802,12 +2858,12 @@ const submitFeedbackForm = async () => {
                         <div class="relative flex-1 sm:w-64 max-w-xs">
                             <input 
                                 v-model="rosterSearch" 
-                                @input="fetchRosterOfficers"
+                                @input="fetchRosterOfficers" 
                                 type="text" 
                                 placeholder="Filter name, callsign, handle..."
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-7 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
                             />
-                            <span class="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
+                            <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-2.5" alt="" />
                         </div>
                     </div>
 
@@ -2815,12 +2871,16 @@ const submitFeedbackForm = async () => {
                     <div class="bg-slate-900/60 px-4 py-2 border-b border-slate-800 flex items-center space-x-1.5 overflow-x-auto scrollbar-none shrink-0">
                         <button 
                             v-for="dept in departments" 
-                            :key="dept.id"
-                            @click="rosterDept = dept.id; fetchRosterOfficers();"
+                            :key="dept.id" 
+                            @click="rosterDept = dept.id; fetchRosterOfficers();" 
                             :class="rosterDept === dept.id ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-sm shadow-amber-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
-                            class="px-2.5 py-1 text-xs rounded-full border transition flex items-center space-x-1 whitespace-nowrap"
+                            class="px-2.5 py-1 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap"
                         >
-                            <span>{{ dept.icon }}</span>
+                            <img 
+                                :src="getDeptIcon(dept.id)" 
+                                class="w-3.5 h-3.5 object-contain shrink-0 brightness-0 invert opacity-90" 
+                                :alt="dept.name" 
+                            />
                             <span>{{ dept.name }}</span>
                         </button>
                     </div>
@@ -2828,7 +2888,7 @@ const submitFeedbackForm = async () => {
                     <!-- Officers List -->
                     <div class="flex-1 overflow-y-auto p-4 space-y-2.5 scrollbar-thin">
                         <div v-if="isRosterLoading" class="py-12 text-center text-slate-400 font-mono text-xs flex items-center justify-center gap-2">
-                            <span class="animate-spin text-lg">🔄</span>
+                            <img :src="iconRefresh" class="w-4 h-4 animate-spin invert opacity-80" alt="" />
                             <span>Loading officer records from MySQL...</span>
                         </div>
 
@@ -2839,7 +2899,7 @@ const submitFeedbackForm = async () => {
                         <div v-else class="space-y-2">
                             <div 
                                 v-for="officer in rosterOfficers" 
-                                :key="officer.id"
+                                :key="officer.id" 
                                 class="bg-slate-900/80 hover:bg-slate-900 border rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 transition"
                                 :class="officer.is_active ? 'border-slate-800' : 'border-red-900/40 bg-red-950/10 opacity-70'"
                             >
@@ -2871,7 +2931,7 @@ const submitFeedbackForm = async () => {
                                 <!-- Officer Card Right: Zone, Status, Actions -->
                                 <div class="flex items-center space-x-2.5 shrink-0 ml-auto">
                                     <div class="text-[11px] font-mono text-slate-400 hidden md:block">
-                                        📍 {{ officer.patrol_zone || 'Los Santos' }}
+                                        {{ officer.patrol_zone || 'Los Santos' }}
                                     </div>
 
                                     <!-- Toggle Active Switch -->
@@ -2889,17 +2949,17 @@ const submitFeedbackForm = async () => {
                                     <div class="flex items-center space-x-1">
                                         <button 
                                             @click="openEditOfficerModal(officer)"
-                                            class="p-1.5 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-blue-300 text-xs transition"
+                                            class="p-1.5 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-blue-300 text-xs transition flex items-center justify-center"
                                             title="Edit Officer Record"
                                         >
-                                            ✏️
+                                            <img :src="iconEdit" class="w-3.5 h-3.5 invert opacity-90" alt="Edit" />
                                         </button>
                                         <button 
                                             @click="deleteOfficerConfirm(officer)"
-                                            class="p-1.5 rounded-lg bg-red-950 hover:bg-red-900 border border-red-500/40 text-red-300 text-xs transition"
+                                            class="p-1.5 rounded-lg bg-red-950 hover:bg-red-900 border border-red-500/40 text-red-300 text-xs transition flex items-center justify-center"
                                             title="Delete from MySQL"
                                         >
-                                            🗑️
+                                            <img :src="iconDelete" class="w-3.5 h-3.5 invert opacity-90" alt="Delete" />
                                         </button>
                                     </div>
                                 </div>
@@ -2926,7 +2986,7 @@ const submitFeedbackForm = async () => {
                 
                 <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
                     <div class="flex items-center space-x-2">
-                        <span class="text-base">{{ isEditingOfficer ? '✏️' : '➕' }}</span>
+                        <img :src="isEditingOfficer ? iconEdit : iconQuickAdd" class="w-4 h-4 invert opacity-90" alt="" />
                         <h3 class="text-sm font-bold text-amber-400 tracking-wide uppercase font-mono">
                             {{ isEditingOfficer ? 'EDIT OFFICER RECORD (MYSQL)' : 'ADD NEW OFFICER / STREAMER (MYSQL)' }}
                         </h3>
@@ -2988,7 +3048,7 @@ const submitFeedbackForm = async () => {
                         <div>
                             <label class="text-xs font-semibold text-slate-300 block mb-1">Department *</label>
                             <select 
-                                v-model="officerForm.department"
+                                v-model="officerForm.department" 
                                 class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
                             >
                                 <option value="LSPD">LSPD (Police)</option>
@@ -3031,8 +3091,8 @@ const submitFeedbackForm = async () => {
                     <div class="flex items-center space-x-2 pt-1">
                         <input 
                             type="checkbox" 
-                            id="is_active_checkbox"
-                            v-model="officerForm.is_active"
+                            id="is_active_checkbox" 
+                            v-model="officerForm.is_active" 
                             class="rounded bg-slate-900 border-slate-800 text-amber-500 focus:ring-amber-500"
                         />
                         <label for="is_active_checkbox" class="text-xs text-slate-300">
@@ -3050,9 +3110,10 @@ const submitFeedbackForm = async () => {
                         </button>
                         <button 
                             type="submit" 
-                            class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-amber-600/30 font-mono"
+                            class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-amber-600/30 font-mono flex items-center gap-1.5"
                         >
-                            💾 Save to MySQL
+                            <img :src="iconRoster" class="w-3.5 h-3.5 invert" alt="" />
+                            <span>Save to MySQL</span>
                         </button>
                     </div>
                 </form>
