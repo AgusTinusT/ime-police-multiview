@@ -748,6 +748,177 @@ const handleQuickAddStream = () => {
     };
 };
 
+// Admin Roster Management State & Methods (Protected for Admin)
+const isRosterModalOpen = ref(false);
+const rosterOfficers = ref([]);
+const isRosterLoading = ref(false);
+const rosterSearch = ref('');
+const rosterDept = ref('ALL');
+const showOfficerFormModal = ref(false);
+const isEditingOfficer = ref(false);
+const rosterFeedback = ref('');
+const officerForm = ref({
+    id: null,
+    channel_id: '',
+    handle: '',
+    streamer_name: '',
+    officer_name: '',
+    callsign: '',
+    department: 'LSPD',
+    rank: 'Officer',
+    badge_number: '#000',
+    patrol_zone: 'Mission Row / Downtown',
+    is_active: true,
+    avatar_url: '',
+});
+
+const openRosterManager = async () => {
+    isRosterModalOpen.value = true;
+    await fetchRosterOfficers();
+};
+
+const fetchRosterOfficers = async () => {
+    isRosterLoading.value = true;
+    try {
+        let url = `/api/v1/officers?dept=${rosterDept.value}`;
+        if (rosterSearch.value.trim()) {
+            url += `&search=${encodeURIComponent(rosterSearch.value.trim())}`;
+        }
+        const res = await fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+            const data = await res.json();
+            rosterOfficers.value = data.data || [];
+        }
+    } catch (e) {
+        console.error('Failed to load roster:', e);
+    } finally {
+        isRosterLoading.value = false;
+    }
+};
+
+const openAddOfficerModal = () => {
+    isEditingOfficer.value = false;
+    officerForm.value = {
+        id: null,
+        channel_id: '',
+        handle: '',
+        streamer_name: '',
+        officer_name: '',
+        callsign: '',
+        department: 'LSPD',
+        rank: 'Officer',
+        badge_number: '#000',
+        patrol_zone: 'Mission Row / Downtown',
+        is_active: true,
+        avatar_url: '',
+    };
+    showOfficerFormModal.value = true;
+};
+
+const openEditOfficerModal = (officer) => {
+    isEditingOfficer.value = true;
+    officerForm.value = {
+        id: officer.id,
+        channel_id: officer.channel_id || '',
+        handle: officer.handle || '',
+        streamer_name: officer.streamer_name || '',
+        officer_name: officer.officer_name || '',
+        callsign: officer.callsign || '',
+        department: officer.department || 'LSPD',
+        rank: officer.rank || 'Officer',
+        badge_number: officer.badge_number || '#000',
+        patrol_zone: officer.patrol_zone || '',
+        is_active: Boolean(officer.is_active),
+        avatar_url: officer.avatar_url || '',
+    };
+    showOfficerFormModal.value = true;
+};
+
+const getCsrfToken = () => {
+    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+};
+
+const submitOfficerForm = async () => {
+    rosterFeedback.value = 'Saving officer to MySQL database...';
+    try {
+        const isEdit = isEditingOfficer.value && officerForm.value.id;
+        const url = isEdit ? `/api/v1/officers/${officerForm.value.id}` : '/api/v1/officers';
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-XSRF-TOKEN': getCsrfToken(),
+            },
+            body: JSON.stringify(officerForm.value),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            rosterFeedback.value = `✓ ${data.message || 'Saved successfully!'}`;
+            showOfficerFormModal.value = false;
+            await fetchRosterOfficers();
+            router.reload({ preserveScroll: true });
+        } else {
+            rosterFeedback.value = `Error: ${data.message || 'Failed to save officer'}`;
+        }
+    } catch (e) {
+        rosterFeedback.value = 'Network error while saving officer.';
+    } finally {
+        setTimeout(() => {
+            rosterFeedback.value = '';
+        }, 4000);
+    }
+};
+
+const toggleOfficerActive = async (officer) => {
+    try {
+        const res = await fetch(`/api/v1/officers/${officer.id}/toggle`, {
+            method: 'PATCH',
+            headers: {
+                'Accept': 'application/json',
+                'X-XSRF-TOKEN': getCsrfToken(),
+            },
+        });
+        if (res.ok) {
+            const data = await res.json();
+            officer.is_active = data.is_active;
+            router.reload({ preserveScroll: true });
+        }
+    } catch (e) {
+        console.error('Toggle failed:', e);
+    }
+};
+
+const deleteOfficerConfirm = async (officer) => {
+    if (!confirm(`Are you sure you want to PERMANENTLY delete ${officer.officer_name} (${officer.callsign}) from MySQL?`)) {
+        return;
+    }
+    try {
+        const res = await fetch(`/api/v1/officers/${officer.id}`, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'X-XSRF-TOKEN': getCsrfToken(),
+            },
+        });
+        if (res.ok) {
+            rosterOfficers.value = rosterOfficers.value.filter(o => o.id !== officer.id);
+            router.reload({ preserveScroll: true });
+        }
+    } catch (e) {
+        console.error('Delete failed:', e);
+    }
+};
+
+const handleAdminLogout = () => {
+    router.post('/logout');
+};
+
+
 </script>
 
 <template>
@@ -915,6 +1086,26 @@ const handleQuickAddStream = () => {
                         <span>{{ isFullscreen ? '🗗' : '⛶' }}</span>
                         <span class="hidden md:inline">{{ isFullscreen ? 'Exit Fullscreen' : 'Fullscreen' }}</span>
                     </button>
+
+                    <!-- Admin Only Controls (Visible only after logging in via /login or /admin) -->
+                    <div v-if="$page.props.auth?.user" class="flex items-center space-x-1 bg-amber-950/40 p-0.5 rounded-lg border border-amber-500/50">
+                        <button 
+                            @click="openRosterManager"
+                            class="px-2.5 py-1 text-xs font-bold rounded bg-amber-600 hover:bg-amber-500 text-white shadow-md shadow-amber-600/30 transition flex items-center gap-1.5"
+                            title="Manage Officer Database (MySQL)"
+                        >
+                            <span>⚙️</span>
+                            <span class="hidden sm:inline">Roster Manager</span>
+                        </button>
+                        <button 
+                            @click="handleAdminLogout"
+                            class="px-2 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-red-900/50 text-red-400 hover:text-red-200 border border-slate-700 transition flex items-center gap-1"
+                            title="Logout Admin Session"
+                        >
+                            <span>🚪</span>
+                            <span class="hidden sm:inline">Logout</span>
+                        </button>
+                    </div>
                 </div>
 
             </div>
@@ -1656,6 +1847,316 @@ const handleQuickAddStream = () => {
                             class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-600/30"
                         >
                             ➕ Inject Live Feed
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- ADMIN ONLY: TACTICAL ROSTER MANAGER MODAL (MYSQL DATABASE CRUD) -->
+        <div v-if="isRosterModalOpen" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5">
+            <div class="bg-[#090f1a] border border-amber-500/50 rounded-2xl w-full max-w-5xl shadow-2xl shadow-amber-950/40 overflow-hidden max-h-[92vh] flex flex-col">
+                
+                <!-- Modal Header -->
+                <div class="bg-slate-900 px-4 py-3 border-b border-amber-500/30 flex items-center justify-between flex-wrap gap-2 shrink-0">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-amber-950/70 border border-amber-500/60 flex items-center justify-center text-base">
+                            ⚙️
+                        </div>
+                        <div>
+                            <h2 class="text-sm font-bold text-amber-400 tracking-wider uppercase font-mono flex items-center gap-2">
+                                <span>TACTICAL ROSTER DATABASE MANAGER</span>
+                                <span class="text-[10px] px-2 py-0.2 bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/40 font-normal">MySQL Master</span>
+                            </h2>
+                            <p class="text-[11px] text-slate-400">Add, edit, delete, or toggle live stream monitoring for all police units</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <!-- Add Officer Button -->
+                        <button 
+                            @click="openAddOfficerModal"
+                            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-md shadow-emerald-600/30"
+                        >
+                            <span>➕</span>
+                            <span>Add Officer / Streamer</span>
+                        </button>
+                        
+                        <button 
+                            @click="isRosterModalOpen = false" 
+                            class="text-slate-400 hover:text-white text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition"
+                        >
+                            ✕ Close
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feedback Toast -->
+                <div v-if="rosterFeedback" class="bg-blue-950/80 border-b border-blue-500/40 px-4 py-1.5 text-xs text-blue-300 font-mono text-center shrink-0 flex items-center justify-center gap-2">
+                    <span>⚡</span>
+                    <span>{{ rosterFeedback }}</span>
+                </div>
+
+                <!-- Filter & Search Toolbar -->
+                <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                    <!-- Dept Filter Tabs -->
+                    <div class="flex items-center space-x-1.5 overflow-x-auto max-w-full scrollbar-none py-0.5">
+                        <button 
+                            v-for="dept in departments" 
+                            :key="dept.id"
+                            @click="rosterDept = dept.id; fetchRosterOfficers();"
+                            :class="rosterDept === dept.id ? 'bg-amber-600 text-white font-bold border-amber-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                            class="px-2.5 py-1 text-xs rounded-full border transition flex items-center space-x-1 whitespace-nowrap"
+                        >
+                            <span>{{ dept.icon }}</span>
+                            <span>{{ dept.name }}</span>
+                        </button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative w-full sm:w-64">
+                        <input 
+                            v-model="rosterSearch" 
+                            @input="fetchRosterOfficers"
+                            type="text" 
+                            placeholder="Filter by name, callsign, handle..."
+                            class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
+                        />
+                        <span class="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
+                    </div>
+                </div>
+
+                <!-- Officers Table List -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin">
+                    <div v-if="isRosterLoading" class="py-12 text-center text-slate-400 font-mono text-xs flex items-center justify-center gap-2">
+                        <span class="animate-spin text-lg">🔄</span>
+                        <span>Loading officer records from MySQL...</span>
+                    </div>
+
+                    <div v-else-if="rosterOfficers.length === 0" class="py-12 text-center text-slate-500 text-xs font-mono">
+                        No officers found in database matching criteria.
+                    </div>
+
+                    <div v-else class="space-y-2">
+                        <div 
+                            v-for="officer in rosterOfficers" 
+                            :key="officer.id"
+                            class="bg-slate-900/80 hover:bg-slate-900 border rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 transition"
+                            :class="officer.is_active ? 'border-slate-800' : 'border-red-900/40 bg-red-950/10 opacity-70'"
+                        >
+                            <!-- Officer Card Left -->
+                            <div class="flex items-center space-x-3 min-w-0">
+                                <img 
+                                    :src="officer.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${officer.handle}`" 
+                                    :alt="officer.officer_name"
+                                    class="w-10 h-10 rounded-full border border-slate-700 bg-slate-950 shrink-0"
+                                />
+                                <div class="min-w-0">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-1.5 py-0.2 text-[10px] font-black rounded border font-mono" :class="getDeptBadgeClass(officer.department)">
+                                            {{ officer.department }}
+                                        </span>
+                                        <span class="font-mono text-xs font-bold text-amber-400">{{ officer.callsign }}</span>
+                                        <span class="text-xs font-mono text-slate-400">{{ officer.badge_number }}</span>
+                                    </div>
+                                    <h3 class="text-xs font-bold text-slate-100 truncate mt-0.5">{{ officer.officer_name }}</h3>
+                                    <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                                        <span>{{ officer.rank }}</span>
+                                        <span>•</span>
+                                        <span class="text-blue-400 font-mono">{{ officer.handle }}</span>
+                                        <span v-if="officer.streamer_name" class="text-slate-500 truncate">({{ officer.streamer_name }})</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Officer Card Right: Zone, Status, Actions -->
+                            <div class="flex items-center space-x-3 shrink-0 ml-auto">
+                                <div class="text-[11px] font-mono text-slate-400 hidden md:block">
+                                    📍 {{ officer.patrol_zone || 'Los Santos' }}
+                                </div>
+
+                                <!-- Toggle Active Switch -->
+                                <button 
+                                    @click="toggleOfficerActive(officer)"
+                                    :class="officer.is_active ? 'bg-emerald-950 border-emerald-500/50 text-emerald-300' : 'bg-slate-950 border-slate-800 text-slate-500'"
+                                    class="px-2.5 py-1 rounded-lg border text-[11px] font-mono font-bold transition flex items-center gap-1.5"
+                                    title="Toggle Monitoring Active/Disabled"
+                                >
+                                    <span :class="officer.is_active ? 'text-emerald-400' : 'text-slate-600'">●</span>
+                                    <span>{{ officer.is_active ? 'ACTIVE' : 'DISABLED' }}</span>
+                                </button>
+
+                                <!-- Action Buttons: Edit & Delete -->
+                                <div class="flex items-center space-x-1">
+                                    <button 
+                                        @click="openEditOfficerModal(officer)"
+                                        class="p-1.5 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-blue-300 text-xs transition"
+                                        title="Edit Officer Record"
+                                    >
+                                        ✏️ Edit
+                                    </button>
+                                    <button 
+                                        @click="deleteOfficerConfirm(officer)"
+                                        class="p-1.5 rounded-lg bg-red-950 hover:bg-red-900 border border-red-500/40 text-red-300 text-xs transition"
+                                        title="Delete from MySQL"
+                                    >
+                                        🗑️ Delete
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer Info -->
+                <div class="bg-slate-950 px-4 py-2 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between font-mono shrink-0">
+                    <span>Total Database Units: {{ rosterOfficers.length }}</span>
+                    <span>Direct MySQL Sync Enabled</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SUB-MODAL: ADD / EDIT OFFICER FORM -->
+        <div v-if="showOfficerFormModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[60] flex items-center justify-center p-3 sm:p-4">
+            <div class="bg-[#0b1320] border border-amber-500/60 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+                
+                <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-base">{{ isEditingOfficer ? '✏️' : '➕' }}</span>
+                        <h3 class="text-sm font-bold text-amber-400 tracking-wide uppercase font-mono">
+                            {{ isEditingOfficer ? 'EDIT OFFICER RECORD (MYSQL)' : 'ADD NEW OFFICER / STREAMER (MYSQL)' }}
+                        </h3>
+                    </div>
+                    <button @click="showOfficerFormModal = false" class="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-slate-800">
+                        ✕
+                    </button>
+                </div>
+
+                <form @submit.prevent="submitOfficerForm" class="p-4 bg-slate-950 flex flex-col gap-3 max-h-[80vh] overflow-y-auto scrollbar-thin">
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">YouTube Handle *</label>
+                            <input 
+                                v-model="officerForm.handle" 
+                                type="text" 
+                                required
+                                placeholder="@StreamerHandle"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-mono"
+                            />
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Streamer Name *</label>
+                            <input 
+                                v-model="officerForm.streamer_name" 
+                                type="text" 
+                                required
+                                placeholder="Windah Basudara"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Officer In-Game Name *</label>
+                            <input 
+                                v-model="officerForm.officer_name" 
+                                type="text" 
+                                required
+                                placeholder="Ofc. Budi Santoso"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+                            />
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Callsign *</label>
+                            <input 
+                                v-model="officerForm.callsign" 
+                                type="text" 
+                                required
+                                placeholder="1-ADAM-12"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-mono"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Department *</label>
+                            <select 
+                                v-model="officerForm.department"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+                            >
+                                <option value="LSPD">LSPD (Police)</option>
+                                <option value="BCSO">BCSO (Sheriff)</option>
+                                <option value="SASP">SASP (State Police)</option>
+                                <option value="SWAT">SWAT (Tactical)</option>
+                                <option value="AIR_SUPPORT">AIR-1 (Aviation)</option>
+                                <option value="TRAFFIC">TRAFFIC (Highway)</option>
+                                <option value="K9">K9 (Canine)</option>
+                                <option value="DISPATCH">DISPATCH (Central)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Rank</label>
+                            <input 
+                                v-model="officerForm.rank" 
+                                type="text" 
+                                placeholder="Officer, Sergeant, Cadet..."
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Badge Number</label>
+                            <input 
+                                v-model="officerForm.badge_number" 
+                                type="text" 
+                                placeholder="#101"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-mono"
+                            />
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-300 block mb-1">Patrol Zone</label>
+                            <input 
+                                v-model="officerForm.patrol_zone" 
+                                type="text" 
+                                placeholder="Mission Row / Downtown"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 pt-1">
+                        <input 
+                            type="checkbox" 
+                            id="is_active_checkbox"
+                            v-model="officerForm.is_active"
+                            class="rounded bg-slate-900 border-slate-800 text-amber-500 focus:ring-amber-500"
+                        />
+                        <label for="is_active_checkbox" class="text-xs text-slate-300">
+                            Actively monitor this streamer for live streams
+                        </label>
+                    </div>
+
+                    <div class="mt-3 flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+                        <button 
+                            type="button" 
+                            @click="showOfficerFormModal = false" 
+                            class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit" 
+                            class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-amber-600/30 font-mono"
+                        >
+                            💾 Save to MySQL
                         </button>
                     </div>
                 </form>
