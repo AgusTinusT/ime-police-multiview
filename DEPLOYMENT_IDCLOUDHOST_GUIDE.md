@@ -126,6 +126,9 @@ EXIT;
 
 ### 5.1. Clone Repository ke Folder Web
 ```bash
+# Berikan izin akses folder /var/www ke user Anda
+sudo chown -R $USER:$USER /var/www
+
 cd /var/www
 # Ganti dengan URL Repository Git Anda (GitHub / GitLab)
 git clone https://github.com/USERNAME/ime-police-multiview.git ime-police-multiview
