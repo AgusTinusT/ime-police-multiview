@@ -287,6 +287,29 @@ const clearAllPersonalStreams = () => {
     }
 };
 
+// Format viewers count helper (e.g. 1.2K, 350, or 'Live')
+const formatViewerCount = (count, formattedText = null) => {
+    if (formattedText && formattedText !== 'Live' && formattedText !== '') {
+        return formattedText;
+    }
+    if (!count || count <= 0) return 'Live';
+    if (count >= 1000000) return (count / 1000000).toFixed(1) + 'M';
+    if (count >= 1000) return (count / 1000).toFixed(1) + 'K';
+    return count.toString();
+};
+
+// Stream Info / Description Toggle State
+const expandedInfoVideoIds = ref([]);
+const toggleStreamInfo = (videoId) => {
+    const idx = expandedInfoVideoIds.value.indexOf(videoId);
+    if (idx !== -1) {
+        expandedInfoVideoIds.value.splice(idx, 1);
+    } else {
+        expandedInfoVideoIds.value.push(videoId);
+    }
+};
+const isStreamInfoOpen = (videoId) => expandedInfoVideoIds.value.includes(videoId);
+
 // Unified list of saved personal items with online/offline status for drawer management
 const savedPersonalList = computed(() => {
     const list = [];
@@ -1008,7 +1031,9 @@ const handleAddLiveStreamToPersonal = (streamItem) => {
             thumbnail: streamItem.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
             status: 'LIVE',
             incident_code: 'Target / Gang Feed',
-            viewers_count: 0,
+            description: streamItem.description || '',
+            viewers_count: streamItem.viewers_count || 0,
+            viewers: streamItem.viewers || 'Live',
             live_chat_url: `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${chatEmbedDomain.value}`,
             officer: {
                 id: 9999,
@@ -1025,6 +1050,11 @@ const handleAddLiveStreamToPersonal = (streamItem) => {
             }
         };
         customStreams.value.push(newStream);
+    } else {
+        customStreams.value[existingCustomIdx].title = streamItem.title;
+        customStreams.value[existingCustomIdx].description = streamItem.description || '';
+        customStreams.value[existingCustomIdx].viewers = streamItem.viewers || 'Live';
+        customStreams.value[existingCustomIdx].viewers_count = streamItem.viewers_count || 0;
     }
 
     if (!personalVideoIds.value.includes(videoId)) {
@@ -1595,6 +1625,11 @@ const submitFeedbackForm = async () => {
                                         <span class="text-sm font-bold text-slate-100 mr-2">{{ primaryFocusedStream.officer?.officer_name }}</span>
                                         <span class="text-xs text-slate-400 font-mono">({{ primaryFocusedStream.officer?.rank }})</span>
                                     </div>
+                                    <!-- Live Viewers Badge -->
+                                    <span class="text-[10px] font-mono font-bold text-red-400 bg-red-950/80 px-2 py-0.5 rounded border border-red-500/40 flex items-center gap-1 shadow-sm shrink-0">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                        <span>👁️ {{ formatViewerCount(primaryFocusedStream.viewers_count, primaryFocusedStream.viewers) }}</span>
+                                    </span>
                                 </div>
                                 
                                 <div class="flex items-center space-x-2.5 shrink-0">
@@ -1656,7 +1691,7 @@ const submitFeedbackForm = async () => {
 
                                     <!-- Toggle Live Chat in Right Column -->
                                     <button 
-                                        @click="isRightChatOpen = !isRightChatOpen"
+                                        @click="isRightChatOpen = !isRightChatOpen" 
                                         :class="isRightChatOpen ? 'text-amber-400 font-bold bg-amber-950/40 border border-amber-500/30' : 'text-slate-400 hover:text-amber-300'"
                                         class="font-mono text-xs px-2 py-0.5 rounded flex items-center gap-1 transition"
                                         title="Toggle Live Chat in Support Column"
@@ -1672,6 +1707,26 @@ const submitFeedbackForm = async () => {
                                     >
                                         <span>Open YT ↗</span>
                                     </a>
+                                </div>
+                            </div>
+
+                            <!-- Stream Lore & Description Section -->
+                            <div v-if="primaryFocusedStream.title || primaryFocusedStream.description" class="bg-[#080d16] px-4 py-2 border-t border-slate-800/80 flex flex-col gap-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="text-xs font-bold text-slate-200 truncate flex items-center gap-1.5 min-w-0">
+                                        <span class="text-blue-400 shrink-0">📺</span>
+                                        <span class="truncate" :title="primaryFocusedStream.title">{{ primaryFocusedStream.title }}</span>
+                                    </div>
+                                    <button 
+                                        v-if="primaryFocusedStream.description"
+                                        @click="toggleStreamInfo(primaryFocusedStream.video_id)" 
+                                        class="text-[10px] text-slate-300 hover:text-white font-mono bg-slate-900 hover:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700 flex items-center gap-1 shrink-0 transition"
+                                    >
+                                        <span>{{ isStreamInfoOpen(primaryFocusedStream.video_id) ? '▲ Tutup Deskripsi' : '▼ Lihat Deskripsi' }}</span>
+                                    </button>
+                                </div>
+                                <div v-if="isStreamInfoOpen(primaryFocusedStream.video_id) && primaryFocusedStream.description" class="text-[11px] text-slate-300 bg-slate-950/90 p-3 rounded-xl border border-slate-800 font-mono whitespace-pre-line leading-relaxed max-h-48 overflow-y-auto scrollbar-thin mt-1.5 animate-in fade-in duration-150 selection:bg-purple-600 shadow-inner">
+                                    {{ primaryFocusedStream.description }}
                                 </div>
                             </div>
 
@@ -1756,6 +1811,10 @@ const submitFeedbackForm = async () => {
                                         </span>
                                         <span class="font-mono text-[11px] font-bold text-slate-200 truncate">
                                             {{ stream.officer?.callsign }} | {{ stream.officer?.officer_name }}
+                                        </span>
+                                        <!-- Live Viewers Badge -->
+                                        <span class="text-[9px] font-mono font-bold text-red-400 bg-red-950/80 px-1.5 py-0.2 rounded border border-red-500/40 shrink-0">
+                                            👁️ {{ formatViewerCount(stream.viewers_count, stream.viewers) }}
                                         </span>
                                     </div>
                                     
@@ -1847,6 +1906,14 @@ const submitFeedbackForm = async () => {
                                     <span class="truncate text-blue-400">📍 {{ stream.officer?.patrol_zone || 'Patrol' }}</span>
                                     <div class="flex items-center space-x-2 shrink-0">
                                         <button 
+                                            @click="toggleStreamInfo(stream.video_id)"
+                                            :class="isStreamInfoOpen(stream.video_id) ? 'text-amber-400 font-bold bg-amber-950/60' : 'text-slate-400 hover:text-amber-300'"
+                                            class="p-0.5 rounded transition text-[10px]"
+                                            title="Lihat Judul & Deskripsi"
+                                        >
+                                            ℹ️
+                                        </button>
+                                        <button 
                                             v-if="stream.officer?.channel_id || stream.officer?.handle"
                                             @click="openSubscribePopup(stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
                                             class="text-red-400 hover:text-red-300 hover:bg-red-950/60 px-1 py-0.2 rounded transition flex items-center gap-0.5 font-bold"
@@ -1859,6 +1926,17 @@ const submitFeedbackForm = async () => {
                                             YT ↗
                                         </a>
                                     </div>
+                                </div>
+
+                                <!-- Expandable Stream Description for Support Card -->
+                                <div v-if="isStreamInfoOpen(stream.video_id)" class="bg-[#080d16] p-2 border-t border-slate-800 text-[10px] flex flex-col gap-1 z-20 animate-in fade-in duration-150">
+                                    <div class="flex items-center justify-between text-slate-200 font-bold gap-1">
+                                        <span class="truncate">📺 {{ stream.title }}</span>
+                                        <button @click="toggleStreamInfo(stream.video_id)" class="text-slate-400 hover:text-white text-[9px] px-1 rounded bg-slate-800 shrink-0">✕</button>
+                                    </div>
+                                    <p v-if="stream.description" class="text-[10px] text-slate-300 font-mono whitespace-pre-line leading-relaxed max-h-24 overflow-y-auto scrollbar-thin bg-slate-950/90 p-1.5 rounded border border-slate-800">
+                                        {{ stream.description }}
+                                    </p>
                                 </div>
                             </div>
 
@@ -1908,7 +1986,7 @@ const submitFeedbackForm = async () => {
                         >
                             <!-- BODYCAM HEADER HUD OVERLAY -->
                             <div class="bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 flex items-center justify-between border-b border-slate-800/80 z-10">
-                                <!-- Officer Badge & Callsign -->
+                                <!-- Officer Badge, Callsign & Viewers Count -->
                                 <div class="flex items-center space-x-2 min-w-0">
                                     <span class="px-1.5 py-0.5 text-[11px] font-black rounded border tracking-wider shrink-0" :class="getDeptBadgeClass(stream.officer?.department)">
                                         {{ stream.officer?.department }} {{ stream.officer?.callsign }}
@@ -1916,6 +1994,11 @@ const submitFeedbackForm = async () => {
                                     <div class="truncate">
                                         <span class="text-xs font-bold text-slate-200 block truncate">{{ stream.officer?.officer_name }}</span>
                                     </div>
+                                    <!-- Live Viewers Badge -->
+                                    <span class="text-[9px] font-mono font-bold text-red-400 bg-red-950/80 px-1.5 py-0.2 rounded border border-red-500/40 flex items-center gap-1 shrink-0">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                        <span>👁️ {{ formatViewerCount(stream.viewers_count, stream.viewers) }}</span>
+                                    </span>
                                 </div>
 
                                 <!-- Bodycam Actions: Audio Button & Top Personal Pin Button -->
@@ -1933,7 +2016,7 @@ const submitFeedbackForm = async () => {
 
                                     <!-- Top Personal Pin Button -->
                                     <button 
-                                        @click="togglePersonalStream(stream.video_id)"
+                                        @click="togglePersonalStream(stream.video_id)" 
                                         class="px-2 py-0.5 text-[11px] rounded transition flex items-center gap-1 font-mono border"
                                         :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/70 border-purple-500/50' : 'text-slate-400 hover:text-purple-300 bg-slate-800 border-slate-700'"
                                         :title="isPersonalStream(stream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
@@ -2011,8 +2094,17 @@ const submitFeedbackForm = async () => {
                                     <span class="font-mono text-slate-400 truncate">{{ stream.officer?.badge_number || '#000' }}</span>
                                 </div>
 
-                                <!-- Action Icons (Subscribe, Focus, Chat, YT Link) -->
+                                <!-- Action Icons (Info, Subscribe, Focus, Chat, YT Link) -->
                                 <div class="flex items-center space-x-1.5 shrink-0">
+                                    <!-- Info / Description Button -->
+                                    <button 
+                                        @click="toggleStreamInfo(stream.video_id)" 
+                                        :class="isStreamInfoOpen(stream.video_id) ? 'bg-amber-950/70 text-amber-300 border border-amber-500/50' : 'text-slate-400 hover:text-amber-300 hover:bg-slate-800'"
+                                        class="p-1 rounded transition text-[10px] font-mono flex items-center gap-0.5"
+                                        title="Lihat Judul & Deskripsi Live Stream"
+                                    >
+                                        ℹ️
+                                    </button>
                                     <button 
                                         v-if="stream.officer?.channel_id || stream.officer?.handle"
                                         @click="openSubscribePopup(stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
@@ -2045,6 +2137,25 @@ const submitFeedbackForm = async () => {
                                         ↗
                                     </a>
                                 </div>
+                            </div>
+
+                            <!-- Expandable Stream Description & Lore Dropdown -->
+                            <div v-if="isStreamInfoOpen(stream.video_id)" class="bg-[#080d16] p-2.5 border-t border-slate-800 text-xs flex flex-col gap-1 animate-in fade-in duration-150 z-20">
+                                <div class="flex items-center justify-between text-[11px] text-slate-200 font-bold gap-2">
+                                    <span class="truncate flex items-center gap-1 min-w-0">
+                                        <span class="text-blue-400 shrink-0">📺</span>
+                                        <span class="truncate" :title="stream.title">{{ stream.title }}</span>
+                                    </span>
+                                    <button @click="toggleStreamInfo(stream.video_id)" class="text-slate-400 hover:text-white text-[10px] px-1.5 py-0.2 rounded bg-slate-800 shrink-0">
+                                        ✕
+                                    </button>
+                                </div>
+                                <p v-if="stream.description" class="text-[10px] text-slate-300 font-mono whitespace-pre-line leading-relaxed max-h-32 overflow-y-auto scrollbar-thin bg-slate-950/90 p-2 rounded-lg border border-slate-800/80 mt-1 selection:bg-purple-600">
+                                    {{ stream.description }}
+                                </p>
+                                <p v-else class="text-[10px] text-slate-500 font-mono italic mt-1">
+                                    Tidak ada deskripsi tambahan dari streamer.
+                                </p>
                             </div>
 
                             <!-- Optional Embedded YouTube Live Chat Drawer -->
@@ -2343,15 +2454,23 @@ const submitFeedbackForm = async () => {
                                     <!-- Stream Info -->
                                     <div class="flex-1 min-w-0 flex flex-col justify-between h-full">
                                         <div>
-                                            <h4 class="text-xs font-bold text-slate-100 line-clamp-2 leading-snug" :title="item.title">
-                                                {{ item.title }}
-                                            </h4>
-                                            <div class="text-[11px] text-slate-400 truncate mt-0.5">
-                                                👤 <span class="text-slate-200 font-semibold">{{ item.channel_name }}</span>
+                                            <div class="flex items-start justify-between gap-2">
+                                                <h4 class="text-xs font-bold text-slate-100 line-clamp-2 leading-snug flex-1" :title="item.title">
+                                                    {{ item.title }}
+                                                </h4>
+                                                <span class="text-[10px] text-red-400 font-mono font-bold shrink-0 bg-red-950/80 px-1.5 py-0.5 rounded border border-red-500/40 flex items-center gap-1">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                                    <span>👁️ {{ item.viewers || 'Live' }}</span>
+                                                </span>
                                             </div>
-                                            <div class="text-[10px] text-red-400 font-mono mt-0.5">
-                                                👁 {{ item.viewers || 'Live' }}
+                                            <div class="text-[11px] text-slate-400 truncate mt-1 flex items-center gap-1.5">
+                                                <span>👤</span>
+                                                <span class="text-purple-300 font-semibold truncate">{{ item.channel_name }}</span>
                                             </div>
+                                            <!-- Stream Description Snippet -->
+                                            <p v-if="item.description" class="text-[10.5px] text-slate-300 line-clamp-2 leading-relaxed bg-slate-950/80 p-2 rounded-lg border border-slate-800/80 font-mono mt-1.5 selection:bg-purple-600" :title="item.description">
+                                                {{ item.description }}
+                                            </p>
                                         </div>
 
                                         <div class="mt-2 flex items-center justify-between gap-2">

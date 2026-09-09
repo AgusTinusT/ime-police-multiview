@@ -45,6 +45,8 @@ class SyncOfficerStreamsJob implements ShouldQueue
                         'title' => $liveData['title'],
                         'thumbnail_url' => $liveData['thumbnail_url'],
                         'status' => 'LIVE',
+                        'viewers_count' => $liveData['viewers_count'] ?? 0,
+                        'description' => $liveData['description'] ?? null,
                         'last_synced_at' => now(),
                     ]
                 );

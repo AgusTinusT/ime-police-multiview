@@ -58,11 +58,15 @@ class YouTubeScraperService
 
             if ($isLive && $isPlayableNow) {
                 $title = $this->extractTitle($body) ?? ($handle . " Police Patrol Live Feed");
+                $description = $this->extractDescription($body);
+                $viewersCount = $this->extractViewersCount($body);
                 return [
                     'status' => 'LIVE',
                     'video_id' => $videoId,
                     'title' => $title,
                     'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
+                    'viewers_count' => $viewersCount,
+                    'description' => $description,
                 ];
             }
         } catch (\Exception $e) {
@@ -93,7 +97,7 @@ class YouTubeScraperService
                     
                     $pool->as($handle)->withHeaders([
                         'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Accept-Language' => 'en-US,en;q=0.9',
+                        'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
                     ])->timeout(8)->get($url);
                 }
             });
@@ -132,11 +136,15 @@ class YouTubeScraperService
 
                 if ($isLive && $isPlayableNow) {
                     $title = $this->extractTitle($body) ?? ($handle . " Police Patrol");
+                    $description = $this->extractDescription($body);
+                    $viewersCount = $this->extractViewersCount($body);
                     $results[$handle] = [
                         'status' => 'LIVE',
                         'video_id' => $videoId,
                         'title' => $title,
                         'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
+                        'viewers_count' => $viewersCount,
+                        'description' => $description,
                     ];
                 }
             }
@@ -225,7 +233,31 @@ class YouTubeScraperService
                         if ($isLive) {
                             $title = $v['title']['runs'][0]['text'] ?? ($v['headline']['simpleText'] ?? 'Live Stream');
                             $channelName = $v['ownerText']['runs'][0]['text'] ?? ($v['shortBylineText']['runs'][0]['text'] ?? 'Streamer');
-                            $viewers = $v['viewCountText']['runs'][0]['text'] ?? ($v['viewCountText']['simpleText'] ?? 'Live');
+                            
+                            // Extract viewers text (e.g. "1.2K watching" or "450 penonton")
+                            $viewers = 'Live';
+                            if (isset($v['viewCountText']['runs']) && is_array($v['viewCountText']['runs'])) {
+                                $viewers = trim(implode('', array_column($v['viewCountText']['runs'], 'text')));
+                            } elseif (isset($v['viewCountText']['simpleText'])) {
+                                $viewers = trim($v['viewCountText']['simpleText']);
+                            } elseif (isset($v['shortViewCountText']['simpleText'])) {
+                                $viewers = trim($v['shortViewCountText']['simpleText']);
+                            } elseif (isset($v['shortViewCountText']['runs']) && is_array($v['shortViewCountText']['runs'])) {
+                                $viewers = trim(implode('', array_column($v['shortViewCountText']['runs'], 'text')));
+                            }
+
+                            // Extract raw viewers count integer if possible
+                            $viewersCount = (int) preg_replace('/[^\d]/', '', $viewers);
+
+                            // Extract description snippet
+                            $description = '';
+                            if (isset($v['detailedMetadataSnippets'][0]['snippetText']['runs']) && is_array($v['detailedMetadataSnippets'][0]['snippetText']['runs'])) {
+                                $description = trim(implode('', array_column($v['detailedMetadataSnippets'][0]['snippetText']['runs'], 'text')));
+                            } elseif (isset($v['descriptionSnippet']['runs']) && is_array($v['descriptionSnippet']['runs'])) {
+                                $description = trim(implode('', array_column($v['descriptionSnippet']['runs'], 'text')));
+                            } elseif (isset($v['descriptionSnippet']['simpleText'])) {
+                                $description = trim($v['descriptionSnippet']['simpleText']);
+                            }
 
                             $videos[] = [
                                 'video_id' => $videoId,
@@ -233,6 +265,8 @@ class YouTubeScraperService
                                 'channel_name' => $channelName,
                                 'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
                                 'viewers' => $viewers,
+                                'viewers_count' => $viewersCount,
+                                'description' => $description,
                                 'status' => 'LIVE',
                             ];
 
@@ -261,5 +295,42 @@ class YouTubeScraperService
             return trim(str_replace(' - YouTube', '', $title));
         }
         return null;
+    }
+
+    /**
+     * Extract stream description from YouTube HTML.
+     */
+    private function extractDescription(string $html): string
+    {
+        if (preg_match('/<meta name="description" content="([^"]*)">/i', $html, $matches)) {
+            return html_entity_decode($matches[1], ENT_QUOTES, 'UTF-8');
+        }
+        if (preg_match('/"shortDescription":"(.*?)"(?=,"isCrawlable")/s', $html, $matches)) {
+            return stripcslashes($matches[1]);
+        }
+        return '';
+    }
+
+    /**
+     * Extract viewers count from YouTube HTML.
+     */
+    private function extractViewersCount(string $html): int
+    {
+        if (preg_match('/"viewCount":\s*\{\s*"videoViewCountRenderer":\s*\{\s*"viewCount":\s*\{\s*"runs":\s*\[\s*\{\s*"text":\s*"([^"]+)"/i', $html, $matches)) {
+            return (int) preg_replace('/[^\d]/', '', $matches[1]);
+        }
+        if (preg_match('/"viewCount":\s*\{\s*"videoViewCountRenderer":\s*\{\s*"viewCount":\s*\{\s*"simpleText":\s*"([^"]+)"/i', $html, $matches)) {
+            return (int) preg_replace('/[^\d]/', '', $matches[1]);
+        }
+        if (preg_match('/"videoDetails":\s*\{.*?"viewCount":\s*"(\d+)"/s', $html, $matches)) {
+            return (int) $matches[1];
+        }
+        if (preg_match('/"viewCount":"(\d+)"/', $html, $matches)) {
+            return (int) $matches[1];
+        }
+        if (preg_match('/"originalViewCount":"(\d+)"/', $html, $matches)) {
+            return (int) $matches[1];
+        }
+        return 0;
     }
 }

@@ -33,6 +33,7 @@ class PoliceCommandController extends Controller
                     'thumbnail' => $stream->thumbnail_url,
                     'status' => 'LIVE',
                     'incident_code' => $stream->incident_code ?? '10-8 Routine Patrol',
+                    'description' => $stream->description ?? '',
                     'viewers_count' => $stream->viewers_count ?? 0,
                     'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}",
                     'officer' => $officer ? [

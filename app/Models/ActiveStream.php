@@ -17,6 +17,7 @@ class ActiveStream extends Model
         'thumbnail_url',
         'status',
         'incident_code',
+        'description',
         'viewers_count',
         'last_synced_at',
     ];
