@@ -87,19 +87,24 @@ class OfficerManageCommand extends Command
 
     protected function addOfficer()
     {
-        $channelId = $this->argument('channel_id') ?? $this->ask('YouTube Channel ID');
-        $handle = $this->argument('handle') ?? $this->ask('YouTube Handle (e.g. @example)');
-        $streamer = $this->argument('streamer_name') ?? $this->ask('Streamer Name');
-        $officerName = $this->argument('officer_name') ?? $this->ask('Officer RP Character Name');
-        $callsign = $this->argument('callsign') ?? $this->ask('Unit Callsign (e.g. 1-ADAM-12)');
+        $handle = $this->argument('handle') ?? $this->ask('YouTube Handle (contoh: @WindahBasudara)');
+        if (!str_starts_with($handle, '@')) {
+            $handle = '@' . $handle;
+        }
+
+        $streamer = $this->argument('streamer_name') ?? $this->ask('Streamer Name (Nama Streamer)');
+        $officerName = $this->argument('officer_name') ?? $this->ask('Officer RP Character Name (Nama Karakter Polisi, contoh: Ofc. John Doe)');
+        $callsign = $this->argument('callsign') ?? $this->ask('Unit Callsign (contoh: 1-ADAM-01, 2-BAKER-05, 3-VICTOR-03, SWAT-01)');
         $department = $this->argument('department') ?? $this->choice('Department', ['LSPD', 'BCSO', 'SASP', 'SWAT', 'AIR_SUPPORT', 'TRAFFIC', 'K9', 'DISPATCH'], 0);
-        $rank = $this->argument('rank') ?? $this->ask('Rank (e.g. Officer II, Sergeant)', 'Officer');
-        $badge = $this->argument('badge_number') ?? $this->ask('Badge Number (e.g. #108)', '#000');
+        $rank = $this->argument('rank') ?? $this->ask('Rank (contoh: Officer, Sergeant, Lieutenant, Deputy, Trooper)', 'Officer');
+        $badge = $this->argument('badge_number') ?? $this->ask('Badge Number (contoh: #101)', '#000');
+        
+        $channelId = $this->argument('channel_id') ?? $this->ask('YouTube Channel ID (Opsional, tekan Enter jika tidak tahu)', 'UC_' . \Illuminate\Support\Str::slug(str_replace('@', '', $handle), '_'));
 
         $officer = Officer::updateOrCreate(
-            ['channel_id' => $channelId],
+            ['handle' => $handle],
             [
-                'handle' => $handle,
+                'channel_id' => $channelId,
                 'streamer_name' => $streamer,
                 'officer_name' => $officerName,
                 'callsign' => $callsign,
@@ -110,7 +115,12 @@ class OfficerManageCommand extends Command
             ]
         );
 
-        $this->info("Officer {$officer->officer_name} ({$officer->callsign}) successfully added / updated!");
+        $this->info("✓ Officer {$officer->officer_name} ({$officer->callsign}) berhasil ditambahkan/diperbarui!");
+        
+        $this->info("Memulai pengecekan status live YouTube...");
+        $job = new \App\Jobs\SyncOfficerStreamsJob();
+        app()->call([$job, 'handle']);
+        $this->info("✓ Sinkronisasi selesai!");
     }
 
     protected function toggleOfficer()
