@@ -26,19 +26,28 @@ class SyncOfficerStreamsJob implements ShouldQueue
     public function handle(YouTubeScraperService $scraper): void
     {
         $officers = Officer::where('is_active', true)->get();
-        $handles = $officers->pluck('handle')->toArray();
+        if ($officers->isEmpty()) {
+            return;
+        }
 
-        // Get status for all handles concurrently
-        $liveStreamsData = $scraper->checkLiveStatusMany($handles);
+        // Run hybrid multi-phase fast sync
+        $liveMap = $scraper->syncAllActiveOfficers($officers);
 
         foreach ($officers as $officer) {
-            $liveData = $liveStreamsData[$officer->handle] ?? null;
+            $liveData = $liveMap[$officer->id] ?? null;
 
-            if ($liveData) {
+            if ($liveData && !empty($liveData['video_id'])) {
+                // If officer missing channel_id, auto-save detected YouTube channel ID
+                if ((empty($officer->channel_id) || str_starts_with($officer->channel_id, 'custom-')) && !empty($liveData['channel_id'])) {
+                    $officer->update(['channel_id' => $liveData['channel_id']]);
+                }
+
+                $channelId = $officer->channel_id ?: ($liveData['channel_id'] ?: 'ch-' . $officer->id);
+
                 // Update or create active stream
                 ActiveStream::updateOrCreate(
                     [
-                        'channel_id' => $officer->channel_id,
+                        'channel_id' => $channelId,
                         'video_id' => $liveData['video_id'],
                     ],
                     [
@@ -51,17 +60,21 @@ class SyncOfficerStreamsJob implements ShouldQueue
                     ]
                 );
 
-                // Mark other streams of this officer as ended
-                ActiveStream::where('channel_id', $officer->channel_id)
+                // Mark other previous streams of this officer as ended
+                ActiveStream::where('channel_id', $channelId)
                     ->where('video_id', '!=', $liveData['video_id'])
+                    ->where('status', 'LIVE')
                     ->update([
                         'status' => 'ENDED',
                         'last_synced_at' => now(),
                     ]);
             } else {
-                // Officer is not live, update existing streams to ended
-                ActiveStream::where('channel_id', $officer->channel_id)
-                    ->where('status', '!=', 'ENDED')
+                // Officer was not detected live in this cycle.
+                // Graceful check: only mark ENDED if stream was not updated for >= 3 minutes
+                $channelId = $officer->channel_id ?: 'ch-' . $officer->id;
+                ActiveStream::where('channel_id', $channelId)
+                    ->where('status', 'LIVE')
+                    ->where('last_synced_at', '<', now()->subMinutes(3))
                     ->update([
                         'status' => 'ENDED',
                         'last_synced_at' => now(),

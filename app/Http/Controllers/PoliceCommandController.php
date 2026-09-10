@@ -132,21 +132,92 @@ class PoliceCommandController extends Controller
     {
         $this->syncStreamsIfNeeded();
 
-        $dept = $request->query('dept');
-        $query = ActiveStream::with('officer')->where('status', 'LIVE');
+        $host = $request->getHost();
 
-        if ($dept && $dept !== 'ALL') {
-            $query->whereHas('officer', function ($q) use ($dept) {
-                $q->where('department', $dept);
+        // 1. Online 10-8 Live Streams with Officer info
+        $activeStreams = ActiveStream::with('officer')
+            ->where('status', 'LIVE')
+            ->get()
+            ->map(function ($stream) use ($host) {
+                $officer = $stream->officer;
+                return [
+                    'id' => $stream->id,
+                    'video_id' => $stream->video_id,
+                    'title' => $stream->title ?? 'Patrol Stream',
+                    'thumbnail' => $stream->thumbnail_url,
+                    'status' => 'LIVE',
+                    'incident_code' => $stream->incident_code ?? '10-8 Routine Patrol',
+                    'description' => $stream->description ?? '',
+                    'viewers_count' => $stream->viewers_count ?? 0,
+                    'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}",
+                    'officer' => $officer ? [
+                        'id' => $officer->id,
+                        'channel_id' => $officer->channel_id,
+                        'handle' => $officer->handle,
+                        'streamer_name' => $officer->streamer_name,
+                        'officer_name' => $officer->officer_name,
+                        'callsign' => $officer->callsign,
+                        'badge_number' => $officer->badge_number,
+                        'department' => $officer->department,
+                        'rank' => $officer->rank,
+                        'patrol_zone' => $officer->patrol_zone,
+                        'avatar_url' => $officer->avatar_url,
+                    ] : [
+                        'id' => 0,
+                        'channel_id' => $stream->channel_id,
+                        'handle' => '@Unit',
+                        'streamer_name' => 'Officer',
+                        'officer_name' => 'Patrol Unit',
+                        'callsign' => '1-ADAM-00',
+                        'badge_number' => '#000',
+                        'department' => 'LSPD',
+                        'rank' => 'Officer',
+                        'patrol_zone' => 'Los Santos',
+                        'avatar_url' => null,
+                    ],
+                ];
             });
-        }
 
-        $streams = $query->get();
+        // 2. Offline 10-7 Officer Roster
+        $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->toArray();
+        $offlineOfficers = Officer::where('is_active', true)
+            ->whereNotIn('channel_id', $liveChannelIds)
+            ->orderBy('department')
+            ->orderBy('rank')
+            ->get()
+            ->map(function ($officer) {
+                return [
+                    'id' => $officer->id,
+                    'channel_id' => $officer->channel_id,
+                    'handle' => $officer->handle,
+                    'streamer_name' => $officer->streamer_name,
+                    'officer_name' => $officer->officer_name,
+                    'callsign' => $officer->callsign,
+                    'badge_number' => $officer->badge_number,
+                    'department' => $officer->department,
+                    'rank' => $officer->rank,
+                    'patrol_zone' => $officer->patrol_zone,
+                    'avatar_url' => $officer->avatar_url,
+                    'status' => '10-7 OFFLINE',
+                ];
+            });
+
+        // 3. Department Unit Breakdown Stats
+        $deptStats = [
+            'total_officers' => Officer::where('is_active', true)->count(),
+            'total_live' => $activeStreams->count(),
+            'total_offline' => $offlineOfficers->count(),
+            'lspd_live' => $activeStreams->where('officer.department', 'LSPD')->count(),
+            'bcso_live' => $activeStreams->where('officer.department', 'BCSO')->count(),
+            'sasp_live' => $activeStreams->where('officer.department', 'SASP')->count(),
+        ];
 
         return response()->json([
             'status' => 'success',
-            'data' => $streams,
-            'count' => $streams->count(),
+            'data' => $activeStreams->values(),
+            'offline_officers' => $offlineOfficers->values(),
+            'dept_stats' => $deptStats,
+            'count' => $activeStreams->count(),
             'synced_at' => now()->toIso8601String(),
         ]);
     }
@@ -167,7 +238,7 @@ class PoliceCommandController extends Controller
                 'message' => 'Sync completed successfully',
                 'active_units' => $liveCount,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -259,19 +330,19 @@ class PoliceCommandController extends Controller
     }
 
     /**
-     * Sync active stream statuses with a 2-minute cooldown lock.
+     * Sync active stream statuses with a fast 25-second cooldown lock.
      */
     protected function syncStreamsIfNeeded(): void
     {
         $lockKey = 'police_streams_sync_lock';
 
         if (!Cache::has($lockKey)) {
-            Cache::put($lockKey, true, 120);
+            Cache::put($lockKey, true, 25);
 
             try {
                 $job = new SyncOfficerStreamsJob();
                 app()->call([$job, 'handle']);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::error('Police auto-sync failed: ' . $e->getMessage());
                 Cache::forget($lockKey);
             }

@@ -401,6 +401,84 @@ const handleGlobalClick = (e) => {
 
 let tacTimerInterval = null;
 let tacPollInterval = null;
+let streamPollInterval = null;
+
+const fetchLiveStreamsSilently = async () => {
+    try {
+        const res = await fetch('/api/v1/streams', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        });
+        if (res.ok) {
+            const json = await res.json();
+            if (json.status === 'success' && Array.isArray(json.data)) {
+                const incomingStreams = json.data;
+
+                // 1. Smart merge into streams.value
+                streams.value.forEach(existing => {
+                    const fresh = incomingStreams.find(s => s.video_id === existing.video_id);
+                    if (fresh) {
+                        existing.title = fresh.title;
+                        existing.viewers_count = fresh.viewers_count;
+                        existing.status = fresh.status;
+                        existing.description = fresh.description;
+                        existing.incident_code = fresh.incident_code;
+                        if (fresh.officer) {
+                            existing.officer = fresh.officer;
+                        }
+                    }
+                });
+
+                // Remove ended streams from streams.value
+                const incomingIds = incomingStreams.map(s => s.video_id);
+                streams.value = streams.value.filter(existing => incomingIds.includes(existing.video_id));
+
+                // Add newly detected live streams
+                incomingStreams.forEach(fresh => {
+                    if (!streams.value.some(existing => existing.video_id === fresh.video_id)) {
+                        streams.value.push(fresh);
+                    }
+                });
+
+                // 2. Update offline officers roster
+                if (Array.isArray(json.offline_officers)) {
+                    offlineOfficers.value = json.offline_officers;
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('Silent live streams polling failed:', e);
+    }
+};
+
+const isSyncingFeeds = ref(false);
+
+const triggerManualSync = async () => {
+    if (isSyncingFeeds.value) return;
+    isSyncingFeeds.value = true;
+    showTacticalToast('Menghubungkan ke satelit YouTube untuk mendeteksi unit 10-8...', 'info');
+
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const res = await fetch('/api/v1/sync', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+            }
+        });
+        await fetchLiveStreamsSilently();
+        showTacticalToast('Sinkronisasi selesai! Siaran terbaru telah dimuat.', 'info');
+    } catch (e) {
+        console.warn('Manual sync failed:', e);
+        await fetchLiveStreamsSilently();
+    } finally {
+        isSyncingFeeds.value = false;
+    }
+};
 
 const tickTacTimers = () => {
     let hasExpired = false;
@@ -427,9 +505,10 @@ onMounted(() => {
     document.addEventListener('click', handleGlobalClick);
     loadPersonalStreamsFromStorage();
     
-    // TAC timer ticker (every 1s) & background polling (every 15s)
+    // TAC timer ticker (every 1s), TAC channel polling (every 15s), and Live Streams auto-sync (every 15s)
     tacTimerInterval = setInterval(tickTacTimers, 1000);
     tacPollInterval = setInterval(fetchTacChannels, 15000);
+    streamPollInterval = setInterval(fetchLiveStreamsSilently, 15000);
 });
 
 onUnmounted(() => {
@@ -438,6 +517,7 @@ onUnmounted(() => {
     document.removeEventListener('click', handleGlobalClick);
     if (tacTimerInterval) clearInterval(tacTimerInterval);
     if (tacPollInterval) clearInterval(tacPollInterval);
+    if (streamPollInterval) clearInterval(streamPollInterval);
 });
 
 // Origin URL & Embed Domain for YouTube API Handshake
@@ -1797,12 +1877,17 @@ const submitFeedbackForm = async () => {
                     <span class="text-[10px] text-blue-400 font-mono font-semibold uppercase">WIB (UTC+7)</span>
                 </div>
 
-                <!-- 10-8 Live Units Counter -->
+                <!-- 10-8 Live Units Counter (Clickable to sync) -->
                 <div class="flex items-center space-x-2 border-r border-slate-800 pr-3">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-950/60 text-emerald-400 border border-emerald-500/40">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-ping"></span>
-                        10-8 ON-DUTY: {{ allActiveStreams.length }}
-                    </span>
+                    <button 
+                        @click="triggerManualSync"
+                        :disabled="isSyncingFeeds"
+                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 transition cursor-pointer"
+                        title="Klik untuk sinkronisasi siaran langsung unit sekarang"
+                    >
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-ping" :class="{ 'bg-blue-400': isSyncingFeeds }"></span>
+                        <span>10-8 ON-DUTY: {{ allActiveStreams.length }}</span>
+                    </button>
                 </div>
 
                 <!-- 10-7 Offline Roster Counter -->
@@ -1883,8 +1968,19 @@ const submitFeedbackForm = async () => {
                     </button>
                 </div>
 
-                <!-- Action Buttons: Feedback, Quick Add, Sync, Fullscreen -->
+                <!-- Action Buttons: Sync, Feedback, Quick Add, Fullscreen -->
                 <div class="flex items-center space-x-1.5">
+                    <!-- Manual Sync Button -->
+                    <button 
+                        @click="triggerManualSync"
+                        :disabled="isSyncingFeeds"
+                        class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-blue-900/40 text-blue-300 border border-blue-500/30 transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                        title="Sinkronkan siaran langsung terbaru dari YouTube"
+                    >
+                        <img :src="iconRefresh" class="w-3.5 h-3.5 invert opacity-90" :class="{ 'animate-spin': isSyncingFeeds }" alt="Sync" />
+                        <span class="hidden sm:inline">{{ isSyncingFeeds ? 'Syncing...' : 'Sync Feeds' }}</span>
+                    </button>
+
                     <!-- Visitor Feedback / Channel Request Button -->
                     <button 
                         @click="openRightDrawer('FEEDBACK')"

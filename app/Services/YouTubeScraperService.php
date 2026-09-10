@@ -9,14 +9,147 @@ use Illuminate\Support\Facades\Cache;
 class YouTubeScraperService
 {
     /**
-     * Get live telemetry (viewers count & status) for a batch of video IDs with 60s cache.
+     * Standard realistic browser headers with consent cookies to bypass VPS/Datacenter IP blocks.
+     */
+    public static function getBrowserHeaders(): array
+    {
+        return [
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Cookie' => 'SOCS=CAISNQgDEitib3FfaWRlbnRpdHlmcm9udGVuZHVpc2VydmVyXzIwMjMwODI5LjA3X3AwGgJpZCADGgYIgJ_PpwY; CONSENT=YES+cb.20230531-04-p0.id+FX+119; PREF=tz=Asia.Jakarta;',
+            'sec-ch-ua' => '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+            'sec-ch-ua-mobile' => '?0',
+            'sec-ch-ua-platform' => '"Windows"',
+            'Sec-Fetch-Dest' => 'document',
+            'Sec-Fetch-Mode' => 'navigate',
+            'Sec-Fetch-Site' => 'none',
+            'Sec-Fetch-User' => '?1',
+        ];
+    }
+
+    /**
+     * Hybrid Fast Multi-Phase Sync for all registered officers.
+     * Combines ultra-fast hashtag indexing with targeted direct handle checks.
+     *
+     * @param iterable $officers Collection or array of Officer models
+     * @return array Map of [officer_id => live_stream_data_or_null]
+     */
+    public function syncAllActiveOfficers(iterable $officers): array
+    {
+        $officerList = collect($officers);
+        if ($officerList->isEmpty()) {
+            return [];
+        }
+
+        $results = [];
+        $unmatchedOfficers = collect();
+
+        // --- PHASE 1: Fast Hashtag Live Scan (#imepolice & #imeroleplay) ---
+        $hashtagLiveStreams = [];
+        foreach (['#imepolice', '#imeroleplay'] as $tag) {
+            $streams = $this->searchLiveStreams($tag, 35);
+            foreach ($streams as $s) {
+                if (!empty($s['video_id'])) {
+                    $hashtagLiveStreams[$s['video_id']] = $s;
+                }
+            }
+        }
+
+        // Match hashtag streams against officers
+        foreach ($officerList as $officer) {
+            $matchedStream = null;
+            $cleanHandle = strtolower(ltrim($officer->handle, '@'));
+            $streamerName = strtolower(trim($officer->streamer_name ?? ''));
+            $officerName = strtolower(trim($officer->officer_name ?? ''));
+            $callsign = strtolower(trim($officer->callsign ?? ''));
+            $channelId = trim($officer->channel_id ?? '');
+
+            foreach ($hashtagLiveStreams as $videoId => $stream) {
+                $streamHandle = strtolower(ltrim($stream['handle'] ?? '', '@'));
+                $streamBrowseId = trim($stream['channel_id'] ?? '');
+                $chName = strtolower(trim($stream['channel_name'] ?? ''));
+                $title = strtolower(trim($stream['title'] ?? ''));
+
+                // Match condition 1: Exact handle match
+                if (!empty($cleanHandle) && !empty($streamHandle) && $cleanHandle === $streamHandle) {
+                    $matchedStream = $stream;
+                    break;
+                }
+
+                // Match condition 2: Exact YouTube Channel ID (browseId)
+                if (!empty($channelId) && !empty($streamBrowseId) && $channelId === $streamBrowseId) {
+                    $matchedStream = $stream;
+                    break;
+                }
+
+                // Match condition 3: Channel Name match
+                if (!empty($chName) && (
+                    (!empty($cleanHandle) && ($chName === $cleanHandle || str_contains($chName, $cleanHandle) || str_contains($cleanHandle, $chName))) ||
+                    (!empty($streamerName) && ($chName === $streamerName || str_contains($chName, $streamerName) || str_contains($streamerName, $chName)))
+                )) {
+                    $matchedStream = $stream;
+                    break;
+                }
+
+                // Match condition 4: Callsign in title
+                if (!empty($callsign) && strlen($callsign) >= 4 && str_contains($title, $callsign)) {
+                    $matchedStream = $stream;
+                    break;
+                }
+            }
+
+            if ($matchedStream) {
+                $results[$officer->id] = [
+                    'status' => 'LIVE',
+                    'video_id' => $matchedStream['video_id'],
+                    'title' => $matchedStream['title'],
+                    'thumbnail_url' => $matchedStream['thumbnail_url'] ?? "https://i.ytimg.com/vi/{$matchedStream['video_id']}/hqdefault.jpg",
+                    'viewers_count' => $matchedStream['viewers_count'] ?? 0,
+                    'description' => $matchedStream['description'] ?? '',
+                    'channel_id' => $matchedStream['channel_id'] ?? $officer->channel_id,
+                ];
+            } else {
+                $unmatchedOfficers->push($officer);
+            }
+        }
+
+        // --- PHASE 2: Targeted Direct Handle Check for Unmatched Officers ---
+        if ($unmatchedOfficers->isNotEmpty()) {
+            $handlesToCheck = $unmatchedOfficers->pluck('handle')->toArray();
+            $directLiveResults = $this->checkLiveStatusMany($handlesToCheck);
+
+            foreach ($unmatchedOfficers as $officer) {
+                $formattedHandle = str_starts_with($officer->handle, '@') ? $officer->handle : '@' . $officer->handle;
+                $directData = $directLiveResults[$officer->handle] ?? ($directLiveResults[$formattedHandle] ?? null);
+
+                if ($directData) {
+                    $results[$officer->id] = [
+                        'status' => 'LIVE',
+                        'video_id' => $directData['video_id'],
+                        'title' => $directData['title'],
+                        'thumbnail_url' => $directData['thumbnail_url'],
+                        'viewers_count' => $directData['viewers_count'] ?? 0,
+                        'description' => $directData['description'] ?? '',
+                        'channel_id' => $directData['channel_id'] ?? $officer->channel_id,
+                    ];
+                } else {
+                    $results[$officer->id] = null;
+                }
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get live telemetry (viewers count & status) for a batch of video IDs with 30s cache.
      *
      * @param array $videoIds Array of YouTube video IDs
      * @return array Map of videoId => telemetry data
      */
     public function getBatchStreamsTelemetry(array $videoIds): array
     {
-        // 1. Filter and sanitize 11-char video IDs (max 30 per request)
         $cleanIds = array_values(array_unique(array_filter(array_map('trim', $videoIds), function ($id) {
             return strlen($id) === 11 && preg_match('/^[A-Za-z0-9_-]{11}$/', $id);
         })));
@@ -29,7 +162,6 @@ class YouTubeScraperService
         $results = [];
         $uncachedIds = [];
 
-        // 2. Check server-side cache for each video ID (60s TTL)
         foreach ($cleanIds as $id) {
             $cached = Cache::get("yt_telemetry_{$id}");
             if ($cached !== null && is_array($cached)) {
@@ -39,15 +171,11 @@ class YouTubeScraperService
             }
         }
 
-        // 3. Parallel fetch uncached video IDs using Http::pool
         if (!empty($uncachedIds)) {
             try {
                 $responses = Http::pool(function ($pool) use ($uncachedIds) {
                     foreach ($uncachedIds as $id) {
-                        $pool->as($id)->withHeaders([
-                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                            'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-                        ])->timeout(6)->get("https://www.youtube.com/watch?v={$id}");
+                        $pool->as($id)->withHeaders(self::getBrowserHeaders())->timeout(6)->get("https://www.youtube.com/watch?v={$id}");
                     }
                 });
 
@@ -66,28 +194,27 @@ class YouTubeScraperService
                             'updated_at' => now()->toIso8601String(),
                         ];
 
-                        // Cache result for 60 seconds
-                        Cache::put("yt_telemetry_{$id}", $telemetry, 60);
+                        Cache::put("yt_telemetry_{$id}", $telemetry, 30);
                         $results[$id] = $telemetry;
                     } else {
-                        // Fallback placeholder with short 20s cache
                         $fallback = [
                             'video_id' => $id,
                             'viewers_count' => 0,
                             'status' => 'LIVE',
                             'updated_at' => now()->toIso8601String(),
                         ];
-                        Cache::put("yt_telemetry_{$id}", $fallback, 20);
+                        Cache::put("yt_telemetry_{$id}", $fallback, 15);
                         $results[$id] = $fallback;
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error("Batch stream telemetry fetch failed: " . $e->getMessage());
             }
         }
 
         return $results;
     }
+
     /**
      * Check if a YouTube channel is currently streaming live.
      *
@@ -103,10 +230,7 @@ class YouTubeScraperService
         try {
             $url = "https://www.youtube.com/{$handle}/live";
             
-            $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept-Language' => 'en-US,en;q=0.9',
-            ])->timeout(8)->get($url);
+            $response = Http::withHeaders(self::getBrowserHeaders())->timeout(7)->get($url);
 
             if (!$response->successful()) {
                 Log::warning("YouTube scraper HTTP request failed for {$handle} with status: " . $response->status());
@@ -116,7 +240,6 @@ class YouTubeScraperService
             $effectiveUrl = (string) $response->effectiveUri();
             $body = $response->body();
 
-            // Extract video ID from URL redirect, canonical, or json videoId match
             $videoId = null;
             if (preg_match('/watch\?v=([A-Za-z0-9_-]{11})/', $effectiveUrl, $matches)) {
                 $videoId = $matches[1];
@@ -141,6 +264,8 @@ class YouTubeScraperService
                 $title = $this->extractTitle($body) ?? ($handle . " Police Patrol Live Feed");
                 $description = $this->extractDescription($body);
                 $viewersCount = $this->extractViewersCount($body);
+                $channelId = $this->extractChannelId($body);
+
                 return [
                     'status' => 'LIVE',
                     'video_id' => $videoId,
@@ -148,9 +273,10 @@ class YouTubeScraperService
                     'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
                     'viewers_count' => $viewersCount,
                     'description' => $description,
+                    'channel_id' => $channelId,
                 ];
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("YouTube scraping failed for handle {$handle}: " . $e->getMessage());
         }
 
@@ -158,10 +284,10 @@ class YouTubeScraperService
     }
 
     /**
-     * Check if multiple YouTube channels are streaming live in parallel.
+     * Check multiple YouTube channels for live status in small parallel chunks.
      *
      * @param array $handles Array of YouTube channel handles
-     * @return array Array of live stream data keyed by the original handle
+     * @return array Array of live stream data keyed by handle
      */
     public function checkLiveStatusMany(array $handles): array
     {
@@ -169,83 +295,82 @@ class YouTubeScraperService
             return [];
         }
 
-        try {
-            // Initiate parallel HTTP requests using Laravel's Http::pool
-            $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($handles) {
-                foreach ($handles as $handle) {
-                    $formattedHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
-                    $url = "https://www.youtube.com/{$formattedHandle}/live";
-                    
-                    $pool->as($handle)->withHeaders([
-                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-                    ])->timeout(8)->get($url);
+        $results = [];
+        $chunks = array_chunk($handles, 8); // Chunks of 8 to prevent VPS datacenter IP rate limits
+
+        foreach ($chunks as $chunk) {
+            try {
+                $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($chunk) {
+                    foreach ($chunk as $handle) {
+                        $formattedHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
+                        $url = "https://www.youtube.com/{$formattedHandle}/live";
+                        
+                        $pool->as($handle)->withHeaders(self::getBrowserHeaders())->timeout(7)->get($url);
+                    }
+                });
+
+                foreach ($chunk as $handle) {
+                    $response = $responses[$handle] ?? null;
+                    if (!$response || !($response instanceof \Illuminate\Http\Client\Response) || !$response->successful()) {
+                        continue;
+                    }
+
+                    $effectiveUrl = (string) $response->effectiveUri();
+                    $body = $response->body();
+
+                    $videoId = null;
+                    if (preg_match('/watch\?v=([A-Za-z0-9_-]{11})/', $effectiveUrl, $matches)) {
+                        $videoId = $matches[1];
+                    } elseif (preg_match('/<link rel="canonical" href="[^"]*watch\?v=([A-Za-z0-9_-]{11})">/', $body, $matches)) {
+                        $videoId = $matches[1];
+                    } elseif (preg_match('/"videoId":"([A-Za-z0-9_-]{11})"/ ', $body, $matches)) {
+                        $videoId = $matches[1];
+                    }
+
+                    if (!$videoId) {
+                        continue; // Not live
+                    }
+
+                    $isLive = str_contains($body, '"isLive":true') || str_contains($body, '"isLiveContent":true');
+                    $isPlayableNow = str_contains($body, '"playabilityStatus":{"status":"OK"');
+
+                    if (str_contains($body, '"status":"LIVE_STREAM_OFFLINE"')) {
+                        $isPlayableNow = false;
+                    }
+
+                    if ($isLive && $isPlayableNow) {
+                        $title = $this->extractTitle($body) ?? ($handle . " Police Patrol");
+                        $description = $this->extractDescription($body);
+                        $viewersCount = $this->extractViewersCount($body);
+                        $channelId = $this->extractChannelId($body);
+
+                        $results[$handle] = [
+                            'status' => 'LIVE',
+                            'video_id' => $videoId,
+                            'title' => $title,
+                            'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
+                            'viewers_count' => $viewersCount,
+                            'description' => $description,
+                            'channel_id' => $channelId,
+                        ];
+                    }
                 }
-            });
-
-            $results = [];
-
-            foreach ($handles as $handle) {
-                $response = $responses[$handle] ?? null;
-                if (!$response || !$response->successful()) {
-                    continue;
-                }
-
-                $effectiveUrl = (string) $response->effectiveUri();
-                $body = $response->body();
-
-                // Extract video ID
-                $videoId = null;
-                if (preg_match('/watch\?v=([A-Za-z0-9_-]{11})/', $effectiveUrl, $matches)) {
-                    $videoId = $matches[1];
-                } elseif (preg_match('/<link rel="canonical" href="[^"]*watch\?v=([A-Za-z0-9_-]{11})">/', $body, $matches)) {
-                    $videoId = $matches[1];
-                } elseif (preg_match('/"videoId":"([A-Za-z0-9_-]{11})"/ ', $body, $matches)) {
-                    $videoId = $matches[1];
-                }
-
-                if (!$videoId) {
-                    continue; // Not live
-                }
-
-                $isLive = str_contains($body, '"isLive":true') || str_contains($body, '"isLiveContent":true');
-                $isPlayableNow = str_contains($body, '"playabilityStatus":{"status":"OK"');
-
-                if (str_contains($body, '"status":"LIVE_STREAM_OFFLINE"')) {
-                    $isPlayableNow = false;
-                }
-
-                if ($isLive && $isPlayableNow) {
-                    $title = $this->extractTitle($body) ?? ($handle . " Police Patrol");
-                    $description = $this->extractDescription($body);
-                    $viewersCount = $this->extractViewersCount($body);
-                    $results[$handle] = [
-                        'status' => 'LIVE',
-                        'video_id' => $videoId,
-                        'title' => $title,
-                        'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
-                        'viewers_count' => $viewersCount,
-                        'description' => $description,
-                    ];
-                }
+            } catch (\Throwable $e) {
+                Log::error("Parallel YouTube scraping chunk failed: " . $e->getMessage());
             }
-
-            return $results;
-        } catch (\Exception $e) {
-            Log::error("Parallel YouTube scraping failed: " . $e->getMessage());
         }
 
-        return [];
+        return $results;
     }
 
     /**
      * Search YouTube for live streams matching a keyword or hashtag.
      *
-     * @param string $query Keyword or hashtag (e.g. '#imeroleplay burgenk')
+     * @param string $query Keyword or hashtag (e.g. '#imeroleplay' or '#imepolice')
      * @param int $limit Maximum number of live streams to return
      * @return array List of live stream records
      */
-    public function searchLiveStreams(string $query, int $limit = 15): array
+    public function searchLiveStreams(string $query, int $limit = 35): array
     {
         $cleanQuery = trim($query);
         if (empty($cleanQuery)) {
@@ -254,13 +379,10 @@ class YouTubeScraperService
 
         try {
             $encodedQuery = urlencode($cleanQuery);
-            // sp=EgJAAQ%3D%3D is the YouTube search filter specifically for "Live"
+            // sp=EgJAAQ%3D%3D is the YouTube search filter for "Live"
             $url = "https://www.youtube.com/results?search_query={$encodedQuery}&sp=EgJAAQ%3D%3D";
 
-            $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-            ])->timeout(8)->get($url);
+            $response = Http::withHeaders(self::getBrowserHeaders())->timeout(7)->get($url);
 
             if (!$response->successful()) {
                 Log::warning("YouTube search request failed for query: {$cleanQuery} with status: " . $response->status());
@@ -313,9 +435,20 @@ class YouTubeScraperService
 
                         if ($isLive) {
                             $title = $v['title']['runs'][0]['text'] ?? ($v['headline']['simpleText'] ?? 'Live Stream');
-                            $channelName = $v['ownerText']['runs'][0]['text'] ?? ($v['shortBylineText']['runs'][0]['text'] ?? 'Streamer');
                             
-                            // Extract viewers text (e.g. "1.2K watching" or "450 penonton")
+                            $ownerText = $v['ownerText'] ?? null;
+                            $channelName = $ownerText['runs'][0]['text'] ?? ($v['shortBylineText']['runs'][0]['text'] ?? 'Streamer');
+                            
+                            // Extract handle & channelId if available in navigationEndpoint
+                            $nav = $ownerText['runs'][0]['navigationEndpoint']['browseEndpoint'] ?? ($v['shortBylineText']['runs'][0]['navigationEndpoint']['browseEndpoint'] ?? null);
+                            $canonical = $nav['canonicalBaseUrl'] ?? null;
+                            $browseId = $nav['browseId'] ?? null;
+                            $handle = null;
+                            if ($canonical && str_starts_with($canonical, '/@')) {
+                                $handle = ltrim($canonical, '/');
+                            }
+
+                            // Extract viewers count
                             $viewers = 'Live';
                             if (isset($v['viewCountText']['runs']) && is_array($v['viewCountText']['runs'])) {
                                 $viewers = trim(implode('', array_column($v['viewCountText']['runs'], 'text')));
@@ -323,11 +456,8 @@ class YouTubeScraperService
                                 $viewers = trim($v['viewCountText']['simpleText']);
                             } elseif (isset($v['shortViewCountText']['simpleText'])) {
                                 $viewers = trim($v['shortViewCountText']['simpleText']);
-                            } elseif (isset($v['shortViewCountText']['runs']) && is_array($v['shortViewCountText']['runs'])) {
-                                $viewers = trim(implode('', array_column($v['shortViewCountText']['runs'], 'text')));
                             }
 
-                            // Extract raw viewers count integer if possible
                             $viewersCount = (int) preg_replace('/[^\d]/', '', $viewers);
 
                             // Extract description snippet
@@ -344,6 +474,8 @@ class YouTubeScraperService
                                 'video_id' => $videoId,
                                 'title' => $title,
                                 'channel_name' => $channelName,
+                                'handle' => $handle,
+                                'channel_id' => $browseId,
                                 'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
                                 'viewers' => $viewers,
                                 'viewers_count' => $viewersCount,
@@ -360,7 +492,7 @@ class YouTubeScraperService
             }
 
             return $videos;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("YouTube live search failed for query {$cleanQuery}: " . $e->getMessage());
             return [];
         }
@@ -377,10 +509,7 @@ class YouTubeScraperService
         }
 
         try {
-            $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-            ])->timeout(8)->get("https://www.youtube.com/watch?v={$cleanId}");
+            $response = Http::withHeaders(self::getBrowserHeaders())->timeout(7)->get("https://www.youtube.com/watch?v={$cleanId}");
 
             if (!$response->successful()) {
                 return null;
@@ -398,7 +527,7 @@ class YouTubeScraperService
                 'viewers_count' => $viewersCount,
                 'thumbnail_url' => "https://i.ytimg.com/vi/{$cleanId}/hqdefault.jpg",
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Failed to scrape video details for {$cleanId}: " . $e->getMessage());
             return null;
         }
@@ -417,11 +546,24 @@ class YouTubeScraperService
     }
 
     /**
-     * Extract stream description from YouTube HTML with full multi-line formatting preserved.
+     * Extract channel ID (browseId UC...) from YouTube HTML.
+     */
+    private function extractChannelId(string $html): ?string
+    {
+        if (preg_match('/"channelId":"(UC[A-Za-z0-9_-]{22})"/ ', $html, $matches) || preg_match('/"externalId":"(UC[A-Za-z0-9_-]{22})"/ ', $html, $matches)) {
+            return $matches[1];
+        }
+        if (preg_match('/<meta itemprop="channelId" content="(UC[A-Za-z0-9_-]{22})">/i', $html, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    /**
+     * Extract stream description from YouTube HTML.
      */
     public function extractDescription(string $html): string
     {
-        // 1. Try to extract shortDescription from JSON (contains full newlines and unescaped text)
         if (preg_match('/"shortDescription":\s*"((?:[^"\\\\]|\\\\.)*)"/s', $html, $matches)) {
             $decoded = json_decode('"' . $matches[1] . '"');
             if (is_string($decoded) && trim($decoded) !== '') {
@@ -433,7 +575,6 @@ class YouTubeScraperService
             }
         }
 
-        // 2. Try to extract attributedDescription / description text
         if (preg_match('/"attributedDescription":\s*\{\s*"content":\s*"((?:[^"\\\\]|\\\\.)*)"/s', $html, $matches)) {
             $decoded = json_decode('"' . $matches[1] . '"');
             if (is_string($decoded) && trim($decoded) !== '') {
@@ -445,7 +586,6 @@ class YouTubeScraperService
             }
         }
 
-        // 3. Fallback to meta tag if JSON is not present
         if (preg_match('/<meta name="description" content="([^"]*)">/i', $html, $matches)) {
             return trim(html_entity_decode($matches[1], ENT_QUOTES, 'UTF-8'));
         }
