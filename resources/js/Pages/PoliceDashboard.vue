@@ -2,7 +2,8 @@
 import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 
-// SVG Icon Assets
+// SVG Icon Assets & Branding Logos
+import logoSaspColor from '@/Components/Icons/SASP256.jpg';
 import iconLspd from '@/Components/Icons/LSPD_HD.svg';
 import iconBcso from '@/Components/Icons/Logo_LSCSD.svg';
 import iconSasp from '@/Components/Icons/SASP_HD.svg';
@@ -1778,8 +1779,8 @@ const submitFeedbackForm = async () => {
             
             <!-- Left Branding: IME Roleplay Police Division -->
             <div class="flex items-center space-x-3">
-                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-900 to-slate-900 border border-blue-500/40 shadow-inner p-1.5">
-                    <img :src="iconLspd" class="w-full h-full object-contain brightness-0 invert" alt="LSPD Badge" />
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden">
+                    <img :src="logoSaspColor" class="w-full h-full object-contain rounded" alt="SASP Badge" />
                 </div>
                 <div class="flex flex-col">
                     <span class="text-sm font-black tracking-wider text-blue-400 uppercase leading-tight">IME ROLEPLAY</span>
