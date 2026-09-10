@@ -29,8 +29,10 @@ class YouTubeScraperService
     }
 
     /**
-     * Hybrid Fast Multi-Phase Sync for all registered officers.
-     * Combines ultra-fast hashtag indexing with targeted direct handle checks.
+     * Hybrid Multi-Tier Fast Sync for all registered officers.
+     * Tier 1: Hashtag live stream scan (#imepolice, #imeroleplay)
+     * Tier 2: YouTube RSS XML feeds for officers with channel_id (bypasses VPS datacenter IP blocks)
+     * Tier 3: Direct handle live endpoint check (@handle/live) for remaining unmatched officers
      *
      * @param iterable $officers Collection or array of Officer models
      * @return array Map of [officer_id => live_stream_data_or_null]
@@ -45,7 +47,7 @@ class YouTubeScraperService
         $results = [];
         $unmatchedOfficers = collect();
 
-        // --- PHASE 1: Fast Hashtag Live Scan (#imepolice & #imeroleplay) ---
+        // --- TIER 1: Fast Hashtag Live Scan (#imepolice & #imeroleplay) ---
         $hashtagLiveStreams = [];
         foreach (['#imepolice', '#imeroleplay'] as $tag) {
             $streams = $this->searchLiveStreams($tag, 35);
@@ -108,13 +110,73 @@ class YouTubeScraperService
                     'viewers_count' => $matchedStream['viewers_count'] ?? 0,
                     'description' => $matchedStream['description'] ?? '',
                     'channel_id' => $matchedStream['channel_id'] ?? $officer->channel_id,
+                    'detection_method' => 'HASHTAG_SEARCH',
                 ];
             } else {
                 $unmatchedOfficers->push($officer);
             }
         }
 
-        // --- PHASE 2: Targeted Direct Handle Check for Unmatched Officers ---
+        // --- TIER 2: Zero-Quota RSS XML Feeds (Bulletproof on VPS Datacenter IPs) ---
+        $rssOfficers = $unmatchedOfficers->filter(fn($o) => !empty($o->channel_id) && str_starts_with($o->channel_id, 'UC'));
+        if ($rssOfficers->isNotEmpty()) {
+            $rssCandidates = [];
+            $rssResponses = Http::pool(function ($pool) use ($rssOfficers) {
+                foreach ($rssOfficers as $officer) {
+                    $pool->as($officer->id)->withHeaders(self::getBrowserHeaders())->timeout(5)->get("https://www.youtube.com/feeds/videos.xml?channel_id={$officer->channel_id}");
+                }
+            });
+
+            foreach ($rssOfficers as $officer) {
+                $res = $rssResponses[$officer->id] ?? null;
+                if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
+                    $xml = @simplexml_load_string($res->body());
+                    if ($xml && isset($xml->entry[0])) {
+                        $latest = $xml->entry[0];
+                        $videoId = (string) $latest->children('yt', true)->videoId;
+                        $title = (string) $latest->title;
+                        $published = (string) $latest->published;
+                        $pubTime = strtotime($published);
+
+                        // If published in last 72 hours, check if it's currently live
+                        if (!empty($videoId) && (time() - $pubTime) < 259200) {
+                            $rssCandidates[$officer->id] = [
+                                'officer' => $officer,
+                                'video_id' => $videoId,
+                                'title' => $title,
+                                'published' => $published,
+                            ];
+                        }
+                    }
+                }
+            }
+
+            if (!empty($rssCandidates)) {
+                $candidateIds = array_unique(array_column($rssCandidates, 'video_id'));
+                $telemetry = $this->getBatchStreamsTelemetry($candidateIds);
+
+                foreach ($rssCandidates as $officerId => $cand) {
+                    $vId = $cand['video_id'];
+                    $t = $telemetry[$vId] ?? null;
+                    if ($t && ($t['status'] ?? '') === 'LIVE') {
+                        $results[$officerId] = [
+                            'status' => 'LIVE',
+                            'video_id' => $vId,
+                            'title' => $cand['title'],
+                            'thumbnail_url' => "https://i.ytimg.com/vi/{$vId}/hqdefault.jpg",
+                            'viewers_count' => $t['viewers_count'] ?? 0,
+                            'description' => '',
+                            'channel_id' => $cand['officer']->channel_id,
+                            'detection_method' => 'RSS_FEED',
+                        ];
+                        // Remove from unmatched
+                        $unmatchedOfficers = $unmatchedOfficers->reject(fn($o) => $o->id == $officerId);
+                    }
+                }
+            }
+        }
+
+        // --- TIER 3: Targeted Direct Handle Check for Remaining Unmatched Officers ---
         if ($unmatchedOfficers->isNotEmpty()) {
             $handlesToCheck = $unmatchedOfficers->pluck('handle')->toArray();
             $directLiveResults = $this->checkLiveStatusMany($handlesToCheck);
@@ -132,6 +194,7 @@ class YouTubeScraperService
                         'viewers_count' => $directData['viewers_count'] ?? 0,
                         'description' => $directData['description'] ?? '',
                         'channel_id' => $directData['channel_id'] ?? $officer->channel_id,
+                        'detection_method' => 'DIRECT_HANDLE',
                     ];
                 } else {
                     $results[$officer->id] = null;
@@ -144,6 +207,7 @@ class YouTubeScraperService
 
     /**
      * Get live telemetry (viewers count & status) for a batch of video IDs with 30s cache.
+     * Supports both optional YouTube Data API v3 and direct HTML scraper.
      *
      * @param array $videoIds Array of YouTube video IDs
      * @return array Map of videoId => telemetry data
@@ -153,7 +217,7 @@ class YouTubeScraperService
         $cleanIds = array_values(array_unique(array_filter(array_map('trim', $videoIds), function ($id) {
             return strlen($id) === 11 && preg_match('/^[A-Za-z0-9_-]{11}$/', $id);
         })));
-        $cleanIds = array_slice($cleanIds, 0, 30);
+        $cleanIds = array_slice($cleanIds, 0, 40);
 
         if (empty($cleanIds)) {
             return [];
@@ -171,45 +235,97 @@ class YouTubeScraperService
             }
         }
 
-        if (!empty($uncachedIds)) {
+        if (empty($uncachedIds)) {
+            return $results;
+        }
+
+        $apiKey = config('services.youtube.api_key', env('YOUTUBE_API_KEY'));
+
+        // Strategy A: Official YouTube Data API v3 if API key is provided
+        if (!empty($apiKey)) {
             try {
-                $responses = Http::pool(function ($pool) use ($uncachedIds) {
-                    foreach ($uncachedIds as $id) {
-                        $pool->as($id)->withHeaders(self::getBrowserHeaders())->timeout(6)->get("https://www.youtube.com/watch?v={$id}");
-                    }
-                });
+                $response = Http::timeout(6)->get('https://www.googleapis.com/youtube/v3/videos', [
+                    'part' => 'snippet,liveStreamingDetails',
+                    'id' => implode(',', $uncachedIds),
+                    'key' => $apiKey,
+                ]);
 
-                foreach ($uncachedIds as $id) {
-                    $res = $responses[$id] ?? null;
-                    if ($res && $res->successful()) {
-                        $body = $res->body();
-                        $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, 'STREAM_OFFLINE');
-                        $isPlayable = str_contains($body, '"playabilityStatus":{"status":"OK"');
-                        $viewersCount = $this->extractViewersCount($body);
+                if ($response->successful()) {
+                    $items = $response->json('items') ?? [];
+                    $apiFoundIds = [];
 
+                    foreach ($items as $item) {
+                        $vId = $item['id'] ?? null;
+                        if (!$vId) continue;
+                        $apiFoundIds[] = $vId;
+
+                        $liveBroadcastContent = $item['snippet']['liveBroadcastContent'] ?? '';
+                        $liveDetails = $item['liveStreamingDetails'] ?? null;
+                        $concurrentViewers = (int) ($liveDetails['concurrentViewers'] ?? 0);
+
+                        $isLive = ($liveBroadcastContent === 'live');
                         $telemetry = [
-                            'video_id' => $id,
-                            'viewers_count' => $viewersCount,
-                            'status' => ($isPlayable && !$isOffline) ? 'LIVE' : 'OFFLINE',
+                            'video_id' => $vId,
+                            'viewers_count' => $concurrentViewers,
+                            'status' => $isLive ? 'LIVE' : 'OFFLINE',
+                            'title' => $item['snippet']['title'] ?? '',
                             'updated_at' => now()->toIso8601String(),
                         ];
 
-                        Cache::put("yt_telemetry_{$id}", $telemetry, 30);
-                        $results[$id] = $telemetry;
-                    } else {
-                        $fallback = [
-                            'video_id' => $id,
-                            'viewers_count' => 0,
-                            'status' => 'LIVE',
-                            'updated_at' => now()->toIso8601String(),
-                        ];
-                        Cache::put("yt_telemetry_{$id}", $fallback, 15);
-                        $results[$id] = $fallback;
+                        Cache::put("yt_telemetry_{$vId}", $telemetry, 30);
+                        $results[$vId] = $telemetry;
+                    }
+
+                    // Remaining IDs that were not returned by API
+                    $uncachedIds = array_diff($uncachedIds, $apiFoundIds);
+                    if (empty($uncachedIds)) {
+                        return $results;
                     }
                 }
             } catch (\Throwable $e) {
-                Log::error("Batch stream telemetry fetch failed: " . $e->getMessage());
+                Log::warning("YouTube Data API v3 telemetry fetch failed, falling back to scraper: " . $e->getMessage());
             }
+        }
+
+        // Strategy B: Parallel HTML Scraper (Zero API Quota, Datacenter Header Bypass)
+        try {
+            $responses = Http::pool(function ($pool) use ($uncachedIds) {
+                foreach ($uncachedIds as $id) {
+                    $pool->as($id)->withHeaders(self::getBrowserHeaders())->timeout(6)->get("https://www.youtube.com/watch?v={$id}");
+                }
+            });
+
+            foreach ($uncachedIds as $id) {
+                $res = $responses[$id] ?? null;
+                if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
+                    $body = $res->body();
+                    $isLive = str_contains($body, '"isLive":true') || str_contains($body, '"isLiveContent":true') || str_contains($body, '"isLiveDvrEnabled":true');
+                    $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, 'STREAM_OFFLINE');
+                    $isPlayable = str_contains($body, '"playabilityStatus":{"status":"OK"');
+                    $viewersCount = $this->extractViewersCount($body);
+
+                    $telemetry = [
+                        'video_id' => $id,
+                        'viewers_count' => $viewersCount,
+                        'status' => ($isLive && $isPlayable && !$isOffline) ? 'LIVE' : 'OFFLINE',
+                        'updated_at' => now()->toIso8601String(),
+                    ];
+
+                    Cache::put("yt_telemetry_{$id}", $telemetry, 30);
+                    $results[$id] = $telemetry;
+                } else {
+                    $fallback = [
+                        'video_id' => $id,
+                        'viewers_count' => 0,
+                        'status' => 'OFFLINE',
+                        'updated_at' => now()->toIso8601String(),
+                    ];
+                    Cache::put("yt_telemetry_{$id}", $fallback, 15);
+                    $results[$id] = $fallback;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error("Batch stream telemetry fetch failed: " . $e->getMessage());
         }
 
         return $results;
