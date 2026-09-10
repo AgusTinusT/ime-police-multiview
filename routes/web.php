@@ -5,6 +5,7 @@ use App\Http\Controllers\PoliceCommandController;
 use App\Http\Controllers\OfficerManagementController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TacChannelController;
 use Inertia\Inertia;
 
 // Main Police Tactical Command Center Dashboard
@@ -29,6 +30,15 @@ Route::prefix('api/v1')->group(function () {
     Route::get('/stream-details', [PoliceCommandController::class, 'apiStreamDetails']);
     Route::match(['get', 'post'], '/telemetry', [PoliceCommandController::class, 'apiTelemetry']);
     Route::post('/feedback', [FeedbackController::class, 'submit'])->middleware('throttle:5,1');
+    
+    // TAC Tactical Radio Channels
+    Route::prefix('tac')->group(function () {
+        Route::get('/', [TacChannelController::class, 'index']);
+        Route::post('/assign', [TacChannelController::class, 'assign']);
+        Route::post('/remove', [TacChannelController::class, 'remove']);
+        Route::post('/extend', [TacChannelController::class, 'extend']);
+        Route::post('/clear', [TacChannelController::class, 'clear']);
+    });
 });
 
 

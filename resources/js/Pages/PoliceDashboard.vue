@@ -29,7 +29,7 @@ import iconUser from '@/Components/Icons/user-svgrepo-com.svg';
 import iconRoster from '@/Components/Icons/doc-svgrepo-com.svg';
 import iconBug from '@/Components/Icons/bug-svgrepo-com.svg';
 import iconExternal from '@/Components/Icons/link-external-svgrepo-com.svg';
-import iconRadio from '@/Components/Icons/radio-svgrepo-com.svg';
+import iconRadio from '@/Components/Icons/radio-signal-svgrepo-com.svg';
 import iconReset from '@/Components/Icons/reset-svgrepo-com.svg';
 import iconSend from '@/Components/Icons/send-svgrepo-com.svg';
 import iconUrl from '@/Components/Icons/url-checker-svgrepo-com.svg';
@@ -44,6 +44,10 @@ const props = defineProps({
     initialOfflineOfficers: {
         type: Array,
         required: true,
+    },
+    initialTacChannels: {
+        type: Array,
+        default: () => [],
     },
     deptStats: {
         type: Object,
@@ -65,6 +69,292 @@ const selectedLayout = ref('auto'); // 'auto', 'grid-2x2', 'grid-3x3', 'grid-4x4
 const activeAudioVideoId = ref(null);
 const searchFilter = ref('');
 const focusedStreamId = ref(null);
+
+// Tactical Radio Channels (TAC 1 to TAC 5) State
+const defaultTacChannels = [
+    { id: 1, code: 'TAC_1', name: 'TAC 1', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
+    { id: 2, code: 'TAC_2', name: 'TAC 2', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
+    { id: 3, code: 'TAC_3', name: 'TAC 3', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
+    { id: 4, code: 'TAC_4', name: 'TAC 4', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
+    { id: 5, code: 'TAC_5', name: 'TAC 5', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
+];
+const tacChannels = ref(props.initialTacChannels && props.initialTacChannels.length > 0 ? props.initialTacChannels : defaultTacChannels);
+const activeTacPopoverVideoId = ref(null);
+const tacticalToast = ref(null);
+
+const showTacticalToast = (message, type = 'info') => {
+    tacticalToast.value = { message, type };
+    setTimeout(() => {
+        if (tacticalToast.value?.message === message) {
+            tacticalToast.value = null;
+        }
+    }, 3500);
+};
+
+const getStreamTac = (videoId) => {
+    if (!videoId) return null;
+    const ch = tacChannels.value.find(c => c.video_ids && c.video_ids.includes(videoId));
+    return ch ? ch.code : null;
+};
+
+const getTacChannel = (tacCode) => {
+    return tacChannels.value.find(c => c.code === tacCode) || null;
+};
+
+const getTacUnitCount = (tacCode) => {
+    const ch = getTacChannel(tacCode);
+    return ch && ch.video_ids ? ch.video_ids.length : 0;
+};
+
+const getTacRemainingSeconds = (tacCode) => {
+    const ch = getTacChannel(tacCode);
+    return ch ? (ch.remaining_seconds || 0) : 0;
+};
+
+const isTacDepartment = (deptId) => {
+    return ['TAC_1', 'TAC_2', 'TAC_3', 'TAC_4', 'TAC_5'].includes(deptId);
+};
+
+const formatRemainingTime = (seconds) => {
+    if (!seconds || seconds <= 0) return '00:00';
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+};
+
+const getTacStreams = (tacCode) => {
+    const ch = getTacChannel(tacCode);
+    if (!ch || !ch.video_ids || ch.video_ids.length === 0) return [];
+    const ids = ch.video_ids.map(id => String(id).trim());
+    return allActiveStreams.value.filter(s => ids.includes(String(s.video_id).trim()));
+};
+
+// Fetch & Synchronize TAC Channels from Server
+const fetchTacChannels = async () => {
+    try {
+        const res = await fetch('/api/v1/tac', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'success' && data.data) {
+                tacChannels.value = data.data;
+            }
+        }
+    } catch (e) {
+        console.warn('TAC sync failed:', e);
+    }
+};
+
+// 1-Click TAC Assignment
+const assignStreamToTac = async (tacCode, videoId) => {
+    if (!tacCode || !videoId) return;
+    const cleanVideoId = String(videoId).trim();
+    
+    // Optimistic UI update
+    tacChannels.value.forEach(ch => {
+        if (ch.code !== tacCode && ch.video_ids && ch.video_ids.includes(cleanVideoId)) {
+            ch.video_ids = ch.video_ids.filter(id => id !== cleanVideoId);
+            ch.unit_count = ch.video_ids.length;
+            if (ch.unit_count === 0) {
+                ch.remaining_seconds = 0;
+                ch.is_active = false;
+            }
+        }
+    });
+
+    const targetCh = getTacChannel(tacCode);
+    if (targetCh) {
+        if (!targetCh.video_ids) targetCh.video_ids = [];
+        if (!targetCh.video_ids.includes(cleanVideoId)) {
+            targetCh.video_ids.push(cleanVideoId);
+        }
+        targetCh.unit_count = targetCh.video_ids.length;
+        if (!targetCh.remaining_seconds || targetCh.remaining_seconds <= 0) {
+            targetCh.remaining_seconds = 1800; // 30 mins
+        }
+        targetCh.is_active = true;
+    }
+
+    showTacticalToast(`Unit berhasil dimasukkan ke ${tacCode.replace('_', ' ')} (30 Menit)`);
+
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const res = await fetch('/api/v1/tac/assign', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify({
+                tac_code: tacCode,
+                video_id: cleanVideoId,
+            }),
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'success' && data.data) {
+                tacChannels.value = data.data;
+            }
+        } else {
+            console.error('TAC Assign API Error:', res.status, await res.text());
+        }
+    } catch (e) {
+        console.error('Failed to assign stream to TAC:', e);
+    }
+};
+
+// Remove stream from TAC
+const removeStreamFromTac = async (videoId, tacCode = null) => {
+    if (!videoId) return;
+    const cleanVideoId = String(videoId).trim();
+
+    // Optimistic UI update
+    tacChannels.value.forEach(ch => {
+        if (!tacCode || ch.code === tacCode) {
+            if (ch.video_ids && ch.video_ids.includes(cleanVideoId)) {
+                ch.video_ids = ch.video_ids.filter(id => id !== cleanVideoId);
+                ch.unit_count = ch.video_ids.length;
+                if (ch.unit_count === 0) {
+                    ch.remaining_seconds = 0;
+                    ch.is_active = false;
+                }
+            }
+        }
+    });
+
+    showTacticalToast('Unit dilepas dari Tactical Radio');
+
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const res = await fetch('/api/v1/tac/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify({
+                video_id: cleanVideoId,
+                tac_code: tacCode,
+            }),
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'success' && data.data) {
+                tacChannels.value = data.data;
+            }
+        } else {
+            console.error('TAC Remove API Error:', res.status, await res.text());
+        }
+    } catch (e) {
+        console.error('Failed to remove stream from TAC:', e);
+    }
+};
+
+// Extend TAC Timer
+const extendTacTimer = async (tacCode, minutes = 20) => {
+    if (!tacCode) return;
+
+    // Optimistic UI update
+    const targetCh = getTacChannel(tacCode);
+    if (targetCh) {
+        targetCh.remaining_seconds = (targetCh.remaining_seconds || 0) + (minutes * 60);
+    }
+
+    showTacticalToast(`Waktu situasi ${tacCode.replace('_', ' ')} diperpanjang +${minutes} menit`);
+
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const res = await fetch('/api/v1/tac/extend', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify({
+                tac_code: tacCode,
+                minutes: minutes,
+            }),
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'success' && data.data) {
+                tacChannels.value = data.data;
+            }
+        } else {
+            console.error('TAC Extend API Error:', res.status, await res.text());
+        }
+    } catch (e) {
+        console.error('Failed to extend TAC timer:', e);
+    }
+};
+
+// Disband / Clear TAC Channel
+const disbandTacChannel = async (tacCode) => {
+    if (!tacCode) return;
+
+    if (!confirm(`Apakah Anda yakin ingin mengosongkan / membubarkan kanal ${tacCode.replace('_', ' ')} untuk seluruh penonton?`)) {
+        return;
+    }
+
+    // Optimistic UI update
+    const targetCh = getTacChannel(tacCode);
+    if (targetCh) {
+        targetCh.video_ids = [];
+        targetCh.unit_count = 0;
+        targetCh.remaining_seconds = 0;
+        targetCh.is_active = false;
+        targetCh.expires_at = null;
+    }
+
+    showTacticalToast(`Kanal ${tacCode.replace('_', ' ')} telah dibubarkan / dikosongkan`);
+
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const res = await fetch('/api/v1/tac/clear', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify({
+                tac_code: tacCode,
+            }),
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'success' && data.data) {
+                tacChannels.value = data.data;
+            }
+        } else {
+            console.error('TAC Clear API Error:', res.status, await res.text());
+        }
+    } catch (e) {
+        console.error('Failed to disband TAC channel:', e);
+    }
+};
+
+// Expiring TAC channel for global alert prompt (Active only in last 60 seconds)
+const expiringTacChannel = computed(() => {
+    return tacChannels.value.find(c => 
+        c.video_ids && 
+        c.video_ids.length > 0 && 
+        c.remaining_seconds > 0 && 
+        c.remaining_seconds <= 60 &&
+        selectedDepartment.value !== c.code
+    );
+});
 
 // Focus Mode Right-Column Live Chat State
 const isRightChatOpen = ref(false);
@@ -88,24 +378,65 @@ const handleFullscreenChange = () => {
 };
 
 const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
+    if (e.key === 'F11') {
+        e.preventDefault();
+        toggleBrowserFullscreen();
+    } else if (e.key === 'Escape') {
         if (showOfficerFormModal.value) {
             showOfficerFormModal.value = false;
         } else if (activeRightDrawer.value) {
             closeRightDrawer();
+        } else if (activeTacPopoverVideoId.value) {
+            activeTacPopoverVideoId.value = null;
         }
+    }
+};
+
+const handleGlobalClick = (e) => {
+    if (activeTacPopoverVideoId.value) {
+        activeTacPopoverVideoId.value = null;
+    }
+};
+
+let tacTimerInterval = null;
+let tacPollInterval = null;
+
+const tickTacTimers = () => {
+    let hasExpired = false;
+    tacChannels.value.forEach(ch => {
+        if (ch.remaining_seconds > 0) {
+            ch.remaining_seconds -= 1;
+            if (ch.remaining_seconds <= 0) {
+                ch.remaining_seconds = 0;
+                ch.is_active = false;
+                ch.video_ids = [];
+                ch.unit_count = 0;
+                hasExpired = true;
+            }
+        }
+    });
+    if (hasExpired) {
+        fetchTacChannels();
     }
 };
 
 onMounted(() => {
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('click', handleGlobalClick);
     loadPersonalStreamsFromStorage();
+    
+    // TAC timer ticker (every 1s) & background polling (every 15s)
+    tacTimerInterval = setInterval(tickTacTimers, 1000);
+    tacPollInterval = setInterval(fetchTacChannels, 15000);
 });
 
 onUnmounted(() => {
     document.removeEventListener('fullscreenchange', handleFullscreenChange);
     window.removeEventListener('keydown', handleKeyDown);
+    document.removeEventListener('click', handleGlobalClick);
+    if (tacTimerInterval) clearInterval(tacTimerInterval);
+    if (tacPollInterval) clearInterval(tacPollInterval);
 });
 
 // Origin URL & Embed Domain for YouTube API Handshake
@@ -523,13 +854,18 @@ onUnmounted(() => {
     if (timeInterval) clearInterval(timeInterval);
 });
 
-// Department List & Color Definitions (Core Departments + Local Personal Category)
+// Department List & Color Definitions (Core Departments + Local Personal + TAC Tactical Channels)
 const departments = [
     { id: 'ALL', name: 'ALL UNITS', icon: iconAllUnits, isSvg: true, color: 'border-slate-600 text-slate-300' },
     { id: 'PERSONAL', name: 'PERSONAL', icon: iconPersonal, isSvg: true, color: 'border-purple-500 text-purple-300 bg-purple-950/40' },
     { id: 'LSPD', name: 'LSPD', icon: iconLspd, isSvg: true, color: 'border-blue-500 text-blue-400 bg-blue-950/40' },
     { id: 'BCSO', name: 'BCSO', icon: iconBcso, isSvg: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'SASP', name: 'SASP', icon: iconSasp, isSvg: true, color: 'border-teal-500 text-teal-400 bg-teal-950/40' },
+    { id: 'TAC_1', name: 'TAC 1', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
+    { id: 'TAC_2', name: 'TAC 2', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
+    { id: 'TAC_3', name: 'TAC 3', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
+    { id: 'TAC_4', name: 'TAC 4', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
+    { id: 'TAC_5', name: 'TAC 5', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
 ];
 
 const getDeptIcon = (dept) => {
@@ -538,6 +874,11 @@ const getDeptIcon = (dept) => {
         case 'BCSO': return iconBcso;
         case 'SASP': return iconSasp;
         case 'PERSONAL': return iconPersonal;
+        case 'TAC_1':
+        case 'TAC_2':
+        case 'TAC_3':
+        case 'TAC_4':
+        case 'TAC_5': return iconRadio;
         default: return iconAllUnits;
     }
 };
@@ -548,6 +889,11 @@ const getDeptBadgeClass = (dept) => {
         case 'LSPD': return 'bg-blue-600/30 text-blue-300 border-blue-500/50';
         case 'BCSO': return 'bg-amber-600/30 text-amber-300 border-amber-500/50';
         case 'SASP': return 'bg-teal-600/30 text-teal-300 border-teal-500/50';
+        case 'TAC_1':
+        case 'TAC_2':
+        case 'TAC_3':
+        case 'TAC_4':
+        case 'TAC_5': return 'bg-amber-600/30 text-amber-300 border-amber-500/50';
         default: return 'bg-slate-700/40 text-slate-300 border-slate-600';
     }
 };
@@ -558,6 +904,8 @@ const filteredStreams = computed(() => {
 
     if (selectedDepartment.value === 'PERSONAL') {
         result = activePersonalStreams.value;
+    } else if (isTacDepartment(selectedDepartment.value)) {
+        result = getTacStreams(selectedDepartment.value);
     } else if (selectedDepartment.value !== 'ALL') {
         result = result.filter(s => s.officer && s.officer.department === selectedDepartment.value);
     }
@@ -579,6 +927,10 @@ const filteredStreams = computed(() => {
 
 // Filtered Offline Officers (10-7)
 const filteredOfflineOfficers = computed(() => {
+    if (isTacDepartment(selectedDepartment.value)) {
+        return [];
+    }
+
     let result = offlineOfficers.value;
 
     if (selectedDepartment.value === 'PERSONAL') {
@@ -1595,15 +1947,38 @@ const submitFeedbackForm = async () => {
                     v-for="dept in departments" 
                     :key="dept.id"
                     @click="selectedDepartment = dept.id"
-                    :class="selectedDepartment === dept.id ? (dept.id === 'PERSONAL' ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400' : 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400') : (dept.id === 'PERSONAL' ? 'bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 border-purple-500/40' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800')"
-                    class="px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap"
+                    :class="[
+                        'px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap',
+                        selectedDepartment === dept.id 
+                            ? (dept.id === 'PERSONAL' 
+                                ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400' 
+                                : (dept.isTac 
+                                    ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400 ring-1 ring-amber-400' 
+                                    : 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400'))
+                            : (dept.id === 'PERSONAL' 
+                                ? 'bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 border-purple-500/40' 
+                                : (dept.isTac 
+                                    ? (getTacUnitCount(dept.id) > 0 
+                                        ? 'bg-amber-950/50 text-amber-300 hover:bg-amber-900/60 border-amber-500/50 shadow-sm shadow-amber-500/10 font-semibold' 
+                                        : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 border-slate-800 opacity-70 hover:opacity-100')
+                                    : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'))
+                    ]"
                 >
                     <img v-if="dept.isSvg" :src="dept.icon" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90" alt="" />
                     <span v-else>{{ dept.icon }}</span>
                     <span>{{ dept.name }}</span>
+                    
+                    <!-- Personal count badge -->
                     <span v-if="dept.id === 'PERSONAL'" class="text-[10px] px-1.5 py-0.2 bg-black/50 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30">
                         {{ totalPersonalCount }}/6
                     </span>
+                    <!-- TAC count badge -->
+                    <span v-else-if="dept.isTac" class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
+                        :class="getTacUnitCount(dept.id) > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-black/40 text-slate-500'"
+                    >
+                        {{ getTacUnitCount(dept.id) }}
+                    </span>
+                    <!-- Standard dept count -->
                     <span v-else-if="dept.id !== 'ALL'" class="text-[10px] px-1 py-0.2 bg-black/40 rounded-full font-mono">
                         {{ allActiveStreams.filter(s => s.officer?.department === dept.id).length }}
                     </span>
@@ -1658,12 +2033,20 @@ const submitFeedbackForm = async () => {
                 <div v-if="visibleStreams.length === 0" class="min-h-[60vh] flex flex-col items-center justify-center text-center p-8 bg-slate-950/40 rounded-2xl border border-slate-800/80">
                     <div 
                         class="w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-4 border"
-                        :class="selectedDepartment === 'PERSONAL' ? 'bg-purple-950/60 border-purple-500/50 text-purple-300' : 'bg-blue-950/60 border-blue-500/30'"
+                        :class="selectedDepartment === 'PERSONAL' 
+                            ? 'bg-purple-950/60 border-purple-500/50 text-purple-300' 
+                            : (isTacDepartment(selectedDepartment) 
+                                ? 'bg-amber-950/60 border-amber-500/50 text-amber-300' 
+                                : 'bg-blue-950/60 border-blue-500/30')"
                     >
-                        <img :src="selectedDepartment === 'PERSONAL' ? iconPersonal : iconAllUnits" class="w-8 h-8 object-contain invert opacity-85" alt="" />
+                        <img :src="selectedDepartment === 'PERSONAL' ? iconPersonal : (isTacDepartment(selectedDepartment) ? iconRadio : iconAllUnits)" class="w-8 h-8 object-contain brightness-0 invert opacity-90" alt="" />
                     </div>
                     <h2 class="text-lg font-bold text-slate-200 tracking-wide uppercase">
-                        {{ selectedDepartment === 'PERSONAL' ? 'TIDAK ADA STREAM LIVE DI KATEGORI PERSONAL' : 'NO ACTIVE 10-8 PATROL UNITS ONLINE' }}
+                        {{ selectedDepartment === 'PERSONAL' 
+                            ? 'TIDAK ADA STREAM LIVE DI KATEGORI PERSONAL' 
+                            : (isTacDepartment(selectedDepartment) 
+                                ? `KANAL RADIO TAKTIS ${selectedDepartment.replace('_', ' ')} STANDBY (KOSONG)` 
+                                : 'NO ACTIVE 10-8 PATROL UNITS ONLINE') }}
                     </h2>
                     <p class="text-xs text-slate-400 max-w-md mt-1 mb-6">
                         <span v-if="selectedDepartment === 'PERSONAL'">
@@ -1674,6 +2057,14 @@ const submitFeedbackForm = async () => {
                                 Kategori Personal menyimpan maksimal 6 video stream aktif secara lokal di browser Anda. Klik tombol pin pada video manapun atau gunakan tombol Quick Feed.
                             </template>
                         </span>
+                        <span v-else-if="isTacDepartment(selectedDepartment)">
+                            Belum ada unit yang terhubung ke kanal {{ selectedDepartment.replace('_', ' ') }}. Untuk menghubungkan unit ke kanal ini, klik tombol 
+                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-mono text-[11px] align-middle font-bold mx-0.5">
+                                <img :src="iconRadio" class="w-3 h-3 brightness-0 invert opacity-90" alt="" />
+                                <span>TAC</span>
+                            </span> 
+                            pada stream unit manapun.
+                        </span>
                         <span v-else>
                             No registered IME Roleplay police streamers are currently broadcasting in the selected department filter.
                         </span>
@@ -1681,10 +2072,10 @@ const submitFeedbackForm = async () => {
                     <div class="flex items-center space-x-3 flex-wrap justify-center gap-2">
                         <button 
                             @click="openRightDrawer('QUICK_ADD')" 
-                            :class="selectedDepartment === 'PERSONAL' ? 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/30' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/30'"
+                            :class="selectedDepartment === 'PERSONAL' ? 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/30' : (isTacDepartment(selectedDepartment) ? 'bg-amber-600 hover:bg-amber-500 text-black font-bold shadow-amber-600/30' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/30')"
                             class="px-4 py-2 text-white text-xs font-semibold rounded-lg shadow-lg transition flex items-center gap-2"
                         >
-                            <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert" alt="" />
+                            <img :src="iconQuickAdd" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
                             <span>Add Quick Feed</span>
                         </button>
                         <button 
@@ -1706,12 +2097,85 @@ const submitFeedbackForm = async () => {
                     </div>
                 </div>
 
-                <!-- FOCUS MODE VIEW (Primary Large Video on Left + Right Support Column with Collapsible Live Chat) -->
-                <div v-else-if="selectedLayout === 'focus'" class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-                    
-                    <!-- LEFT COLUMN: PRIMARY LARGE FEATURED FEED (Takes 8/12 or 9/12 cols) -->
-                    <div v-if="primaryFocusedStream" class="lg:col-span-8 xl:col-span-9 flex flex-col gap-2">
-                        <div class="bg-slate-950 rounded-xl overflow-hidden border border-slate-800 shadow-2xl relative">
+                <!-- Active Feeds Display (When visibleStreams.length > 0) -->
+                <template v-else>
+
+                    <!-- TAC Active Situational Header & Expiration Confirmation Bar -->
+                    <div v-if="isTacDepartment(selectedDepartment)" class="mb-4 space-y-2.5">
+                        <div class="bg-gradient-to-r from-amber-950/70 via-slate-900/95 to-slate-950 border border-amber-500/40 rounded-xl p-3 shadow-xl backdrop-blur flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                                    <img :src="iconRadio" class="w-5 h-5 brightness-0 invert opacity-90" alt="" />
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <h3 class="text-sm font-bold text-amber-300 font-mono tracking-wide uppercase">
+                                            KANAL RADIO TAKTIS: {{ selectedDepartment.replace('_', ' ') }}
+                                        </h3>
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                            {{ visibleStreams.length }} UNIT TERHUBUNG
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-0.5 font-mono">
+                                        Kanal radio taktis aktif untuk pemantauan POV bersama.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Timer Countdown -->
+                            <div class="flex items-center space-x-2">
+                                <div class="flex items-center space-x-1.5 bg-black/60 border border-amber-500/30 px-3 py-1.5 rounded-lg font-mono">
+                                    <img :src="iconClock" class="w-3.5 h-3.5 brightness-0 invert opacity-80" alt="" />
+                                    <span class="text-[10px] text-slate-400 uppercase">Sisa Waktu:</span>
+                                    <span class="text-xs font-bold" :class="getTacRemainingSeconds(selectedDepartment) <= 60 ? 'text-red-400 animate-pulse' : 'text-amber-300'">
+                                        {{ formatRemainingTime(getTacRemainingSeconds(selectedDepartment)) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Near Expiration Confirmation Prompt Alert (Active ONLY in last 1 minute / 60 seconds) -->
+                        <div 
+                            v-if="getTacRemainingSeconds(selectedDepartment) > 0 && getTacRemainingSeconds(selectedDepartment) <= 60"
+                            class="bg-red-950/95 border-2 border-red-500 rounded-xl p-3.5 shadow-2xl backdrop-blur flex flex-wrap items-center justify-between gap-3 animate-pulse"
+                        >
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-full bg-red-500/30 border border-red-400 flex items-center justify-center text-red-300 text-base font-bold shrink-0">
+                                    ⚠️
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-red-200 font-mono tracking-wide uppercase">
+                                        KONFIRMASI SITUASI: WAKTU {{ selectedDepartment.replace('_', ' ') }} TERSISA {{ formatRemainingTime(getTacRemainingSeconds(selectedDepartment)) }}!
+                                    </h4>
+                                    <p class="text-[11px] text-red-300/80 mt-0.5">
+                                        Apakah kanal radio ini masih aktif digunakan, atau telah selesai?
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button 
+                                    @click="extendTacTimer(selectedDepartment, 20)"
+                                    class="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg shadow-lg transition flex items-center gap-1.5 font-mono transform hover:scale-105"
+                                >
+                                    <span>🔥 Ya, Lanjutkan (+20 Menit)</span>
+                                </button>
+                                <button 
+                                    @click="disbandTacChannel(selectedDepartment)"
+                                    class="px-3 py-1.5 bg-black/60 hover:bg-black/90 text-slate-200 font-bold text-xs rounded-lg border border-slate-600 transition flex items-center gap-1.5 font-mono"
+                                >
+                                    <span>✓ Situasi Selesai (Bubarkan)</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FOCUS MODE VIEW (Primary Large Video on Left + Right Support Column with Collapsible Live Chat) -->
+                    <div v-if="selectedLayout === 'focus'" class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                        
+                        <!-- LEFT COLUMN: PRIMARY LARGE FEATURED FEED (Takes 8/12 or 9/12 cols) -->
+                        <div v-if="primaryFocusedStream" class="lg:col-span-8 xl:col-span-9 flex flex-col gap-2">
+                            <div class="bg-slate-950 rounded-xl overflow-hidden border border-slate-800 shadow-2xl relative">
                             
                             <!-- Large Stream HUD Top Bar -->
                             <div class="bg-slate-900/95 px-4 py-2.5 flex items-center justify-between border-b border-slate-800">
@@ -1725,7 +2189,77 @@ const submitFeedbackForm = async () => {
                                     </div>
                                 </div>
                                 
-                                <div class="flex items-center space-x-2.5 shrink-0">
+                                <div class="flex items-center space-x-2 shrink-0">
+                                    <!-- Pin / Personal Toggle Button -->
+                                    <button 
+                                        @click="togglePersonalStream(primaryFocusedStream.video_id)" 
+                                        :class="isPersonalStream(primaryFocusedStream.video_id) ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 border-purple-400' : 'bg-slate-800 text-slate-300 hover:text-purple-300 hover:bg-slate-700 border-slate-700'"
+                                        class="px-2.5 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1.5 font-mono border"
+                                        :title="isPersonalStream(primaryFocusedStream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
+                                    >
+                                        <img :src="isPersonalStream(primaryFocusedStream.video_id) ? iconPinMinus : iconPinPlus" class="w-3.5 h-3.5 invert" alt="" />
+                                        <span class="hidden sm:inline">Personal</span>
+                                    </button>
+
+                                    <!-- 1-Click TAC Radio Selector -->
+                                    <div class="relative">
+                                        <button 
+                                            @click.stop="activeTacPopoverVideoId = activeTacPopoverVideoId === primaryFocusedStream.video_id ? null : primaryFocusedStream.video_id" 
+                                            class="px-2.5 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1.5 font-mono border"
+                                            :class="getStreamTac(primaryFocusedStream.video_id) ? 'text-amber-300 bg-amber-950/80 border-amber-500/60 shadow-sm shadow-amber-500/20' : 'text-slate-400 hover:text-amber-300 bg-slate-800 border-slate-700'"
+                                            :title="getStreamTac(primaryFocusedStream.video_id) ? `Terhubung ke ${getStreamTac(primaryFocusedStream.video_id).replace('_', ' ')}` : 'Hubungkan ke Tactical Radio TAC 1–5'"
+                                        >
+                                            <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
+                                            <span>{{ getStreamTac(primaryFocusedStream.video_id) ? getStreamTac(primaryFocusedStream.video_id).replace('_', ' ') : 'TAC' }}</span>
+                                        </button>
+
+                                        <!-- TAC Popover Menu (Opens downwards) -->
+                                        <div 
+                                            v-if="activeTacPopoverVideoId === primaryFocusedStream.video_id"
+                                            class="absolute right-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl p-2.5 shadow-2xl backdrop-blur-xl text-xs w-52 animate-in fade-in zoom-in-95 font-sans"
+                                            @click.stop
+                                        >
+                                            <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800">
+                                                <span class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400">
+                                                    <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
+                                                    PILIH RADIO TAC:
+                                                </span>
+                                                <button 
+                                                    @click.stop="activeTacPopoverVideoId = null" 
+                                                    class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 text-[10px]"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-5 gap-1.5 mb-2">
+                                                <button 
+                                                    v-for="t in [1,2,3,4,5]" 
+                                                    :key="t"
+                                                    @click.stop="assignStreamToTac(`TAC_${t}`, primaryFocusedStream.video_id); activeTacPopoverVideoId = null"
+                                                    class="py-1.5 rounded-lg font-mono text-center font-bold text-xs transition border flex flex-col items-center justify-center gap-0.5"
+                                                    :class="getStreamTac(primaryFocusedStream.video_id) === `TAC_${t}` 
+                                                        ? 'bg-amber-500 text-black border-amber-300 shadow-lg shadow-amber-500/30' 
+                                                        : 'bg-slate-900 text-slate-200 hover:bg-amber-950/60 hover:text-amber-300 hover:border-amber-500/50 border-slate-800'"
+                                                    :title="`Pindah ke TAC ${t}`"
+                                                >
+                                                    <span class="text-[8px] text-slate-400 leading-none">TAC</span>
+                                                    <span class="leading-none">{{ t }}</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div v-if="getStreamTac(primaryFocusedStream.video_id)" class="pt-1.5 border-t border-slate-800/80">
+                                                <button 
+                                                    @click.stop="removeStreamFromTac(primaryFocusedStream.video_id); activeTacPopoverVideoId = null"
+                                                    class="w-full py-1.5 px-2 text-[10px] rounded-lg bg-red-950/60 text-red-300 hover:bg-red-900/80 border border-red-500/40 text-center transition flex items-center justify-center gap-1 font-mono"
+                                                >
+                                                    <span>✕ Lepas dari {{ getStreamTac(primaryFocusedStream.video_id).replace('_', ' ') }}</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Live Audio Toggle Button -->
                                     <button 
                                         @click="toggleAudio(primaryFocusedStream.video_id)" 
                                         :class="activeAudioVideoId === primaryFocusedStream.video_id ? 'bg-emerald-600 text-white shadow-emerald-500/50' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
@@ -1759,17 +2293,6 @@ const submitFeedbackForm = async () => {
                                     <span class="font-mono text-slate-400 truncate hidden sm:inline">Streamer: {{ primaryFocusedStream.officer?.streamer_name }}</span>
                                 </div>
                                 <div class="flex items-center space-x-2.5 shrink-0">
-                                    <!-- Pin / Personal Toggle Button -->
-                                    <button 
-                                        @click="togglePersonalStream(primaryFocusedStream.video_id)" 
-                                        :class="isPersonalStream(primaryFocusedStream.video_id) ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 border-purple-400' : 'bg-slate-800 text-slate-300 hover:text-purple-300 hover:bg-slate-700 border-slate-700'"
-                                        class="px-2.5 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1.5 font-mono border"
-                                        :title="isPersonalStream(primaryFocusedStream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
-                                    >
-                                        <img :src="isPersonalStream(primaryFocusedStream.video_id) ? iconPinMinus : iconPinPlus" class="w-3.5 h-3.5 invert" alt="" />
-                                        <span class="hidden md:inline">Personal</span>
-                                    </button>
-
                                     <!-- 1-Click YouTube Subscribe Popup Button -->
                                     <button 
                                         v-if="primaryFocusedStream.officer?.channel_id || primaryFocusedStream.officer?.handle"
@@ -1797,10 +2320,10 @@ const submitFeedbackForm = async () => {
                                     <a 
                                         :href="`https://www.youtube.com/watch?v=${primaryFocusedStream.video_id}`" 
                                         target="_blank" 
-                                        class="text-blue-400 hover:text-blue-300 underline font-mono text-xs flex items-center gap-1"
+                                        class="p-1.5 hover:text-white text-slate-400 rounded hover:bg-slate-800 transition flex items-center justify-center"
+                                        title="Open on YouTube"
                                     >
-                                        <img :src="iconExternal" class="w-3 h-3 invert opacity-80" alt="" />
-                                        <span>Open YT</span>
+                                        <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Open on YouTube" />
                                     </a>
                                 </div>
                             </div>
@@ -1914,6 +2437,62 @@ const submitFeedbackForm = async () => {
                                     
                                     <!-- Action Buttons -->
                                     <div class="flex items-center space-x-1 shrink-0">
+                                        <!-- TAC Radio Button -->
+                                        <div class="relative">
+                                            <button 
+                                                @click.stop="activeTacPopoverVideoId = activeTacPopoverVideoId === stream.video_id ? null : stream.video_id" 
+                                                class="p-1 rounded transition font-mono border"
+                                                :class="getStreamTac(stream.video_id) ? 'text-amber-300 bg-amber-950/80 border-amber-500/60' : 'text-slate-400 hover:text-amber-300 bg-slate-800 border-slate-700'"
+                                                :title="getStreamTac(stream.video_id) ? `Terhubung ke ${getStreamTac(stream.video_id).replace('_', ' ')}` : 'Hubungkan ke TAC Radio 1–5'"
+                                            >
+                                                <img :src="iconRadio" class="w-3 h-3 brightness-0 invert opacity-90" alt="" />
+                                            </button>
+
+                                            <!-- TAC Popover Menu -->
+                                            <div 
+                                                v-if="activeTacPopoverVideoId === stream.video_id"
+                                                class="absolute right-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl p-2.5 shadow-2xl backdrop-blur-xl text-xs w-48 animate-in fade-in zoom-in-95 font-sans"
+                                                @click.stop
+                                            >
+                                                <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800">
+                                                    <span class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400">
+                                                        <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
+                                                        RADIO TAC:
+                                                    </span>
+                                                    <button 
+                                                        @click.stop="activeTacPopoverVideoId = null" 
+                                                        class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 text-[10px]"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                                
+                                                <div class="grid grid-cols-5 gap-1 mb-2">
+                                                    <button 
+                                                        v-for="t in [1,2,3,4,5]" 
+                                                        :key="t"
+                                                        @click.stop="assignStreamToTac(`TAC_${t}`, stream.video_id); activeTacPopoverVideoId = null"
+                                                        class="py-1 rounded font-mono text-center font-bold text-xs transition border"
+                                                        :class="getStreamTac(stream.video_id) === `TAC_${t}` 
+                                                            ? 'bg-amber-500 text-black border-amber-300 shadow-md' 
+                                                            : 'bg-slate-900 text-slate-200 hover:bg-amber-950/60 hover:text-amber-300 border-slate-800'"
+                                                        :title="`Pindah ke TAC ${t}`"
+                                                    >
+                                                        {{ t }}
+                                                    </button>
+                                                </div>
+                                                
+                                                <div v-if="getStreamTac(stream.video_id)" class="pt-1.5 border-t border-slate-800/80">
+                                                    <button 
+                                                        @click.stop="removeStreamFromTac(stream.video_id); activeTacPopoverVideoId = null"
+                                                        class="w-full py-1 px-1.5 text-[10px] rounded bg-red-950/60 text-red-300 hover:bg-red-900/80 border border-red-500/40 text-center transition font-mono"
+                                                    >
+                                                        ✕ Lepas TAC
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <!-- Personal Pin Toggle -->
                                         <button 
                                             @click="togglePersonalStream(stream.video_id)" 
@@ -2092,6 +2671,64 @@ const submitFeedbackForm = async () => {
                                         <span>{{ activeAudioVideoId === stream.video_id ? 'ON' : 'MUTED' }}</span>
                                     </button>
 
+                                    <!-- 1-Click TAC Radio Selector -->
+                                    <div class="relative">
+                                        <button 
+                                            @click.stop="activeTacPopoverVideoId = activeTacPopoverVideoId === stream.video_id ? null : stream.video_id" 
+                                            class="px-2 py-0.5 text-[11px] rounded transition flex items-center gap-1 font-mono border"
+                                            :class="getStreamTac(stream.video_id) ? 'text-amber-300 bg-amber-950/80 border-amber-500/60 shadow-sm shadow-amber-500/20 font-bold' : 'text-slate-400 hover:text-amber-300 bg-slate-800 border-slate-700'"
+                                            :title="getStreamTac(stream.video_id) ? `Terhubung ke ${getStreamTac(stream.video_id).replace('_', ' ')}` : 'Hubungkan ke Tactical Radio TAC 1–5'"
+                                        >
+                                            <img :src="iconRadio" class="w-3 h-3 brightness-0 invert opacity-90" alt="" />
+                                            <span class="text-[10px]">{{ getStreamTac(stream.video_id) ? getStreamTac(stream.video_id).replace('_', ' ') : 'TAC' }}</span>
+                                        </button>
+
+                                        <!-- TAC Popover Menu -->
+                                        <div 
+                                            v-if="activeTacPopoverVideoId === stream.video_id"
+                                            class="absolute right-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl p-2.5 shadow-2xl backdrop-blur-xl text-xs w-52 animate-in fade-in zoom-in-95 font-sans"
+                                            @click.stop
+                                        >
+                                            <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800">
+                                                <span class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400">
+                                                    <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
+                                                    PILIH RADIO TAC:
+                                                </span>
+                                                <button 
+                                                    @click.stop="activeTacPopoverVideoId = null" 
+                                                    class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 text-[10px]"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-5 gap-1.5 mb-2">
+                                                <button 
+                                                    v-for="t in [1,2,3,4,5]" 
+                                                    :key="t"
+                                                    @click.stop="assignStreamToTac(`TAC_${t}`, stream.video_id); activeTacPopoverVideoId = null"
+                                                    class="py-1.5 rounded-lg font-mono text-center font-bold text-xs transition border flex flex-col items-center justify-center gap-0.5"
+                                                    :class="getStreamTac(stream.video_id) === `TAC_${t}` 
+                                                        ? 'bg-amber-500 text-black border-amber-300 shadow-lg shadow-amber-500/30' 
+                                                        : 'bg-slate-900 text-slate-200 hover:bg-amber-950/60 hover:text-amber-300 hover:border-amber-500/50 border-slate-800'"
+                                                    :title="`Pindah ke TAC ${t}`"
+                                                >
+                                                    <span class="text-[8px] text-slate-400 leading-none">TAC</span>
+                                                    <span class="leading-none">{{ t }}</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div v-if="getStreamTac(stream.video_id)" class="pt-1.5 border-t border-slate-800/80">
+                                                <button 
+                                                    @click.stop="removeStreamFromTac(stream.video_id); activeTacPopoverVideoId = null"
+                                                    class="w-full py-1.5 px-2 text-[10px] rounded-lg bg-red-950/60 text-red-300 hover:bg-red-900/80 border border-red-500/40 text-center transition flex items-center justify-center gap-1 font-mono"
+                                                >
+                                                    <span>✕ Lepas dari {{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Top Personal Pin Button -->
                                     <button 
                                         @click="togglePersonalStream(stream.video_id)" 
@@ -2222,7 +2859,9 @@ const submitFeedbackForm = async () => {
 
                 </div>
 
-            </div>
+            </template>
+
+        </div>
 
             <!-- TAB 2: 10-7 OFFLINE POLICE ROSTER -->
             <div v-else-if="activeTab === '10-7'">
@@ -3117,8 +3756,52 @@ const submitFeedbackForm = async () => {
                         </button>
                     </div>
                 </form>
-
             </div>
+        </div>
+
+        <!-- Global Expiring TAC Channel Alert Prompt (When viewing other tabs) -->
+        <div 
+            v-if="expiringTacChannel" 
+            class="fixed bottom-4 left-4 z-50 bg-slate-950/95 border-2 border-amber-500/80 rounded-xl p-3 shadow-2xl backdrop-blur-xl flex items-center space-x-3 text-xs animate-in slide-in-from-bottom duration-300 max-w-lg"
+        >
+            <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-amber-300 shrink-0 font-mono font-bold text-sm">
+                📻
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="font-bold text-amber-300 font-mono text-[11px] truncate">
+                    {{ expiringTacChannel.name }} ({{ expiringTacChannel.video_ids.length }} Units) tersisa {{ formatRemainingTime(expiringTacChannel.remaining_seconds) }}
+                </div>
+                <div class="text-[10px] text-slate-400 truncate">Apakah situasi masih berlangsung?</div>
+            </div>
+            <div class="flex items-center space-x-1.5 shrink-0">
+                <button 
+                    @click="extendTacTimer(expiringTacChannel.code, 20)"
+                    class="px-2 py-1 bg-amber-600 hover:bg-amber-500 text-black font-bold text-[10px] rounded font-mono shadow"
+                >
+                    +20m
+                </button>
+                <button 
+                    @click="disbandTacChannel(expiringTacChannel.code)"
+                    class="px-2 py-1 bg-red-950 hover:bg-red-900 text-red-300 text-[10px] rounded border border-red-500/40 font-mono"
+                >
+                    Bubarkan
+                </button>
+                <button 
+                    @click="selectedDepartment = expiringTacChannel.code"
+                    class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] rounded border border-slate-700 font-mono"
+                >
+                    Buka
+                </button>
+            </div>
+        </div>
+
+        <!-- Floating Tactical Action Toast -->
+        <div 
+            v-if="tacticalToast"
+            class="fixed bottom-4 right-4 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl px-4 py-2.5 shadow-2xl backdrop-blur-xl flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200"
+        >
+            <img :src="iconRadio" class="w-4 h-4 brightness-0 invert opacity-90 shrink-0" alt="" />
+            <span>{{ tacticalToast.message }}</span>
         </div>
 
     </div>

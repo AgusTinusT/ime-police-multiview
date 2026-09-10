@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Officer;
 use App\Models\ActiveStream;
+use App\Models\TacChannel;
 use App\Jobs\SyncOfficerStreamsJob;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
@@ -99,9 +100,26 @@ class PoliceCommandController extends Controller
             'sasp_live' => $activeStreams->where('officer.department', 'SASP')->count(),
         ];
 
+        // 4. Tactical Radio Channels (TAC 1 to TAC 5)
+        TacChannel::ensureChannelsExist();
+        $tacChannels = TacChannel::orderBy('id')->get()->map(function ($ch) {
+            $ch->checkAndResetIfExpired();
+            return [
+                'id' => $ch->id,
+                'code' => $ch->code,
+                'name' => $ch->name,
+                'video_ids' => $ch->video_ids ?? [],
+                'expires_at' => $ch->expires_at ? $ch->expires_at->toIso8601String() : null,
+                'remaining_seconds' => $ch->remaining_seconds,
+                'is_active' => $ch->is_active,
+                'unit_count' => $ch->unit_count,
+            ];
+        });
+
         return Inertia::render('PoliceDashboard', [
             'initialStreams' => $activeStreams->values(),
             'initialOfflineOfficers' => $offlineOfficers->values(),
+            'initialTacChannels' => $tacChannels->values(),
             'deptStats' => $deptStats,
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
