@@ -299,15 +299,19 @@ class YouTubeScraperService
                 $res = $responses[$id] ?? null;
                 if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
                     $body = $res->body();
-                    $isLive = str_contains($body, '"isLive":true') || str_contains($body, '"isLiveContent":true') || str_contains($body, '"isLiveDvrEnabled":true');
+                    // MUST be strictly isLive:true (isLiveContent:true alone indicates a past/ended stream VOD)
+                    $isLive = str_contains($body, '"isLive":true');
                     $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, 'STREAM_OFFLINE');
+                    $isUpcoming = str_contains($body, '"isUpcoming":true') || str_contains($body, '"status":"UPCOMING"');
                     $isPlayable = str_contains($body, '"playabilityStatus":{"status":"OK"');
                     $viewersCount = $this->extractViewersCount($body);
+
+                    $isLiveNow = ($isLive && $isPlayable && !$isOffline && !$isUpcoming);
 
                     $telemetry = [
                         'video_id' => $id,
                         'viewers_count' => $viewersCount,
-                        'status' => ($isLive && $isPlayable && !$isOffline) ? 'LIVE' : 'OFFLINE',
+                        'status' => $isLiveNow ? 'LIVE' : 'OFFLINE',
                         'updated_at' => now()->toIso8601String(),
                     ];
 
@@ -369,14 +373,13 @@ class YouTubeScraperService
                 return null; // Not live
             }
 
-            $isLive = str_contains($body, '"isLive":true') || str_contains($body, '"isLiveContent":true');
+            // Strictly require "isLive":true (reject past streams/VODs)
+            $isLive = str_contains($body, '"isLive":true');
+            $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, 'STREAM_OFFLINE');
+            $isUpcoming = str_contains($body, '"isUpcoming":true') || str_contains($body, '"status":"UPCOMING"');
             $isPlayableNow = str_contains($body, '"playabilityStatus":{"status":"OK"');
 
-            if (str_contains($body, '"status":"LIVE_STREAM_OFFLINE"')) {
-                $isPlayableNow = false;
-            }
-
-            if ($isLive && $isPlayableNow) {
+            if ($isLive && $isPlayableNow && !$isOffline && !$isUpcoming) {
                 $title = $this->extractTitle($body) ?? ($handle . " Police Patrol Live Feed");
                 $description = $this->extractDescription($body);
                 $viewersCount = $this->extractViewersCount($body);
@@ -447,14 +450,13 @@ class YouTubeScraperService
                         continue; // Not live
                     }
 
-                    $isLive = str_contains($body, '"isLive":true') || str_contains($body, '"isLiveContent":true');
+                    // Strictly require "isLive":true (reject past streams/VODs)
+                    $isLive = str_contains($body, '"isLive":true');
+                    $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, 'STREAM_OFFLINE');
+                    $isUpcoming = str_contains($body, '"isUpcoming":true') || str_contains($body, '"status":"UPCOMING"');
                     $isPlayableNow = str_contains($body, '"playabilityStatus":{"status":"OK"');
 
-                    if (str_contains($body, '"status":"LIVE_STREAM_OFFLINE"')) {
-                        $isPlayableNow = false;
-                    }
-
-                    if ($isLive && $isPlayableNow) {
+                    if ($isLive && $isPlayableNow && !$isOffline && !$isUpcoming) {
                         $title = $this->extractTitle($body) ?? ($handle . " Police Patrol");
                         $description = $this->extractDescription($body);
                         $viewersCount = $this->extractViewersCount($body);

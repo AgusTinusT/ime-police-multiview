@@ -69,12 +69,10 @@ class SyncOfficerStreamsJob implements ShouldQueue
                         'last_synced_at' => now(),
                     ]);
             } else {
-                // Officer was not detected live in this cycle.
-                // Graceful check: only mark ENDED if stream was not updated for >= 3 minutes
+                // Officer is not live in this cycle. Mark any existing active stream as ENDED immediately.
                 $channelId = $officer->channel_id ?: 'ch-' . $officer->id;
                 ActiveStream::where('channel_id', $channelId)
                     ->where('status', 'LIVE')
-                    ->where('last_synced_at', '<', now()->subMinutes(3))
                     ->update([
                         'status' => 'ENDED',
                         'last_synced_at' => now(),
