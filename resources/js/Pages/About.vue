@@ -122,14 +122,14 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
             <!-- Core Features Section -->
             <div class="space-y-4">
                 <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span class="w-2 h-2 rounded-full bg-slate-300"></span>
                     <h2 class="text-base font-bold uppercase tracking-wider text-slate-200 font-mono">Fitur Utama Platform</h2>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex gap-3.5 items-start">
-                        <div class="p-3 rounded-xl bg-blue-950/80 border border-blue-500/30 text-blue-400 shrink-0">
-                            <img :src="iconFocus" class="w-5 h-5 invert" alt="" />
+                        <div class="p-3 rounded-xl bg-slate-800/90 border border-slate-700/80 text-white shrink-0">
+                            <img :src="iconFocus" class="w-5 h-5 brightness-0 invert" alt="" />
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-slate-100">Tactical CCTV Grid & Focus Mode</h3>
@@ -140,8 +140,8 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                     </div>
 
                     <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex gap-3.5 items-start">
-                        <div class="p-3 rounded-xl bg-indigo-950/80 border border-indigo-500/30 text-indigo-400 shrink-0">
-                            <img :src="iconAllUnits" class="w-5 h-5 invert" alt="" />
+                        <div class="p-3 rounded-xl bg-slate-800/90 border border-slate-700/80 text-white shrink-0">
+                            <img :src="iconAllUnits" class="w-5 h-5 brightness-0 invert" alt="" />
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-slate-100">Cinema Hub & Patrol Swimlanes</h3>
@@ -152,8 +152,8 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                     </div>
 
                     <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex gap-3.5 items-start">
-                        <div class="p-3 rounded-xl bg-cyan-950/80 border border-cyan-500/30 text-cyan-400 shrink-0">
-                            <img :src="iconChat" class="w-5 h-5 invert" alt="" />
+                        <div class="p-3 rounded-xl bg-slate-800/90 border border-slate-700/80 text-white shrink-0">
+                            <img :src="iconChat" class="w-5 h-5 brightness-0 invert" alt="" />
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-slate-100">Live Chat & Interaksi Komentar</h3>
@@ -164,8 +164,8 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                     </div>
 
                     <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex gap-3.5 items-start">
-                        <div class="p-3 rounded-xl bg-amber-950/80 border border-amber-500/30 text-amber-400 shrink-0">
-                            <img :src="iconRadio" class="w-5 h-5 invert" alt="" />
+                        <div class="p-3 rounded-xl bg-slate-800/90 border border-slate-700/80 text-white shrink-0">
+                            <img :src="iconRadio" class="w-5 h-5 brightness-0 invert" alt="" />
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-slate-100">Radio Taktis TAC 1–5</h3>
@@ -176,8 +176,8 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                     </div>
 
                     <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex gap-3.5 items-start">
-                        <div class="p-3 rounded-xl bg-red-950/80 border border-red-500/30 text-red-400 shrink-0">
-                            <img :src="iconTarget" class="w-5 h-5 invert" alt="" />
+                        <div class="p-3 rounded-xl bg-slate-800/90 border border-slate-700/80 text-white shrink-0">
+                            <img :src="iconTarget" class="w-5 h-5 brightness-0 invert" alt="" />
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-slate-100">Support 1K Subs Community Milestone</h3>
@@ -188,8 +188,8 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                     </div>
 
                     <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex gap-3.5 items-start">
-                        <div class="p-3 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 shrink-0">
-                            <img :src="iconSaver" class="w-5 h-5 invert" alt="" />
+                        <div class="p-3 rounded-xl bg-slate-800/90 border border-slate-700/80 text-white shrink-0">
+                            <img :src="iconSaver" class="w-5 h-5 brightness-0 invert" alt="" />
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-slate-100">Data Saver & Smart Bandwidth</h3>
@@ -204,48 +204,48 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
             <!-- Supported Police Agencies -->
             <div class="space-y-4">
                 <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span class="w-2 h-2 rounded-full bg-slate-300"></span>
                     <h2 class="text-base font-bold uppercase tracking-wider text-slate-200 font-mono">Kesatuan Kepolisian Terdaftar</h2>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- LSPD -->
-                    <div class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
                         <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
-                            <img :src="iconLspd" class="w-full h-full object-contain drop-shadow" alt="LSPD Logo" />
+                            <img :src="iconLspd" class="w-full h-full object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition" alt="LSPD Logo" />
                         </div>
-                        <span class="text-xs font-mono font-black text-blue-400 tracking-wider">LSPD</span>
-                        <h4 class="text-sm font-bold text-slate-200 mt-0.5">Los Santos Police Dept</h4>
+                        <span class="text-xs font-mono font-black text-slate-200 tracking-wider">LSPD</span>
+                        <h4 class="text-sm font-bold text-slate-100 mt-0.5">Los Santos Police Dept</h4>
                         <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Markas Pusat Mission Row, membawahi patroli dan penegakan hukum perkotaan Los Santos.</p>
                     </div>
 
                     <!-- BCSO -->
-                    <div class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
                         <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
-                            <img :src="iconBcso" class="w-full h-full object-contain drop-shadow" alt="BCSO Logo" />
+                            <img :src="iconBcso" class="w-full h-full object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition" alt="BCSO Logo" />
                         </div>
-                        <span class="text-xs font-mono font-black text-amber-400 tracking-wider">BCSO</span>
-                        <h4 class="text-sm font-bold text-slate-200 mt-0.5">Blaine County Sheriff</h4>
+                        <span class="text-xs font-mono font-black text-slate-200 tracking-wider">BCSO</span>
+                        <h4 class="text-sm font-bold text-slate-100 mt-0.5">Blaine County Sheriff</h4>
                         <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Markas Paleto Bay & Sandy Shores, menjaga keamanan wilayah pedesaan dan gurun.</p>
                     </div>
 
                     <!-- SASP -->
-                    <div class="bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
                         <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
-                            <img :src="iconSasp" class="w-full h-full object-contain drop-shadow" alt="SASP Logo" />
+                            <img :src="iconSasp" class="w-full h-full object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition" alt="SASP Logo" />
                         </div>
-                        <span class="text-xs font-mono font-black text-indigo-400 tracking-wider">SASP</span>
-                        <h4 class="text-sm font-bold text-slate-200 mt-0.5">San Andreas State Police</h4>
+                        <span class="text-xs font-mono font-black text-slate-200 tracking-wider">SASP</span>
+                        <h4 class="text-sm font-bold text-slate-100 mt-0.5">San Andreas State Police</h4>
                         <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Divisi kepolisian negara bagian, pengawasan jalan tol dan operasi taktis antar-wilayah.</p>
                     </div>
 
                     <!-- SAPR -->
-                    <div class="bg-slate-900/80 border border-slate-800 hover:border-emerald-500/40 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
                         <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
-                            <img :src="iconSapr" class="w-full h-full object-contain drop-shadow" alt="SAPR Logo" />
+                            <img :src="iconSapr" class="w-full h-full object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition" alt="SAPR Logo" />
                         </div>
-                        <span class="text-xs font-mono font-black text-emerald-400 tracking-wider">SAPR</span>
-                        <h4 class="text-sm font-bold text-slate-200 mt-0.5">San Andreas Park Ranger</h4>
+                        <span class="text-xs font-mono font-black text-slate-200 tracking-wider">SAPR</span>
+                        <h4 class="text-sm font-bold text-slate-100 mt-0.5">San Andreas Park Ranger</h4>
                         <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Pengawasan cagar alam, cagar hutan Gunung Chiliad, dan perairan San Andreas.</p>
                     </div>
                 </div>
