@@ -5,6 +5,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import logoSaspColor from '@/Components/Icons/SASP256.jpg';
 import iconFocus from '@/Components/Icons/focus-point-round-844-svgrepo-com.svg';
 import iconAllUnits from '@/Components/Icons/category-svgrepo-com.svg';
+import iconChat from '@/Components/Icons/chat-line-svgrepo-com.svg';
 import iconSaver from '@/Components/Icons/gauge-low-svgrepo-com.svg';
 import iconRadio from '@/Components/Icons/radio-signal-svgrepo-com.svg';
 import iconTarget from '@/Components/Icons/target-svgrepo-com.svg';
@@ -104,15 +105,13 @@ const props = defineProps({
                 </div>
                 <div class="flex-1 text-center sm:text-left">
                     <div class="flex items-center justify-center sm:justify-start gap-2 mb-2">
-                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase font-mono">IME ROLEPLAY INDONESIA</span>
-                        <span class="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-mono font-bold border border-blue-500/40">v{{ appVersion }}</span>
+                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase font-mono">IME POLICE</span>
                     </div>
                     <h1 class="text-2xl sm:text-3xl font-black text-slate-100 tracking-tight leading-tight">
-                        Police Command Center & Tactical Multiview
+                        Community Bodycam & Patrol Multiview
                     </h1>
                     <p class="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
-                        Pusat pengawasan siaran langsung terpadu bagi seluruh unit kepolisian di server GTA V IME Roleplay. Memungkinkan penonton dan warga memantau kamera bodycam petugas secara simultan tanpa lag dan hemat kuota.
-                    </p>
+Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisian di server GTA V IME Roleplay secara langsung. Nonton bodycam petugas bareng-bareng dari berbagai sudut pandang tanpa ribet, dan lancar.                   </p>
                 </div>
             </div>
 
@@ -149,6 +148,18 @@ const props = defineProps({
                     </div>
 
                     <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex gap-3.5 items-start">
+                        <div class="p-3 rounded-xl bg-cyan-950/80 border border-cyan-500/30 text-cyan-400 shrink-0">
+                            <img :src="iconChat" class="w-5 h-5 invert" alt="" />
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-100">Live Chat & Interaksi Komentar</h3>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                Tetap bisa membaca obrolan dan ikut berinteraksi di live chat YouTube masing-masing petugas secara real-time langsung dari panel multiview tanpa membuka tab baru.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex gap-3.5 items-start">
                         <div class="p-3 rounded-xl bg-amber-950/80 border border-amber-500/30 text-amber-400 shrink-0">
                             <img :src="iconRadio" class="w-5 h-5 invert" alt="" />
                         </div>
@@ -172,7 +183,7 @@ const props = defineProps({
                         </div>
                     </div>
 
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex gap-3.5 items-start md:col-span-2">
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex gap-3.5 items-start">
                         <div class="p-3 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 shrink-0">
                             <img :src="iconSaver" class="w-5 h-5 invert" alt="" />
                         </div>
@@ -292,7 +303,7 @@ Buat kalian yang merasa terbantu dan ingin ikut kontribusi secara sukarela agar 
 
                                 <!-- Discord Button -->
                                 <a 
-                                    href="https://discord.com/users/AgusTinusT" 
+                                    href="https://discord.com/users/572766938275643402" 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold text-xs shadow-lg shadow-[#5865F2]/25 hover:shadow-[#5865F2]/40 transition transform hover:-translate-y-0.5"
@@ -325,15 +336,8 @@ Buat kalian yang merasa terbantu dan ingin ikut kontribusi secara sukarela agar 
                     <span class="text-blue-400 font-bold">IME Roleplay Indonesia</span>
                 </div>
                 <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
-                    <span class="text-slate-500">Lead Developer / Author:</span>
-                    <span class="text-emerald-400 font-bold">Gusti Aidan (@AgusTinusT)</span>
-                </div>
-                <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
-                    <span class="text-slate-500">Donasi / Apresiasi:</span>
-                    <a href="https://bagibagi.co/Gusti-Aidan" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300 font-bold underline flex items-center gap-1">
-                        <span>BagiBagi / Gusti-Aidan</span>
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                    </a>
+                    <span class="text-slate-500">Author:</span>
+                    <span class="text-emerald-400 font-bold">Gusti Aidan</span>
                 </div>
                 <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
                     <span class="text-slate-500">Teknologi:</span>
