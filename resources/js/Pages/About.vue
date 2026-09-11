@@ -54,14 +54,14 @@ const props = defineProps({
                     >
                         Officer Directory
                     </Link>
-
+<!-- 
                     <Link 
                         href="/radio-codes"
                         class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
                         title="10-Codes & Tactical Radio Channels (TAC 1-10)"
                     >
                         10-Codes & Radio
-                    </Link>
+                    </Link> -->
 
                     <Link 
                         href="/about"
@@ -193,10 +193,10 @@ const props = defineProps({
                     <h2 class="text-base font-bold uppercase tracking-wider text-slate-200 font-mono">Kesatuan Kepolisian Terdaftar</h2>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-slate-900/80 border border-blue-500/30 rounded-2xl p-5 text-center flex flex-col items-center">
                         <span class="px-3 py-1 text-xs font-black rounded-lg bg-blue-600 text-white mb-2 shadow">LSPD</span>
-                        <h4 class="text-sm font-bold text-slate-200">Los Santos Police Department</h4>
+                        <h4 class="text-sm font-bold text-slate-200">Los Santos Police Dept</h4>
                         <p class="text-xs text-slate-400 mt-1">Markas Pusat Mission Row, membawahi patroli perkotaan Los Santos.</p>
                     </div>
 
@@ -211,6 +211,108 @@ const props = defineProps({
                         <h4 class="text-sm font-bold text-slate-200">San Andreas State Police</h4>
                         <p class="text-xs text-slate-400 mt-1">Divisi penegak hukum negara bagian, pengawasan jalan tol dan operasi taktis khusus.</p>
                     </div>
+
+                    <div class="bg-slate-900/80 border border-emerald-500/30 rounded-2xl p-5 text-center flex flex-col items-center">
+                        <span class="px-3 py-1 text-xs font-black rounded-lg bg-emerald-700 text-white mb-2 shadow">SAPR</span>
+                        <h4 class="text-sm font-bold text-slate-200">San Andreas Park Ranger</h4>
+                        <p class="text-xs text-slate-400 mt-1">Pengawasan cagar alam, kawasan hutan Gunung Chiliad, dan perairan San Andreas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Developer Profile & BagiBagi Support Card -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <h2 class="text-base font-bold uppercase tracking-wider text-slate-200 font-mono">Pengembang & Kontributor</h2>
+                </div>
+
+                <div class="relative overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-900/80 to-blue-950/40 border border-slate-700/60 hover:border-blue-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl transition duration-300">
+                    <!-- Glow background accent -->
+                    <div class="absolute -right-16 -top-16 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <div class="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
+                        <!-- Avatar / Tactical Badge -->
+                        <div class="relative shrink-0">
+                            <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-emerald-600 p-[2px] shadow-lg shadow-blue-500/20">
+                                <div class="w-full h-full bg-[#0b1320] rounded-[14px] flex flex-col items-center justify-center text-center p-2">
+                                    <span class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-emerald-400">DEV</span>
+                                    <span class="text-[9px] font-mono text-slate-400 font-bold uppercase tracking-wider mt-0.5">IME FAN</span>
+                                </div>
+                            </div>
+                            <div class="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.5 rounded-md bg-emerald-500 text-[9px] font-bold text-slate-950 shadow">
+                                ONLINE
+                            </div>
+                        </div>
+
+                        <!-- Info Content -->
+                        <div class="flex-1 text-center md:text-left space-y-3">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div>
+                                    <div class="flex items-center justify-center md:justify-start gap-2">
+                                        <h3 class="text-xl font-black text-white tracking-tight">Tinus</h3>
+                                        <span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                            @AgusTinusT
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-medium text-slate-400 mt-0.5">
+                                        Creator & Lead Developer • IME Roleplay Police Enthusiast
+                                    </p>
+                                </div>
+
+                                <div class="flex items-center justify-center sm:justify-end gap-2 text-xs">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 font-mono text-[11px]">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                        Fan-Made Project
+                                    </span>
+                                </div>
+                            </div>
+
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl">
+                                Halo semuanya! Dashboard ini dibangun secara mandiri atas dasar kecintaan terhadap serunya drama patroli, pengejaran taktis 10-80, dan interaksi roleplay seluruh jajaran petugas kepolisian (LSPD, BCSO, SASP, SAPR) di server GTA V IME Roleplay. Terima kasih banyak untuk seluruh streamer dan penonton setia yang terus meramaikan komunitas ini!
+                            </p>
+
+                            <!-- Links & BagiBagi Action Buttons -->
+                            <div class="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
+                                <!-- BagiBagi Support Button -->
+                                <a 
+                                    href="https://bagibagi.co.id/AgusTinusT" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold text-xs shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition transform hover:-translate-y-0.5"
+                                    title="Dukung developer lewat BagiBagi"
+                                >
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                    <span>Traktir Kopi via BagiBagi</span>
+                                </a>
+
+                                <!-- GitHub Repository -->
+                                <a 
+                                    href="https://github.com/AgusTinusT/ime-police-multiview" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700/90 border border-slate-600/60 text-slate-200 font-semibold text-xs transition"
+                                    title="Lihat Source Code di GitHub"
+                                >
+                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                                    </svg>
+                                    <span>GitHub Repository</span>
+                                </a>
+
+                                <!-- Feedback Link -->
+                                <Link 
+                                    href="/feedback" 
+                                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-300 hover:text-white font-medium text-xs transition"
+                                >
+                                    <span>Kritik & Masukan</span>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -220,6 +322,17 @@ const props = defineProps({
                 <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
                     <span class="text-slate-500">Komunitas Roleplay:</span>
                     <span class="text-blue-400 font-bold">IME Roleplay Indonesia</span>
+                </div>
+                <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
+                    <span class="text-slate-500">Lead Developer / Author:</span>
+                    <span class="text-emerald-400 font-bold">Tinus (@AgusTinusT)</span>
+                </div>
+                <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
+                    <span class="text-slate-500">Donasi / Apresiasi:</span>
+                    <a href="https://bagibagi.co.id/AgusTinusT" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300 font-bold underline flex items-center gap-1">
+                        <span>BagiBagi / AgusTinusT</span>
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
                 </div>
                 <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
                     <span class="text-slate-500">Teknologi:</span>
