@@ -3,6 +3,10 @@ import { Head, Link } from '@inertiajs/vue3';
 
 // Icons & Branding
 import logoSaspColor from '@/Components/Icons/SASP256.jpg';
+import iconLspd from '@/Components/Icons/LSPD_HD.svg';
+import iconBcso from '@/Components/Icons/Logo_LSCSD.svg';
+import iconSasp from '@/Components/Icons/SASP_HD.svg';
+import iconSapr from '@/Components/Icons/ranger_logo.svg';
 import iconFocus from '@/Components/Icons/focus-point-round-844-svgrepo-com.svg';
 import iconAllUnits from '@/Components/Icons/category-svgrepo-com.svg';
 import iconChat from '@/Components/Icons/chat-line-svgrepo-com.svg';
@@ -205,28 +209,44 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-slate-900/80 border border-blue-500/30 rounded-2xl p-5 text-center flex flex-col items-center">
-                        <span class="px-3 py-1 text-xs font-black rounded-lg bg-blue-600 text-white mb-2 shadow">LSPD</span>
-                        <h4 class="text-sm font-bold text-slate-200">Los Santos Police Dept</h4>
-                        <p class="text-xs text-slate-400 mt-1">Markas Pusat Mission Row, membawahi patroli perkotaan Los Santos.</p>
+                    <!-- LSPD -->
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-blue-500/40 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
+                            <img :src="iconLspd" class="w-full h-full object-contain drop-shadow" alt="LSPD Logo" />
+                        </div>
+                        <span class="text-xs font-mono font-black text-blue-400 tracking-wider">LSPD</span>
+                        <h4 class="text-sm font-bold text-slate-200 mt-0.5">Los Santos Police Dept</h4>
+                        <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Markas Pusat Mission Row, membawahi patroli dan penegakan hukum perkotaan Los Santos.</p>
                     </div>
 
-                    <div class="bg-slate-900/80 border border-amber-500/30 rounded-2xl p-5 text-center flex flex-col items-center">
-                        <span class="px-3 py-1 text-xs font-black rounded-lg bg-amber-600 text-white mb-2 shadow">BCSO</span>
-                        <h4 class="text-sm font-bold text-slate-200">Blaine County Sheriff's Office</h4>
-                        <p class="text-xs text-slate-400 mt-1">Markas Paleto Bay & Sandy Shores, menjaga keamanan wilayah pedesaan dan gurun.</p>
+                    <!-- BCSO -->
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
+                            <img :src="iconBcso" class="w-full h-full object-contain drop-shadow" alt="BCSO Logo" />
+                        </div>
+                        <span class="text-xs font-mono font-black text-amber-400 tracking-wider">BCSO</span>
+                        <h4 class="text-sm font-bold text-slate-200 mt-0.5">Blaine County Sheriff</h4>
+                        <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Markas Paleto Bay & Sandy Shores, menjaga keamanan wilayah pedesaan dan gurun.</p>
                     </div>
 
-                    <div class="bg-slate-900/80 border border-indigo-500/30 rounded-2xl p-5 text-center flex flex-col items-center">
-                        <span class="px-3 py-1 text-xs font-black rounded-lg bg-indigo-600 text-white mb-2 shadow">SASP</span>
-                        <h4 class="text-sm font-bold text-slate-200">San Andreas State Police</h4>
-                        <p class="text-xs text-slate-400 mt-1">Divisi penegak hukum negara bagian, pengawasan jalan tol dan operasi taktis khusus.</p>
+                    <!-- SASP -->
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
+                            <img :src="iconSasp" class="w-full h-full object-contain drop-shadow" alt="SASP Logo" />
+                        </div>
+                        <span class="text-xs font-mono font-black text-indigo-400 tracking-wider">SASP</span>
+                        <h4 class="text-sm font-bold text-slate-200 mt-0.5">San Andreas State Police</h4>
+                        <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Divisi kepolisian negara bagian, pengawasan jalan tol dan operasi taktis antar-wilayah.</p>
                     </div>
 
-                    <div class="bg-slate-900/80 border border-emerald-500/30 rounded-2xl p-5 text-center flex flex-col items-center">
-                        <span class="px-3 py-1 text-xs font-black rounded-lg bg-emerald-700 text-white mb-2 shadow">SAPR</span>
-                        <h4 class="text-sm font-bold text-slate-200">San Andreas Park Ranger</h4>
-                        <p class="text-xs text-slate-400 mt-1">Pengawasan cagar alam, kawasan hutan Gunung Chiliad, dan perairan San Andreas.</p>
+                    <!-- SAPR -->
+                    <div class="bg-slate-900/80 border border-slate-800 hover:border-emerald-500/40 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
+                            <img :src="iconSapr" class="w-full h-full object-contain drop-shadow" alt="SAPR Logo" />
+                        </div>
+                        <span class="text-xs font-mono font-black text-emerald-400 tracking-wider">SAPR</span>
+                        <h4 class="text-sm font-bold text-slate-200 mt-0.5">San Andreas Park Ranger</h4>
+                        <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Pengawasan cagar alam, cagar hutan Gunung Chiliad, dan perairan San Andreas.</p>
                     </div>
                 </div>
             </div>
