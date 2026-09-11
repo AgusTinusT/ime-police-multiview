@@ -2143,16 +2143,15 @@ const submitFeedbackForm = async () => {
                     <span class="hidden md:inline">{{ isFullscreen ? 'Exit' : 'Fullscreen' }}</span>
                 </button>
 
-                <!-- 5. Admin Only Roster & Logout -->
-                <div v-if="$page.props.auth?.user" class="flex items-center space-x-1 bg-amber-950/40 p-0.5 rounded-lg border border-amber-500/50">
-                    <button 
-                        @click="openRightDrawer('ROSTER')"
-                        class="px-2.5 py-1 text-xs font-bold rounded bg-amber-600 hover:bg-amber-500 text-white shadow-md shadow-amber-600/30 transition flex items-center gap-1.5"
-                        title="Manage Roster Database (MySQL)"
+                <!-- 5. Admin Hub & Logout (When Authenticated) -->
+                <div v-if="$page.props.auth?.user" class="flex items-center space-x-1 bg-cyan-950/40 p-0.5 rounded-lg border border-cyan-500/50">
+                    <Link 
+                        href="/admin/officers"
+                        class="px-2.5 py-1 text-xs font-bold rounded bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/30 transition flex items-center gap-1.5"
+                        title="Dispatcher Admin Hub"
                     >
-                        <img :src="iconRoster" class="w-3.5 h-3.5 invert" alt="Roster" />
-                        <span class="hidden sm:inline">Roster</span>
-                    </button>
+                        <span>Admin Hub</span>
+                    </Link>
                     <button 
                         @click="handleAdminLogout"
                         class="px-2 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-red-900/50 text-red-400 hover:text-red-200 border border-slate-700 transition flex items-center gap-1"
@@ -4229,7 +4228,7 @@ const submitFeedbackForm = async () => {
             class="fixed inset-y-0 right-0 z-50 bg-[#080d17]/98 border-l border-slate-800/90 shadow-2xl backdrop-blur-2xl flex flex-col transition-all duration-300 ease-in-out"
             :class="[
                 activeRightDrawer ? 'translate-x-0' : 'translate-x-full pointer-events-none',
-                activeRightDrawer === 'DIRECTORY' ? 'w-full sm:w-[580px] md:w-[740px] lg:w-[860px]' : (activeRightDrawer === 'ROSTER' || activeRightDrawer === 'RADIO_CODES' ? 'w-full sm:w-[540px] md:w-[680px] lg:w-[780px]' : 'w-full sm:w-[440px] md:w-[480px]')
+                activeRightDrawer === 'DIRECTORY' ? 'w-full sm:w-[580px] md:w-[740px] lg:w-[860px]' : (activeRightDrawer === 'RADIO_CODES' ? 'w-full sm:w-[540px] md:w-[680px] lg:w-[780px]' : 'w-full sm:w-[440px] md:w-[480px]')
             ]"
         >
             <!-- Drawer Top Header Bar -->
@@ -4239,7 +4238,7 @@ const submitFeedbackForm = async () => {
                         class="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 border"
                         :class="{
                             'bg-blue-950/80 border-blue-500/60 text-blue-400': activeRightDrawer === 'DIRECTORY',
-                            'bg-amber-950/80 border-amber-500/60 text-amber-400': activeRightDrawer === 'RADIO_CODES' || activeRightDrawer === 'ROSTER',
+                            'bg-amber-950/80 border-amber-500/60 text-amber-400': activeRightDrawer === 'RADIO_CODES',
                             'bg-emerald-950/80 border-emerald-500/60 text-emerald-400': activeRightDrawer === 'QUICK_ADD',
                             'bg-sky-950/80 border-sky-500/60 text-sky-400': activeRightDrawer === 'FEEDBACK',
                             'bg-indigo-950/80 border-indigo-500/60 text-indigo-400': activeRightDrawer === 'ABOUT',
@@ -4250,7 +4249,6 @@ const submitFeedbackForm = async () => {
                         <img v-else-if="activeRightDrawer === 'QUICK_ADD'" :src="iconQuickAdd" class="w-4 h-4 invert" alt="" />
                         <img v-else-if="activeRightDrawer === 'FEEDBACK'" :src="iconFeedback" class="w-4 h-4 invert" alt="" />
                         <svg v-else-if="activeRightDrawer === 'ABOUT'" class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-width="2" stroke-linecap="round" d="M12 16v-4m0-4h.01"/></svg>
-                        <img v-else-if="activeRightDrawer === 'ROSTER'" :src="iconRoster" class="w-4 h-4 invert" alt="" />
                     </div>
                     <div class="truncate">
                         <div class="flex items-center space-x-2">
@@ -4258,7 +4256,7 @@ const submitFeedbackForm = async () => {
                                 class="text-xs font-black tracking-wider uppercase font-mono truncate"
                                 :class="{
                                     'text-blue-300': activeRightDrawer === 'DIRECTORY',
-                                    'text-amber-300': activeRightDrawer === 'RADIO_CODES' || activeRightDrawer === 'ROSTER',
+                                    'text-amber-300': activeRightDrawer === 'RADIO_CODES',
                                     'text-emerald-300': activeRightDrawer === 'QUICK_ADD',
                                     'text-sky-300': activeRightDrawer === 'FEEDBACK',
                                     'text-indigo-300': activeRightDrawer === 'ABOUT',
@@ -4269,19 +4267,18 @@ const submitFeedbackForm = async () => {
                                 <span v-else-if="activeRightDrawer === 'QUICK_ADD'">QUICK ADD LIVE FEED</span>
                                 <span v-else-if="activeRightDrawer === 'FEEDBACK'">LAPOR & USULAN STREAMER</span>
                                 <span v-else-if="activeRightDrawer === 'ABOUT'">ABOUT COMMAND CENTER</span>
-                                <span v-else-if="activeRightDrawer === 'ROSTER'">TACTICAL ROSTER MANAGER</span>
                             </h2>
                             <span 
                                 class="text-[9px] px-1.5 py-0.2 rounded-full border font-mono uppercase"
                                 :class="{
                                     'bg-blue-500/20 text-blue-300 border-blue-500/40': activeRightDrawer === 'DIRECTORY',
-                                    'bg-amber-500/20 text-amber-300 border-amber-500/40': activeRightDrawer === 'RADIO_CODES' || activeRightDrawer === 'ROSTER',
+                                    'bg-amber-500/20 text-amber-300 border-amber-500/40': activeRightDrawer === 'RADIO_CODES',
                                     'bg-emerald-500/20 text-emerald-300 border-emerald-500/40': activeRightDrawer === 'QUICK_ADD',
                                     'bg-sky-500/20 text-sky-300 border-sky-500/40': activeRightDrawer === 'FEEDBACK',
                                     'bg-indigo-500/20 text-indigo-300 border-indigo-500/40': activeRightDrawer === 'ABOUT',
                                 }"
                             >
-                                {{ activeRightDrawer === 'DIRECTORY' ? 'Roster' : (activeRightDrawer === 'RADIO_CODES' ? 'Guide' : (activeRightDrawer === 'ROSTER' ? 'Admin DB' : (activeRightDrawer === 'FEEDBACK' ? 'Discord' : (activeRightDrawer === 'ABOUT' ? 'Overview' : 'Temporary')))) }}
+                                {{ activeRightDrawer === 'DIRECTORY' ? 'Roster' : (activeRightDrawer === 'RADIO_CODES' ? 'Guide' : (activeRightDrawer === 'FEEDBACK' ? 'Discord' : (activeRightDrawer === 'ABOUT' ? 'Overview' : 'Temporary'))) }}
                             </span>
                         </div>
                         <p class="text-[11px] text-slate-400 truncate">
@@ -4290,7 +4287,6 @@ const submitFeedbackForm = async () => {
                             <span v-else-if="activeRightDrawer === 'QUICK_ADD'">Inject external YouTube live patrol feed into multifeed</span>
                             <span v-else-if="activeRightDrawer === 'FEEDBACK'">Kirim usul streamer atau perbaikan data ke Discord tim</span>
                             <span v-else-if="activeRightDrawer === 'ABOUT'">IME Roleplay Police Command Center & Tactical Multiview</span>
-                            <span v-else-if="activeRightDrawer === 'ROSTER'">Master MySQL database streamer & officer CRUD control</span>
                         </p>
                     </div>
                 </div>
@@ -5248,291 +5244,9 @@ const submitFeedbackForm = async () => {
 
                 </div>
 
-                <!-- 3. ADMIN TACTICAL ROSTER MANAGER PANEL (MYSQL CRUD) -->
-                <div v-if="activeRightDrawer === 'ROSTER'" class="flex-1 flex flex-col min-h-0">
-                    
-                    <!-- Feedback Toast -->
-                    <div v-if="rosterFeedback" class="bg-blue-950/90 border-b border-blue-500/40 px-4 py-2 text-xs text-blue-300 font-mono text-center shrink-0 flex items-center justify-center gap-2">
-                        <span>⚡</span>
-                        <span>{{ rosterFeedback }}</span>
-                    </div>
-
-                    <!-- Filter, Add Officer & Search Toolbar -->
-                    <div class="bg-slate-950/90 px-4 py-2.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 shrink-0">
-                        <!-- Add Officer Button -->
-                        <button 
-                            @click="openAddOfficerModal" 
-                            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-md shadow-emerald-600/30"
-                        >
-                            <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert" alt="" />
-                            <span>Add Officer / Streamer</span>
-                        </button>
-
-                        <!-- Search Input -->
-                        <div class="relative flex-1 sm:w-64 max-w-xs">
-                            <input 
-                                v-model="rosterSearch" 
-                                @input="fetchRosterOfficers" 
-                                type="text" 
-                                placeholder="Filter name, callsign, handle..."
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
-                            />
-                            <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-2.5" alt="" />
-                        </div>
-                    </div>
-
-                    <!-- Department Sub-tabs -->
-                    <div class="bg-slate-900/60 px-4 py-2 border-b border-slate-800 flex items-center space-x-1.5 overflow-x-auto scrollbar-none shrink-0">
-                        <button 
-                            v-for="dept in departments" 
-                            :key="dept.id" 
-                            @click="rosterDept = dept.id; fetchRosterOfficers();" 
-                            :class="rosterDept === dept.id ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-sm shadow-amber-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
-                            class="px-2.5 py-1 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap"
-                        >
-                            <img 
-                                :src="getDeptIcon(dept.id)" 
-                                class="w-3.5 h-3.5 object-contain shrink-0 brightness-0 invert opacity-90" 
-                                :alt="dept.name" 
-                            />
-                            <span>{{ dept.name }}</span>
-                        </button>
-                    </div>
-
-                    <!-- Officers List -->
-                    <div class="flex-1 overflow-y-auto p-4 space-y-2.5 scrollbar-thin">
-                        <div v-if="isRosterLoading" class="py-12 text-center text-slate-400 font-mono text-xs flex items-center justify-center gap-2">
-                            <img :src="iconRefresh" class="w-4 h-4 animate-spin invert opacity-80" alt="" />
-                            <span>Loading officer records from MySQL...</span>
-                        </div>
-
-                        <div v-else-if="rosterOfficers.length === 0" class="py-12 text-center text-slate-500 text-xs font-mono">
-                            No officers found in database matching criteria.
-                        </div>
-
-                        <div v-else class="space-y-2">
-                            <div 
-                                v-for="officer in rosterOfficers" 
-                                :key="officer.id" 
-                                class="bg-slate-900/80 hover:bg-slate-900 border rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 transition"
-                                :class="officer.is_active ? 'border-slate-800' : 'border-red-900/40 bg-red-950/10 opacity-70'"
-                            >
-                                <!-- Officer Card Left -->
-                                <div class="flex items-center space-x-3 min-w-0">
-                                    <img 
-                                        :src="officer.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${officer.handle}`" 
-                                        :alt="officer.officer_name"
-                                        class="w-10 h-10 rounded-full border border-slate-700 bg-slate-950 shrink-0"
-                                    />
-                                    <div class="min-w-0">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="px-1.5 py-0.2 text-[10px] font-black rounded border font-mono" :class="getDeptBadgeClass(officer.department)">
-                                                {{ officer.department }}
-                                            </span>
-                                            <span class="font-mono text-xs font-bold text-amber-400">{{ officer.callsign }}</span>
-                                            <span class="text-xs font-mono text-slate-400">{{ officer.badge_number }}</span>
-                                        </div>
-                                        <h3 class="text-xs font-bold text-slate-100 truncate mt-0.5">{{ officer.officer_name }}</h3>
-                                        <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
-                                            <span>{{ officer.rank }}</span>
-                                            <span>•</span>
-                                            <span class="text-blue-400 font-mono">{{ officer.handle }}</span>
-                                            <span v-if="officer.streamer_name" class="text-slate-500 truncate">({{ officer.streamer_name }})</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Officer Card Right: Zone, Status, Actions -->
-                                <div class="flex items-center space-x-2.5 shrink-0 ml-auto">
-                                    <div class="text-[11px] font-mono text-slate-400 hidden md:block">
-                                        {{ officer.patrol_zone || 'Los Santos' }}
-                                    </div>
-
-                                    <!-- Toggle Active Switch -->
-                                    <button 
-                                        @click="toggleOfficerActive(officer)"
-                                        :class="officer.is_active ? 'bg-emerald-950 border-emerald-500/50 text-emerald-300' : 'bg-slate-950 border-slate-800 text-slate-500'"
-                                        class="px-2 py-1 rounded-lg border text-[11px] font-mono font-bold transition flex items-center gap-1.5"
-                                        title="Toggle Monitoring Active/Disabled"
-                                    >
-                                        <span :class="officer.is_active ? 'text-emerald-400' : 'text-slate-600'">●</span>
-                                        <span>{{ officer.is_active ? 'ACTIVE' : 'DISABLED' }}</span>
-                                    </button>
-
-                                    <!-- Action Buttons: Edit & Delete -->
-                                    <div class="flex items-center space-x-1">
-                                        <button 
-                                            @click="openEditOfficerModal(officer)"
-                                            class="p-1.5 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-blue-300 text-xs transition flex items-center justify-center"
-                                            title="Edit Officer Record"
-                                        >
-                                            <img :src="iconEdit" class="w-3.5 h-3.5 invert opacity-90" alt="Edit" />
-                                        </button>
-                                        <button 
-                                            @click="deleteOfficerConfirm(officer)"
-                                            class="p-1.5 rounded-lg bg-red-950 hover:bg-red-900 border border-red-500/40 text-red-300 text-xs transition flex items-center justify-center"
-                                            title="Delete from MySQL"
-                                        >
-                                            <img :src="iconDelete" class="w-3.5 h-3.5 invert opacity-90" alt="Delete" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Roster Panel Footer Info -->
-                    <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between font-mono shrink-0">
-                        <span>Units in DB: {{ rosterOfficers.length }}</span>
-                        <span>Direct MySQL Sync Active</span>
-                    </div>
-
-                </div>
-
             </div>
 
         </aside>
-
-        <!-- SUB-DRAWER / MODAL: ADD / EDIT OFFICER FORM (OVERLAY ON TOP OF ROSTER DRAWER) -->
-        <div v-if="showOfficerFormModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[60] flex items-center justify-center p-3 sm:p-4">
-            <div class="bg-[#0b1320] border border-amber-500/60 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-                
-                <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <img :src="isEditingOfficer ? iconEdit : iconQuickAdd" class="w-4 h-4 invert opacity-90" alt="" />
-                        <h3 class="text-sm font-bold text-amber-400 tracking-wide uppercase font-mono">
-                            {{ isEditingOfficer ? 'EDIT OFFICER RECORD (MYSQL)' : 'ADD NEW OFFICER / STREAMER (MYSQL)' }}
-                        </h3>
-                    </div>
-                    <button @click="showOfficerFormModal = false" class="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 rounded bg-slate-800">
-                        ✕
-                    </button>
-                </div>
-
-                <form @submit.prevent="submitOfficerForm" class="p-4 bg-slate-950 flex flex-col gap-3 max-h-[80vh] overflow-y-auto scrollbar-thin">
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">YouTube Handle *</label>
-                            <input 
-                                v-model="officerForm.handle" 
-                                type="text" 
-                                required
-                                placeholder="@StreamerHandle"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-mono"
-                            />
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Streamer Name *</label>
-                            <input 
-                                v-model="officerForm.streamer_name" 
-                                type="text" 
-                                required
-                                placeholder="Windah Basudara"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Officer In-Game Name *</label>
-                            <input 
-                                v-model="officerForm.officer_name" 
-                                type="text" 
-                                required
-                                placeholder="Ofc. Budi Santoso"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-                            />
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Callsign *</label>
-                            <input 
-                                v-model="officerForm.callsign" 
-                                type="text" 
-                                required
-                                placeholder="1-ADAM-12"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-mono"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Department *</label>
-                            <select 
-                                v-model="officerForm.department" 
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-                            >
-                                <option value="LSPD">LSPD (Police)</option>
-                                <option value="BCSO">BCSO (Sheriff)</option>
-                                <option value="SASP">SASP (State Police)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Rank</label>
-                            <input 
-                                v-model="officerForm.rank" 
-                                type="text" 
-                                placeholder="Officer, Sergeant, Cadet..."
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Badge Number</label>
-                            <input 
-                                v-model="officerForm.badge_number" 
-                                type="text" 
-                                placeholder="#101"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-mono"
-                            />
-                        </div>
-                        <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Patrol Zone</label>
-                            <input 
-                                v-model="officerForm.patrol_zone" 
-                                type="text" 
-                                placeholder="Mission Row / Downtown"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="flex items-center space-x-2 pt-1">
-                        <input 
-                            type="checkbox" 
-                            id="is_active_checkbox" 
-                            v-model="officerForm.is_active" 
-                            class="rounded bg-slate-900 border-slate-800 text-amber-500 focus:ring-amber-500"
-                        />
-                        <label for="is_active_checkbox" class="text-xs text-slate-300">
-                            Actively monitor this streamer for live streams
-                        </label>
-                    </div>
-
-                    <div class="mt-3 flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
-                        <button 
-                            type="button" 
-                            @click="showOfficerFormModal = false" 
-                            class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg"
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            type="submit" 
-                            class="px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-amber-600/30 font-mono flex items-center gap-1.5"
-                        >
-                            <img :src="iconRoster" class="w-3.5 h-3.5 invert" alt="" />
-                            <span>Save to MySQL</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
 
         <!-- Global Expiring TAC Channel Alert Prompt (When viewing other tabs) -->
         <div 
