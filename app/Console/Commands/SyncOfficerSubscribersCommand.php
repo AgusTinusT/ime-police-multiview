@@ -17,21 +17,28 @@ class SyncOfficerSubscribersCommand extends Command
     {
         $this->info('Starting subscriber count sync for active officers...');
 
-        $officers = Officer::where('is_active', true)->whereNotNull('handle')->get();
+        $officers = Officer::where('is_active', true)->get();
         if ($officers->isEmpty()) {
-            $this->warn('No active officers with handles found.');
+            $this->warn('No active officers found.');
             return 0;
         }
 
-        $chunks = $officers->chunk(10);
+        $chunks = $officers->chunk(8);
         $totalUpdated = 0;
 
         foreach ($chunks as $chunk) {
             $responses = Http::pool(function ($pool) use ($chunk) {
                 foreach ($chunk as $officer) {
-                    $handle = str_starts_with($officer->handle, '@') ? $officer->handle : '@' . $officer->handle;
-                    $url = "https://www.youtube.com/{$handle}";
-                    $pool->as($officer->id)->withHeaders(YouTubeScraperService::getBrowserHeaders())->timeout(7)->get($url);
+                    $handle = trim($officer->handle ?? '');
+                    if (!empty($handle)) {
+                        $cleanHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
+                        $url = "https://www.youtube.com/{$cleanHandle}";
+                    } elseif (!empty($officer->channel_id)) {
+                        $url = "https://www.youtube.com/channel/{$officer->channel_id}";
+                    } else {
+                        continue;
+                    }
+                    $pool->as($officer->id)->withHeaders(YouTubeScraperService::getBrowserHeaders())->timeout(10)->get($url);
                 }
             });
 
@@ -39,28 +46,19 @@ class SyncOfficerSubscribersCommand extends Command
                 $res = $responses[$officer->id] ?? null;
                 if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
                     $html = $res->body();
-                    $subscriberText = null;
+                    $extracted = YouTubeScraperService::extractSubscriberCountFromHtml($html);
 
-                    if (preg_match('/"subscriberCountText":\{"accessibility":\{"accessibilityData":\{"label":"([^"]+)"\}\}/', $html, $matches)) {
-                        $subscriberText = $matches[1];
-                    } elseif (preg_match('/"subscriberCountText":\{"simpleText":"([^"]+)"\}/', $html, $matches)) {
-                        $subscriberText = $matches[1];
-                    }
-
-                    if ($subscriberText) {
-                        $count = YouTubeScraperService::parseSubscriberCount($subscriberText);
-                        if ($count !== null) {
-                            $officer->update([
-                                'subscriber_count' => $count,
-                                'subscriber_count_text' => $subscriberText,
-                            ]);
-                            $totalUpdated++;
-                            $this->line("Updated {$officer->officer_name} ({$officer->handle}): {$subscriberText} ({$count})");
-                        }
+                    if ($extracted['count'] !== null) {
+                        $officer->update([
+                            'subscriber_count' => $extracted['count'],
+                            'subscriber_count_text' => $extracted['text'],
+                        ]);
+                        $totalUpdated++;
+                        $this->line("Updated {$officer->officer_name} ({$officer->handle}): {$extracted['text']} ({$extracted['count']})");
                     }
                 }
             }
-            sleep(1);
+            usleep(500000); // 500ms delay between chunks to prevent aggressive rate-limiting
         }
 
         $this->info("Successfully updated subscriber counts for {$totalUpdated} officers.");

@@ -975,9 +975,14 @@ class YouTubeScraperService
             return null;
         }
 
-        $clean = strtolower(trim($text));
-        $clean = preg_replace('/\s*(subscriber|subscribers|pelanggan).*$/i', '', $clean);
+        $clean = str_replace(["\xc2\xa0", "\u{00a0}", "&nbsp;"], ' ', $text);
+        $clean = strtolower(trim($clean));
+        $clean = preg_replace('/\s*(subscriber|subscribers|pelanggan).*$/iu', '', $clean);
         $clean = trim($clean);
+
+        if (empty($clean) || !preg_match('/[0-9]/', $clean)) {
+            return null;
+        }
 
         if (str_contains($clean, 'rb') || str_contains($clean, 'ribu') || str_contains($clean, 'k') || str_contains($clean, 'jt') || str_contains($clean, 'juta') || str_contains($clean, 'm')) {
             $numPart = preg_replace('/[^0-9.,]/', '', $clean);
@@ -994,6 +999,33 @@ class YouTubeScraperService
 
         $digits = preg_replace('/[^0-9]/', '', $clean);
         return !empty($digits) ? (int) $digits : null;
+    }
+
+    /**
+     * Extract subscriber count and text from raw YouTube channel page HTML.
+     */
+    public static function extractSubscriberCountFromHtml(string $html): array
+    {
+        $patterns = [
+            '/"accessibilityLabel":"([0-9.,\s\x{00a0}]+(?:\s*(?:ribu|rb|jt|juta|k|m))?\s*(?:subscriber|subscribers|pelanggan)[^"]*)"/iu',
+            '/"content":"([0-9.,\s\x{00a0}]+(?:\s*(?:ribu|rb|jt|juta|k|m))?\s*(?:subscriber|subscribers|pelanggan)[^"]*)"/iu',
+            '/"subscriberCountText":\{"accessibility":\{"accessibilityData":\{"label":"([^"]+)"\}\}/iu',
+            '/"subscriberCountText":\{"simpleText":"([^"]+)"\}/iu',
+            '/"subscriberCountText":\{"runs":\[\{"text":"([^"]+)"\}/iu',
+            '/([0-9]+[0-9.,\s\x{00a0}]*(?:\s*(?:rb|ribu|k|m|jt|juta))?\s*(?:subscriber|subscribers|pelanggan))/iu',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $html, $m)) {
+                $raw = trim($m[1]);
+                $count = self::parseSubscriberCount($raw);
+                if ($count !== null && $count > 0) {
+                    return ['text' => $raw, 'count' => $count];
+                }
+            }
+        }
+
+        return ['text' => null, 'count' => null];
     }
 }
 
