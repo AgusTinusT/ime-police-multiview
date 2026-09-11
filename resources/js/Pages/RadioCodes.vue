@@ -498,6 +498,12 @@ const toggleFullscreen = () => {
                                     <span>SASP - State Troopers</span>
                                 </Link>
                             </li>
+                            <li>
+                                <Link href="/officers" class="hover:text-green-300 transition flex items-center gap-1.5 text-slate-300">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                    <span>SAPR - San Andreas Park Rangers</span>
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 

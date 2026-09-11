@@ -1027,5 +1027,105 @@ class YouTubeScraperService
 
         return ['text' => null, 'count' => null];
     }
+
+    /**
+     * Fetch complete channel info (channel ID, avatar, title, subscribers) by handle or URL.
+     */
+    public function fetchChannelInfo(string $query): ?array
+    {
+        $query = trim($query);
+        if (empty($query)) {
+            return null;
+        }
+
+        // Determine URL & normalized handle
+        $normalizedHandle = null;
+        $url = null;
+
+        // 1. If full URL (e.g. https://www.youtube.com/@handle or youtube.com/@handle)
+        if (preg_match('/(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:@([a-zA-Z0-9_.-]+)|channel\/(UC[a-zA-Z0-9_-]{22})|c\/([a-zA-Z0-9_.-]+)|user\/([a-zA-Z0-9_.-]+))/i', $query, $matches)) {
+            if (!empty($matches[1])) {
+                $normalizedHandle = '@' . $matches[1];
+                $url = "https://www.youtube.com/@{$matches[1]}";
+            } elseif (!empty($matches[2])) {
+                $url = "https://www.youtube.com/channel/{$matches[2]}";
+            } elseif (!empty($matches[3])) {
+                $url = "https://www.youtube.com/c/{$matches[3]}";
+            } elseif (!empty($matches[4])) {
+                $url = "https://www.youtube.com/user/{$matches[4]}";
+            }
+        }
+
+        if (!$url) {
+            if (str_starts_with($query, 'http://') || str_starts_with($query, 'https://')) {
+                $url = $query;
+            } elseif (str_starts_with($query, 'UC') && strlen($query) === 24) {
+                $url = "https://www.youtube.com/channel/{$query}";
+            } else {
+                $cleanHandle = ltrim($query, '@');
+                $cleanHandle = preg_replace('/[^a-zA-Z0-9_.-]/', '', $cleanHandle);
+                $normalizedHandle = '@' . $cleanHandle;
+                $url = "https://www.youtube.com/@{$cleanHandle}";
+            }
+        }
+
+        try {
+            $response = Http::withHeaders(self::getBrowserHeaders())->timeout(10)->get($url);
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $html = $response->body();
+
+            // Extract channel ID
+            $channelId = null;
+            if (preg_match('/"externalId":"(UC[a-zA-Z0-9_-]{22})"/i', $html, $m)) {
+                $channelId = $m[1];
+            } elseif (preg_match('/"channelId":"(UC[a-zA-Z0-9_-]{22})"/i', $html, $m)) {
+                $channelId = $m[1];
+            } elseif (preg_match('/itemprop="channelId"\s+content="(UC[a-zA-Z0-9_-]{22})"/i', $html, $m)) {
+                $channelId = $m[1];
+            } elseif (preg_match('/<link rel="alternate" type="application\/rss\+xml" title="RSS" href="https:\/\/www\.youtube\.com\/feeds\/videos\.xml\?channel_id=(UC[a-zA-Z0-9_-]{22})"/i', $html, $m)) {
+                $channelId = $m[1];
+            }
+
+            // Extract channel title / streamer name
+            $title = null;
+            if (preg_match('/<meta property="og:title" content="([^"]+)"/i', $html, $m)) {
+                $title = html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5);
+            } elseif (preg_match('/"channelMetadataRenderer":\{"title":"([^"]+)"/i', $html, $m)) {
+                $title = $m[1];
+            }
+
+            // Extract avatar URL
+            $avatarUrl = null;
+            if (preg_match('/"avatar":\{"thumbnails":\[\{"url":"([^"]+)"/i', $html, $m)) {
+                $avatarUrl = $m[1];
+            } elseif (preg_match('/<meta property="og:image" content="([^"]+)"/i', $html, $m)) {
+                $avatarUrl = $m[1];
+            }
+
+            // Extract canonical handle
+            $canonicalHandle = $normalizedHandle;
+            if (preg_match('/"canonicalBaseUrl":"\/(@[a-zA-Z0-9_.-]+)"/i', $html, $m)) {
+                $canonicalHandle = $m[1];
+            }
+
+            // Extract subscribers
+            $subs = self::extractSubscriberCountFromHtml($html);
+
+            return [
+                'channel_id' => $channelId,
+                'handle' => $canonicalHandle ?: ($normalizedHandle ?: '@' . ltrim($query, '@')),
+                'streamer_name' => $title,
+                'avatar_url' => $avatarUrl,
+                'subscriber_count' => $subs['count'],
+                'subscriber_count_text' => $subs['text'],
+            ];
+        } catch (\Throwable $e) {
+            Log::error("Failed to fetch YouTube channel info for [{$query}]: " . $e->getMessage());
+            return null;
+        }
+    }
 }
 

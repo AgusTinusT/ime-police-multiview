@@ -20,8 +20,16 @@ Route::get('/feedback', [PoliceCommandController::class, 'feedbackPage'])->name(
 
 // Admin direct slash route (hidden access)
 Route::get('/admin', function () {
-    return auth()->check() ? redirect()->route('dashboard') : redirect()->route('login');
+    return auth()->check() ? redirect()->route('admin.officers') : redirect()->route('login');
 })->name('admin');
+
+// Dedicated Standalone Admin Command Hub (Protected by Auth)
+Route::middleware('auth')->prefix('admin')->group(function () {
+    Route::get('/officers', [OfficerManagementController::class, 'adminPage'])->name('admin.officers');
+    Route::post('/api/sync-streams', [OfficerManagementController::class, 'syncStreams'])->name('admin.sync-streams');
+    Route::post('/api/sync-subscribers', [OfficerManagementController::class, 'syncSubscribers'])->name('admin.sync-subscribers');
+    Route::post('/api/check-channel', [OfficerManagementController::class, 'checkChannel'])->name('admin.check-channel');
+});
 
 // Redirect any attempt to access /register to home
 Route::get('/register', function () {

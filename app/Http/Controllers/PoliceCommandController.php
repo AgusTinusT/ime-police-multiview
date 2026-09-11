@@ -109,6 +109,7 @@ class PoliceCommandController extends Controller
             'lspd_live' => $activeStreams->where('officer.department', 'LSPD')->count(),
             'bcso_live' => $activeStreams->where('officer.department', 'BCSO')->count(),
             'sasp_live' => $activeStreams->where('officer.department', 'SASP')->count(),
+            'sapr_live' => $activeStreams->filter(fn($s) => in_array($s['officer']['department'] ?? '', ['SAPR', 'PARK RANGER']))->count(),
         ];
 
         // 5. Tactical Radio Channels (TAC 1 to TAC 5)
@@ -233,6 +234,7 @@ class PoliceCommandController extends Controller
             'lspd_live' => $activeStreams->where('officer.department', 'LSPD')->count(),
             'bcso_live' => $activeStreams->where('officer.department', 'BCSO')->count(),
             'sasp_live' => $activeStreams->where('officer.department', 'SASP')->count(),
+            'sapr_live' => $activeStreams->filter(fn($s) => in_array($s['officer']['department'] ?? '', ['SAPR', 'PARK RANGER']))->count(),
         ];
 
         return response()->json([
@@ -397,6 +399,7 @@ class PoliceCommandController extends Controller
             'lspd_total' => $allOfficers->where('department', 'LSPD')->count(),
             'bcso_total' => $allOfficers->where('department', 'BCSO')->count(),
             'sasp_total' => $allOfficers->where('department', 'SASP')->count(),
+            'sapr_total' => $allOfficers->filter(fn($o) => in_array($o['department'], ['SAPR', 'PARK RANGER']))->count(),
         ];
 
         return Inertia::render('OfficerDirectory', [

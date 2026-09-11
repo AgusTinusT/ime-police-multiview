@@ -7,6 +7,7 @@ import logoSaspColor from '@/Components/Icons/SASP256.jpg';
 import iconLspd from '@/Components/Icons/LSPD_HD.svg';
 import iconBcso from '@/Components/Icons/Logo_LSCSD.svg';
 import iconSasp from '@/Components/Icons/SASP_HD.svg';
+import iconSapr from '@/Components/Icons/ranger_logo.svg';
 import iconAllUnits from '@/Components/Icons/category-svgrepo-com.svg';
 import iconPersonal from '@/Components/Icons/star-svgrepo-com.svg';
 import iconSaver from '@/Components/Icons/gauge-low-svgrepo-com.svg';
@@ -955,13 +956,14 @@ onUnmounted(() => {
     window.removeEventListener('click', closeMoreTac);
 });
 
-// Main Visible Department Tabs (ALL, PERSONAL, LSPD, BCSO, SASP + Primary TAC 1 to 3)
+// Main Visible Department Tabs (ALL, PERSONAL, LSPD, BCSO, SASP, SAPR + Primary TAC 1 to 3)
 const departments = [
     { id: 'ALL', name: 'ALL UNITS', icon: iconAllUnits, isSvg: true, color: 'border-slate-600 text-slate-300' },
     { id: 'PERSONAL', name: 'PERSONAL', icon: iconPersonal, isSvg: true, color: 'border-purple-500 text-purple-300 bg-purple-950/40' },
     { id: 'LSPD', name: 'LSPD', icon: iconLspd, isSvg: true, color: 'border-blue-500 text-blue-400 bg-blue-950/40' },
     { id: 'BCSO', name: 'BCSO', icon: iconBcso, isSvg: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'SASP', name: 'SASP', icon: iconSasp, isSvg: true, color: 'border-teal-500 text-teal-400 bg-teal-950/40' },
+    { id: 'SAPR', name: 'SAPR', icon: iconSapr, isSvg: true, color: 'border-green-500 text-green-400 bg-green-950/40' },
     { id: 'TAC_1', name: 'TAC 1', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'TAC_2', name: 'TAC 2', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'TAC_3', name: 'TAC 3', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
@@ -986,6 +988,8 @@ const getDeptIcon = (dept) => {
         case 'LSPD': return iconLspd;
         case 'BCSO': return iconBcso;
         case 'SASP': return iconSasp;
+        case 'SAPR':
+        case 'PARK RANGER': return iconSapr;
         case 'PERSONAL': return iconPersonal;
         default: return iconAllUnits;
     }
@@ -998,6 +1002,8 @@ const getDeptBadgeClass = (dept) => {
         case 'LSPD': return 'bg-blue-600/30 text-blue-300 border-blue-500/50';
         case 'BCSO': return 'bg-amber-600/30 text-amber-300 border-amber-500/50';
         case 'SASP': return 'bg-teal-600/30 text-teal-300 border-teal-500/50';
+        case 'SAPR':
+        case 'PARK RANGER': return 'bg-green-600/30 text-green-300 border-green-500/50';
         default: return 'bg-slate-700/40 text-slate-300 border-slate-600';
     }
 };
@@ -1011,17 +1017,21 @@ const filteredStreams = computed(() => {
     } else if (isTacDepartment(selectedDepartment.value)) {
         result = getTacStreams(selectedDepartment.value);
     } else if (selectedDepartment.value !== 'ALL') {
-        result = result.filter(s => s.officer && s.officer.department === selectedDepartment.value);
+        if (selectedDepartment.value === 'SAPR') {
+            result = result.filter(s => s.officer && (s.officer.department === 'SAPR' || s.officer.department === 'PARK RANGER'));
+        } else {
+            result = result.filter(s => s.officer && s.officer.department === selectedDepartment.value);
+        }
     }
 
     if (searchFilter.value.trim() !== '') {
         const query = searchFilter.value.toLowerCase();
         result = result.filter(s => 
             (s.title && s.title.toLowerCase().includes(query)) || 
-            (s.officer?.officer_name && s.officer.officer_name.toLowerCase().includes(query)) ||
-            (s.officer?.callsign && s.officer.callsign.toLowerCase().includes(query)) ||
-            (s.officer?.badge_number && s.officer.badge_number.toLowerCase().includes(query)) ||
-            (s.officer?.streamer_name && s.officer.streamer_name.toLowerCase().includes(query)) ||
+            (s.officer?.officer_name && s.officer.officer_name.toLowerCase().includes(query)) || 
+            (s.officer?.callsign && s.officer.callsign.toLowerCase().includes(query)) || 
+            (s.officer?.badge_number && s.officer.badge_number.toLowerCase().includes(query)) || 
+            (s.officer?.streamer_name && s.officer.streamer_name.toLowerCase().includes(query)) || 
             (s.officer?.patrol_zone && s.officer.patrol_zone.toLowerCase().includes(query))
         );
     }
@@ -1040,7 +1050,11 @@ const filteredOfflineOfficers = computed(() => {
     if (selectedDepartment.value === 'PERSONAL') {
         result = result.filter(o => personalVideoIds.value.includes(o.channel_id) || (o.handle && personalVideoIds.value.includes(o.handle)));
     } else if (selectedDepartment.value !== 'ALL') {
-        result = result.filter(o => o.department === selectedDepartment.value);
+        if (selectedDepartment.value === 'SAPR') {
+            result = result.filter(o => o.department === 'SAPR' || o.department === 'PARK RANGER');
+        } else {
+            result = result.filter(o => o.department === selectedDepartment.value);
+        }
     }
 
     if (searchFilter.value.trim() !== '') {
@@ -1162,6 +1176,10 @@ const bcsoCatalogStreams = computed(() => {
 
 const saspCatalogStreams = computed(() => {
     return allCatalogStreams.value.filter(s => s.officer && s.officer.department === 'SASP');
+});
+
+const saprCatalogStreams = computed(() => {
+    return allCatalogStreams.value.filter(s => s.officer && (s.officer.department === 'SAPR' || s.officer.department === 'PARK RANGER'));
 });
 
 const specialOpsCatalogStreams = computed(() => {
@@ -1957,170 +1975,6 @@ const closeRightDrawer = () => {
 const rosterOfficers = ref([]);
 const isRosterLoading = ref(false);
 const rosterSearch = ref('');
-const rosterDept = ref('ALL');
-const showOfficerFormModal = ref(false);
-const isEditingOfficer = ref(false);
-const rosterFeedback = ref('');
-const officerForm = ref({
-    id: null,
-    channel_id: '',
-    handle: '',
-    streamer_name: '',
-    officer_name: '',
-    callsign: '',
-    department: 'LSPD',
-    rank: 'Officer',
-    badge_number: '#000',
-    patrol_zone: 'Mission Row / Downtown',
-    is_active: true,
-    avatar_url: '',
-});
-
-const openRosterManager = async () => {
-    openRightDrawer('ROSTER');
-};
-
-const fetchRosterOfficers = async () => {
-    isRosterLoading.value = true;
-    try {
-        let url = `/api/v1/officers?dept=${rosterDept.value}`;
-        if (rosterSearch.value.trim()) {
-            url += `&search=${encodeURIComponent(rosterSearch.value.trim())}`;
-        }
-        const res = await fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
-        if (res.ok) {
-            const data = await res.json();
-            rosterOfficers.value = data.data || [];
-        }
-    } catch (e) {
-        console.error('Failed to load roster:', e);
-    } finally {
-        isRosterLoading.value = false;
-    }
-};
-
-const openAddOfficerModal = () => {
-    isEditingOfficer.value = false;
-    officerForm.value = {
-        id: null,
-        channel_id: '',
-        handle: '',
-        streamer_name: '',
-        officer_name: '',
-        callsign: '',
-        department: 'LSPD',
-        rank: 'Officer',
-        badge_number: '#000',
-        patrol_zone: 'Mission Row / Downtown',
-        is_active: true,
-        avatar_url: '',
-    };
-    showOfficerFormModal.value = true;
-};
-
-const openEditOfficerModal = (officer) => {
-    isEditingOfficer.value = true;
-    officerForm.value = {
-        id: officer.id,
-        channel_id: officer.channel_id || '',
-        handle: officer.handle || '',
-        streamer_name: officer.streamer_name || '',
-        officer_name: officer.officer_name || '',
-        callsign: officer.callsign || '',
-        department: officer.department || 'LSPD',
-        rank: officer.rank || 'Officer',
-        badge_number: officer.badge_number || '#000',
-        patrol_zone: officer.patrol_zone || '',
-        is_active: Boolean(officer.is_active),
-        avatar_url: officer.avatar_url || '',
-    };
-    showOfficerFormModal.value = true;
-};
-
-const getCsrfToken = () => {
-    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : '';
-};
-
-const submitOfficerForm = async () => {
-    rosterFeedback.value = 'Saving officer to MySQL database...';
-    try {
-        const isEdit = isEditingOfficer.value && officerForm.value.id;
-        const url = isEdit ? `/api/v1/officers/${officerForm.value.id}` : '/api/v1/officers';
-        const method = isEdit ? 'PUT' : 'POST';
-
-        const res = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-XSRF-TOKEN': getCsrfToken(),
-            },
-            body: JSON.stringify(officerForm.value),
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-            rosterFeedback.value = `✓ ${data.message || 'Saved successfully!'}`;
-            showOfficerFormModal.value = false;
-            await fetchRosterOfficers();
-            router.reload({ preserveScroll: true });
-        } else {
-            rosterFeedback.value = `Error: ${data.message || 'Failed to save officer'}`;
-        }
-    } catch (e) {
-        rosterFeedback.value = 'Network error while saving officer.';
-    } finally {
-        setTimeout(() => {
-            rosterFeedback.value = '';
-        }, 4000);
-    }
-};
-
-const toggleOfficerActive = async (officer) => {
-    try {
-        const res = await fetch(`/api/v1/officers/${officer.id}/toggle`, {
-            method: 'PATCH',
-            headers: {
-                'Accept': 'application/json',
-                'X-XSRF-TOKEN': getCsrfToken(),
-            },
-        });
-        if (res.ok) {
-            const data = await res.json();
-            officer.is_active = data.is_active;
-            router.reload({ preserveScroll: true });
-        }
-    } catch (e) {
-        console.error('Toggle failed:', e);
-    }
-};
-
-const deleteOfficerConfirm = async (officer) => {
-    if (!confirm(`Are you sure you want to PERMANENTLY delete ${officer.officer_name} (${officer.callsign}) from MySQL?`)) {
-        return;
-    }
-    try {
-        const res = await fetch(`/api/v1/officers/${officer.id}`, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'X-XSRF-TOKEN': getCsrfToken(),
-            },
-        });
-        if (res.ok) {
-            rosterOfficers.value = rosterOfficers.value.filter(o => o.id !== officer.id);
-            router.reload({ preserveScroll: true });
-        }
-    } catch (e) {
-        console.error('Delete failed:', e);
-    }
-};
-
-const handleAdminLogout = () => {
-    router.post('/logout');
-};
-
 // Visitor Feedback & Channel Request State & Methods (Option 1 Discord Webhook)
 const isSubmittingFeedback = ref(false);
 const feedbackSuccessToast = ref('');
@@ -2353,7 +2207,7 @@ const submitFeedbackForm = async () => {
                     </span>
                     <!-- Standard dept count -->
                     <span v-else-if="dept.id !== 'ALL'" class="text-[10px] px-1 py-0.2 bg-black/40 rounded-full font-mono">
-                        {{ allActiveStreams.filter(s => s.officer?.department === dept.id).length }}
+                        {{ allActiveStreams.filter(s => s.officer?.department === dept.id || (dept.id === 'SAPR' && (s.officer?.department === 'SAPR' || s.officer?.department === 'PARK RANGER'))).length }}
                     </span>
                 </button>
 
@@ -3050,6 +2904,72 @@ const submitFeedbackForm = async () => {
                                     </div>
                                     <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
                                         <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Trooper' }}</span>
+                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
+                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
+                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 px-1">
+                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
+                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                        {{ stream.officer.rank }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 8.5. SAPR PARK RANGERS SWIMLANE (Live + Replay VODs) -->
+                    <section v-if="saprCatalogStreams.length > 0" class="space-y-3">
+                        <div class="flex items-center justify-between px-1">
+                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                                San Andreas Park Rangers
+                            </h3>
+                            <div class="flex items-center space-x-1.5 shrink-0">
+                                <button 
+                                    @click="scrollRow('row-sapr', 'left')" 
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                    title="Geser Kiri"
+                                >
+                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button 
+                                    @click="scrollRow('row-sapr', 'right')" 
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                    title="Geser Kanan"
+                                >
+                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="row-sapr" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
+                            <div 
+                                v-for="stream in saprCatalogStreams" 
+                                :key="`sapr-${stream.video_id}`"
+                                class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
+                                @click="playStreamInFocus(stream)"
+                            >
+                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
+                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
+                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
+                                        <span v-if="stream.status === 'LIVE'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                            <span>LIVE</span>
+                                            <span v-if="stream.viewers_count">({{ stream.viewers_count }})</span>
+                                        </span>
+                                        <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80">
+                                            <span>{{ stream.streamed_at || 'REPLAY' }}</span>
+                                        </span>
+                                        <div class="flex items-center gap-1">
+                                            <span v-if="getStreamTac(stream.video_id)" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow">{{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department || 'SAPR' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
+                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Ranger' }}</span>
                                         <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
                                             <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
                                             <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>

@@ -98,6 +98,8 @@ const getDeptBadgeClass = (dept) => {
         case 'LSPD': return 'bg-blue-600/30 text-blue-300 border-blue-500/50';
         case 'BCSO': return 'bg-amber-600/30 text-amber-300 border-amber-500/50';
         case 'SASP': return 'bg-teal-600/30 text-teal-300 border-teal-500/50';
+        case 'SAPR':
+        case 'PARK RANGER': return 'bg-green-600/30 text-green-300 border-green-500/50';
         default: return 'bg-slate-700/40 text-slate-300 border-slate-600';
     }
 };
@@ -109,7 +111,11 @@ const filteredOfficers = computed(() => {
     if (selectedDept.value === 'LIVE_ONLY') {
         list = list.filter(o => o.is_online);
     } else if (selectedDept.value !== 'ALL') {
-        list = list.filter(o => o.department === selectedDept.value);
+        if (selectedDept.value === 'SAPR') {
+            list = list.filter(o => o.department === 'SAPR' || o.department === 'PARK RANGER');
+        } else {
+            list = list.filter(o => o.department === selectedDept.value);
+        }
     }
 
     if (searchQuery.value.trim()) {
@@ -274,7 +280,7 @@ const toggleFullscreen = () => {
                         DIREKTORI PETUGAS & STREAMER
                     </h1>
                     <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
-                        Daftar lengkap seluruh personil kepolisian Los Santos (LSPD), Blaine County Sheriff (BCSO), dan San Andreas State Police (SASP) beserta status siaran langsung dan milestone YouTube.
+                        Daftar lengkap seluruh personil kepolisian Los Santos (LSPD), Blaine County Sheriff (BCSO), San Andreas State Police (SASP), dan San Andreas Park Rangers (SAPR) beserta status siaran langsung dan milestone YouTube.
                     </p>
                 </div>
 
@@ -351,6 +357,13 @@ const toggleFullscreen = () => {
                             class="px-3 py-1.5 text-xs rounded-full border transition whitespace-nowrap"
                         >
                             SASP ({{ deptStats.sasp_total || 0 }})
+                        </button>
+                        <button 
+                            @click="selectedDept = 'SAPR'"
+                            :class="selectedDept === 'SAPR' ? 'bg-green-600 text-white font-bold shadow-md shadow-green-600/30 border-green-400' : 'bg-slate-950 text-green-300 hover:bg-slate-800 border-slate-800'"
+                            class="px-3 py-1.5 text-xs rounded-full border transition whitespace-nowrap"
+                        >
+                            SAPR ({{ deptStats.sapr_total || 0 }})
                         </button>
                     </div>
 

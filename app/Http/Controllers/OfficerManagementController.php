@@ -189,4 +189,109 @@ class OfficerManagementController extends Controller
             'message' => "Officer {$name} ({$callsign}) deleted successfully.",
         ]);
     }
+
+    /**
+     * Render the dedicated standalone Inertia Admin Hub page.
+     */
+    public function adminPage(Request $request)
+    {
+        $officersCount = Officer::count();
+        $activeOfficersCount = Officer::where('is_active', true)->count();
+        $lspdCount = Officer::where('is_active', true)->where('department', 'LSPD')->count();
+        $bcsoCount = Officer::where('is_active', true)->where('department', 'BCSO')->count();
+        $saspCount = Officer::where('is_active', true)->where('department', 'SASP')->count();
+        $saprCount = Officer::where('is_active', true)->whereIn('department', ['SAPR', 'PARK RANGER'])->count();
+        $liveCount = ActiveStream::where('status', 'LIVE')->count();
+
+        return \Inertia\Inertia::render('Admin/OfficerManagement', [
+            'stats' => [
+                'total_officers' => $officersCount,
+                'active_officers' => $activeOfficersCount,
+                'live_streams' => $liveCount,
+                'lspd' => $lspdCount,
+                'bcso' => $bcsoCount,
+                'sasp' => $saspCount,
+                'sapr' => $saprCount,
+            ],
+            'auth' => [
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                ] : null,
+            ],
+        ]);
+    }
+
+    /**
+     * Check and verify a YouTube channel / handle in real-time.
+     */
+    public function checkChannel(Request $request, \App\Services\YouTubeScraperService $scraper)
+    {
+        $request->validate([
+            'handle' => 'required|string|max:255',
+        ]);
+
+        $info = $scraper->fetchChannelInfo($request->handle);
+
+        if (!$info) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'YouTube channel not found or inaccessible. Please verify the handle or URL.',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $info,
+        ]);
+    }
+
+    /**
+     * Trigger live stream crawling on-demand.
+     */
+    public function syncStreams(\App\Services\YouTubeScraperService $scraper)
+    {
+        try {
+            $job = new SyncOfficerStreamsJob();
+            app()->call([$job, 'handle']);
+
+            $liveCount = ActiveStream::where('status', 'LIVE')->count();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Live stream synchronization complete. Found {$liveCount} units currently LIVE on patrol.",
+                'live_count' => $liveCount,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Manual stream sync failed: " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to sync live streams: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Trigger subscriber count update on-demand.
+     */
+    public function syncSubscribers()
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('officer:sync-subscribers');
+            $output = \Illuminate\Support\Facades\Artisan::output();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'YouTube subscriber count synchronization completed successfully.',
+                'output' => $output,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Manual subscriber sync failed: " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update subscriber counts: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
