@@ -44,6 +44,11 @@ class SyncOfficerStreamsJob implements ShouldQueue
 
                 $channelId = $officer->channel_id ?: ($liveData['channel_id'] ?: 'ch-' . $officer->id);
 
+                // Clean up any other active stream record having this exact video_id under a different channel_id
+                ActiveStream::where('video_id', $liveData['video_id'])
+                    ->where('channel_id', '!=', $channelId)
+                    ->delete();
+
                 // Update or create active stream
                 ActiveStream::updateOrCreate(
                     [

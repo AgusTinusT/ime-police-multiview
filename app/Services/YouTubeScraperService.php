@@ -58,55 +58,67 @@ class YouTubeScraperService
             }
         }
 
-        // Match hashtag streams against officers
+        $claimedVideoIds = [];
+
+        // Match hashtag streams against officers strictly
         foreach ($officerList as $officer) {
             $matchedStream = null;
-            $cleanHandle = strtolower(ltrim($officer->handle, '@'));
+            $cleanHandle = strtolower(ltrim($officer->handle ?? '', '@'));
             $streamerName = strtolower(trim($officer->streamer_name ?? ''));
             $officerName = strtolower(trim($officer->officer_name ?? ''));
             $callsign = strtolower(trim($officer->callsign ?? ''));
             $channelId = trim($officer->channel_id ?? '');
 
             foreach ($hashtagLiveStreams as $videoId => $stream) {
+                // If video already claimed by another officer in this cycle, skip
+                if (isset($claimedVideoIds[$videoId])) {
+                    continue;
+                }
+
                 $streamHandle = strtolower(ltrim($stream['handle'] ?? '', '@'));
                 $streamBrowseId = trim($stream['channel_id'] ?? '');
                 $chName = strtolower(trim($stream['channel_name'] ?? ''));
                 $title = strtolower(trim($stream['title'] ?? ''));
 
-                // Match condition 1: Exact handle match
-                if (!empty($cleanHandle) && !empty($streamHandle) && $cleanHandle === $streamHandle) {
-                    $matchedStream = $stream;
-                    break;
-                }
-
-                // Match condition 2: Exact YouTube Channel ID (browseId)
+                // Match Priority 1: Exact YouTube Channel ID (browseId)
                 if (!empty($channelId) && !empty($streamBrowseId) && $channelId === $streamBrowseId) {
                     $matchedStream = $stream;
                     break;
                 }
 
-                // Match condition 3: Channel Name match
+                // Match Priority 2: Exact handle match (@handle)
+                if (!empty($cleanHandle) && !empty($streamHandle) && $cleanHandle === $streamHandle) {
+                    $matchedStream = $stream;
+                    break;
+                }
+
+                // Match Priority 3: Exact Channel Name / Streamer Name match
                 if (!empty($chName) && (
-                    (!empty($cleanHandle) && ($chName === $cleanHandle || str_contains($chName, $cleanHandle) || str_contains($cleanHandle, $chName))) ||
-                    (!empty($streamerName) && ($chName === $streamerName || str_contains($chName, $streamerName) || str_contains($streamerName, $chName)))
+                    (!empty($cleanHandle) && $chName === $cleanHandle) ||
+                    (!empty($streamerName) && $chName === $streamerName) ||
+                    (!empty($officerName) && $chName === $officerName)
                 )) {
                     $matchedStream = $stream;
                     break;
                 }
 
-                // Match condition 4: Callsign in title
-                if (!empty($callsign) && strlen($callsign) >= 4 && str_contains($title, $callsign)) {
+                // Match Priority 4: Exact Callsign in title (only for specific unique callsigns of length >= 6)
+                if (!empty($callsign) && strlen($callsign) >= 6 && preg_match('/\b' . preg_quote($callsign, '/') . '\b/i', $title)) {
                     $matchedStream = $stream;
                     break;
                 }
             }
 
             if ($matchedStream) {
+                $vId = $matchedStream['video_id'];
+                $claimedVideoIds[$vId] = $officer->id;
+                unset($hashtagLiveStreams[$vId]);
+
                 $results[$officer->id] = [
                     'status' => 'LIVE',
-                    'video_id' => $matchedStream['video_id'],
+                    'video_id' => $vId,
                     'title' => $matchedStream['title'],
-                    'thumbnail_url' => $matchedStream['thumbnail_url'] ?? "https://i.ytimg.com/vi/{$matchedStream['video_id']}/hqdefault.jpg",
+                    'thumbnail_url' => $matchedStream['thumbnail_url'] ?? "https://i.ytimg.com/vi/{$vId}/hqdefault.jpg",
                     'viewers_count' => $matchedStream['viewers_count'] ?? 0,
                     'description' => $matchedStream['description'] ?? '',
                     'channel_id' => $matchedStream['channel_id'] ?? $officer->channel_id,

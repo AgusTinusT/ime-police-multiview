@@ -19,10 +19,11 @@ class PoliceCommandController extends Controller
     {
         $host = $request->getHost();
 
-        // 1. Get Online 10-8 Live Streams with Officer info
+        // 1. Get Online 10-8 Live Streams with Officer info (Deduplicated strictly by video_id)
         $activeStreams = ActiveStream::with('officer')
             ->where('status', 'LIVE')
             ->get()
+            ->unique('video_id')
             ->map(function ($stream) use ($host) {
                 $officer = $stream->officer;
                 return [
@@ -147,10 +148,11 @@ class PoliceCommandController extends Controller
 
         $host = $request->getHost();
 
-        // 1. Online 10-8 Live Streams with Officer info
+        // 1. Online 10-8 Live Streams with Officer info (Deduplicated strictly by video_id)
         $activeStreams = ActiveStream::with('officer')
             ->where('status', 'LIVE')
             ->get()
+            ->unique('video_id')
             ->map(function ($stream) use ($host) {
                 $officer = $stream->officer;
                 return [

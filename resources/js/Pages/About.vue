@@ -27,7 +27,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <Head title="Tentang Command Center - IME Police Multiview" />
+    <Head title="IME Police Multiview" />
 
     <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased">
         
@@ -109,7 +109,8 @@ const props = defineProps({
                 </div>
                 <div class="flex-1 text-center sm:text-left">
                     <div class="flex items-center justify-center sm:justify-start gap-2 mb-2">
-                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase font-mono">IME POLICE</span>
+                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase font-mono">IME ROLEPLAY POLICE DIVISION
+</span>
                     </div>
                     <h1 class="text-2xl sm:text-3xl font-black text-slate-100 tracking-tight leading-tight">
                         Community Bodycam & Patrol Multiview

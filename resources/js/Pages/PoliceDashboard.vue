@@ -426,11 +426,18 @@ const fetchLiveStreamsSilently = async () => {
         if (res.ok) {
             const json = await res.json();
             if (json.status === 'success' && Array.isArray(json.data)) {
-                const incomingStreams = json.data;
+                // Deduplicate incoming streams strictly by video_id
+                const incomingMap = new Map();
+                json.data.forEach(s => {
+                    if (s && s.video_id) {
+                        incomingMap.set(String(s.video_id).trim(), s);
+                    }
+                });
+                const incomingStreams = Array.from(incomingMap.values());
 
                 // 1. Smart merge into streams.value
                 streams.value.forEach(existing => {
-                    const fresh = incomingStreams.find(s => s.video_id === existing.video_id);
+                    const fresh = incomingMap.get(String(existing.video_id).trim());
                     if (fresh) {
                         existing.title = fresh.title;
                         existing.viewers_count = fresh.viewers_count;
@@ -444,12 +451,11 @@ const fetchLiveStreamsSilently = async () => {
                 });
 
                 // Remove ended streams from streams.value
-                const incomingIds = incomingStreams.map(s => s.video_id);
-                streams.value = streams.value.filter(existing => incomingIds.includes(existing.video_id));
+                streams.value = streams.value.filter(existing => incomingMap.has(String(existing.video_id).trim()));
 
                 // Add newly detected live streams
                 incomingStreams.forEach(fresh => {
-                    if (!streams.value.some(existing => existing.video_id === fresh.video_id)) {
+                    if (!streams.value.some(existing => String(existing.video_id).trim() === String(fresh.video_id).trim())) {
                         streams.value.push(fresh);
                     }
                 });
@@ -677,9 +683,25 @@ const savePersonalStreamsToStorage = () => {
     }
 };
 
-// All combined streams (Scraped DB streams + Ad-hoc custom added streams)
+// All combined streams (Deduplicated strictly by video_id)
 const allActiveStreams = computed(() => {
-    return [...streams.value, ...customStreams.value];
+    const streamMap = new Map();
+    // 1. Add official synced streams first
+    (streams.value || []).forEach(s => {
+        if (s && s.video_id) {
+            streamMap.set(String(s.video_id).trim(), s);
+        }
+    });
+    // 2. Add custom streams only if not already present from official sync
+    (customStreams.value || []).forEach(cs => {
+        if (cs && cs.video_id) {
+            const key = String(cs.video_id).trim();
+            if (!streamMap.has(key)) {
+                streamMap.set(key, cs);
+            }
+        }
+    });
+    return Array.from(streamMap.values());
 });
 
 // Currently active/online personal streams (matches video_id, officer channel/handle, or custom stream)
@@ -1105,16 +1127,28 @@ const displayedGridStreams = computed(() => {
 // NETFLIX-STYLE CINEMA HUB COMPUTED CATEGORIES
 // ==========================================
 
-// All combined catalog streams (Active Live Streams prioritized + Offline Patrol Replays)
+// All combined catalog streams (Active Live Streams prioritized + Offline Patrol Replays, strictly deduplicated by video_id)
 const allCatalogStreams = computed(() => {
-    const liveIds = new Set(allActiveStreams.value.map(s => String(s.video_id).trim()));
-    const list = [...allActiveStreams.value];
+    const catalogMap = new Map();
 
-    recentReplays.value.forEach(replay => {
-        if (!liveIds.has(String(replay.video_id).trim())) {
-            list.push(replay);
+    // 1. Prioritize active live streams first
+    allActiveStreams.value.forEach(s => {
+        if (s && s.video_id) {
+            catalogMap.set(String(s.video_id).trim(), s);
         }
     });
+
+    // 2. Add recent replays only if video_id is not already present
+    (recentReplays.value || []).forEach(replay => {
+        if (replay && replay.video_id) {
+            const key = String(replay.video_id).trim();
+            if (!catalogMap.has(key)) {
+                catalogMap.set(key, replay);
+            }
+        }
+    });
+
+    let list = Array.from(catalogMap.values());
 
     if (searchFilter.value.trim() !== '') {
         const query = searchFilter.value.toLowerCase();
