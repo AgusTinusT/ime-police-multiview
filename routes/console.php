@@ -12,3 +12,5 @@ Artisan::command('inspire', function () {
 
 Schedule::job(SyncOfficerStreamsJob::class)->everyMinute();
 
+// Fetch subscriber counts every hour
+Schedule::command('officer:sync-subscribers')->hourly();
