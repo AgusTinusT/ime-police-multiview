@@ -251,6 +251,44 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                 </div>
             </div>
 
+            <!-- Official IME Roleplay Community Card -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                    <h2 class="text-base font-bold uppercase tracking-wider text-slate-200 font-mono">Komunitas & Server IME Roleplay</h2>
+                </div>
+
+                <div class="relative overflow-hidden bg-gradient-to-br from-blue-950/60 via-slate-900/90 to-slate-950 border border-blue-900/50 hover:border-blue-500/40 rounded-3xl p-6 sm:p-7 shadow-xl transition">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-5">
+                        <div class="flex items-center gap-4 text-center sm:text-left">
+                            <div class="w-14 h-14 rounded-2xl bg-blue-950/80 border border-blue-500/30 p-2 shrink-0 flex items-center justify-center shadow-inner">
+                                <img :src="logoSaspColor" class="w-full h-full object-contain rounded-xl" alt="IME Logo" />
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 uppercase">GTA V FiveM Roleplay</span>
+                                    <span class="text-[10px] font-mono text-slate-400 font-bold hidden sm:inline">INDONESIA</span>
+                                </div>
+                                <h3 class="text-base sm:text-lg font-black text-white">IME Roleplay Indonesia</h3>
+                                <p class="text-xs text-slate-300 mt-0.5 max-w-xl leading-relaxed">
+                                    Ingin ikut merasakan keseruan ber-roleplay, menjadi warga kota, atau mendaftar seleksi akademi kepolisian? Bergabunglah bersama ribuan pemain di Discord resmi IME Roleplay.
+                                </p>
+                            </div>
+                        </div>
+
+                        <a 
+                            href="https://discord.gg/imeroleplay" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="shrink-0 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition transform hover:-translate-y-0.5 flex items-center gap-2"
+                        >
+                            <span>Gabung Discord IME</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Developer Profile & BagiBagi Support Card -->
             <div class="space-y-4">
                 <div class="flex items-center gap-2">
