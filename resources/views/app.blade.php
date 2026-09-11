@@ -19,6 +19,22 @@
         @routes
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
+
+        @php
+            $gaId = config('services.google_analytics.id');
+        @endphp
+        @if (!empty($gaId))
+            <!-- Google tag (gtag.js) -->
+            <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+            <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '{{ $gaId }}', {
+                    send_page_view: false
+                });
+            </script>
+        @endif
     </head>
     <body class="font-sans antialiased">
         @inertia

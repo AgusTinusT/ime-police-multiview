@@ -1,12 +1,23 @@
 import '../css/app.css';
 import './bootstrap';
 
-import { createInertiaApp } from '@inertiajs/vue3';
+import { createInertiaApp, router } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+// Automatically track Inertia SPA page navigation in Google Analytics
+router.on('navigate', () => {
+    if (typeof window.gtag === 'function') {
+        window.gtag('event', 'page_view', {
+            page_title: document.title,
+            page_location: window.location.href,
+            page_path: window.location.pathname + window.location.search,
+        });
+    }
+});
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -25,3 +36,4 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
+

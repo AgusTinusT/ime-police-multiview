@@ -39,5 +39,8 @@ return [
         'webhook_url' => env('DISCORD_FEEDBACK_WEBHOOK'),
     ],
 
+    'google_analytics' => [
+        'id' => env('GA_MEASUREMENT_ID', env('VITE_GA_MEASUREMENT_ID')),
+    ],
 
 ];
