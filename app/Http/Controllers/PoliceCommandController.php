@@ -17,8 +17,6 @@ class PoliceCommandController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $this->syncStreamsIfNeeded();
-
         $host = $request->getHost();
 
         // 1. Get Online 10-8 Live Streams with Officer info
@@ -49,6 +47,8 @@ class PoliceCommandController extends Controller
                         'rank' => $officer->rank,
                         'patrol_zone' => $officer->patrol_zone,
                         'avatar_url' => $officer->avatar_url,
+                        'subscriber_count' => $officer->subscriber_count,
+                        'subscriber_count_text' => $officer->subscriber_count_text,
                     ] : [
                         'id' => 0,
                         'channel_id' => $stream->channel_id,
@@ -86,11 +86,22 @@ class PoliceCommandController extends Controller
                     'rank' => $officer->rank,
                     'patrol_zone' => $officer->patrol_zone,
                     'avatar_url' => $officer->avatar_url,
+                    'subscriber_count' => $officer->subscriber_count,
+                    'subscriber_count_text' => $officer->subscriber_count_text,
                     'status' => '10-7 OFFLINE',
                 ];
             });
 
-        // 3. Department Unit Breakdown Stats
+        // 3. Get Recent Offline Patrol Videos / VODs for Cinema Hub (Cached 5 minutes for instant response)
+        $unmatchedOfficers = Officer::where('is_active', true)
+            ->whereNotIn('channel_id', $liveChannelIds)
+            ->get();
+        $scraper = app(\App\Services\YouTubeScraperService::class);
+        $recentReplays = Cache::remember('cinema_hub_replays_cache', 300, function () use ($unmatchedOfficers, $scraper) {
+            return $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 35);
+        });
+
+        // 4. Department Unit Breakdown Stats
         $deptStats = [
             'total_officers' => Officer::where('is_active', true)->count(),
             'total_live' => $activeStreams->count(),
@@ -100,7 +111,7 @@ class PoliceCommandController extends Controller
             'sasp_live' => $activeStreams->where('officer.department', 'SASP')->count(),
         ];
 
-        // 4. Tactical Radio Channels (TAC 1 to TAC 5)
+        // 5. Tactical Radio Channels (TAC 1 to TAC 5)
         TacChannel::ensureChannelsExist();
         $tacChannels = TacChannel::orderBy('id')->get()->map(function ($ch) {
             $ch->checkAndResetIfExpired();
@@ -120,6 +131,7 @@ class PoliceCommandController extends Controller
             'initialStreams' => $activeStreams->values(),
             'initialOfflineOfficers' => $offlineOfficers->values(),
             'initialTacChannels' => $tacChannels->values(),
+            'initialReplays' => $recentReplays,
             'deptStats' => $deptStats,
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
@@ -162,6 +174,8 @@ class PoliceCommandController extends Controller
                         'rank' => $officer->rank,
                         'patrol_zone' => $officer->patrol_zone,
                         'avatar_url' => $officer->avatar_url,
+                        'subscriber_count' => $officer->subscriber_count,
+                        'subscriber_count_text' => $officer->subscriber_count_text,
                     ] : [
                         'id' => 0,
                         'channel_id' => $stream->channel_id,
@@ -198,11 +212,20 @@ class PoliceCommandController extends Controller
                     'rank' => $officer->rank,
                     'patrol_zone' => $officer->patrol_zone,
                     'avatar_url' => $officer->avatar_url,
+                    'subscriber_count' => $officer->subscriber_count,
+                    'subscriber_count_text' => $officer->subscriber_count_text,
                     'status' => '10-7 OFFLINE',
                 ];
             });
 
-        // 3. Department Unit Breakdown Stats
+        // 3. Offline Officer VODs / Patrol Replays
+        $unmatchedOfficers = Officer::where('is_active', true)
+            ->whereNotIn('channel_id', $liveChannelIds)
+            ->get();
+        $scraper = app(\App\Services\YouTubeScraperService::class);
+        $recentReplays = $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 35);
+
+        // 4. Department Unit Breakdown Stats
         $deptStats = [
             'total_officers' => Officer::where('is_active', true)->count(),
             'total_live' => $activeStreams->count(),
@@ -215,6 +238,7 @@ class PoliceCommandController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $activeStreams->values(),
+            'replays' => $recentReplays,
             'offline_officers' => $offlineOfficers->values(),
             'dept_stats' => $deptStats,
             'count' => $activeStreams->count(),
@@ -330,6 +354,119 @@ class PoliceCommandController extends Controller
     }
 
     /**
+     * Dedicated Page: Officer Directory & Streamer Roster.
+     */
+    public function officers(Request $request)
+    {
+        $activeStreams = ActiveStream::with('officer')
+            ->where('status', 'LIVE')
+            ->get();
+        $liveChannelIds = $activeStreams->pluck('channel_id')->filter()->toArray();
+
+        $allOfficers = Officer::where('is_active', true)
+            ->orderBy('department')
+            ->orderBy('rank')
+            ->get()
+            ->map(function ($officer) use ($liveChannelIds, $activeStreams) {
+                $isLive = in_array($officer->channel_id, $liveChannelIds);
+                $liveStream = $isLive ? $activeStreams->firstWhere('channel_id', $officer->channel_id) : null;
+
+                return [
+                    'id' => $officer->id,
+                    'channel_id' => $officer->channel_id,
+                    'handle' => $officer->handle,
+                    'streamer_name' => $officer->streamer_name,
+                    'officer_name' => $officer->officer_name,
+                    'callsign' => $officer->callsign,
+                    'badge_number' => $officer->badge_number,
+                    'department' => $officer->department,
+                    'rank' => $officer->rank,
+                    'patrol_zone' => $officer->patrol_zone,
+                    'avatar_url' => $officer->avatar_url,
+                    'subscriber_count' => $officer->subscriber_count ?? 0,
+                    'subscriber_count_text' => $officer->subscriber_count_text,
+                    'is_online' => $isLive,
+                    'live_video_id' => $liveStream ? $liveStream->video_id : null,
+                ];
+            });
+
+        $deptStats = [
+            'total_officers' => $allOfficers->count(),
+            'total_live' => $allOfficers->where('is_online', true)->count(),
+            'total_offline' => $allOfficers->where('is_online', false)->count(),
+            'lspd_total' => $allOfficers->where('department', 'LSPD')->count(),
+            'bcso_total' => $allOfficers->where('department', 'BCSO')->count(),
+            'sasp_total' => $allOfficers->where('department', 'SASP')->count(),
+        ];
+
+        return Inertia::render('OfficerDirectory', [
+            'initialOfficers' => $allOfficers->values(),
+            'deptStats' => $deptStats,
+            'lastSyncedAt' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Dedicated Page: 10-Codes and Radio Operational Protocols Guide.
+     */
+    public function radioCodes(Request $request)
+    {
+        TacChannel::ensureChannelsExist();
+        $tacChannels = TacChannel::orderBy('id')->get()->map(function ($ch) {
+            $ch->checkAndResetIfExpired();
+            return [
+                'id' => $ch->id,
+                'code' => $ch->code,
+                'name' => $ch->name,
+                'video_ids' => $ch->video_ids ?? [],
+                'remaining_seconds' => $ch->remaining_seconds,
+                'is_active' => $ch->is_active,
+                'unit_count' => $ch->unit_count,
+            ];
+        });
+
+        $deptStats = [
+            'total_officers' => Officer::where('is_active', true)->count(),
+            'total_live' => ActiveStream::where('status', 'LIVE')->count(),
+        ];
+
+        return Inertia::render('RadioCodes', [
+            'tacChannels' => $tacChannels->values(),
+            'deptStats' => $deptStats,
+            'lastSyncedAt' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Dedicated Page: About Police Command Center.
+     */
+    public function about(Request $request)
+    {
+        $deptStats = [
+            'total_officers' => Officer::where('is_active', true)->count(),
+            'total_live' => ActiveStream::where('status', 'LIVE')->count(),
+            'lspd_count' => Officer::where('department', 'LSPD')->where('is_active', true)->count(),
+            'bcso_count' => Officer::where('department', 'BCSO')->where('is_active', true)->count(),
+            'sasp_count' => Officer::where('department', 'SASP')->where('is_active', true)->count(),
+        ];
+
+        return Inertia::render('About', [
+            'deptStats' => $deptStats,
+            'appVersion' => '2.4.0-Pro',
+        ]);
+    }
+
+    /**
+     * Dedicated Page: Citizen & Dispatcher Reporting Portal.
+     */
+    public function feedbackPage(Request $request)
+    {
+        return Inertia::render('Feedback', [
+            'prefillType' => $request->query('type', 'CHANNEL_REQUEST'),
+        ]);
+    }
+
+    /**
      * Sync active stream statuses with a fast 25-second cooldown lock.
      */
     protected function syncStreamsIfNeeded(): void
@@ -349,3 +486,4 @@ class PoliceCommandController extends Controller
         }
     }
 }
+

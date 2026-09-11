@@ -74,17 +74,22 @@ class TacChannel extends Model
     }
 
     /**
-     * Ensure standard 5 TAC channels exist in database.
+     * Ensure standard 10 TAC channels exist in database.
      */
     public static function ensureChannelsExist(): void
     {
-        $codes = ['TAC_1', 'TAC_2', 'TAC_3', 'TAC_4', 'TAC_5'];
+        $codes = ['TAC_1', 'TAC_2', 'TAC_3', 'TAC_4', 'TAC_5', 'TAC_6', 'TAC_7', 'TAC_8', 'TAC_9', 'TAC_10'];
         $names = [
             'TAC_1' => 'TAC 1',
             'TAC_2' => 'TAC 2',
             'TAC_3' => 'TAC 3',
             'TAC_4' => 'TAC 4',
             'TAC_5' => 'TAC 5',
+            'TAC_6' => 'TAC 6',
+            'TAC_7' => 'TAC 7',
+            'TAC_8' => 'TAC 8',
+            'TAC_9' => 'TAC 9',
+            'TAC_10' => 'TAC 10',
         ];
 
         foreach ($codes as $code) {

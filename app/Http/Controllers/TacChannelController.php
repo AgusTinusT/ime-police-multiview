@@ -42,7 +42,7 @@ class TacChannelController extends Controller
     public function assign(Request $request)
     {
         $validated = $request->validate([
-            'tac_code' => 'required|string|in:TAC_1,TAC_2,TAC_3,TAC_4,TAC_5',
+            'tac_code' => 'required|string|in:TAC_1,TAC_2,TAC_3,TAC_4,TAC_5,TAC_6,TAC_7,TAC_8,TAC_9,TAC_10',
             'video_id' => 'required|string|max:32',
         ]);
 
@@ -97,7 +97,7 @@ class TacChannelController extends Controller
     {
         $validated = $request->validate([
             'video_id' => 'required|string|max:32',
-            'tac_code' => 'nullable|string|in:TAC_1,TAC_2,TAC_3,TAC_4,TAC_5',
+            'tac_code' => 'nullable|string|in:TAC_1,TAC_2,TAC_3,TAC_4,TAC_5,TAC_6,TAC_7,TAC_8,TAC_9,TAC_10',
         ]);
 
         $videoId = trim($validated['video_id']);
@@ -130,7 +130,7 @@ class TacChannelController extends Controller
     public function extend(Request $request)
     {
         $validated = $request->validate([
-            'tac_code' => 'required|string|in:TAC_1,TAC_2,TAC_3,TAC_4,TAC_5',
+            'tac_code' => 'required|string|in:TAC_1,TAC_2,TAC_3,TAC_4,TAC_5,TAC_6,TAC_7,TAC_8,TAC_9,TAC_10',
             'minutes' => 'nullable|integer|min:5|max:60',
         ]);
 
@@ -168,7 +168,7 @@ class TacChannelController extends Controller
     public function clear(Request $request)
     {
         $validated = $request->validate([
-            'tac_code' => 'required|string|in:TAC_1,TAC_2,TAC_3,TAC_4,TAC_5',
+            'tac_code' => 'required|string|in:TAC_1,TAC_2,TAC_3,TAC_4,TAC_5,TAC_6,TAC_7,TAC_8,TAC_9,TAC_10',
         ]);
 
         $tacCode = $validated['tac_code'];

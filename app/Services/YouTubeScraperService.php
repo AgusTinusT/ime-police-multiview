@@ -733,4 +733,267 @@ class YouTubeScraperService
         }
         return 0;
     }
+
+    /**
+     * Fetch latest offline video / replay / VOD for a collection of officers.
+     * Uses parallel HTTP pooling with 30-minute caching per officer.
+     *
+     * @param iterable $officers
+     * @param int $limit
+     * @return array
+     */
+    /**
+     * Batch fetch the latest LIVE STREAM archives (past broadcasts) for offline officers.
+     * Targets exclusively the /@handle/streams tab with freshness and roleplay relevance filtering.
+     *
+     * @param iterable $officers
+     * @param int $limit
+     * @return array
+     */
+    public function fetchLatestOfficerVideos(iterable $officers, int $limit = 35): array
+    {
+        $officerList = collect($officers);
+        if ($officerList->isEmpty()) {
+            return [];
+        }
+
+        $results = [];
+        $uncachedOfficers = collect();
+
+        // 1. Check cache first
+        foreach ($officerList as $officer) {
+            $cached = Cache::get("officer_latest_vod_{$officer->id}");
+            if ($cached && is_array($cached) && !empty($cached['video_id'])) {
+                $results[$officer->id] = $cached;
+            } else {
+                $uncachedOfficers->push($officer);
+            }
+        }
+
+        // 2. Fetch for uncached in parallel chunks
+        if ($uncachedOfficers->isNotEmpty()) {
+            $chunks = $uncachedOfficers->chunk(10);
+
+            $isStreamTooOld = function (string $timeText): bool {
+                $t = strtolower($timeText);
+                if (str_contains($t, 'tahun') || str_contains($t, 'year') || str_contains($t, 'thn')) {
+                    return true;
+                }
+                if (str_contains($t, 'bulan') || str_contains($t, 'month') || str_contains($t, 'bln')) {
+                    return true;
+                }
+                if (preg_match('/([4-9]|[1-9][0-9])\s*(minggu|week|mgg)/i', $t)) {
+                    return true;
+                }
+                return false;
+            };
+
+            $calculateRelevanceScore = function (string $title): int {
+                $keywords = [
+                    'ime', 'police', 'polisi', 'patrol', 'lspd', 'bcso', 'sasp', 'sapd',
+                    'gta', 'rp', 'duty', 'k9', 'swat', 'srt', 'cop', 'dinas', 'reserse',
+                    'satlantas', 'kerta', 'gpl', 'takahashi', 'vagabond', 'transcendence',
+                    'day ', 'eps', 'chapter', 's1', 's2', 's3', 's4', 's5', '10-8'
+                ];
+                $score = 0;
+                $t = strtolower($title);
+                foreach ($keywords as $kw) {
+                    if (str_contains($t, $kw)) {
+                        $score += 2;
+                    }
+                }
+                return $score;
+            };
+
+            $cleanTimeText = function (string $rawTime): string {
+                $clean = preg_replace('/^(Streaming|Streamed|Disiarkan)\s+/i', '', trim($rawTime));
+                return $clean ?: 'Baru saja';
+            };
+
+            foreach ($chunks as $chunk) {
+                try {
+                    $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($chunk) {
+                        foreach ($chunk as $officer) {
+                            $cleanHandle = ltrim($officer->handle, '@');
+                            $pool->as($officer->id)
+                                ->withHeaders(array_merge(self::getBrowserHeaders(), [
+                                    'Accept-Language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+                                ]))
+                                ->timeout(6)
+                                ->get("https://www.youtube.com/@{$cleanHandle}/streams");
+                        }
+                    });
+
+                    foreach ($chunk as $officer) {
+                        $res = $responses[$officer->id] ?? null;
+                        if (!$res instanceof \Illuminate\Http\Client\Response || !$res->successful()) {
+                            continue;
+                        }
+
+                        $html = $res->body();
+                        $candidateStreams = [];
+
+                        // Method A: Parse ytInitialData JSON
+                        if (preg_match('/var ytInitialData = ({.*?});<\/script>/s', $html, $m)) {
+                            $data = json_decode($m[1], true);
+                            $tabs = $data['contents']['twoColumnBrowseResultsRenderer']['tabs'] ?? [];
+                            foreach ($tabs as $tab) {
+                                if (!empty($tab['tabRenderer']['selected'])) {
+                                    $contents = $tab['tabRenderer']['content']['richGridRenderer']['contents'] ?? [];
+                                    foreach ($contents as $c) {
+                                        // Modern Lockup View Model
+                                        $lockup = $c['richItemRenderer']['content']['lockupViewModel'] ?? null;
+                                        if ($lockup && !empty($lockup['contentId'])) {
+                                            $vId = $lockup['contentId'];
+                                            $title = $lockup['metadata']['lockupMetadataViewModel']['title']['content'] ?? '';
+                                            $timeText = '';
+                                            $metaRows = $lockup['metadata']['lockupMetadataViewModel']['metadata']['contentMetadataViewModel']['metadataRows'] ?? [];
+                                            foreach ($metaRows as $row) {
+                                                foreach ($row['metadataParts'] ?? [] as $part) {
+                                                    $txt = $part['text']['content'] ?? '';
+                                                    if (stripos($txt, 'streaming') !== false || stripos($txt, 'streamed') !== false || stripos($txt, 'lalu') !== false || stripos($txt, 'ago') !== false) {
+                                                        $timeText = $txt;
+                                                    }
+                                                }
+                                            }
+                                            $candidateStreams[] = [
+                                                'video_id' => $vId,
+                                                'title' => html_entity_decode(strip_tags($title), ENT_QUOTES, 'UTF-8'),
+                                                'time_text' => $timeText,
+                                            ];
+                                        }
+
+                                        // Video Renderer fallback
+                                        $vr = $c['richItemRenderer']['content']['videoRenderer'] ?? null;
+                                        if ($vr && !empty($vr['videoId'])) {
+                                            $candidateStreams[] = [
+                                                'video_id' => $vr['videoId'],
+                                                'title' => html_entity_decode(strip_tags($vr['title']['runs'][0]['text'] ?? $vr['title']['simpleText'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                                                'time_text' => $vr['publishedTimeText']['simpleText'] ?? '',
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Method B: Direct regex fallback if ytInitialData parsing was empty
+                        if (empty($candidateStreams)) {
+                            if (preg_match_all('/"videoId":"([A-Za-z0-9_-]{11})"/s', $html, $allVids)) {
+                                $uniqueVids = array_slice(array_unique($allVids[1] ?? []), 0, 5);
+                                foreach ($uniqueVids as $vId) {
+                                    $pos = strpos($html, $vId);
+                                    if ($pos !== false) {
+                                        $snippet = substr($html, $pos, 4000);
+                                        $title = '';
+                                        if (preg_match('/"title":\s*\{\s*"content":\s*"([^"]+)"/s', $snippet, $tm)) {
+                                            $title = html_entity_decode(strip_tags($tm[1]), ENT_QUOTES, 'UTF-8');
+                                        } elseif (preg_match('/"title":\s*\{\s*"runs":\s*\[\s*\{\s*"text":\s*"([^"]+)"/s', $snippet, $tm)) {
+                                            $title = html_entity_decode(strip_tags($tm[1]), ENT_QUOTES, 'UTF-8');
+                                        }
+                                        $timeText = '';
+                                        if (preg_match('/"simpleText":\s*"(Streaming[^"]+|[^"]+lalu|[^"]+ago)"/i', $snippet, $pm)) {
+                                            $timeText = $pm[1];
+                                        }
+                                        if ($title) {
+                                            $candidateStreams[] = [
+                                                'video_id' => $vId,
+                                                'title' => $title,
+                                                'time_text' => $timeText,
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Filter candidate streams by freshness (< 30 days) and relevance
+                        $validCandidates = array_filter($candidateStreams, function ($s) use ($isStreamTooOld) {
+                            return !empty($s['video_id']) && !$isStreamTooOld($s['time_text']);
+                        });
+
+                        if (!empty($validCandidates)) {
+                            // Sort by relevance score while keeping recent broadcast order
+                            usort($validCandidates, function ($a, $b) use ($calculateRelevanceScore) {
+                                $scoreA = $calculateRelevanceScore($a['title']);
+                                $scoreB = $calculateRelevanceScore($b['title']);
+                                return $scoreB <=> $scoreA;
+                            });
+
+                            $best = $validCandidates[0];
+                            $timeLabel = $cleanTimeText($best['time_text']);
+                            $vId = $best['video_id'];
+
+                            $vodData = [
+                                'id' => 'vod-' . $officer->id . '-' . $vId,
+                                'video_id' => $vId,
+                                'title' => $best['title'] ?: ($officer->officer_name . ' - Patrol Archive Replay'),
+                                'thumbnail' => "https://i.ytimg.com/vi/{$vId}/hqdefault.jpg",
+                                'status' => 'OFFLINE_VOD',
+                                'incident_code' => $timeLabel ? "Streaming {$timeLabel}" : '10-7 Patrol Replay',
+                                'streamed_at' => $timeLabel,
+                                'description' => "Arsip siaran langsung patroli kepolisian oleh {$officer->officer_name} ({$timeLabel})",
+                                'viewers_count' => 0,
+                                'officer' => [
+                                    'id' => $officer->id,
+                                    'channel_id' => $officer->channel_id,
+                                    'handle' => $officer->handle,
+                                    'streamer_name' => $officer->streamer_name,
+                                    'officer_name' => $officer->officer_name,
+                                    'callsign' => $officer->callsign,
+                                    'badge_number' => $officer->badge_number,
+                                    'department' => $officer->department,
+                                    'rank' => $officer->rank,
+                                    'patrol_zone' => $officer->patrol_zone,
+                                    'avatar_url' => $officer->avatar_url,
+                                    'subscriber_count' => $officer->subscriber_count,
+                                    'subscriber_count_text' => $officer->subscriber_count_text,
+                                ],
+                            ];
+
+                            // Cache for 30 minutes
+                            Cache::put("officer_latest_vod_{$officer->id}", $vodData, 1800);
+                            $results[$officer->id] = $vodData;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    Log::error("Failed to batch fetch latest officer past live streams: " . $e->getMessage());
+                }
+            }
+        }
+
+        return array_values(array_slice($results, 0, $limit));
+    }
+
+    /**
+     * Parse numerical subscriber count from localized YouTube string.
+     * e.g., "559 subscriber" -> 559, "1,4 rb subscriber" -> 1400, "61 rb subscriber" -> 61000, "1.2M subscribers" -> 1200000
+     */
+    public static function parseSubscriberCount(?string $text): ?int
+    {
+        if (empty($text)) {
+            return null;
+        }
+
+        $clean = strtolower(trim($text));
+        $clean = preg_replace('/\s*(subscriber|subscribers|pelanggan).*$/i', '', $clean);
+        $clean = trim($clean);
+
+        if (str_contains($clean, 'rb') || str_contains($clean, 'ribu') || str_contains($clean, 'k') || str_contains($clean, 'jt') || str_contains($clean, 'juta') || str_contains($clean, 'm')) {
+            $numPart = preg_replace('/[^0-9.,]/', '', $clean);
+            $numPart = str_replace(',', '.', $numPart);
+            $val = (float) $numPart;
+
+            if (str_contains($clean, 'rb') || str_contains($clean, 'ribu') || str_contains($clean, 'k')) {
+                return (int) round($val * 1000);
+            }
+            if (str_contains($clean, 'jt') || str_contains($clean, 'juta') || str_contains($clean, 'm')) {
+                return (int) round($val * 1000000);
+            }
+        }
+
+        $digits = preg_replace('/[^0-9]/', '', $clean);
+        return !empty($digits) ? (int) $digits : null;
+    }
 }
+

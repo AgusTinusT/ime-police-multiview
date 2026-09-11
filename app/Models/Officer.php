@@ -21,11 +21,13 @@ class Officer extends Model
         'department',
         'rank',
         'patrol_zone',
-        'avatar_url',
+        'subscriber_count',
+        'subscriber_count_text',
         'is_active',
     ];
 
     protected $casts = [
+        'subscriber_count' => 'integer',
         'is_active' => 'boolean',
     ];
 

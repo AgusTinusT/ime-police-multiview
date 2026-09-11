@@ -12,6 +12,12 @@ use Inertia\Inertia;
 Route::get('/', [PoliceCommandController::class, 'dashboard'])->name('home');
 Route::get('/dashboard', [PoliceCommandController::class, 'dashboard'])->name('dashboard');
 
+// Dedicated Standalone Pages
+Route::get('/officers', [PoliceCommandController::class, 'officers'])->name('officers.index');
+// Route::get('/radio-codes', [PoliceCommandController::class, 'radioCodes'])->name('radio-codes');
+// Route::get('/about', [PoliceCommandController::class, 'about'])->name('about');
+Route::get('/feedback', [PoliceCommandController::class, 'feedbackPage'])->name('feedback');
+
 // Admin direct slash route (hidden access)
 Route::get('/admin', function () {
     return auth()->check() ? redirect()->route('dashboard') : redirect()->route('login');
