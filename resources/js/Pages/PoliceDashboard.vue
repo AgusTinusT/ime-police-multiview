@@ -76,7 +76,7 @@ const isAdmin = computed(() => {
 // Helper check if stream/replay is tagged with #vagabond
 const isVagabondStream = (s) => {
     if (!s) return false;
-    const text = `${s.title || ''} ${s.description || ''} ${s.incident_code || ''} ${s.officer?.officer_name || ''} ${s.officer?.callsign || ''}`.toLowerCase();
+    const text = `${s.title || ''} ${s.description || ''} ${s.incident_code || ''} ${s.officer?.officer_name || ''} ${s.officer?.callsign || ''} ${s.officer?.streamer_name || ''}`.toLowerCase();
     return text.includes('vagabond') || text.includes('#vagabond');
 };
 
@@ -282,9 +282,6 @@ const startVagabondTyping = () => {
 const vagabondVideosInjected = ref(false);
 
 const loadVagabondVideos = async () => {
-    // Automatically set search filter to #vagabond so videos tagged #vagabond appear in search/grid
-    searchFilter.value = '#vagabond';
-
     // 1. Try querying YouTube live streams for #vagabond / #imeroleplay #vagabond via backend
     try {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -1421,15 +1418,12 @@ const filteredStreams = computed(() => {
     }
 
     if (searchFilter.value.trim() !== '') {
-        const query = searchFilter.value.toLowerCase();
-        result = result.filter(s => 
-            (s.title && s.title.toLowerCase().includes(query)) || 
-            (s.officer?.officer_name && s.officer.officer_name.toLowerCase().includes(query)) || 
-            (s.officer?.callsign && s.officer.callsign.toLowerCase().includes(query)) || 
-            (s.officer?.badge_number && s.officer.badge_number.toLowerCase().includes(query)) || 
-            (s.officer?.streamer_name && s.officer.streamer_name.toLowerCase().includes(query)) || 
-            (s.officer?.patrol_zone && s.officer.patrol_zone.toLowerCase().includes(query))
-        );
+        const rawQuery = searchFilter.value.toLowerCase().trim();
+        const cleanQuery = rawQuery.replace(/^#/, '');
+        result = result.filter(s => {
+            const haystack = `${s.title || ''} ${s.description || ''} ${s.incident_code || ''} ${s.officer?.officer_name || ''} ${s.officer?.callsign || ''} ${s.officer?.badge_number || ''} ${s.officer?.streamer_name || ''} ${s.officer?.patrol_zone || ''}`.toLowerCase();
+            return haystack.includes(rawQuery) || (cleanQuery.length > 0 && haystack.includes(cleanQuery));
+        });
     }
 
     return result;
