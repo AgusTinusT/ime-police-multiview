@@ -4,7 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 
 // SVG Icon Assets & Branding Logos
 import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
-import logoVagabond from '@/Components/Icons/vagabond_500.png';
+import logoVagabond from '@/Components/Icons/vagabond_500.svg';
 import iconLspd from '@/Components/Icons/LSPD_HD.svg';
 import iconBcso from '@/Components/Icons/Logo_LSCSD.svg';
 import iconSasp from '@/Components/Icons/SASP_HD.svg';
