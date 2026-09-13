@@ -472,6 +472,16 @@ class PoliceCommandController extends Controller
     }
 
     /**
+     * Dedicated Page: QnA & Tactical FAQ Guide.
+     */
+    public function qnaPage(Request $request)
+    {
+        return Inertia::render('Qna', [
+            'appVersion' => '2.4.0-Pro',
+        ]);
+    }
+
+    /**
      * Sync active stream statuses with a fast 25-second cooldown lock.
      */
     protected function syncStreamsIfNeeded(): void

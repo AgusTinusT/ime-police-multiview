@@ -2,11 +2,12 @@
 import { Head, Link } from '@inertiajs/vue3';
 
 // Icons & Branding
-import logoSaspColor from '@/Components/Icons/SASP256.jpg';
-import iconLspd from '@/Components/Icons/LSPD_HD.svg';
-import iconBcso from '@/Components/Icons/Logo_LSCSD.svg';
-import iconSasp from '@/Components/Icons/SASP_HD.svg';
-import iconSapr from '@/Components/Icons/ranger_logo.svg';
+import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
+import iconSaspColor from '@/Components/Icons/SASP_256.jpg';
+import iconLspdColor from '@/Components/Icons/LSPD_256.jpg';
+import iconBcsoColor from '@/Components/Icons/LSCSD_256.jpg';
+import iconSaprColor from '@/Components/Icons/SAPR_256.png';
+import iconImeColor from '@/Components/Icons/IME_RP_256.jpg';
 import iconFocus from '@/Components/Icons/focus-point-round-844-svgrepo-com.svg';
 import iconAllUnits from '@/Components/Icons/category-svgrepo-com.svg';
 import iconChat from '@/Components/Icons/chat-line-svgrepo-com.svg';
@@ -59,26 +60,26 @@ const props = defineProps({
                     >
                         Officer Directory
                     </Link>
-<!-- 
-                    <Link 
-                        href="/radio-codes"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
-                        title="10-Codes & Tactical Radio Channels (TAC 1-10)"
-                    >
-                        10-Codes & Radio
-                    </Link> -->
 
                     <Link 
                         href="/about"
-                        class="px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600/30 text-indigo-300 border border-indigo-500/50 shadow-sm transition"
+                        class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600/30 text-blue-300 border border-blue-500/50 shadow-sm transition"
                         title="Active Page: About Police Command Center"
                     >
                         About Platform
                     </Link>
 
                     <Link 
+                        href="/qna"
+                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
+                        title="QnA & Tactical FAQ Guide"
+                    >
+                        QnA & FAQ
+                    </Link>
+
+                    <Link 
                         href="/feedback"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-sky-300 hover:bg-sky-950/40 transition"
+                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
                         title="Channel Requests & System Feedback"
                     >
                         Feedback & Reports
@@ -93,8 +94,7 @@ const props = defineProps({
                     class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 transition flex items-center gap-1.5"
                     title="Kembali ke Halaman Utama CCTV Multiview"
                 >
-                    <img :src="iconFocus" class="w-3.5 h-3.5 invert" alt="" />
-                    <span>CCTV Multiview</span>
+                    <span>Multiview</span>
                 </Link>
             </div>
         </header>
@@ -116,7 +116,7 @@ const props = defineProps({
                         Community Bodycam & Patrol Multiview
                     </h1>
                     <p class="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
-Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisian di server GTA V IME Roleplay secara langsung. Nonton bodycam petugas bareng-bareng dari berbagai sudut pandang tanpa ribet, dan lancar.                   </p>
+Tempat kumpul penonton buat mantau aksi patroli seluruh unit kepolisian di server GTA V IME Roleplay secara langsung. Nonton bodycam petugas bareng-bareng dari berbagai sudut pandang tanpa ribet, dan lancar.                   </p>
                 </div>
             </div>
 
@@ -159,7 +159,7 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                         <div>
                             <h3 class="text-sm font-bold text-slate-100">Live Chat & Interaksi Komentar</h3>
                             <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-                                Tetap bisa membaca obrolan dan ikut berinteraksi di live chat YouTube masing-masing petugas secara real-time langsung dari panel multiview tanpa membuka tab baru.
+                                Membaca dan berinteraksi di live chat YouTube perwira secara real-time. Akun YouTube yang terhubung otomatis mengikuti sesi akun yang sedang aktif di browser Anda (youtube.com).
                             </p>
                         </div>
                     </div>
@@ -193,9 +193,9 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                             <img :src="iconSaver" class="w-5 h-5 brightness-0 invert" alt="" />
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-slate-100">Data Saver & Smart Bandwidth</h3>
+                            <h3 class="text-sm font-bold text-slate-100">Data Saver & Standby Manual Play</h3>
                             <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-                                Penghematan kuota cerdas dengan thumbnail standby ringan sebelum memutar player video, mencegah lag browser dan buffering berlebih.
+                                Mode penghemat kuota yang mematikan auto-play otomatis dan menampilkan thumbnail standby. Video diputar secara manual (play-on-demand) pada unit yang dipilih untuk menghemat penggunaan memori (RAM) dan kuota hingga 70%.
                             </p>
                         </div>
                     </div>
@@ -213,7 +213,7 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                     <!-- LSPD -->
                     <div class="bg-slate-900/80 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
                         <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
-                            <img :src="iconLspd" class="w-full h-full object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition" alt="LSPD Logo" />
+                            <img :src="iconLspdColor" class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition rounded-lg" alt="LSPD Logo" />
                         </div>
                         <span class="text-xs font-mono font-black text-slate-200 tracking-wider">LSPD</span>
                         <h4 class="text-sm font-bold text-slate-100 mt-0.5">Los Santos Police Dept</h4>
@@ -223,7 +223,7 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                     <!-- BCSO -->
                     <div class="bg-slate-900/80 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
                         <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
-                            <img :src="iconBcso" class="w-full h-full object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition" alt="BCSO Logo" />
+                            <img :src="iconBcsoColor" class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition rounded-lg" alt="BCSO Logo" />
                         </div>
                         <span class="text-xs font-mono font-black text-slate-200 tracking-wider">BCSO</span>
                         <h4 class="text-sm font-bold text-slate-100 mt-0.5">Blaine County Sheriff</h4>
@@ -233,7 +233,7 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                     <!-- SASP -->
                     <div class="bg-slate-900/80 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
                         <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
-                            <img :src="iconSasp" class="w-full h-full object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition" alt="SASP Logo" />
+                            <img :src="iconSaspColor" class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition rounded-lg" alt="SASP Logo" />
                         </div>
                         <span class="text-xs font-mono font-black text-slate-200 tracking-wider">SASP</span>
                         <h4 class="text-sm font-bold text-slate-100 mt-0.5">San Andreas State Police</h4>
@@ -243,7 +243,7 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                     <!-- SAPR -->
                     <div class="bg-slate-900/80 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-center flex flex-col items-center transition group shadow-lg">
                         <div class="w-16 h-16 rounded-2xl bg-slate-950/70 border border-slate-800/80 p-2.5 flex items-center justify-center mb-3 group-hover:scale-105 transition shadow-inner">
-                            <img :src="iconSapr" class="w-full h-full object-contain brightness-0 invert opacity-90 group-hover:opacity-100 transition" alt="SAPR Logo" />
+                            <img :src="iconSaprColor" class="w-full h-full object-contain opacity-90 group-hover:opacity-100 transition rounded-lg" alt="SAPR Logo" />
                         </div>
                         <span class="text-xs font-mono font-black text-slate-200 tracking-wider">SAPR</span>
                         <h4 class="text-sm font-bold text-slate-100 mt-0.5">San Andreas Park Ranger</h4>
@@ -263,16 +263,16 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                     <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
                         <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
                             <div class="w-14 h-14 rounded-2xl bg-blue-950/80 border border-blue-500/30 p-2 shrink-0 flex items-center justify-center shadow-inner">
-                                <img :src="logoSaspColor" class="w-full h-full object-contain rounded-xl" alt="IME Logo" />
+                                <img :src="iconImeColor" class="w-full h-full object-contain rounded-xl" alt="IME Logo" />
                             </div>
                             <div>
                                 <div class="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 uppercase">Motionime Community</span>
+                                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 uppercase">IME Roleplay Community</span>
                                     <span class="text-[10px] font-mono text-slate-400 font-bold hidden sm:inline">FiveM GTA V Indonesia</span>
                                 </div>
                                 <h3 class="text-base sm:text-lg font-black text-white">IME Roleplay</h3>
                                 <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                                    Server FiveM dari komunitas Motionime yang menghadirkan pengalaman roleplay realistis, terstruktur, dan seru. Dengan fitur lengkap dan komunitas yang aktif, kamu bisa membangun cerita serta karakter dengan bebas dan profesional.
+                                    Server FiveM dari komunitas IME Roleplay yang menghadirkan pengalaman roleplay realistis, terstruktur, dan seru. Dengan fitur lengkap dan komunitas yang aktif, kamu bisa membangun cerita serta karakter dengan bebas dan profesional.
                                 </p>
                             </div>
                         </div>
@@ -327,9 +327,6 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                                     <span class="text-[9px] font-mono text-slate-400 font-bold uppercase tracking-wider mt-0.5">IME FAN</span>
                                 </div>
                             </div>
-                            <div class="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.5 rounded-md bg-emerald-500 text-[9px] font-bold text-slate-950 shadow">
-                                ONLINE
-                            </div>
                         </div>
 
                         <!-- Info Content -->
@@ -356,7 +353,7 @@ Tempat kumpul warga dan penonton buat mantau aksi patroli seluruh unit kepolisia
                             </div>
 
                             <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl">
-Platform ini murni proyek nirlaba buat support teman-teman di komunitas IME Roleplay. Untuk sekarang, biaya operasional server masih ditanggung mandiri dengan estimasi bertahan sampai bulan Desember.
+Platform ini murni proyek nirlaba buat support teman-teman di komunitas IME Roleplay. Untuk sekarang, biaya operasional server masih ditanggung mandiri dengan estimasi bertahan sampai bulan November.
 
 Buat kalian yang merasa terbantu dan ingin ikut kontribusi secara sukarela agar platform ini bisa terus berlanjut serta terus berkembang, kalian bisa kirim dukungan. Terima kasih banyak atas dukungannya!                            </p>
 
@@ -428,6 +425,21 @@ Buat kalian yang merasa terbantu dan ingin ikut kontribusi secara sukarela agar 
                 </div>
             </div>
 
+            <!-- Disclaimer Mengenai Iklan YouTube -->
+            <div class="bg-amber-950/30 border border-amber-500/30 rounded-2xl p-4 flex items-start gap-3.5 text-xs text-amber-200/90 shadow-md">
+                <div class="p-2 rounded-xl bg-amber-500/20 text-amber-400 shrink-0 mt-0.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="space-y-1">
+                    <h4 class="font-bold text-amber-300">Informasi Penting Mengenai Iklan Video:</h4>
+                    <p class="leading-relaxed text-slate-300">
+                        Iklan yang muncul saat memutar video di platform ini diputar langsung oleh <strong>YouTube / platform penyedia siaran</strong> (sesuai aturan monetisasi channel streamer perwira). Situs IME Police Multiview ini <strong>100% bebas dari iklan komersial pihak ketiga</strong> dan tidak mengambil keuntungan dari iklan tersebut.
+                    </p>
+                </div>
+            </div>
+
         </main>
 
         <!-- TACTICAL COMMAND CENTER FOOTER -->
@@ -442,8 +454,6 @@ Buat kalian yang merasa terbantu dan ingin ikut kontribusi secara sukarela agar 
                         <Link href="/" class="text-slate-300 hover:text-white">Multiview</Link>
                         <span>•</span>
                         <Link href="/officers" class="text-slate-300 hover:text-white">Direktori</Link>
-                        <span>•</span>
-                        <Link href="/radio-codes" class="text-slate-300 hover:text-white">Kode 10</Link>
                         <span>•</span>
                         <Link href="/feedback" class="text-sky-400 hover:text-sky-300">Lapor / Usul</Link>
                     </div>

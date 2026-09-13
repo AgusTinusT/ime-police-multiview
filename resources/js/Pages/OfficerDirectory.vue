@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 // SVG Icon Assets & Branding Logos
-import logoSaspColor from '@/Components/Icons/SASP256.jpg';
+import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
 import iconFocus from '@/Components/Icons/focus-point-round-844-svgrepo-com.svg';
 import iconSearch from '@/Components/Icons/search-svgrepo-com.svg';
 import iconRefresh from '@/Components/Icons/refresh-cw-svgrepo-com.svg';
@@ -206,14 +206,6 @@ const toggleFullscreen = () => {
                         Officer Directory
                     </Link>
                     
-                    <!-- Perlu dilakukan penyesuaian tampilan untuk radio-codes, about, dan feedback -->
-                    <!-- <Link 
-                        href="/radio-codes"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
-                        title="10-Codes & Tactical Radio Channels (TAC 1-10)"
-                    >
-                        10-Codes & Radio
-                    </Link>
 
                     <Link 
                         href="/about"
@@ -221,11 +213,19 @@ const toggleFullscreen = () => {
                         title="About Police Command Center"
                     >
                         About Platform
-                    </Link> -->
+                    </Link>
+
+                    <Link 
+                        href="/qna"
+                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
+                        title="QnA & Tactical FAQ Guide"
+                    >
+                        QnA & FAQ
+                    </Link>
 
                     <Link 
                         href="/feedback"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-sky-300 hover:bg-sky-950/40 transition"
+                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
                         title="Channel Requests & System Feedback"
                     >
                         Feedback & Reports
@@ -306,16 +306,23 @@ const toggleFullscreen = () => {
 
             <!-- Toolbar: Search, Dept Filters, Sort By -->
             <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-lg">
-                
-                <!-- Search Input -->
-                <div class="relative flex-1 max-w-md">
+                               <!-- Search Input -->
+                <div class="relative flex-1 sm:w-80 flex items-center">
                     <input 
                         v-model="searchQuery" 
                         type="text" 
                         placeholder="Cari nama polisi, callsign, handle YouTube, badge, sektor..."
-                        class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-8 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
                     />
-                    <img :src="iconSearch" class="w-4 h-4 invert opacity-40 absolute left-3 top-3" alt="" />
+                    <img :src="iconSearch" class="w-4 h-4 invert opacity-40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" alt="" />
+                    <button 
+                        v-if="searchQuery" 
+                        @click="searchQuery = ''"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold leading-none p-0.5 rounded hover:bg-slate-800 transition"
+                        title="Bersihkan pencarian"
+                    >
+                        ✕
+                    </button>
                 </div>
 
                 <!-- Dept Filter Pills & Sort Selector -->

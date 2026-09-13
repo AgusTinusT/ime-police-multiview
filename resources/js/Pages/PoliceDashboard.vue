@@ -3,7 +3,7 @@ import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 
 // SVG Icon Assets & Branding Logos
-import logoSaspColor from '@/Components/Icons/SASP256.jpg';
+import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
 import iconLspd from '@/Components/Icons/LSPD_HD.svg';
 import iconBcso from '@/Components/Icons/Logo_LSCSD.svg';
 import iconSasp from '@/Components/Icons/SASP_HD.svg';
@@ -141,6 +141,67 @@ const getTacStreams = (tacCode) => {
     const ids = ch.video_ids.map(id => String(id).trim());
     return allActiveStreams.value.filter(s => ids.includes(String(s.video_id).trim()));
 };
+
+// Announcements & Promos State
+const activeAnnouncements = ref([]);
+
+const fetchAnnouncements = async () => {
+    try {
+        const res = await fetch('/api/v1/active-announcements', {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'success') {
+                activeAnnouncements.value = data.data;
+            }
+        }
+    } catch (e) {
+        console.error('Failed to fetch announcements:', e);
+    }
+};
+
+// Carousel Logic
+const activePromoIndex = ref(0);
+let promoTimer = null;
+
+const startPromoTimer = () => {
+    if (promoTimer) clearInterval(promoTimer);
+    if (activeAnnouncements.value.length > 1) {
+        promoTimer = setInterval(() => {
+            nextPromo();
+        }, 5000); // 5 seconds
+    }
+};
+
+const pausePromoTimer = () => {
+    if (promoTimer) clearInterval(promoTimer);
+};
+
+const nextPromo = () => {
+    if (activeAnnouncements.value.length === 0) return;
+    activePromoIndex.value = (activePromoIndex.value + 1) % activeAnnouncements.value.length;
+};
+
+const prevPromo = () => {
+    if (activeAnnouncements.value.length === 0) return;
+    activePromoIndex.value = (activePromoIndex.value - 1 + activeAnnouncements.value.length) % activeAnnouncements.value.length;
+};
+
+const setPromo = (index) => {
+    activePromoIndex.value = index;
+    startPromoTimer(); // Reset timer on manual selection
+};
+
+// Start timer when announcements are successfully fetched
+watch(activeAnnouncements, (newVal) => {
+    if (newVal.length > 0) {
+        activePromoIndex.value = 0;
+        startPromoTimer();
+    } else {
+        pausePromoTimer();
+    }
+}, { deep: true });
 
 // Fetch & Synchronize TAC Channels from Server
 const fetchTacChannels = async () => {
@@ -520,12 +581,33 @@ const tickTacTimers = () => {
     }
 };
 
+// Suppress YouTube internal iframe postMessage error: isExternalMethodAvailable is not a function
+const handleYouTubeInternalError = (event) => {
+    if (event && (event.message?.includes('isExternalMethodAvailable') || event.error?.message?.includes('isExternalMethodAvailable'))) {
+        if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+        if (event.preventDefault) event.preventDefault();
+        return true;
+    }
+};
+
 onMounted(() => {
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     window.addEventListener('keydown', handleKeyDown);
     document.addEventListener('click', handleGlobalClick);
+    window.addEventListener('error', handleYouTubeInternalError, true);
     loadPersonalStreamsFromStorage();
+    fetchAnnouncements();
     
+    // Load YouTube IFrame API script to register parent controller
+    if (typeof window !== 'undefined' && !window.YT) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        if (firstScriptTag && firstScriptTag.parentNode) {
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+    }
+
     // TAC timer ticker (every 1s), TAC channel polling (every 15s), and Live Streams auto-sync (every 15s)
     tacTimerInterval = setInterval(tickTacTimers, 1000);
     tacPollInterval = setInterval(fetchTacChannels, 15000);
@@ -533,15 +615,18 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    destroyAllPlayers();
     document.removeEventListener('fullscreenchange', handleFullscreenChange);
     window.removeEventListener('keydown', handleKeyDown);
     document.removeEventListener('click', handleGlobalClick);
+    window.removeEventListener('error', handleYouTubeInternalError, true);
     if (tacTimerInterval) clearInterval(tacTimerInterval);
     if (tacPollInterval) clearInterval(tacPollInterval);
     if (streamPollInterval) clearInterval(streamPollInterval);
+    pausePromoTimer();
 });
 
-// Origin URL & Embed Domain for YouTube API Handshake
+// Origin URL & Embed Domain for YouTube API Handshake (Clean Unencoded Origin for YouTube API)
 const originUrl = ref(typeof window !== 'undefined' ? (window.location.origin || (window.location.protocol + '//' + window.location.host)) : '');
 const chatEmbedDomain = computed(() => {
     if (typeof window !== 'undefined' && window.location) {
@@ -610,7 +695,16 @@ const disableDataSaverAndPlayAll = () => {
     nextTick(() => {
         setTimeout(() => {
             initializeAllPlayers();
-        }, 250);
+            if (primaryFocusedStream.value) {
+                ensureVideoPlaying(primaryFocusedStream.value.video_id);
+            }
+            if (secondaryStreams.value) {
+                secondaryStreams.value.forEach(s => ensureVideoPlaying(s.video_id));
+            }
+            if (displayedGridStreams.value) {
+                displayedGridStreams.value.forEach(s => ensureVideoPlaying(s.video_id));
+            }
+        }, 300);
     });
 };
 
@@ -702,6 +796,12 @@ const allActiveStreams = computed(() => {
         }
     });
     return Array.from(streamMap.values());
+});
+
+// Currently selected stream for Grid Mode Live Chat Sidebar
+const activeGridChatStream = computed(() => {
+    if (!activeChatVideoId.value) return null;
+    return allActiveStreams.value.find(s => s.video_id === activeChatVideoId.value) || null;
 });
 
 // Currently active/online personal streams (matches video_id, officer channel/handle, or custom stream)
@@ -1267,6 +1367,20 @@ const playStreamInFocus = (stream) => {
 let players = {};
 const ytApiReady = ref(false);
 
+const destroyAllPlayers = () => {
+    Object.keys(players).forEach(id => {
+        if (players[id]) {
+            try {
+                if (typeof players[id].destroy === 'function') {
+                    players[id].destroy();
+                }
+            } catch(e) {}
+            delete players[id];
+        }
+    });
+    players = {};
+};
+
 const loadYouTubeAPI = () => {
     if (window.YT && window.YT.Player) {
         ytApiReady.value = true;
@@ -1279,7 +1393,9 @@ const loadYouTubeAPI = () => {
         tag.id = 'yt-iframe-api-script';
         tag.src = "https://www.youtube.com/iframe_api";
         const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        if (firstScriptTag && firstScriptTag.parentNode) {
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
     }
 
     window.onYouTubeIframeAPIReady = () => {
@@ -1288,59 +1404,52 @@ const loadYouTubeAPI = () => {
     };
 };
 
-const initializePlayer = (videoId) => {
-    if (!window.YT || !window.YT.Player) return;
-    const elementId = `yt-bodycam-${videoId}`;
-    const element = document.getElementById(elementId);
-    
-    // If element exists, bind player safely without destroy
-    if (element) {
-        try {
-            delete players[videoId];
-            players[videoId] = new window.YT.Player(elementId, {
-                events: {
-                    'onReady': (event) => {
-                        const isFocusedLead = (selectedLayout.value === 'focus' && primaryFocusedStream.value?.video_id === videoId);
-                        const isAudioActive = activeAudioVideoId.value === videoId;
-
-                        // Audio initialization
-                        if (isAudioActive) {
-                            try {
-                                event.target.unMute();
-                                event.target.setVolume(100);
-                            } catch(e) {}
-                        } else {
-                            try {
-                                event.target.mute();
-                            } catch(e) {}
-                        }
-
-                        // Quality initialization (144p/360p for all grid & support units, Auto-HD 1080p only for Lead Focus)
-                        const shouldBeHighQuality = isFocusedLead;
-                        applyQualityToPlayer(videoId, shouldBeHighQuality);
-
-                        try {
-                            event.target.playVideo();
-                        } catch(e) {}
-                    },
-                }
-            });
-        } catch (err) {
-            console.warn("Error initializing player for " + videoId, err);
+const ensureVideoPlaying = (videoId) => {
+    if (!videoId) return;
+    const iframes = document.querySelectorAll(`iframe[id="yt-bodycam-${videoId}"]`);
+    iframes.forEach(iframe => {
+        if (iframe && iframe.contentWindow) {
+            try {
+                iframe.contentWindow.postMessage(
+                    JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+                    '*'
+                );
+            } catch (e) {}
         }
+    });
+    if (players[videoId]) {
+        try {
+            if (typeof players[videoId].playVideo === 'function') {
+                players[videoId].playVideo();
+            }
+        } catch (e) {}
     }
 };
 
-const initializeAllPlayers = () => {
-    if (!window.YT || !window.YT.Player) return;
+const initializePlayer = (videoId) => {
+    if (!videoId) return;
+    const isFocusedLead = (selectedLayout.value === 'focus' && primaryFocusedStream.value?.video_id === videoId);
+    const isAudioActive = activeAudioVideoId.value === videoId;
 
+    controlPlayerAudio(videoId, isAudioActive);
+    applyQualityToPlayer(videoId, isFocusedLead);
+    ensureVideoPlaying(videoId);
+};
+
+const initializeAllPlayers = () => {
     if (selectedLayout.value === 'focus') {
         if (primaryFocusedStream.value) {
             initializePlayer(primaryFocusedStream.value.video_id);
         }
-        activePreviewVideoIds.value.forEach(id => {
-            initializePlayer(id);
-        });
+        if (!isDataSaverEnabled.value) {
+            secondaryStreams.value.forEach(stream => {
+                initializePlayer(stream.video_id);
+            });
+        } else {
+            activePreviewVideoIds.value.forEach(id => {
+                initializePlayer(id);
+            });
+        }
     } else {
         if (!isDataSaverEnabled.value) {
             displayedGridStreams.value.forEach(stream => {
@@ -1502,6 +1611,11 @@ const muteAll = () => {
     });
     activeAudioVideoId.value = null;
 };
+
+// Clean up active YT player instances when changing department category
+watch(selectedDepartment, () => {
+    destroyAllPlayers();
+});
 
 // Watch for layout changes to automatically route audio & high-quality to Lead Unit in Focus Mode
 watch(selectedLayout, (newLayout) => {
@@ -2090,22 +2204,21 @@ const submitFeedbackForm = async () => {
                         Officer Directory
                     </Link>
                     
-                    <!-- Perlu dilakukan penyesuaian tampilan untuk radio-codes, about, dan feedback -->
-                    <!-- <Link 
-                        href="/radio-codes"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
-                        title="10-Codes & Tactical Radio Channels (TAC 1-10)"
-                    >
-                        10-Codes & Radio
-                    </Link>
-
                     <Link 
                         href="/about"
                         class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
                         title="About Police Command Center"
                     >
                         About Platform
-                    </Link> -->
+                    </Link> 
+
+                    <Link 
+                        href="/qna"
+                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
+                        title="QnA & Tactical FAQ Guide"
+                    >
+                        QnA & FAQ
+                    </Link>
 
                     <Link 
                         href="/feedback"
@@ -2304,14 +2417,22 @@ const submitFeedbackForm = async () => {
             <!-- Search & Grid Layout Switcher (Side-by-side) -->
             <div class="flex items-center space-x-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
                 <!-- Search Input -->
-                <div class="relative flex-1 sm:w-60">
+                <div class="relative flex-1 sm:w-60 flex items-center">
                     <input 
                         v-model="searchFilter" 
                         type="text" 
                         placeholder="Search callsign, badge, officer..."
-                        class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
                     />
-                    <img :src="iconSearch" class="absolute left-2.5 top-2.5 w-3.5 h-3.5 opacity-50 invert pointer-events-none" alt="Search" />
+                    <img :src="iconSearch" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-50 invert pointer-events-none" alt="Search" />
+                    <button 
+                        v-if="searchFilter" 
+                        @click="searchFilter = ''"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold leading-none p-0.5 rounded hover:bg-slate-800 transition"
+                        title="Bersihkan pencarian"
+                    >
+                        ✕
+                    </button>
                 </div>
 
                 <!-- Layout Selector (Only visible on Department / CCTV Grid Mode) -->
@@ -2365,6 +2486,81 @@ const submitFeedbackForm = async () => {
         <!-- Main Content Area -->
         <main class="flex-1 p-3.5 md:p-4 overflow-y-auto">
             
+            <!-- GLOBAL PROMO / ANNOUNCEMENT BANNERS (CAROUSEL) -->
+            <div v-if="activeAnnouncements.length > 0 && activeTab === '10-8' && selectedDepartment === 'ALL'" 
+                 class="mb-8 relative w-full max-w-[1400px] mx-auto rounded-3xl overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.6)] group border border-white/5 bg-slate-900"
+                 @mouseenter="pausePromoTimer" @mouseleave="startPromoTimer">
+                 
+                <!-- Carousel Track -->
+                <div class="relative w-full overflow-hidden min-h-[220px] md:min-h-[280px]">
+                    <TransitionGroup name="promo-fade" tag="div" class="w-full h-full">
+                        <div v-for="(promo, index) in activeAnnouncements" :key="'promo-'+promo.id" v-show="index === activePromoIndex"
+                            class="absolute inset-0 w-full h-full flex flex-col sm:flex-row items-start sm:items-center p-6 md:p-12 gap-6 backdrop-blur-xl"
+                            :class="{
+                                'bg-blue-950/70': promo.type === 'info',
+                                'bg-purple-950/70': promo.type === 'promo',
+                                'bg-amber-950/70': promo.type === 'poll'
+                            }"
+                        >
+                            <!-- Background Image (Hybrid Mode - Desktop Only) -->
+                            <div v-if="promo.image_url" 
+                                 class="hidden md:block absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60 z-0 pointer-events-none transition-transform duration-[5000ms] scale-100 group-hover:scale-105"
+                                 :style="{ backgroundImage: 'url(' + promo.image_url + ')' }"
+                            ></div>
+                            <div v-if="promo.image_url" class="hidden md:block absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/80 to-transparent z-0 pointer-events-none"></div>
+
+                            <!-- Icon / Type Indicator -->
+                            <div class="shrink-0 rounded-2xl p-4 flex items-center justify-center border relative z-10 shadow-inner"
+                                :class="{
+                                    'bg-blue-500/20 border-blue-500/30 text-blue-400 shadow-blue-500/20': promo.type === 'info',
+                                    'bg-purple-500/20 border-purple-500/30 text-purple-400 shadow-purple-500/20': promo.type === 'promo',
+                                    'bg-amber-500/20 border-amber-500/30 text-amber-400 shadow-amber-500/20': promo.type === 'poll'
+                                }"
+                            >
+                                <img v-if="promo.icon" :src="promo.icon" class="w-8 h-8 md:w-12 md:h-12 object-contain" />
+                                <svg v-else-if="promo.type === 'info'" class="w-8 h-8 md:w-12 md:h-12 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.037 2 11c0 2.87 1.54 5.43 3.93 7.07.28.19.46.5.46.84v2.54c0 .52.59.81 1.01.5l3.29-2.47a1 1 0 0 1 .6-.2 10.95 10.95 0 0 0 3.71.62c5.523 0 10-4.037 10-9S17.523 2 12 2zM8 10h8v2H8v-2zm0-3h8v2H8V7z"/></svg>
+                                <svg v-else-if="promo.type === 'poll'" class="w-8 h-8 md:w-12 md:h-12 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M5 4h14v2H5V4zm0 5h14v2H5V9zm0 5h10v2H5v-2z"/></svg>
+                                <svg v-else class="w-8 h-8 md:w-12 md:h-12 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="flex-1 pr-12 relative z-10">
+                                <h3 class="text-lg md:text-3xl font-black text-white mb-3 tracking-wide" style="text-shadow: 0 2px 6px rgba(0,0,0,0.9);">{{ promo.title }}</h3>
+                                <p class="text-sm md:text-lg text-slate-300 leading-relaxed font-semibold max-w-3xl" style="text-shadow: 0 1px 4px rgba(0,0,0,0.9);">{{ promo.message }}</p>
+                            </div>
+
+                            <!-- Action Button -->
+                            <a v-if="promo.action_text && promo.action_url" :href="promo.action_url" target="_blank"
+                               class="shrink-0 px-6 py-3 md:px-8 md:py-4 rounded-xl font-bold text-sm md:text-base shadow-lg transition-transform hover:scale-105 active:scale-95 relative z-10"
+                               :class="{
+                                   'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/50': promo.type === 'info',
+                                   'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-900/50': promo.type === 'promo',
+                                   'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-900/50': promo.type === 'poll'
+                               }"
+                            >
+                                {{ promo.action_text }}
+                            </a>
+                        </div>
+                    </TransitionGroup>
+                </div>
+
+                <!-- Navigation Arrows -->
+                <button v-if="activeAnnouncements.length > 1" @click="prevPromo" class="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-slate-950/60 text-white hover:bg-slate-800 transition z-20 border border-white/10 opacity-0 group-hover:opacity-100 backdrop-blur-md">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <button v-if="activeAnnouncements.length > 1" @click="nextPromo" class="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-slate-950/60 text-white hover:bg-slate-800 transition z-20 border border-white/10 opacity-0 group-hover:opacity-100 backdrop-blur-md">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+
+                <!-- Dots Indicator -->
+                <div v-if="activeAnnouncements.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+                    <button v-for="(promo, index) in activeAnnouncements" :key="'dot-'+promo.id" @click="setPromo(index)"
+                        class="w-2.5 h-2.5 rounded-full transition-all duration-300 shadow-md"
+                        :class="activePromoIndex === index ? 'bg-white w-6' : 'bg-white/40 hover:bg-white/70'"
+                    ></button>
+                </div>
+            </div>
+
             <!-- TAB 1: 10-8 ACTIVE LIVE BODYCAM FEEDS -->
             <div v-if="activeTab === '10-8'">
                 
@@ -3467,7 +3663,7 @@ const submitFeedbackForm = async () => {
                             </div>
 
                         </div>
-                    </div>
+                        </div>
 
                     <!-- RIGHT COLUMN: COLLAPSIBLE LIVE CHAT AT TOP + SUPPORT UNITS BELOW -->
                     <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-3">
@@ -3531,8 +3727,8 @@ const submitFeedbackForm = async () => {
                             </div>
                         </div>
 
-                        <!-- 2. SCROLLABLE SUPPORTING UNITS CONTAINER (Positioned Below Chat) -->
-                        <div class="space-y-3 max-h-[calc(100vh-210px)] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                        <!-- 2. SUPPORTING UNITS CONTAINER (Positioned Below Chat - YouTube Style Natural Page Flow) -->
+                        <div class="space-y-3">
                             
                             <div 
                                 v-for="stream in secondaryStreams" 
@@ -3719,7 +3915,6 @@ const submitFeedbackForm = async () => {
                         </div>
 
                     </div>
-
                 </div>
 
                 <!-- STANDARD GRID VIEWS (Auto, 2x2, 3x3, 4x4) -->
@@ -3753,14 +3948,21 @@ const submitFeedbackForm = async () => {
                         </div>
                     </div>
 
-                    <!-- GRID CONTAINER -->
-                    <div :class="layoutGridClass">
-                        <div 
-                            v-for="stream in displayedGridStreams" 
-                            :key="`grid-card-${stream.video_id}`"
-                            :class="activeAudioVideoId === stream.video_id ? 'ring-2 ring-emerald-500 border-emerald-500 shadow-xl shadow-emerald-950/50' : 'border-slate-800 hover:border-blue-500/40'"
-                            class="bg-slate-950 rounded-xl overflow-hidden border transition flex flex-col relative group"
-                        >
+                    <!-- GRID CONTAINER (With Right Sidebar Live Chat) -->
+                    <div :class="activeGridChatStream ? 'grid grid-cols-1 lg:grid-cols-12 gap-4 items-start' : ''">
+                        
+                        <!-- LEFT MAIN GRID (Takes 8/12 or 9/12 cols when Chat is open) -->
+                        <div :class="activeGridChatStream ? 'lg:col-span-8 xl:col-span-9' : 'w-full'">
+                            <div :class="layoutGridClass">
+                                <div 
+                                    v-for="stream in displayedGridStreams" 
+                                    :key="`grid-card-${stream.video_id}`"
+                                    :class="[
+                                        activeAudioVideoId === stream.video_id ? 'ring-2 ring-emerald-500 border-emerald-500 shadow-xl shadow-emerald-950/50' : 'border-slate-800 hover:border-blue-500/40',
+                                        activeChatVideoId === stream.video_id ? 'ring-1 ring-amber-500/80 border-amber-500/60 shadow-lg shadow-amber-950/30' : ''
+                                    ]"
+                                    class="bg-slate-950 rounded-xl overflow-hidden border transition flex flex-col relative group"
+                                >
                             <!-- BODYCAM HEADER HUD OVERLAY -->
                             <div class="bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 flex items-center justify-between border-b border-slate-800/80 z-10">
                                 <!-- Officer Badge & Callsign -->
@@ -3947,10 +4149,11 @@ const submitFeedbackForm = async () => {
                                     </button>
                                     <button 
                                         @click="activeChatVideoId = activeChatVideoId === stream.video_id ? null : stream.video_id"
-                                        class="p-1.5 hover:text-amber-400 text-slate-400 rounded hover:bg-slate-800 transition"
+                                        :class="activeChatVideoId === stream.video_id ? 'bg-amber-600 text-white shadow-md shadow-amber-500/40' : 'text-slate-400 hover:text-amber-400 hover:bg-slate-800'"
+                                        class="p-1.5 rounded transition flex items-center justify-center"
                                         title="Toggle YouTube Live Chat Drawer"
                                     >
-                                        <img :src="activeChatVideoId === stream.video_id ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Chat" />
+                                        <img :src="activeChatVideoId === stream.video_id ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-90" alt="Chat" />
                                     </button>
                                     <a 
                                         :href="`https://www.youtube.com/watch?v=${stream.video_id}`" 
@@ -3962,15 +4165,37 @@ const submitFeedbackForm = async () => {
                                     </a>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <!-- Optional Embedded YouTube Live Chat Drawer -->
-                            <div v-if="activeChatVideoId === stream.video_id" class="w-full h-48 bg-slate-900 border-t border-slate-800 relative">
-                                <iframe 
-                                    :src="stream.live_chat_url" 
-                                    class="w-full h-full border-0"
-                                ></iframe>
+                <!-- RIGHT SIDEBAR LIVE CHAT (Positioned to the right of the video grid) -->
+                        <div v-if="activeGridChatStream" class="lg:col-span-4 xl:col-span-3 space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                            <div class="bg-slate-950 rounded-xl overflow-hidden border border-amber-500/50 shadow-2xl flex flex-col">
+                                <div class="bg-slate-900/95 px-3.5 py-2 flex items-center justify-between border-b border-slate-800 text-xs">
+                                    <div class="flex items-center space-x-2 text-amber-300 font-bold truncate">
+                                        <img :src="iconChat" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                                        <span class="truncate">Live Chat: {{ activeGridChatStream.officer?.officer_name || activeGridChatStream.title }}</span>
+                                    </div>
+                                    <button 
+                                        @click="activeChatVideoId = null" 
+                                        class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded transition"
+                                        title="Close Live Chat"
+                                    >
+                                        ✕ Close
+                                    </button>
+                                </div>
+                                <div class="w-full h-[580px] bg-slate-900 relative">
+                                    <iframe 
+                                        :key="`chat-grid-${activeGridChatStream.video_id}`"
+                                        :src="`https://www.youtube.com/live_chat?v=${activeGridChatStream.video_id}&embed_domain=${chatEmbedDomain}`" 
+                                        class="w-full h-full border-0"
+                                        allow="autoplay"
+                                    ></iframe>
+                                </div>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
@@ -4112,11 +4337,11 @@ const submitFeedbackForm = async () => {
                                     </li>
                                     <li>
                                         <Link 
-                                            href="/radio-codes" 
-                                            class="hover:text-amber-300 transition flex items-center gap-1.5 text-slate-300"
+                                            href="/qna" 
+                                            class="hover:text-blue-300 transition flex items-center gap-1.5 text-slate-300"
                                         >
                                             <span>›</span>
-                                            <span>Panduan Kode 10 & Radio TAC 1–5</span>
+                                            <span>Tanya Jawab & Panduan QnA</span>
                                         </Link>
                                     </li>
                                     <li>
@@ -4398,7 +4623,7 @@ const submitFeedbackForm = async () => {
                                     placeholder="Ketik hashtag misal #imeroleplay #burgenk..."
                                     class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-20 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 font-mono placeholder-slate-500"
                                 />
-                                <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-3" alt="" />
+                                <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" alt="" />
                                 <button 
                                     type="submit" 
                                     :disabled="isLiveSearching"
@@ -4945,7 +5170,7 @@ const submitFeedbackForm = async () => {
                                     placeholder="Cari nama polisi, callsign, handle, badge, sektor..."
                                     class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
                                 />
-                                <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-3" alt="" />
+                                <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" alt="" />
                             </div>
 
                             <div class="flex items-center gap-1.5 shrink-0">
@@ -5192,7 +5417,7 @@ const submitFeedbackForm = async () => {
                                     placeholder="Cari kode misal 10-80, 10-33, pursuit, darurat..."
                                     class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
                                 />
-                                <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-3" alt="" />
+                                <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" alt="" />
                             </div>
                         </div>
 

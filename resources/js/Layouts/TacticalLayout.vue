@@ -2,7 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { ref, onMounted, onUnmounted } from 'vue';
 
-import logoSaspColor from '@/Components/Icons/SASP256.jpg';
+import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
 import iconUser from '@/Components/Icons/user-svgrepo-com.svg';
 import iconRadio from '@/Components/Icons/radio-signal-svgrepo-com.svg';
 import iconFeedback from '@/Components/Icons/report-svgrepo-com.svg';
@@ -69,14 +69,14 @@ onUnmounted(() => {
                     </Link>
 
                     <Link 
-                        href="/radio-codes"
+                        href="/qna"
                         :class="[
                             'px-3 py-1.5 text-xs transition rounded-lg font-medium',
-                            $page.url.startsWith('/radio-codes') ? 'bg-blue-600/30 text-blue-300 font-bold border border-blue-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+                            $page.url.startsWith('/qna') ? 'bg-blue-600/30 text-blue-300 font-bold border border-blue-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
                         ]"
-                        title="10-Codes & Tactical Radio Channels (TAC 1-10)"
+                        title="QnA & Tactical FAQ Guide"
                     >
-                        10-Codes & Radio
+                        QnA & FAQ
                     </Link>
 
                     <Link 

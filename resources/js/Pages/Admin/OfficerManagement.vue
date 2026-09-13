@@ -99,6 +99,131 @@ const fetchOfficers = async () => {
     }
 };
 
+// Tabs State
+const activeTab = ref('officers'); // 'officers' or 'announcements'
+
+// Announcements State
+const announcements = ref([]);
+const isAnnouncementsLoading = ref(false);
+const showAnnouncementModal = ref(false);
+const isEditAnnouncement = ref(false);
+const isSavingAnnouncement = ref(false);
+
+const announcementForm = ref({
+    id: null,
+    type: 'info',
+    title: '',
+    message: '',
+    action_text: '',
+    action_url: '',
+    icon: '',
+    image_url: '',
+    is_active: true,
+});
+
+const fetchAnnouncements = async () => {
+    isAnnouncementsLoading.value = true;
+    try {
+        const res = await fetch('/api/v1/announcements');
+        const json = await res.json();
+        if (json.status === 'success') {
+            announcements.value = json.data || [];
+        }
+    } catch (e) {
+        showToast('Failed to load announcements: ' + e.message, 'error');
+    } finally {
+        isAnnouncementsLoading.value = false;
+    }
+};
+
+const openAddAnnouncementModal = () => {
+    isEditAnnouncement.value = false;
+    announcementForm.value = {
+        id: null,
+        type: 'info',
+        title: '',
+        message: '',
+        action_text: '',
+        action_url: '',
+        icon: '',
+        image_url: '',
+        is_active: true,
+    };
+    showAnnouncementModal.value = true;
+};
+
+const openEditAnnouncementModal = (promo) => {
+    isEditAnnouncement.value = true;
+    announcementForm.value = { ...promo };
+    showAnnouncementModal.value = true;
+};
+
+const saveAnnouncement = async () => {
+    isSavingAnnouncement.value = true;
+    const isEdit = isEditAnnouncement.value;
+    const url = isEdit ? `/api/v1/announcements/${announcementForm.value.id}` : '/api/v1/announcements';
+    const method = isEdit ? 'PUT' : 'POST';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify(announcementForm.value),
+        });
+        const json = await res.json();
+        if (res.ok && json.status === 'success') {
+            showToast(json.message, 'success');
+            showAnnouncementModal.value = false;
+            fetchAnnouncements();
+        } else {
+            showToast(json.message || 'Validation error', 'error');
+        }
+    } catch (e) {
+        showToast('Request failed: ' + e.message, 'error');
+    } finally {
+        isSavingAnnouncement.value = false;
+    }
+};
+
+const deleteAnnouncement = async (id) => {
+    if (!confirm('Yakin ingin menghapus pengumuman ini?')) return;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    try {
+        const res = await fetch(`/api/v1/announcements/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+        });
+        const json = await res.json();
+        if (res.ok && json.status === 'success') {
+            showToast('Announcement deleted.', 'success');
+            fetchAnnouncements();
+        }
+    } catch (e) {
+        showToast('Error deleting announcement.', 'error');
+    }
+};
+
+const toggleAnnouncement = async (id) => {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    try {
+        const res = await fetch(`/api/v1/announcements/${id}/toggle`, {
+            method: 'PATCH',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+        });
+        if (res.ok) {
+            showToast('Status updated.', 'success');
+            fetchAnnouncements();
+        }
+    } catch (e) {
+        showToast('Error updating status.', 'error');
+    }
+};
+
 // Filtered Officers List
 const filteredOfficers = computed(() => {
     return officers.value.filter((officer) => {
@@ -393,6 +518,7 @@ const handleLogout = () => {
 
 onMounted(() => {
     fetchOfficers();
+    fetchAnnouncements();
 });
 </script>
 
@@ -460,8 +586,26 @@ onMounted(() => {
 
         <!-- MAIN CONTENT AREA -->
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-            <!-- STATS CARDS -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+            <!-- ADMIN TABS -->
+            <div class="flex items-center space-x-2 border-b border-slate-800 pb-2">
+                <button 
+                    @click="activeTab = 'officers'" 
+                    :class="['px-4 py-2 rounded-lg text-sm font-bold font-mono tracking-wide transition', activeTab === 'officers' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-inner' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800']"
+                >
+                    Management Officers
+                </button>
+                <button 
+                    @click="activeTab = 'announcements'" 
+                    :class="['px-4 py-2 rounded-lg text-sm font-bold font-mono tracking-wide transition', activeTab === 'announcements' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-inner' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800']"
+                >
+                    Promotions & Alerts
+                </button>
+            </div>
+
+            <!-- TAB 1: OFFICERS -->
+            <div v-if="activeTab === 'officers'" class="space-y-6">
+                <!-- STATS CARDS -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
                 <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
                     <span class="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">Total Units</span>
                     <div class="text-2xl font-black text-white mt-1">{{ deptCounts.ALL }}</div>
@@ -735,7 +879,72 @@ onMounted(() => {
                         </tbody>
                     </table>
                 </div>
-            </div>
+                </div>
+            </div> <!-- End TAB 1 -->
+
+            <!-- TAB 2: ANNOUNCEMENTS & PROMOS -->
+            <div v-else-if="activeTab === 'announcements'" class="space-y-6">
+                <!-- Action Bar -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex justify-between items-center">
+                    <h2 class="text-lg font-black text-white font-mono uppercase tracking-wider">Promotions & Alerts</h2>
+                    <button 
+                        @click="openAddAnnouncementModal" 
+                        class="bg-gradient-to-r from-cyan-600 to-blue-500 hover:from-cyan-500 hover:to-blue-400 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition flex items-center gap-2"
+                    >
+                        <span>+ New Promo</span>
+                    </button>
+                </div>
+
+                <!-- Announcements Table -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-950/50 border-b border-slate-800 text-xs text-slate-400 font-mono tracking-wider">
+                                <th class="p-4 font-semibold uppercase">Type / Title</th>
+                                <th class="p-4 font-semibold uppercase">Message</th>
+                                <th class="p-4 font-semibold uppercase">Action Text / URL</th>
+                                <th class="p-4 font-semibold uppercase text-center">Status</th>
+                                <th class="p-4 font-semibold uppercase text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60">
+                            <tr v-if="isAnnouncementsLoading">
+                                <td colspan="5" class="p-8 text-center text-slate-400">Loading...</td>
+                            </tr>
+                            <tr v-else-if="announcements.length === 0">
+                                <td colspan="5" class="p-8 text-center text-slate-500 font-mono">No announcements found.</td>
+                            </tr>
+                            <tr v-else v-for="promo in announcements" :key="promo.id" class="hover:bg-slate-800/30 transition">
+                                <td class="p-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded border border-slate-700 bg-slate-800 text-slate-300">{{ promo.type }}</span>
+                                    </div>
+                                    <div class="mt-1 font-bold text-white text-sm">{{ promo.title }}</div>
+                                </td>
+                                <td class="p-4 text-xs text-slate-300 max-w-xs truncate">{{ promo.message }}</td>
+                                <td class="p-4 text-xs text-slate-400">
+                                    <div class="font-bold text-cyan-400">{{ promo.action_text || '-' }}</div>
+                                    <div class="truncate max-w-[150px] text-[10px]">{{ promo.action_url || '-' }}</div>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <button 
+                                        @click="toggleAnnouncement(promo.id)"
+                                        :class="promo.is_active ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'"
+                                        class="px-3 py-1 rounded-full text-xs font-bold border transition hover:opacity-80"
+                                    >
+                                        {{ promo.is_active ? 'ACTIVE' : 'HIDDEN' }}
+                                    </button>
+                                </td>
+                                <td class="p-4 text-right space-x-2">
+                                    <button @click="openEditAnnouncementModal(promo)" class="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 text-xs font-bold transition">Edit</button>
+                                    <button @click="deleteAnnouncement(promo.id)" class="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/40 text-xs font-bold transition">Del</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div> <!-- End TAB 2 -->
+
         </main>
 
         <!-- MODAL: ADD / EDIT OFFICER -->
@@ -935,6 +1144,80 @@ onMounted(() => {
                         class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-bold transition text-xs shadow-lg shadow-red-600/30"
                     >
                         {{ isDeletingOfficer ? 'Deleting...' : 'Yes, Delete Permanently' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: ADD / EDIT ANNOUNCEMENT -->
+        <div v-if="showAnnouncementModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+            <div class="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-5 my-8">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h2 class="text-lg font-black text-white font-mono uppercase tracking-wide flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                        {{ isEditAnnouncement ? 'Edit Promotion' : 'New Promotion' }}
+                    </h2>
+                    <button @click="showAnnouncementModal = false" class="text-slate-500 hover:text-white transition">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="space-y-4 text-xs font-mono">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Type *</label>
+                            <select v-model="announcementForm.type" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white">
+                                <option value="info">Info / General</option>
+                                <option value="promo">Promo / Event</option>
+                                <option value="poll">Poll / Voting</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Icon (Optional URL/SVG)</label>
+                            <input v-model="announcementForm.icon" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 mb-1 font-bold">Title *</label>
+                        <input v-model="announcementForm.title" type="text" placeholder="e.g. Tertarik Mabar Discord?" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold" />
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 mb-1 font-bold">Message *</label>
+                        <textarea v-model="announcementForm.message" rows="3" placeholder="Deskripsi pengumuman..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 mb-1 font-bold">Background Image URL (Optional Hybrid Mode)</label>
+                        <input v-model="announcementForm.image_url" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white" />
+                        <p class="text-[10px] text-slate-500 mt-1">Jika diisi, gambar akan menjadi latar belakang promo.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Action Button Text</label>
+                            <input v-model="announcementForm.action_text" type="text" placeholder="e.g. Join Sekarang" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white" />
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Action Button URL</label>
+                            <input v-model="announcementForm.action_url" type="text" placeholder="https://discord.gg/..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white" />
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 pt-2">
+                        <input v-model="announcementForm.is_active" type="checkbox" id="is_active_promo" class="rounded bg-slate-950 border-slate-800 text-cyan-600 focus:ring-cyan-500 w-4 h-4" />
+                        <label for="is_active_promo" class="text-slate-300 font-bold cursor-pointer">Active (Show to Public)</label>
+                    </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="flex items-center justify-end space-x-3 border-t border-slate-800 pt-4 font-mono">
+                    <button @click="showAnnouncementModal = false" type="button" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition text-xs">Cancel</button>
+                    <button @click="saveAnnouncement" :disabled="isSavingAnnouncement" type="button" class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold transition text-xs shadow-lg shadow-cyan-600/30">
+                        {{ isSavingAnnouncement ? 'Saving...' : 'Save Promotion' }}
                     </button>
                 </div>
             </div>

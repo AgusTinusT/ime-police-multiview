@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 
-import logoSaspColor from '@/Components/Icons/SASP256.jpg';
+import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
 import iconFeedback from '@/Components/Icons/report-svgrepo-com.svg';
 import iconRadio from '@/Components/Icons/radio-signal-svgrepo-com.svg';
 import iconQuickAdd from '@/Components/Icons/button-plus-svgrepo-com.svg';
@@ -110,22 +110,21 @@ const submitFeedbackForm = async () => {
                         <span>Officer Directory</span>
                     </Link>
 
-                    <!-- Perlu dilakukan penyesuaian tampilan untuk radio-codes, about, dan feedback -->
-                    <!-- <Link 
-                        href="/radio-codes"
-                        class="px-2.5 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-1.5 group"
-                        title="10-Codes & Tactical Radio Channels (TAC 1-10)"
-                    >
-                        <span>10-Codes & Radio</span>
-                    </Link>
-
                     <Link 
                         href="/about"
                         class="px-2.5 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-1.5 group"
                         title="About Police Command Center"
                     >
                         <span>About Platform</span>
-                    </Link> -->
+                    </Link> 
+
+                    <Link 
+                        href="/qna"
+                        class="px-2.5 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-1.5 group"
+                        title="QnA & Tactical FAQ Guide"
+                    >
+                        <span>QnA & FAQ</span>
+                    </Link>
 
                     <Link 
                         href="/feedback"
