@@ -1358,7 +1358,7 @@ const departments = [
     { id: 'BCSO', name: 'BCSO', icon: iconBcso, isSvg: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'SASP', name: 'SASP', icon: iconSasp, isSvg: true, color: 'border-teal-500 text-teal-400 bg-teal-950/40' },
     { id: 'SAPR', name: 'SAPR', icon: iconSapr, isSvg: true, color: 'border-green-500 text-green-400 bg-green-950/40' },
-    { id: 'VAGABOND', name: 'VAGABOND', icon: logoVagabond, isSvg: false, color: 'border-rose-500 text-rose-300 bg-rose-950/50 font-bold' },
+    { id: 'VAGABOND', name: 'VAGABOND', icon: logoVagabond, isSvg: true, color: 'border-rose-500 text-rose-300 bg-rose-950/50 font-bold' },
     { id: 'TAC_1', name: 'TAC 1', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'TAC_2', name: 'TAC 2', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'TAC_3', name: 'TAC 3', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
@@ -2632,7 +2632,7 @@ const handleAdminLogout = () => {
                                     : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'))
                     ]"
                 >
-                    <img v-if="dept.isSvg" :src="dept.icon" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90" alt="" />
+                    <img v-if="dept.isSvg || (typeof dept.icon === 'string' && (dept.icon.includes('/') || dept.icon.includes('.')))" :src="dept.icon" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90" alt="" />
                     <span v-else>{{ dept.icon }}</span>
                     <span>{{ dept.name }}</span>
                     
