@@ -372,6 +372,13 @@ const toggleFullscreen = () => {
                         >
                             SAPR ({{ deptStats.sapr_total || 0 }})
                         </button>
+                        <button 
+                            @click="selectedDept = 'VAGABOND'"
+                            :class="selectedDept === 'VAGABOND' ? 'bg-rose-600 text-white font-bold shadow-md shadow-rose-600/30 border-rose-400' : 'bg-slate-950 text-rose-300 hover:bg-slate-800 border-slate-800'"
+                            class="px-3 py-1.5 text-xs rounded-full border transition whitespace-nowrap font-bold"
+                        >
+                            VAGABOND ({{ officers.filter(o => o.department === 'VAGABOND').length }})
+                        </button>
                     </div>
 
                     <!-- Sort Dropdown -->

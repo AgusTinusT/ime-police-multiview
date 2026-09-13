@@ -1350,7 +1350,7 @@ onUnmounted(() => {
     window.removeEventListener('click', closeMoreTac);
 });
 
-// Main Visible Department Tabs (ALL, PERSONAL, LSPD, BCSO, SASP, SAPR + Primary TAC 1 to 3)
+// Main Visible Department Tabs (ALL, PERSONAL, LSPD, BCSO, SASP, SAPR, VAGABOND + Primary TAC 1 to 3)
 const departments = [
     { id: 'ALL', name: 'ALL UNITS', icon: iconAllUnits, isSvg: true, color: 'border-slate-600 text-slate-300' },
     { id: 'PERSONAL', name: 'PERSONAL', icon: iconPersonal, isSvg: true, color: 'border-purple-500 text-purple-300 bg-purple-950/40' },
@@ -1358,6 +1358,7 @@ const departments = [
     { id: 'BCSO', name: 'BCSO', icon: iconBcso, isSvg: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'SASP', name: 'SASP', icon: iconSasp, isSvg: true, color: 'border-teal-500 text-teal-400 bg-teal-950/40' },
     { id: 'SAPR', name: 'SAPR', icon: iconSapr, isSvg: true, color: 'border-green-500 text-green-400 bg-green-950/40' },
+    { id: 'VAGABOND', name: 'VAGABOND', icon: logoVagabond, isSvg: false, color: 'border-rose-500 text-rose-300 bg-rose-950/50 font-bold' },
     { id: 'TAC_1', name: 'TAC 1', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'TAC_2', name: 'TAC 2', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
     { id: 'TAC_3', name: 'TAC 3', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
@@ -1385,6 +1386,7 @@ const getDeptIcon = (dept) => {
         case 'SAPR':
         case 'PARK RANGER': return iconSapr;
         case 'PERSONAL': return iconPersonal;
+        case 'VAGABOND': return logoVagabond;
         default: return iconAllUnits;
     }
 };
@@ -1398,6 +1400,7 @@ const getDeptBadgeClass = (dept) => {
         case 'SASP': return 'bg-teal-600/30 text-teal-300 border-teal-500/50';
         case 'SAPR':
         case 'PARK RANGER': return 'bg-green-600/30 text-green-300 border-green-500/50';
+        case 'VAGABOND': return 'bg-rose-600/30 text-rose-300 border-rose-500/50';
         default: return 'bg-slate-700/40 text-slate-300 border-slate-600';
     }
 };

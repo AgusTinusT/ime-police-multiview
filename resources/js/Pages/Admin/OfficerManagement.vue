@@ -70,13 +70,14 @@ const form = ref({
     is_active: true,
 });
 
-const departments = ['LSPD', 'BCSO', 'SASP', 'SAPR'];
+const departments = ['LSPD', 'BCSO', 'SASP', 'SAPR', 'VAGABOND'];
 
 const defaultRanks = {
     LSPD: ['Chief of Police', 'Assistant Chief', 'Deputy Chief', 'Captain', 'Lieutenant', 'Sergeant', 'Senior Officer', 'Officer', 'Cadet'],
     BCSO: ['Sheriff', 'Undersheriff', 'Assistant Sheriff', 'Captain', 'Lieutenant', 'Master Sergeant', 'Sergeant', 'Senior Deputy', 'Deputy', 'Cadet'],
     SASP: ['State Commissioner', 'Colonel', 'Major', 'Captain', 'Lieutenant', 'Staff Sergeant', 'Sergeant', 'Senior Trooper', 'Trooper', 'Cadet'],
     SAPR: ['Chief Ranger', 'Assistant Chief Ranger', 'Captain Ranger', 'Lieutenant Ranger', 'Sergeant Ranger', 'Senior Park Ranger', 'Park Ranger', 'Cadet Ranger'],
+    VAGABOND: ['Vagabond Leader', 'Cyber Hacker', 'Infiltrator', 'Squad Leader', 'Operative', 'Cell Member'],
 };
 
 const currentRankOptions = computed(() => {
