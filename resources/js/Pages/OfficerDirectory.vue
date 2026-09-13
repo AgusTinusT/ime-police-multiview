@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 
 // SVG Icon Assets & Branding Logos
 import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
@@ -38,6 +38,11 @@ const sortBy = ref('status'); // 'status', 'subs_desc', 'subs_asc', 'name'
 const isSyncing = ref(false);
 const isFullscreen = ref(false);
 const isQuickAddOpen = ref(false);
+
+// Auth & Gimmick state
+const page = usePage();
+const isAdmin = computed(() => !!(page.props.auth?.user || page.props.user || page.props.isAdmin));
+const isVagabondHacked = computed(() => typeof window !== 'undefined' && localStorage.getItem('ime_gimmick_vagabond') === 'true');
 
 // Personal Streams saved to localStorage
 const personalIds = ref([]);
@@ -373,6 +378,7 @@ const toggleFullscreen = () => {
                             SAPR ({{ deptStats.sapr_total || 0 }})
                         </button>
                         <button 
+                            v-if="isAdmin || isVagabondHacked"
                             @click="selectedDept = 'VAGABOND'"
                             :class="selectedDept === 'VAGABOND' ? 'bg-rose-600 text-white font-bold shadow-md shadow-rose-600/30 border-rose-400' : 'bg-slate-950 text-rose-300 hover:bg-slate-800 border-slate-800'"
                             class="px-3 py-1.5 text-xs rounded-full border transition whitespace-nowrap font-bold"

@@ -1364,6 +1364,16 @@ const departments = [
     { id: 'TAC_3', name: 'TAC 3', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
 ];
 
+// Department tabs visible based on Auth & Gimmick state
+const visibleDepartments = computed(() => {
+    return departments.filter(dept => {
+        if (dept.id === 'VAGABOND') {
+            return isAdmin.value || isVagabondHacked.value;
+        }
+        return true;
+    });
+});
+
 // Extended Dropdown TAC Channels (TAC 4 to TAC 10)
 const dropdownTacDepartments = [
     { id: 'TAC_4', name: 'TAC 4', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
@@ -2612,7 +2622,7 @@ const handleAdminLogout = () => {
             <!-- Department Tabs -->
             <div class="flex items-center space-x-1.5 flex-wrap md:flex-nowrap py-0.5 max-w-full relative z-30">
                 <button 
-                    v-for="dept in departments" 
+                    v-for="dept in visibleDepartments" 
                     :key="dept.id"
                     @click="selectedDepartment = dept.id"
                     :class="[
