@@ -2373,19 +2373,17 @@ const handleAdminLogout = () => {
             
             <!-- Left Area: Branding & Standalone Page Navigation Links -->
             <div class="flex items-center space-x-3 shrink-0">
-                <!-- Branding: IME Roleplay Police Division -->
+                <!-- Left Branding Area: App Title & Badge -->
                 <div 
-                    class="flex items-center space-x-2.5 shrink-0" 
-                    :class="isAdmin ? 'cursor-pointer' : ''" 
-                    @click="isAdmin && toggleVagabondHackedMode()" 
-                    :title="isAdmin ? '[ADMIN] Klik untuk mengaktifkan/mematikan VAGABOND Gimmick Mode' : 'IME Roleplay Police Command Center'"
+                    class="flex items-center space-x-2.5 cursor-pointer"
+                    title="IME Roleplay Police Command Center"
                 >
-                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden transition" :class="isVagabondHacked ? '!border-rose-500 shadow-rose-900/50 animate-pulse' : ''">
-                        <img :src="logoSaspColor" class="w-full h-full object-contain rounded transition" :class="isVagabondHacked ? 'hue-rotate-[140deg] filter' : ''" alt="SASP Badge" />
+                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden transition">
+                        <img :src="logoSaspColor" class="w-full h-full object-contain rounded transition" alt="SASP Badge" />
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-xs font-black tracking-wider uppercase leading-tight transition" :class="isVagabondHacked ? 'text-rose-500 animate-pulse font-mono' : 'text-blue-400'">{{ isVagabondHacked ? '⚠️ VAGABOND OVERRIDE' : 'IME ROLEPLAY' }}</span>
-                        <span class="text-[10px] font-bold tracking-wide uppercase leading-tight transition" :class="isVagabondHacked ? 'text-rose-400 font-mono' : 'text-slate-300'">{{ isVagabondHacked ? 'SYSTEM COMPROMISED' : 'POLICE DIVISION' }}</span>
+                        <span class="text-xs font-black tracking-wider uppercase leading-tight transition text-blue-400">IME ROLEPLAY</span>
+                        <span class="text-[10px] font-bold tracking-wide uppercase leading-tight transition text-slate-300">POLICE DIVISION</span>
                     </div>
                 </div>
 
@@ -2688,39 +2686,7 @@ const handleAdminLogout = () => {
         </div>
 
         <!-- Main Content Area -->
-        <main class="flex-1 p-3.5 md:p-4 overflow-y-auto" :class="isVagabondHacked ? 'bg-slate-950/95' : ''">
-            
-            <!-- VAGABOND CYBER ATTACK GIMMICK BANNER -->
-            <div v-if="isVagabondHacked" class="mb-6 relative w-full max-w-5xl mx-auto rounded-2xl overflow-hidden border-2 border-rose-600/80 bg-slate-950 p-5 md:p-6 shadow-[0_0_35px_rgba(225,29,72,0.4)] transition animate-pulse">
-                <div class="absolute inset-0 bg-gradient-to-r from-rose-950/80 via-slate-950 to-rose-950/80 z-0 pointer-events-none"></div>
-                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-rose-600/20 border border-rose-500/50 flex items-center justify-center shrink-0 shadow-lg shadow-rose-600/20 p-2">
-                            <img :src="logoVagabond" class="w-full h-full object-contain" alt="VAGABOND" />
-                        </div>
-                        <div class="space-y-1">
-                            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-600/30 border border-rose-500/50 text-rose-400 text-[10px] font-mono font-bold uppercase tracking-widest">
-                                <span>⚠️ SECURITY BREACH IN PROGRESS</span>
-                            </div>
-                            <h2 class="text-lg md:text-2xl font-black text-rose-500 font-mono tracking-tight flex items-center gap-2">
-                                <span>VAGABOND CYBER SYSTEM OVERRIDE</span>
-                            </h2>
-                            <p class="text-xs md:text-sm font-mono text-slate-300 leading-relaxed font-semibold">
-                                <span>{{ vagabondTypedText }}</span>
-                                <span class="animate-ping text-rose-500">_</span>
-                            </p>
-                        </div>
-                    </div>
-                    <button 
-                        v-if="isAdmin"
-                        @click="toggleVagabondHackedMode"
-                        class="shrink-0 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-mono font-bold text-xs shadow-lg shadow-rose-900/50 transition transform hover:scale-105 active:scale-95 border border-rose-400 flex items-center gap-2"
-                    >
-                        <span>🛡️</span>
-                        <span>RESTORE MAINFRAME</span>
-                    </button>
-                </div>
-            </div>
+        <main class="flex-1 p-3.5 md:p-4 overflow-y-auto">
             
             <!-- GLOBAL PROMO / ANNOUNCEMENT BANNERS (CAROUSEL) -->
             <div v-if="activeAnnouncements.length > 0 && activeTab === '10-8' && selectedDepartment === 'ALL'" 
