@@ -77,12 +77,11 @@ const isAdmin = computed(() => {
     return !!(page.props.auth?.user || page.props.user || page.props.isAdmin);
 });
 
-// Helper check if stream/replay is strictly tagged with hashtag #vagabond
+// Helper check if stream/replay belongs to registered VAGABOND department
 const isVagabondStream = (s) => {
     if (!s) return false;
     if (s.isVagabondFeed) return true;
-    const text = `${s.title || ''} ${s.description || ''} ${s.incident_code || ''}`.toLowerCase();
-    return text.includes('#vagabond');
+    return s.officer?.department === 'VAGABOND';
 };
 
 // State Management
@@ -222,8 +221,8 @@ watch(activeAnnouncements, (newVal) => {
     }
 });
 
-// VAGABOND Cyber Attack Gimmick State
-const isVagabondHacked = ref(props.isVagabondHacked ?? false);
+// VAGABOND Cyber Attack Gimmick State (Active by default for Gimmick Feature)
+const isVagabondHacked = ref(props.isVagabondHacked ?? true);
 const showVagabondModal = ref(false);
 const vagabondTypedText = ref('');
 const terminalLogs = ref([]);
@@ -286,143 +285,9 @@ const startVagabondTyping = () => {
 
 const vagabondVideosInjected = ref(false);
 
-const loadVagabondVideos = async () => {
-    // 1. Try querying YouTube live streams for #vagabond / #imeroleplay #vagabond via backend
-    try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-        const res = await fetch('/api/v1/search-live', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken,
-            },
-            body: JSON.stringify({ q: '#imeroleplay #vagabond' }),
-        });
-        if (res.ok) {
-            const data = await res.json();
-            if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
-                data.data.forEach(item => {
-                    if (item.video_id && !customStreams.value.some(s => s.video_id === item.video_id)) {
-                        customStreams.value.push({
-                            id: 'vagabond-live-' + item.video_id,
-                            video_id: item.video_id,
-                            title: item.title || '[VAGABOND INTERCEPT] CCTV Feed #vagabond #imeroleplay',
-                            thumbnail: item.thumbnail_url || `https://i.ytimg.com/vi/${item.video_id}/hqdefault.jpg`,
-                            status: 'LIVE',
-                            incident_code: '⚠️ OVERRIDE #vagabond',
-                            description: item.description || 'VAGABOND Cyber Intercepted Feed #vagabond',
-                            viewers_count: item.viewers_count || 1250,
-                            live_chat_url: `https://www.youtube.com/live_chat?v=${item.video_id}&embed_domain=${window.location.hostname}`,
-                            isVagabondFeed: true,
-                            officer: {
-                                id: 8880,
-                                channel_id: item.channel_id || ('vagabond-' + item.video_id),
-                                handle: '@VagabondCyber',
-                                streamer_name: item.channel_name || 'VAGABOND Operative',
-                                officer_name: item.channel_name || 'VAGABOND CELL',
-                                callsign: 'VAGABOND-01',
-                                badge_number: '#HACK',
-                                department: 'VAGABOND',
-                                rank: 'Cyber Specialist',
-                                patrol_zone: 'Mainframe Sector',
-                                avatar_url: logoVagabond,
-                            }
-                        });
-                    }
-                });
-            }
-        }
-    } catch (e) {
-        console.warn('Vagabond live search error:', e);
-    }
-
-    // 2. Curated video feeds tagged #vagabond to guarantee videos with #vagabond ALWAYS display
-    const curatedVagabondFeeds = [
-        {
-            id: 'vagabond-feed-1',
-            video_id: 'jfKfPfyJRdk',
-            title: '🔥 [VAGABOND INTERCEPT] Mainframe CCTV Feeds #vagabond #imeroleplay',
-            thumbnail: 'https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg',
-            status: 'LIVE',
-            incident_code: '⚠️ OVERRIDE #vagabond',
-            description: 'VAGABOND Operative Cyber Breach & Intercepted CCTV #vagabond #imeroleplay',
-            viewers_count: 1540,
-            live_chat_url: `https://www.youtube.com/live_chat?v=jfKfPfyJRdk&embed_domain=${window.location.hostname}`,
-            isVagabondFeed: true,
-            officer: {
-                id: 8881,
-                channel_id: 'vagabond-ch-1',
-                handle: '@VagabondCyber',
-                streamer_name: 'VAGABOND Operative Alpha',
-                officer_name: 'VAGABOND CELL 01',
-                callsign: 'VAGABOND-01',
-                badge_number: '#HACK',
-                department: 'VAGABOND',
-                rank: 'Commander',
-                patrol_zone: 'Mainframe Sector',
-                avatar_url: logoVagabond,
-            }
-        },
-        {
-            id: 'vagabond-feed-2',
-            video_id: '5qap5aO4i9A',
-            title: '⚡ [VAGABOND SQUAD] Tactical Street Reconnaissance #vagabond #imeroleplay',
-            thumbnail: 'https://i.ytimg.com/vi/5qap5aO4i9A/hqdefault.jpg',
-            status: 'LIVE',
-            incident_code: '⚠️ STRIKE #vagabond',
-            description: 'Street movement & police dispatch telemetry intercepted by VAGABOND #vagabond',
-            viewers_count: 980,
-            live_chat_url: `https://www.youtube.com/live_chat?v=5qap5aO4i9A&embed_domain=${window.location.hostname}`,
-            isVagabondFeed: true,
-            officer: {
-                id: 8882,
-                channel_id: 'vagabond-ch-2',
-                handle: '@VagabondSquad',
-                streamer_name: 'VAGABOND Operative Bravo',
-                officer_name: 'VAGABOND CELL 02',
-                callsign: 'VAGABOND-02',
-                badge_number: '#EXPLOIT',
-                department: 'VAGABOND',
-                rank: 'Infiltrator',
-                patrol_zone: 'Downtown Grid',
-                avatar_url: logoVagabond,
-            }
-        },
-        {
-            id: 'vagabond-feed-3',
-            video_id: 'DWcJFNfaw9c',
-            title: '💀 [VAGABOND OVERRIDE] High Speed Pursuit CCTV Intercept #vagabond #imeroleplay',
-            thumbnail: 'https://i.ytimg.com/vi/DWcJFNfaw9c/hqdefault.jpg',
-            status: 'LIVE',
-            incident_code: '⚠️ PURSUIT #vagabond',
-            description: 'VAGABOND high-speed squad getaway recorded via police satellite #vagabond',
-            viewers_count: 730,
-            live_chat_url: `https://www.youtube.com/live_chat?v=DWcJFNfaw9c&embed_domain=${window.location.hostname}`,
-            isVagabondFeed: true,
-            officer: {
-                id: 8883,
-                channel_id: 'vagabond-ch-3',
-                handle: '@VagabondOps',
-                streamer_name: 'VAGABOND Pursuit Cam',
-                officer_name: 'VAGABOND SQUAD 03',
-                callsign: 'VAGABOND-03',
-                badge_number: '#OVERRIDE',
-                department: 'VAGABOND',
-                rank: 'Operator',
-                patrol_zone: 'Freeway Sector',
-                avatar_url: logoVagabond,
-            }
-        }
-    ];
-
-    curatedVagabondFeeds.forEach(feed => {
-        if (!customStreams.value.some(s => s.video_id === feed.video_id)) {
-            customStreams.value.push(feed);
-        }
-    });
-
+const loadVagabondVideos = () => {
+    // Manual search for unverified hashtags is disabled.
+    // Only registered officers/streamers in the VAGABOND department are displayed.
     vagabondVideosInjected.value = true;
 };
 
@@ -881,13 +746,14 @@ onMounted(() => {
     loadPersonalStreamsFromStorage();
     fetchAnnouncements();
     
-    // Check VAGABOND Hacked Mode trigger (URL query param, Server prop, or LocalStorage)
-    if (props.isVagabondHacked || isVagabondHacked.value) {
-        isVagabondHacked.value = true;
-        showVagabondModal.value = true;
-        startVagabondTyping();
-        loadVagabondVideos();
-    } else if (typeof window !== 'undefined') {
+    // VAGABOND Hacked Mode (Active by default for all visitors)
+    isVagabondHacked.value = true;
+    showVagabondModal.value = true;
+    startTerminalStream();
+    startVagabondTyping();
+    loadVagabondVideos();
+
+    if (typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('hacked') || urlParams.has('vagabond') || urlParams.get('mode') === 'hacked' || localStorage.getItem('ime_gimmick_vagabond') === 'true') {
             isVagabondHacked.value = true;
@@ -1412,15 +1278,8 @@ const departments = [
     { id: 'TAC_3', name: 'TAC 3', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
 ];
 
-// Department tabs visible based on Auth & Gimmick state
-const visibleDepartments = computed(() => {
-    return departments.filter(dept => {
-        if (dept.id === 'VAGABOND') {
-            return isAdmin.value || isVagabondHacked.value;
-        }
-        return true;
-    });
-});
+// Department tabs visible (All tabs including VAGABOND visible by default)
+const visibleDepartments = computed(() => departments);
 
 // Extended Dropdown TAC Channels (TAC 4 to TAC 10)
 const dropdownTacDepartments = [
@@ -2629,19 +2488,7 @@ const handleAdminLogout = () => {
                     <span class="hidden md:inline">{{ isFullscreen ? 'Exit' : 'Fullscreen' }}</span>
                 </button>
 
-                <!-- VAGABOND Gimmick Toggle Button (ADMIN ONLY) -->
-                <button 
-                    v-if="isAdmin"
-                    @click="toggleVagabondHackedMode"
-                    :class="[
-                        'px-2.5 py-1 text-xs font-bold font-mono rounded-lg transition flex items-center gap-1.5 shadow-md border',
-                        isVagabondHacked ? 'bg-rose-600 hover:bg-rose-500 text-white border-rose-400 animate-pulse shadow-rose-900/50' : 'bg-slate-900/80 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 border-slate-800'
-                    ]"
-                    :title="isVagabondHacked ? '[ADMIN] Kembalikan Sistem SASP (Purge VAGABOND)' : '[ADMIN] Mode Gimmick Hacked VAGABOND'"
-                >
-                    <img :src="logoVagabond" class="w-4 h-4 object-contain inline-block" alt="VAGABOND" />
-                    <span class="hidden xl:inline">{{ isVagabondHacked ? 'PURGE VAGABOND' : 'VAGABOND' }}</span>
-                </button>
+
 
                 <!-- 5. Admin Hub & Logout (When Authenticated) -->
                 <div v-if="$page.props.auth?.user" class="flex items-center space-x-1 bg-cyan-950/40 p-0.5 rounded-lg border border-cyan-500/50">
@@ -2676,18 +2523,22 @@ const handleAdminLogout = () => {
                     :class="[
                         'px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap',
                         selectedDepartment === dept.id 
-                            ? (dept.id === 'PERSONAL' 
-                                ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400' 
-                                : (dept.isTac 
-                                    ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400 ring-1 ring-amber-400' 
-                                    : 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400'))
-                            : (dept.id === 'PERSONAL' 
-                                ? 'bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 border-purple-500/40' 
-                                : (dept.isTac 
-                                    ? (getTacUnitCount(dept.id) > 0 
-                                        ? 'bg-amber-950/50 text-amber-300 hover:bg-amber-900/60 border-amber-500/50 shadow-sm shadow-amber-500/10 font-semibold' 
-                                        : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 border-slate-800 opacity-70 hover:opacity-100')
-                                    : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'))
+                            ? (dept.id === 'VAGABOND'
+                                ? 'bg-rose-600 text-white font-black shadow-lg shadow-rose-600/50 border-rose-400 ring-2 ring-rose-500/50 animate-pulse'
+                                : (dept.id === 'PERSONAL' 
+                                    ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400' 
+                                    : (dept.isTac 
+                                        ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400 ring-1 ring-amber-400' 
+                                        : 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400')))
+                            : (dept.id === 'VAGABOND'
+                                ? 'bg-rose-950/80 text-rose-300 hover:bg-rose-900/90 border-rose-600/80 font-bold shadow-md shadow-rose-950/50'
+                                : (dept.id === 'PERSONAL' 
+                                    ? 'bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 border-purple-500/40' 
+                                    : (dept.isTac 
+                                        ? (getTacUnitCount(dept.id) > 0 
+                                            ? 'bg-amber-950/50 text-amber-300 hover:bg-amber-900/60 border-amber-500/50 shadow-sm shadow-amber-500/10 font-semibold' 
+                                            : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 border-slate-800 opacity-70 hover:opacity-100')
+                                        : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800')))
                     ]"
                 >
                     <img v-if="dept.isSvg || (typeof dept.icon === 'string' && (dept.icon.includes('/') || dept.icon.includes('.')))" :src="dept.icon" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90" alt="" />
@@ -5998,6 +5849,16 @@ const handleAdminLogout = () => {
                         <div class="text-[11px] text-slate-200 leading-relaxed font-semibold">
                             SASP MAINFRAME TELAH SEPENUHNYA DIKONTROL OLEH OPERATIF VAGABOND. TELEMETRI PERANGKATMU DALAM PENGAWASAN. HANYA HIGH COMMAND ADMIN YANG MEMILIKI OTORITAS UNTUK MEMULIHKAN MAINFRAME.
                         </div>
+                    </div>
+
+                    <!-- Action Button to Dismiss Modal & Access CCTV Multiview Wall -->
+                    <div class="relative z-10 pt-2">
+                        <button 
+                            @click="showVagabondModal = false" 
+                            class="w-full py-3.5 px-6 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-mono font-bold text-xs uppercase tracking-wider shadow-lg shadow-rose-900/60 transition transform hover:scale-[1.02] active:scale-[0.98] border border-rose-400 flex items-center justify-center gap-2"
+                        >
+                            <span>DIRTY COPS, SHOW ME YOUR TRUE COLORS</span>
+                        </button>
                     </div>
 
                 </div>

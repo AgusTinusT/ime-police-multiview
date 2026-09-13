@@ -378,10 +378,9 @@ const toggleFullscreen = () => {
                             SAPR ({{ deptStats.sapr_total || 0 }})
                         </button>
                         <button 
-                            v-if="isAdmin || isVagabondHacked"
                             @click="selectedDept = 'VAGABOND'"
-                            :class="selectedDept === 'VAGABOND' ? 'bg-rose-600 text-white font-bold shadow-md shadow-rose-600/30 border-rose-400' : 'bg-slate-950 text-rose-300 hover:bg-slate-800 border-slate-800'"
-                            class="px-3 py-1.5 text-xs rounded-full border transition whitespace-nowrap font-bold"
+                            :class="selectedDept === 'VAGABOND' ? 'bg-rose-600 text-white font-black shadow-lg shadow-rose-600/50 border-rose-400 ring-2 ring-rose-500/50 animate-pulse' : 'bg-rose-950/80 text-rose-300 hover:bg-rose-900/90 border-rose-600/80 shadow-md shadow-rose-950/50 font-bold'"
+                            class="px-3 py-1.5 text-xs rounded-full border transition whitespace-nowrap"
                         >
                             VAGABOND ({{ officers.filter(o => o.department === 'VAGABOND').length }})
                         </button>

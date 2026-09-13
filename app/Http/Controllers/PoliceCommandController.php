@@ -135,7 +135,7 @@ class PoliceCommandController extends Controller
             'initialTacChannels' => $tacChannels->values(),
             'initialReplays' => $recentReplays,
             'deptStats' => $deptStats,
-            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', false),
+            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', true),
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
     }
@@ -246,7 +246,7 @@ class PoliceCommandController extends Controller
             'replays' => $recentReplays,
             'offline_officers' => $offlineOfficers->values(),
             'dept_stats' => $deptStats,
-            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', false),
+            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', true),
             'count' => $activeStreams->count(),
             'synced_at' => now()->toIso8601String(),
         ]);
@@ -259,7 +259,7 @@ class PoliceCommandController extends Controller
     {
         return response()->json([
             'status' => 'success',
-            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', false),
+            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', true),
         ]);
     }
 
@@ -441,7 +441,7 @@ class PoliceCommandController extends Controller
         return Inertia::render('OfficerDirectory', [
             'initialOfficers' => $allOfficers->values(),
             'deptStats' => $deptStats,
-            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', false),
+            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', true),
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
     }
