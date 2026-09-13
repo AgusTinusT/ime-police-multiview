@@ -1176,7 +1176,8 @@ onMounted(() => {
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Icon (Optional URL/SVG)</label>
-                            <input v-model="announcementForm.icon" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white" />
+                            <input v-model="announcementForm.icon" type="text" placeholder="Kosongkan jika tanpa ikon..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white" />
+                            <p class="text-[10px] text-slate-500 mt-1">Biarkan kosong atau ketik 'none' jika tidak ingin menampilkan ikon pada banner.</p>
                         </div>
                     </div>
 

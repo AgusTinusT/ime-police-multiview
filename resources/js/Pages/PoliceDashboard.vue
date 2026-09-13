@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 
 // SVG Icon Assets & Branding Logos
 import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
+import logoVagabond from '@/Components/Icons/vagabond_500.png';
 import iconLspd from '@/Components/Icons/LSPD_HD.svg';
 import iconBcso from '@/Components/Icons/Logo_LSCSD.svg';
 import iconSasp from '@/Components/Icons/SASP_HD.svg';
@@ -65,6 +66,19 @@ const props = defineProps({
         default: '',
     },
 });
+
+// Admin Authorization Check
+const page = usePage();
+const isAdmin = computed(() => {
+    return !!(page.props.auth?.user || page.props.user || page.props.isAdmin);
+});
+
+// Helper check if stream/replay is tagged with #vagabond
+const isVagabondStream = (s) => {
+    if (!s) return false;
+    const text = `${s.title || ''} ${s.description || ''} ${s.incident_code || ''} ${s.officer?.officer_name || ''} ${s.officer?.callsign || ''}`.toLowerCase();
+    return text.includes('vagabond') || text.includes('#vagabond');
+};
 
 // State Management
 const streams = ref(props.initialStreams);
@@ -201,7 +215,237 @@ watch(activeAnnouncements, (newVal) => {
     } else {
         pausePromoTimer();
     }
-}, { deep: true });
+});
+
+// VAGABOND Cyber Attack Gimmick State
+const isVagabondHacked = ref(false);
+const showVagabondModal = ref(false);
+const vagabondTypedText = ref('');
+const terminalLogs = ref([]);
+const fullVagabondMessage = 'CRITICAL BREACH: SASP MAINFRAME ENCRYPTED BY VAGABOND. ALL CCTV FEEDS INTERCEPTED. RESISTANCE IS FUTILE.';
+let vagabondTypingInterval = null;
+
+const playCyberAlarmSound = () => {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(440, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.25);
+        osc.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.5);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+        // Fallback
+    }
+};
+
+const startTerminalStream = () => {
+    terminalLogs.value = [];
+    const rawLogs = [
+        '> INITIALIZING VAGABOND EXPLOIT KIT v4.0...',
+        '> BYPASSING SASP MAINFRAME FIREWALL [10.240.1.1]... [PASSED]',
+        '> INTERCEPTING ALL POLICE CCTV FEEDS... [SUCCESS]',
+        '> DISABLING HIGH COMMAND DISPATCH TELEMETRY... [DISABLED]',
+        '> ENCRYPTING SASP DATABASE... [ENCRYPTED]',
+        '> VAGABOND IS NOW IN CONTROL. RESISTANCE IS FUTILE.'
+    ];
+    rawLogs.forEach((log, index) => {
+        setTimeout(() => {
+            terminalLogs.value.push(log);
+            playCyberAlarmSound();
+        }, index * 400);
+    });
+};
+
+const startVagabondTyping = () => {
+    vagabondTypedText.value = '';
+    let idx = 0;
+    if (vagabondTypingInterval) clearInterval(vagabondTypingInterval);
+    vagabondTypingInterval = setInterval(() => {
+        if (idx < fullVagabondMessage.length) {
+            vagabondTypedText.value += fullVagabondMessage.charAt(idx);
+            idx++;
+        } else {
+            clearInterval(vagabondTypingInterval);
+        }
+    }, 35);
+};
+
+const vagabondVideosInjected = ref(false);
+
+const loadVagabondVideos = async () => {
+    // Automatically set search filter to #vagabond so videos tagged #vagabond appear in search/grid
+    searchFilter.value = '#vagabond';
+
+    // 1. Try querying YouTube live streams for #vagabond / #imeroleplay #vagabond via backend
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const res = await fetch('/api/v1/search-live', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify({ q: '#imeroleplay #vagabond' }),
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+                data.data.forEach(item => {
+                    if (item.video_id && !customStreams.value.some(s => s.video_id === item.video_id)) {
+                        customStreams.value.push({
+                            id: 'vagabond-live-' + item.video_id,
+                            video_id: item.video_id,
+                            title: item.title || '[VAGABOND INTERCEPT] CCTV Feed #vagabond #imeroleplay',
+                            thumbnail: item.thumbnail_url || `https://i.ytimg.com/vi/${item.video_id}/hqdefault.jpg`,
+                            status: 'LIVE',
+                            incident_code: '⚠️ OVERRIDE #vagabond',
+                            description: item.description || 'VAGABOND Cyber Intercepted Feed #vagabond',
+                            viewers_count: item.viewers_count || 1250,
+                            live_chat_url: `https://www.youtube.com/live_chat?v=${item.video_id}&embed_domain=${window.location.hostname}`,
+                            isVagabondFeed: true,
+                            officer: {
+                                id: 8880,
+                                channel_id: item.channel_id || ('vagabond-' + item.video_id),
+                                handle: '@VagabondCyber',
+                                streamer_name: item.channel_name || 'VAGABOND Operative',
+                                officer_name: item.channel_name || 'VAGABOND CELL',
+                                callsign: 'VAGABOND-01',
+                                badge_number: '#HACK',
+                                department: 'VAGABOND',
+                                rank: 'Cyber Specialist',
+                                patrol_zone: 'Mainframe Sector',
+                                avatar_url: logoVagabond,
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    } catch (e) {
+        console.warn('Vagabond live search error:', e);
+    }
+
+    // 2. Curated video feeds tagged #vagabond to guarantee videos with #vagabond ALWAYS display
+    const curatedVagabondFeeds = [
+        {
+            id: 'vagabond-feed-1',
+            video_id: 'jfKfPfyJRdk',
+            title: '🔥 [VAGABOND INTERCEPT] Mainframe CCTV Feeds #vagabond #imeroleplay',
+            thumbnail: 'https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg',
+            status: 'LIVE',
+            incident_code: '⚠️ OVERRIDE #vagabond',
+            description: 'VAGABOND Operative Cyber Breach & Intercepted CCTV #vagabond #imeroleplay',
+            viewers_count: 1540,
+            live_chat_url: `https://www.youtube.com/live_chat?v=jfKfPfyJRdk&embed_domain=${window.location.hostname}`,
+            isVagabondFeed: true,
+            officer: {
+                id: 8881,
+                channel_id: 'vagabond-ch-1',
+                handle: '@VagabondCyber',
+                streamer_name: 'VAGABOND Operative Alpha',
+                officer_name: 'VAGABOND CELL 01',
+                callsign: 'VAGABOND-01',
+                badge_number: '#HACK',
+                department: 'VAGABOND',
+                rank: 'Commander',
+                patrol_zone: 'Mainframe Sector',
+                avatar_url: logoVagabond,
+            }
+        },
+        {
+            id: 'vagabond-feed-2',
+            video_id: '5qap5aO4i9A',
+            title: '⚡ [VAGABOND SQUAD] Tactical Street Reconnaissance #vagabond #imeroleplay',
+            thumbnail: 'https://i.ytimg.com/vi/5qap5aO4i9A/hqdefault.jpg',
+            status: 'LIVE',
+            incident_code: '⚠️ STRIKE #vagabond',
+            description: 'Street movement & police dispatch telemetry intercepted by VAGABOND #vagabond',
+            viewers_count: 980,
+            live_chat_url: `https://www.youtube.com/live_chat?v=5qap5aO4i9A&embed_domain=${window.location.hostname}`,
+            isVagabondFeed: true,
+            officer: {
+                id: 8882,
+                channel_id: 'vagabond-ch-2',
+                handle: '@VagabondSquad',
+                streamer_name: 'VAGABOND Operative Bravo',
+                officer_name: 'VAGABOND CELL 02',
+                callsign: 'VAGABOND-02',
+                badge_number: '#EXPLOIT',
+                department: 'VAGABOND',
+                rank: 'Infiltrator',
+                patrol_zone: 'Downtown Grid',
+                avatar_url: logoVagabond,
+            }
+        },
+        {
+            id: 'vagabond-feed-3',
+            video_id: 'DWcJFNfaw9c',
+            title: '💀 [VAGABOND OVERRIDE] High Speed Pursuit CCTV Intercept #vagabond #imeroleplay',
+            thumbnail: 'https://i.ytimg.com/vi/DWcJFNfaw9c/hqdefault.jpg',
+            status: 'LIVE',
+            incident_code: '⚠️ PURSUIT #vagabond',
+            description: 'VAGABOND high-speed squad getaway recorded via police satellite #vagabond',
+            viewers_count: 730,
+            live_chat_url: `https://www.youtube.com/live_chat?v=DWcJFNfaw9c&embed_domain=${window.location.hostname}`,
+            isVagabondFeed: true,
+            officer: {
+                id: 8883,
+                channel_id: 'vagabond-ch-3',
+                handle: '@VagabondOps',
+                streamer_name: 'VAGABOND Pursuit Cam',
+                officer_name: 'VAGABOND SQUAD 03',
+                callsign: 'VAGABOND-03',
+                badge_number: '#OVERRIDE',
+                department: 'VAGABOND',
+                rank: 'Operator',
+                patrol_zone: 'Freeway Sector',
+                avatar_url: logoVagabond,
+            }
+        }
+    ];
+
+    curatedVagabondFeeds.forEach(feed => {
+        if (!customStreams.value.some(s => s.video_id === feed.video_id)) {
+            customStreams.value.push(feed);
+        }
+    });
+
+    vagabondVideosInjected.value = true;
+};
+
+const toggleVagabondHackedMode = () => {
+    if (!isAdmin.value) {
+        alert('☠️ ACCESS DENIED // UNAUTHORIZED INTRUSION DETECTED!\n\nPERINGATAN SISIPAN ILEGAL: ALAMAT IP DAN TELEMETRI PERANGKATMU TELAH TERCATAT OLEH SISTEM VAGABOND. HANYA HIGH COMMAND DISPATCHER ADMIN YANG MEMILIKI HAK AKSES UNTUK MEMICU ATAU MENCABUT OVERRIDE VAGABOND!\n\n[ DILARANG MENCOBA MENGAMBIL ALIH MAINFRAME ]');
+        return;
+    }
+    isVagabondHacked.value = !isVagabondHacked.value;
+    if (isVagabondHacked.value) {
+        localStorage.setItem('ime_gimmick_vagabond', 'true');
+        showVagabondModal.value = true;
+        startTerminalStream();
+        startVagabondTyping();
+        loadVagabondVideos();
+        showTacticalToast('⚠️ CRITICAL BREACH: VAGABOND OVERRIDE ACTIVE - #vagabond FEEDS UNLOCKED', 'error');
+    } else {
+        localStorage.removeItem('ime_gimmick_vagabond');
+        showVagabondModal.value = false;
+        if (searchFilter.value === '#vagabond') {
+            searchFilter.value = '';
+        }
+        showTacticalToast('✅ RECOVERY COMPLETE: SASP MAINFRAME RESTORED', 'success');
+    }
+};
 
 // Fetch & Synchronize TAC Channels from Server
 const fetchTacChannels = async () => {
@@ -598,6 +842,27 @@ onMounted(() => {
     loadPersonalStreamsFromStorage();
     fetchAnnouncements();
     
+    // Check VAGABOND Hacked Mode trigger (URL query param or LocalStorage)
+    if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('hacked') || urlParams.has('vagabond') || urlParams.get('mode') === 'hacked' || localStorage.getItem('ime_gimmick_vagabond') === 'true') {
+            isVagabondHacked.value = true;
+            startVagabondTyping();
+        }
+
+        // Secret Keyboard Sequence Listener (Type "vagabond" anywhere)
+        let keyBuffer = '';
+        window.addEventListener('keydown', (e) => {
+            if (['input', 'textarea', 'select'].includes(document.activeElement?.tagName?.toLowerCase() || '')) return;
+            keyBuffer += e.key.toLowerCase();
+            if (keyBuffer.length > 20) keyBuffer = keyBuffer.slice(-20);
+            if (keyBuffer.includes('vagabond')) {
+                toggleVagabondHackedMode();
+                keyBuffer = '';
+            }
+        });
+    }
+
     // Load YouTube IFrame API script to register parent controller
     if (typeof window !== 'undefined' && !window.YT) {
         const tag = document.createElement('script');
@@ -795,7 +1060,16 @@ const allActiveStreams = computed(() => {
             }
         }
     });
-    return Array.from(streamMap.values());
+
+    let list = Array.from(streamMap.values());
+
+    // MYSQL DATABASE FILTERING RULE:
+    // If VAGABOND HACK is OFF (normal state), hide any streams in MySQL tagged with #vagabond
+    if (!isVagabondHacked.value) {
+        list = list.filter(s => !isVagabondStream(s));
+    }
+
+    return list;
 });
 
 // Currently selected stream for Grid Mode Live Chat Sidebar
@@ -2165,6 +2439,10 @@ const submitFeedbackForm = async () => {
     }
 };
 
+const handleAdminLogout = () => {
+    router.post('/logout');
+};
+
 
 
 
@@ -2181,13 +2459,18 @@ const submitFeedbackForm = async () => {
             <!-- Left Area: Branding & Standalone Page Navigation Links -->
             <div class="flex items-center space-x-3 shrink-0">
                 <!-- Branding: IME Roleplay Police Division -->
-                <div class="flex items-center space-x-2.5 shrink-0">
-                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden">
-                        <img :src="logoSaspColor" class="w-full h-full object-contain rounded" alt="SASP Badge" />
+                <div 
+                    class="flex items-center space-x-2.5 shrink-0" 
+                    :class="isAdmin ? 'cursor-pointer' : ''" 
+                    @click="isAdmin && toggleVagabondHackedMode()" 
+                    :title="isAdmin ? '[ADMIN] Klik untuk mengaktifkan/mematikan VAGABOND Gimmick Mode' : 'IME Roleplay Police Command Center'"
+                >
+                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden transition" :class="isVagabondHacked ? '!border-rose-500 shadow-rose-900/50 animate-pulse' : ''">
+                        <img :src="logoSaspColor" class="w-full h-full object-contain rounded transition" :class="isVagabondHacked ? 'hue-rotate-[140deg] filter' : ''" alt="SASP Badge" />
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase leading-tight">IME ROLEPLAY</span>
-                        <span class="text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DIVISION</span>
+                        <span class="text-xs font-black tracking-wider uppercase leading-tight transition" :class="isVagabondHacked ? 'text-rose-500 animate-pulse font-mono' : 'text-blue-400'">{{ isVagabondHacked ? '⚠️ VAGABOND OVERRIDE' : 'IME ROLEPLAY' }}</span>
+                        <span class="text-[10px] font-bold tracking-wide uppercase leading-tight transition" :class="isVagabondHacked ? 'text-rose-400 font-mono' : 'text-slate-300'">{{ isVagabondHacked ? 'SYSTEM COMPROMISED' : 'POLICE DIVISION' }}</span>
                     </div>
                 </div>
 
@@ -2288,6 +2571,20 @@ const submitFeedbackForm = async () => {
                 >
                     <img :src="isFullscreen ? iconExitFullscreen : iconFullscreen" class="w-3.5 h-3.5 invert opacity-90" alt="Fullscreen" />
                     <span class="hidden md:inline">{{ isFullscreen ? 'Exit' : 'Fullscreen' }}</span>
+                </button>
+
+                <!-- VAGABOND Gimmick Toggle Button (ADMIN ONLY) -->
+                <button 
+                    v-if="isAdmin"
+                    @click="toggleVagabondHackedMode"
+                    :class="[
+                        'px-2.5 py-1 text-xs font-bold font-mono rounded-lg transition flex items-center gap-1.5 shadow-md border',
+                        isVagabondHacked ? 'bg-rose-600 hover:bg-rose-500 text-white border-rose-400 animate-pulse shadow-rose-900/50' : 'bg-slate-900/80 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 border-slate-800'
+                    ]"
+                    :title="isVagabondHacked ? '[ADMIN] Kembalikan Sistem SASP (Purge VAGABOND)' : '[ADMIN] Mode Gimmick Hacked VAGABOND'"
+                >
+                    <span>☠️</span>
+                    <span class="hidden xl:inline">{{ isVagabondHacked ? 'PURGE VAGABOND' : 'VAGABOND' }}</span>
                 </button>
 
                 <!-- 5. Admin Hub & Logout (When Authenticated) -->
@@ -2484,18 +2781,50 @@ const submitFeedbackForm = async () => {
         </div>
 
         <!-- Main Content Area -->
-        <main class="flex-1 p-3.5 md:p-4 overflow-y-auto">
+        <main class="flex-1 p-3.5 md:p-4 overflow-y-auto" :class="isVagabondHacked ? 'bg-slate-950/95' : ''">
+            
+            <!-- VAGABOND CYBER ATTACK GIMMICK BANNER -->
+            <div v-if="isVagabondHacked" class="mb-6 relative w-full max-w-5xl mx-auto rounded-2xl overflow-hidden border-2 border-rose-600/80 bg-slate-950 p-5 md:p-6 shadow-[0_0_35px_rgba(225,29,72,0.4)] transition animate-pulse">
+                <div class="absolute inset-0 bg-gradient-to-r from-rose-950/80 via-slate-950 to-rose-950/80 z-0 pointer-events-none"></div>
+                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-rose-600/20 border border-rose-500/50 flex items-center justify-center text-rose-500 shrink-0 shadow-lg shadow-rose-600/20">
+                            <span class="text-2xl">☠️</span>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-600/30 border border-rose-500/50 text-rose-400 text-[10px] font-mono font-bold uppercase tracking-widest">
+                                <span>⚠️ SECURITY BREACH IN PROGRESS</span>
+                            </div>
+                            <h2 class="text-lg md:text-2xl font-black text-rose-500 font-mono tracking-tight flex items-center gap-2">
+                                <span>VAGABOND CYBER SYSTEM OVERRIDE</span>
+                            </h2>
+                            <p class="text-xs md:text-sm font-mono text-slate-300 leading-relaxed font-semibold">
+                                <span>{{ vagabondTypedText }}</span>
+                                <span class="animate-ping text-rose-500">_</span>
+                            </p>
+                        </div>
+                    </div>
+                    <button 
+                        v-if="isAdmin"
+                        @click="toggleVagabondHackedMode"
+                        class="shrink-0 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-mono font-bold text-xs shadow-lg shadow-rose-900/50 transition transform hover:scale-105 active:scale-95 border border-rose-400 flex items-center gap-2"
+                    >
+                        <span>🛡️</span>
+                        <span>RESTORE MAINFRAME</span>
+                    </button>
+                </div>
+            </div>
             
             <!-- GLOBAL PROMO / ANNOUNCEMENT BANNERS (CAROUSEL) -->
             <div v-if="activeAnnouncements.length > 0 && activeTab === '10-8' && selectedDepartment === 'ALL'" 
-                 class="mb-8 relative w-full max-w-[1400px] mx-auto rounded-3xl overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.6)] group border border-white/5 bg-slate-900"
+                 class="mb-6 relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.5)] group border border-white/10 bg-slate-900"
                  @mouseenter="pausePromoTimer" @mouseleave="startPromoTimer">
                  
                 <!-- Carousel Track -->
-                <div class="relative w-full overflow-hidden min-h-[220px] md:min-h-[280px]">
+                <div class="relative w-full overflow-hidden min-h-[180px] md:min-h-[200px]">
                     <TransitionGroup name="promo-fade" tag="div" class="w-full h-full">
                         <div v-for="(promo, index) in activeAnnouncements" :key="'promo-'+promo.id" v-show="index === activePromoIndex"
-                            class="absolute inset-0 w-full h-full flex flex-col sm:flex-row items-start sm:items-center p-6 md:p-12 gap-6 backdrop-blur-xl"
+                            class="absolute inset-0 w-full h-full flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 md:px-8 md:py-6 gap-4 md:gap-6 backdrop-blur-xl"
                             :class="{
                                 'bg-blue-950/70': promo.type === 'info',
                                 'bg-purple-950/70': promo.type === 'promo',
@@ -2507,31 +2836,31 @@ const submitFeedbackForm = async () => {
                                  class="hidden md:block absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60 z-0 pointer-events-none transition-transform duration-[5000ms] scale-100 group-hover:scale-105"
                                  :style="{ backgroundImage: 'url(' + promo.image_url + ')' }"
                             ></div>
-                            <div v-if="promo.image_url" class="hidden md:block absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/80 to-transparent z-0 pointer-events-none"></div>
+                            <div v-if="promo.image_url" class="hidden md:block absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/85 to-slate-950/40 z-0 pointer-events-none"></div>
 
-                            <!-- Icon / Type Indicator -->
-                            <div class="shrink-0 rounded-2xl p-4 flex items-center justify-center border relative z-10 shadow-inner"
+                            <!-- Icon / Type Indicator (Optional) -->
+                            <div v-if="promo.icon && promo.icon !== 'none'" class="shrink-0 rounded-2xl p-3 md:p-4 flex items-center justify-center border relative z-10 shadow-inner"
                                 :class="{
                                     'bg-blue-500/20 border-blue-500/30 text-blue-400 shadow-blue-500/20': promo.type === 'info',
                                     'bg-purple-500/20 border-purple-500/30 text-purple-400 shadow-purple-500/20': promo.type === 'promo',
                                     'bg-amber-500/20 border-amber-500/30 text-amber-400 shadow-amber-500/20': promo.type === 'poll'
                                 }"
                             >
-                                <img v-if="promo.icon" :src="promo.icon" class="w-8 h-8 md:w-12 md:h-12 object-contain" />
-                                <svg v-else-if="promo.type === 'info'" class="w-8 h-8 md:w-12 md:h-12 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.037 2 11c0 2.87 1.54 5.43 3.93 7.07.28.19.46.5.46.84v2.54c0 .52.59.81 1.01.5l3.29-2.47a1 1 0 0 1 .6-.2 10.95 10.95 0 0 0 3.71.62c5.523 0 10-4.037 10-9S17.523 2 12 2zM8 10h8v2H8v-2zm0-3h8v2H8V7z"/></svg>
-                                <svg v-else-if="promo.type === 'poll'" class="w-8 h-8 md:w-12 md:h-12 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M5 4h14v2H5V4zm0 5h14v2H5V9zm0 5h10v2H5v-2z"/></svg>
-                                <svg v-else class="w-8 h-8 md:w-12 md:h-12 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <img v-if="promo.icon.startsWith('http') || promo.icon.startsWith('/') || promo.icon.includes('.')" :src="promo.icon" class="w-6 h-6 md:w-8 md:h-8 object-contain" />
+                                <svg v-else-if="promo.type === 'info'" class="w-6 h-6 md:w-8 md:h-8 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.037 2 11c0 2.87 1.54 5.43 3.93 7.07.28.19.46.5.46.84v2.54c0 .52.59.81 1.01.5l3.29-2.47a1 1 0 0 1 .6-.2 10.95 10.95 0 0 0 3.71.62c5.523 0 10-4.037 10-9S17.523 2 12 2zM8 10h8v2H8v-2zm0-3h8v2H8V7z"/></svg>
+                                <svg v-else-if="promo.type === 'poll'" class="w-6 h-6 md:w-8 md:h-8 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M5 4h14v2H5V4zm0 5h14v2H5V9zm0 5h10v2H5v-2z"/></svg>
+                                <svg v-else class="w-6 h-6 md:w-8 md:h-8 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                             </div>
 
                             <!-- Content -->
-                            <div class="flex-1 pr-12 relative z-10">
-                                <h3 class="text-lg md:text-3xl font-black text-white mb-3 tracking-wide" style="text-shadow: 0 2px 6px rgba(0,0,0,0.9);">{{ promo.title }}</h3>
-                                <p class="text-sm md:text-lg text-slate-300 leading-relaxed font-semibold max-w-3xl" style="text-shadow: 0 1px 4px rgba(0,0,0,0.9);">{{ promo.message }}</p>
+                            <div class="flex-1 relative z-10 min-w-0 pr-0 md:pr-4">
+                                <h3 class="text-base md:text-xl font-black text-white mb-1 tracking-wide line-clamp-2 break-words" style="text-shadow: 0 2px 6px rgba(0,0,0,0.9);">{{ promo.title }}</h3>
+                                <p class="text-xs md:text-sm text-slate-300 leading-relaxed font-semibold line-clamp-3 break-words" style="text-shadow: 0 1px 4px rgba(0,0,0,0.9);">{{ promo.message }}</p>
                             </div>
 
                             <!-- Action Button -->
                             <a v-if="promo.action_text && promo.action_url" :href="promo.action_url" target="_blank"
-                               class="shrink-0 px-6 py-3 md:px-8 md:py-4 rounded-xl font-bold text-sm md:text-base shadow-lg transition-transform hover:scale-105 active:scale-95 relative z-10"
+                               class="shrink-0 px-5 py-2.5 md:px-6 md:py-3 rounded-xl font-bold text-xs md:text-sm shadow-lg transition-transform hover:scale-105 active:scale-95 relative z-10 self-start sm:self-center"
                                :class="{
                                    'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/50': promo.type === 'info',
                                    'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-900/50': promo.type === 'promo',
@@ -5552,7 +5881,67 @@ const submitFeedbackForm = async () => {
             <span>{{ tacticalToast.message }}</span>
         </div>
 
-    </div>
+        <!-- FULL-SCREEN VAGABOND CYBER TAKEOVER MODAL (OPTION 1) -->
+        <transition 
+            enter-active-class="ease-out duration-300" 
+            enter-from-class="opacity-0 scale-95" 
+            enter-to-class="opacity-100 scale-100" 
+            leave-active-class="ease-in duration-200" 
+            leave-from-class="opacity-100 scale-100" 
+            leave-to-class="opacity-0 scale-95"
+        >
+            <div v-if="showVagabondModal && isVagabondHacked" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-2xl overflow-y-auto">
+                <div class="relative w-full max-w-2xl bg-[#090204] border-2 border-rose-600/80 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(225,29,72,0.5)] overflow-hidden space-y-6 text-center">
+                    
+                    <!-- Background CRT Scanline Grid -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-rose-950/20 via-transparent to-rose-950/30 pointer-events-none"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(225,29,72,0.15),transparent_70%)] pointer-events-none"></div>
+                    
+                    <!-- Top Warning Badge -->
+                    <div class="relative z-10 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-600/20 border border-rose-500/50 text-rose-400 text-xs font-mono font-bold uppercase tracking-widest animate-pulse">
+                        <span>⚠️ SYSTEM COMPROMISED • SECURITY BREACH</span>
+                    </div>
+
+                    <!-- Glowing VAGABOND Logo & Title -->
+                    <div class="relative z-10 space-y-3">
+                        <div class="w-32 h-32 mx-auto relative group">
+                            <div class="absolute inset-0 bg-rose-600/30 rounded-full blur-2xl animate-ping"></div>
+                            <img :src="logoVagabond" class="w-full h-full object-contain relative z-10 drop-shadow-[0_0_20px_rgba(225,29,72,0.8)] transition-transform transform group-hover:scale-110" alt="VAGABOND" />
+                        </div>
+                        
+                        <h1 class="text-2xl sm:text-4xl font-black text-rose-500 font-mono tracking-tight animate-pulse drop-shadow-[0_2px_10px_rgba(225,29,72,0.6)]">
+                            VAGABOND CYBER OVERRIDE
+                        </h1>
+                        <p class="text-xs sm:text-sm font-mono text-slate-300 max-w-lg mx-auto leading-relaxed">
+                            SASP Mainframe & CCTV Feeds intercept complete. Control has been transferred to VAGABOND Operative.
+                        </p>
+                    </div>
+
+                    <!-- Live Terminal Stream Logs Box -->
+                    <div class="relative z-10 bg-slate-950/90 border border-rose-900/60 rounded-xl p-4 text-left font-mono text-xs text-rose-400 space-y-1.5 shadow-inner max-h-44 overflow-y-auto">
+                        <div v-for="(log, idx) in terminalLogs" :key="idx" class="flex items-center gap-2">
+                            <span class="text-rose-500 font-bold">›</span>
+                            <span class="text-slate-200">{{ log }}</span>
+                        </div>
+                        <div v-if="terminalLogs.length < 6" class="flex items-center gap-1 text-rose-500 font-bold animate-pulse">
+                            <span>> EXECUTING PAYLOAD...</span>
+                            <span class="w-2 h-4 bg-rose-500 inline-block"></span>
+                        </div>
+                    </div>
+
+                    <!-- Threat Status Indicator -->
+                    <div class="relative z-10 w-full p-4 bg-rose-950/90 border-2 border-rose-600/80 rounded-2xl text-rose-300 text-xs font-mono text-center shadow-[0_0_30px_rgba(225,29,72,0.4)] space-y-1.5 animate-pulse">
+                        <div class="font-black text-rose-500 tracking-wider uppercase text-sm">☠️ ACCESS DENIED • SYSTEM CONTROLLED BY VAGABOND</div>
+                        <div class="text-[11px] text-slate-200 leading-relaxed font-semibold">
+                            SASP MAINFRAME TELAH SEPENUHNYA DIKONTROL OLEH OPERATIF VAGABOND. TELEMETRI PERANGKATMU DALAM PENGAWASAN. HANYA HIGH COMMAND ADMIN YANG MEMILIKI OTORITAS UNTUK MEMULIHKAN MAINFRAME.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </transition>
+
+        </div>
 </template>
 
 <style scoped>
