@@ -73,11 +73,12 @@ const isAdmin = computed(() => {
     return !!(page.props.auth?.user || page.props.user || page.props.isAdmin);
 });
 
-// Helper check if stream/replay is tagged with #vagabond
+// Helper check if stream/replay is strictly tagged with hashtag #vagabond
 const isVagabondStream = (s) => {
     if (!s) return false;
-    const text = `${s.title || ''} ${s.description || ''} ${s.incident_code || ''} ${s.officer?.officer_name || ''} ${s.officer?.callsign || ''} ${s.officer?.streamer_name || ''}`.toLowerCase();
-    return text.includes('vagabond') || text.includes('#vagabond');
+    if (s.isVagabondFeed) return true;
+    const text = `${s.title || ''} ${s.description || ''} ${s.incident_code || ''}`.toLowerCase();
+    return text.includes('#vagabond');
 };
 
 // State Management
