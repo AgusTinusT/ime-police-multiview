@@ -2581,7 +2581,7 @@ const handleAdminLogout = () => {
                     ]"
                     :title="isVagabondHacked ? '[ADMIN] Kembalikan Sistem SASP (Purge VAGABOND)' : '[ADMIN] Mode Gimmick Hacked VAGABOND'"
                 >
-                    <span>☠️</span>
+                    <img :src="logoVagabond" class="w-4 h-4 object-contain inline-block" alt="VAGABOND" />
                     <span class="hidden xl:inline">{{ isVagabondHacked ? 'PURGE VAGABOND' : 'VAGABOND' }}</span>
                 </button>
 
@@ -2786,8 +2786,8 @@ const handleAdminLogout = () => {
                 <div class="absolute inset-0 bg-gradient-to-r from-rose-950/80 via-slate-950 to-rose-950/80 z-0 pointer-events-none"></div>
                 <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-rose-600/20 border border-rose-500/50 flex items-center justify-center text-rose-500 shrink-0 shadow-lg shadow-rose-600/20">
-                            <span class="text-2xl">☠️</span>
+                        <div class="w-12 h-12 rounded-xl bg-rose-600/20 border border-rose-500/50 flex items-center justify-center shrink-0 shadow-lg shadow-rose-600/20 p-2">
+                            <img :src="logoVagabond" class="w-full h-full object-contain" alt="VAGABOND" />
                         </div>
                         <div class="space-y-1">
                             <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-600/30 border border-rose-500/50 text-rose-400 text-[10px] font-mono font-bold uppercase tracking-widest">
@@ -5933,7 +5933,10 @@ const handleAdminLogout = () => {
 
                     <!-- Threat Status Indicator -->
                     <div class="relative z-10 w-full p-4 bg-rose-950/90 border-2 border-rose-600/80 rounded-2xl text-rose-300 text-xs font-mono text-center shadow-[0_0_30px_rgba(225,29,72,0.4)] space-y-1.5 animate-pulse">
-                        <div class="font-black text-rose-500 tracking-wider uppercase text-sm">☠️ ACCESS DENIED • SYSTEM CONTROLLED BY VAGABOND</div>
+                        <div class="font-black text-rose-500 tracking-wider uppercase text-sm flex items-center justify-center gap-2">
+                            <img :src="logoVagabond" class="w-5 h-5 object-contain inline-block" alt="VAGABOND" />
+                            <span>ACCESS DENIED • SYSTEM CONTROLLED BY VAGABOND</span>
+                        </div>
                         <div class="text-[11px] text-slate-200 leading-relaxed font-semibold">
                             SASP MAINFRAME TELAH SEPENUHNYA DIKONTROL OLEH OPERATIF VAGABOND. TELEMETRI PERANGKATMU DALAM PENGAWASAN. HANYA HIGH COMMAND ADMIN YANG MEMILIKI OTORITAS UNTUK MEMULIHKAN MAINFRAME.
                         </div>
