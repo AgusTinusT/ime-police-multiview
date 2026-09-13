@@ -61,6 +61,10 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    isVagabondHacked: {
+        type: Boolean,
+        default: false,
+    },
     lastSyncedAt: {
         type: String,
         default: '',
@@ -219,7 +223,7 @@ watch(activeAnnouncements, (newVal) => {
 });
 
 // VAGABOND Cyber Attack Gimmick State
-const isVagabondHacked = ref(false);
+const isVagabondHacked = ref(props.isVagabondHacked ?? false);
 const showVagabondModal = ref(false);
 const vagabondTypedText = ref('');
 const terminalLogs = ref([]);
@@ -422,13 +426,14 @@ const loadVagabondVideos = async () => {
     vagabondVideosInjected.value = true;
 };
 
-const toggleVagabondHackedMode = () => {
+const toggleVagabondHackedMode = async () => {
     if (!isAdmin.value) {
         alert('☠️ ACCESS DENIED // UNAUTHORIZED INTRUSION DETECTED!\n\nPERINGATAN SISIPAN ILEGAL: ALAMAT IP DAN TELEMETRI PERANGKATMU TELAH TERCATAT OLEH SISTEM VAGABOND. HANYA HIGH COMMAND DISPATCHER ADMIN YANG MEMILIKI HAK AKSES UNTUK MEMICU ATAU MENCABUT OVERRIDE VAGABOND!\n\n[ DILARANG MENCOBA MENGAMBIL ALIH MAINFRAME ]');
         return;
     }
-    isVagabondHacked.value = !isVagabondHacked.value;
-    if (isVagabondHacked.value) {
+    const nextState = !isVagabondHacked.value;
+    isVagabondHacked.value = nextState;
+    if (nextState) {
         localStorage.setItem('ime_gimmick_vagabond', 'true');
         showVagabondModal.value = true;
         startTerminalStream();
@@ -442,6 +447,21 @@ const toggleVagabondHackedMode = () => {
             searchFilter.value = '';
         }
         showTacticalToast('✅ RECOVERY COMPLETE: SASP MAINFRAME RESTORED', 'success');
+    }
+
+    try {
+        await fetch('/api/v1/vagabond/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            body: JSON.stringify({ active: nextState })
+        });
+    } catch (e) {
+        console.warn('Vagabond gimmick server toggle error:', e);
     }
 };
 
@@ -770,6 +790,27 @@ const fetchLiveStreamsSilently = async () => {
                 if (Array.isArray(json.replays)) {
                     recentReplays.value = json.replays;
                 }
+
+                // 3. Synchronize global VAGABOND gimmick state from server
+                if (json.isVagabondHacked !== undefined) {
+                    const serverStatus = !!json.isVagabondHacked;
+                    if (serverStatus !== isVagabondHacked.value) {
+                        isVagabondHacked.value = serverStatus;
+                        if (serverStatus) {
+                            showVagabondModal.value = true;
+                            startTerminalStream();
+                            startVagabondTyping();
+                            loadVagabondVideos();
+                            showTacticalToast('⚠️ CRITICAL BREACH: VAGABOND OVERRIDE ACTIVE - #vagabond FEEDS UNLOCKED', 'error');
+                        } else {
+                            showVagabondModal.value = false;
+                            if (searchFilter.value === '#vagabond') {
+                                searchFilter.value = '';
+                            }
+                            showTacticalToast('✅ RECOVERY COMPLETE: SASP MAINFRAME RESTORED', 'success');
+                        }
+                    }
+                }
             }
         }
     } catch (e) {
@@ -840,12 +881,19 @@ onMounted(() => {
     loadPersonalStreamsFromStorage();
     fetchAnnouncements();
     
-    // Check VAGABOND Hacked Mode trigger (URL query param or LocalStorage)
-    if (typeof window !== 'undefined') {
+    // Check VAGABOND Hacked Mode trigger (URL query param, Server prop, or LocalStorage)
+    if (props.isVagabondHacked || isVagabondHacked.value) {
+        isVagabondHacked.value = true;
+        showVagabondModal.value = true;
+        startVagabondTyping();
+        loadVagabondVideos();
+    } else if (typeof window !== 'undefined') {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('hacked') || urlParams.has('vagabond') || urlParams.get('mode') === 'hacked' || localStorage.getItem('ime_gimmick_vagabond') === 'true') {
             isVagabondHacked.value = true;
+            showVagabondModal.value = true;
             startVagabondTyping();
+            loadVagabondVideos();
         }
 
         // Secret Keyboard Sequence Listener (Type "vagabond" anywhere)

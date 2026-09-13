@@ -135,6 +135,7 @@ class PoliceCommandController extends Controller
             'initialTacChannels' => $tacChannels->values(),
             'initialReplays' => $recentReplays,
             'deptStats' => $deptStats,
+            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', false),
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
     }
@@ -245,8 +246,41 @@ class PoliceCommandController extends Controller
             'replays' => $recentReplays,
             'offline_officers' => $offlineOfficers->values(),
             'dept_stats' => $deptStats,
+            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', false),
             'count' => $activeStreams->count(),
             'synced_at' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * API: Get VAGABOND Gimmick Mode Global Status
+     */
+    public function apiVagabondStatus()
+    {
+        return response()->json([
+            'status' => 'success',
+            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', false),
+        ]);
+    }
+
+    /**
+     * API: Toggle VAGABOND Gimmick Mode Globally (Admin Only)
+     */
+    public function apiToggleVagabond(Request $request)
+    {
+        $current = (bool) Cache::get('ime_gimmick_vagabond', false);
+        $newStatus = $request->has('active') ? (bool) $request->input('active') : !$current;
+
+        if ($newStatus) {
+            Cache::forever('ime_gimmick_vagabond', true);
+        } else {
+            Cache::forget('ime_gimmick_vagabond');
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'isVagabondHacked' => $newStatus,
+            'message' => $newStatus ? 'VAGABOND Gimmick Mode Activated Globally' : 'VAGABOND Gimmick Mode Deactivated Globally',
         ]);
     }
 
@@ -407,6 +441,7 @@ class PoliceCommandController extends Controller
         return Inertia::render('OfficerDirectory', [
             'initialOfficers' => $allOfficers->values(),
             'deptStats' => $deptStats,
+            'isVagabondHacked' => (bool) Cache::get('ime_gimmick_vagabond', false),
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
     }
