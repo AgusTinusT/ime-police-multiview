@@ -1019,6 +1019,7 @@ onMounted(() => {
                                     <option value="BCSO">BCSO (Blaine County Sheriff)</option>
                                     <option value="SASP">SASP (San Andreas State Police)</option>
                                     <option value="SAPR">SAPR (San Andreas Park Rangers)</option>
+                                    <option value="VAGABOND">VAGABOND (Cyber Hackers / Syndicate)</option>
                                 </select>
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
