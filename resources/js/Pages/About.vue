@@ -28,7 +28,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <Head title="IME Police Multiview" />
+    <Head title="Tentang Platform — IME RP SASP Police Duty Multiview" />
 
     <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased">
         
@@ -402,26 +402,30 @@ Buat kalian yang merasa terbantu dan ingin ikut kontribusi secara sukarela agar 
 
             <!-- Platform Architecture & Credits -->
             <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-3 font-mono text-xs text-slate-400">
-                <h3 class="text-sm font-bold text-slate-200 font-mono uppercase mb-2">Informasi Teknis & Kredit</h3>
+                <h3 class="text-sm font-bold text-slate-200 font-mono uppercase mb-2">Informasi Platform & Profil Pengembang</h3>
                 <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
-                    <span class="text-slate-500">Komunitas Roleplay:</span>
+                    <span class="text-slate-500">Komunitas Server:</span>
                     <span class="text-blue-400 font-bold">IME Roleplay Indonesia</span>
                 </div>
                 <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
-                    <span class="text-slate-500">Author:</span>
-                    <span class="text-emerald-400 font-bold">Gusti Aidan</span>
+                    <span class="text-slate-500">Domain Support:</span>
+                    <span class="text-amber-400 font-bold">policeduty.sasp-motionliferp.com</span>
                 </div>
                 <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
-                    <span class="text-slate-500">Teknologi:</span>
-                    <span class="text-slate-300">Laravel 12 + Inertia.js Vue 3 + Tailwind CSS</span>
+                    <span class="text-slate-500">System Developer:</span>
+                    <span class="text-emerald-400 font-bold">Agus Tinus Turnip (Gusti Aidan)</span>
                 </div>
                 <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
-                    <span class="text-slate-500">Video Integration:</span>
-                    <span class="text-slate-300">YouTube IFrame API & Hybrid Scraper Engine</span>
+                    <span class="text-slate-500">Status Project:</span>
+                    <span class="text-slate-300">Community Fan-Made</span>
+                </div>
+                <div class="flex items-center justify-between border-b border-slate-800 py-1.5">
+                    <span class="text-slate-500">Teknologi Web:</span>
+                    <span class="text-slate-300">Laravel 12 + Inertia Vue 3 + PWA Engine</span>
                 </div>
                 <div class="flex items-center justify-between py-1.5">
                     <span class="text-slate-500">Lisensi & Hak Cipta:</span>
-                    <span class="text-slate-400">Fan-made Community Dashboard (Fair Use)</span>
+                    <span class="text-slate-400">Fan-made Community Portal (Fair Use)</span>
                 </div>
             </div>
 

@@ -2177,7 +2177,7 @@ const submitFeedbackForm = async () => {
 </script>
 
 <template>
-    <Head title="IME RP - Police Command Center & Tactical Multiview" />
+    <Head title="IME RP — SASP Police Duty Multiview | Live Officer Bodycam & Dispatch" />
 
     <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased pb-20 md:pb-6">
         
@@ -2193,7 +2193,7 @@ const submitFeedbackForm = async () => {
                     </div>
                     <div class="flex flex-col">
                         <span class="text-[11px] sm:text-xs font-black tracking-wider text-blue-400 uppercase leading-tight">IME ROLEPLAY</span>
-                        <span class="text-[9px] sm:text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DIVISION</span>
+                        <span class="text-[9px] sm:text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DUTY MULTIVIEW</span>
                     </div>
                 </div>
 
@@ -5752,6 +5752,16 @@ const submitFeedbackForm = async () => {
                 </div>
             </div>
         </div>
+
+        <!-- Footer Credit Bar -->
+        <footer class="mt-8 pt-4 pb-2 border-t border-slate-800/80 text-center text-xs text-slate-500 font-sans px-4">
+            <p class="font-medium text-slate-400">
+                © {{ new Date().getFullYear() }} IME Roleplay Community — SASP Police Duty Multiview
+            </p>
+            <p class="mt-1 text-[11px] text-slate-500">
+                Developed by <span class="text-blue-400 font-semibold">Gusti Aidan (Agus Tinus Turnip)</span> • Community Fan-Made Project
+            </p>
+        </footer>
 
     </div>
 </template>

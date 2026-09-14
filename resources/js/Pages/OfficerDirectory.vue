@@ -173,7 +173,7 @@ const toggleFullscreen = () => {
 </script>
 
 <template>
-    <Head title="Direktori Petugas & Streamer - IME Police Command Center" />
+    <Head title="Direktori Officer — IME RP SASP Police Duty Multiview" />
 
     <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased">
         

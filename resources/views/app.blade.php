@@ -11,6 +11,14 @@
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ filemtime(public_path('favicon.ico')) }}">
         <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ filemtime(public_path('favicon.ico')) }}">
 
+        <!-- PWA Web App Manifest & Mobile Integration -->
+        <link rel="manifest" href="/manifest.json">
+        <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png">
+        <meta name="theme-color" content="#0b1320">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="IME Police">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -38,5 +46,18 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+
+        <!-- Register PWA Service Worker -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                        console.log('PWA ServiceWorker registered with scope: ', reg.scope);
+                    }).catch(function(err) {
+                        console.log('PWA ServiceWorker registration failed: ', err);
+                    });
+                });
+            }
+        </script>
     </body>
 </html>
