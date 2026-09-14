@@ -70,14 +70,13 @@ const form = ref({
     is_active: true,
 });
 
-const departments = ['LSPD', 'BCSO', 'SASP', 'SAPR', 'VAGABOND'];
+const departments = ['LSPD', 'BCSO', 'SASP', 'SAPR'];
 
 const defaultRanks = {
     LSPD: ['Chief of Police', 'Assistant Chief', 'Deputy Chief', 'Captain', 'Lieutenant', 'Sergeant', 'Senior Officer', 'Officer', 'Cadet'],
     BCSO: ['Sheriff', 'Undersheriff', 'Assistant Sheriff', 'Captain', 'Lieutenant', 'Master Sergeant', 'Sergeant', 'Senior Deputy', 'Deputy', 'Cadet'],
     SASP: ['State Commissioner', 'Colonel', 'Major', 'Captain', 'Lieutenant', 'Staff Sergeant', 'Sergeant', 'Senior Trooper', 'Trooper', 'Cadet'],
     SAPR: ['Chief Ranger', 'Assistant Chief Ranger', 'Captain Ranger', 'Lieutenant Ranger', 'Sergeant Ranger', 'Senior Park Ranger', 'Park Ranger', 'Cadet Ranger'],
-    VAGABOND: ['Vagabond Leader', 'Cyber Hacker', 'Infiltrator', 'Squad Leader', 'Operative', 'Cell Member'],
 };
 
 const currentRankOptions = computed(() => {
@@ -1019,7 +1018,6 @@ onMounted(() => {
                                     <option value="BCSO">BCSO (Blaine County Sheriff)</option>
                                     <option value="SASP">SASP (San Andreas State Police)</option>
                                     <option value="SAPR">SAPR (San Andreas Park Rangers)</option>
-                                    <option value="VAGABOND">VAGABOND (Cyber Hackers / Syndicate)</option>
                                 </select>
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1178,8 +1176,7 @@ onMounted(() => {
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Icon (Optional URL/SVG)</label>
-                            <input v-model="announcementForm.icon" type="text" placeholder="Kosongkan jika tanpa ikon..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white" />
-                            <p class="text-[10px] text-slate-500 mt-1">Biarkan kosong atau ketik 'none' jika tidak ingin menampilkan ikon pada banner.</p>
+                            <input v-model="announcementForm.icon" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white" />
                         </div>
                     </div>
 

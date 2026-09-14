@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 // SVG Icon Assets & Branding Logos
 import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
@@ -38,11 +38,6 @@ const sortBy = ref('status'); // 'status', 'subs_desc', 'subs_asc', 'name'
 const isSyncing = ref(false);
 const isFullscreen = ref(false);
 const isQuickAddOpen = ref(false);
-
-// Auth & Gimmick state
-const page = usePage();
-const isAdmin = computed(() => !!(page.props.auth?.user || page.props.user || page.props.isAdmin));
-const isVagabondHacked = computed(() => typeof window !== 'undefined' && localStorage.getItem('ime_gimmick_vagabond') === 'true');
 
 // Personal Streams saved to localStorage
 const personalIds = ref([]);
@@ -376,13 +371,6 @@ const toggleFullscreen = () => {
                             class="px-3 py-1.5 text-xs rounded-full border transition whitespace-nowrap"
                         >
                             SAPR ({{ deptStats.sapr_total || 0 }})
-                        </button>
-                        <button 
-                            @click="selectedDept = 'VAGABOND'"
-                            :class="selectedDept === 'VAGABOND' ? 'bg-rose-600 text-white font-black shadow-lg shadow-rose-600/50 border-rose-400 ring-2 ring-rose-500/50 animate-pulse' : 'bg-rose-950/80 text-rose-300 hover:bg-rose-900/90 border-rose-600/80 shadow-md shadow-rose-950/50 font-bold'"
-                            class="px-3 py-1.5 text-xs rounded-full border transition whitespace-nowrap"
-                        >
-                            VAGABOND ({{ officers.filter(o => o.department === 'VAGABOND').length }})
                         </button>
                     </div>
 

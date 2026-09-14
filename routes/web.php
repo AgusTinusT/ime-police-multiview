@@ -53,10 +53,6 @@ Route::prefix('api/v1')->group(function () {
         Route::post('/extend', [TacChannelController::class, 'extend']);
         Route::post('/clear', [TacChannelController::class, 'clear']);
     });
-
-    // VAGABOND Gimmick Mode Status & Admin Toggle
-    Route::get('/vagabond/status', [PoliceCommandController::class, 'apiVagabondStatus']);
-    Route::post('/vagabond/toggle', [PoliceCommandController::class, 'apiToggleVagabond'])->middleware('auth');
 });
 
 

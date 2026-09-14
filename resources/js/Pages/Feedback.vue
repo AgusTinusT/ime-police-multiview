@@ -285,7 +285,6 @@ const submitFeedbackForm = async () => {
                             <option value="BCSO">BCSO (Sheriff)</option>
                             <option value="SASP">SASP (State Police)</option>
                             <option value="SAPR">SAPR (Park Rangers)</option>
-                            <option value="VAGABOND">VAGABOND (Syndicate / Hackers)</option>
                         </select>
                     </div>
                 </div>
