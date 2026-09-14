@@ -24,7 +24,7 @@ class PoliceCommandController extends Controller
             ->where('status', 'LIVE')
             ->where(function ($q) {
                 $q->whereHas('officer', fn($o) => $o->where('is_active', true))
-                  ->orWhereNull('officer_id');
+                  ->orWhereDoesntHave('officer');
             })
             ->get()
             ->unique('video_id')
@@ -157,7 +157,7 @@ class PoliceCommandController extends Controller
             ->where('status', 'LIVE')
             ->where(function ($q) {
                 $q->whereHas('officer', fn($o) => $o->where('is_active', true))
-                  ->orWhereNull('officer_id');
+                  ->orWhereDoesntHave('officer');
             })
             ->get()
             ->unique('video_id')

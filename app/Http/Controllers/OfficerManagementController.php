@@ -156,13 +156,8 @@ class OfficerManagementController extends Controller
         $officer->save();
 
         // If deactivated, mark active streams as ended / delete them
-        if (!$officer->is_active) {
-            ActiveStream::where(function ($q) use ($officer) {
-                if (!empty($officer->channel_id)) {
-                    $q->where('channel_id', $officer->channel_id);
-                }
-                $q->orWhere('officer_id', $officer->id);
-            })->delete();
+        if (!$officer->is_active && !empty($officer->channel_id)) {
+            ActiveStream::where('channel_id', $officer->channel_id)->delete();
         }
 
         return response()->json([
