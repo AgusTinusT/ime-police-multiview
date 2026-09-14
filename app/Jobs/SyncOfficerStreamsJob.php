@@ -25,6 +25,9 @@ class SyncOfficerStreamsJob implements ShouldQueue
      */
     public function handle(YouTubeScraperService $scraper): void
     {
+        // Purge any active stream records belonging to disabled officers
+        ActiveStream::whereHas('officer', fn($q) => $q->where('is_active', false))->delete();
+
         $officers = Officer::where('is_active', true)->get();
         if ($officers->isEmpty()) {
             return;

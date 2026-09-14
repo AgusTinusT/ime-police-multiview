@@ -47,9 +47,9 @@ class YouTubeScraperService
         $results = [];
         $unmatchedOfficers = collect();
 
-        // --- TIER 1: Fast Hashtag Live Scan (#imepolice & #imeroleplay) ---
+        // --- TIER 1: Fast Hashtag Live Scan (#imepolice, #imeroleplay, #imerp, #ime) ---
         $hashtagLiveStreams = [];
-        foreach (['#imepolice', '#imeroleplay'] as $tag) {
+        foreach (['#imepolice', '#imeroleplay', '#imerp', '#ime'] as $tag) {
             $streams = $this->searchLiveStreams($tag, 35);
             foreach ($streams as $s) {
                 if (!empty($s['video_id'])) {
@@ -170,7 +170,7 @@ class YouTubeScraperService
                 foreach ($rssCandidates as $officerId => $cand) {
                     $vId = $cand['video_id'];
                     $t = $telemetry[$vId] ?? null;
-                    if ($t && ($t['status'] ?? '') === 'LIVE') {
+                    if ($t && ($t['status'] ?? '') === 'LIVE' && $this->isImeRpContent($cand['title'] ?? '')) {
                         $results[$officerId] = [
                             'status' => 'LIVE',
                             'video_id' => $vId,
@@ -197,7 +197,7 @@ class YouTubeScraperService
                 $formattedHandle = str_starts_with($officer->handle, '@') ? $officer->handle : '@' . $officer->handle;
                 $directData = $directLiveResults[$officer->handle] ?? ($directLiveResults[$formattedHandle] ?? null);
 
-                if ($directData) {
+                if ($directData && $this->isImeRpContent($directData['title'] ?? '', $directData['description'] ?? '')) {
                     $results[$officer->id] = [
                         'status' => 'LIVE',
                         'video_id' => $directData['video_id'],
@@ -1138,6 +1138,34 @@ class YouTubeScraperService
             Log::error("Failed to fetch YouTube channel info for [{$query}]: " . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Verify whether a live stream title/description matches IME Roleplay keywords & hashtags.
+     */
+    public function isImeRpContent(string $title, string $description = ''): bool
+    {
+        $text = strtolower($title . ' ' . $description);
+
+        $keywords = [
+            '#imeroleplay', '#imerp', '#imepolice', '#ime',
+            'imeroleplay', 'imerp', 'imepolice',
+            'ime roleplay', 'ime rp', 'ime police',
+            'lspd', 'bcso', 'sasp', 'sapr', 'park ranger', 'police', 'polisi',
+            'gta rp', 'gta v rp', 'gta 5 rp', 'gta', 'roleplay', 'patrol', '10-8'
+        ];
+
+        foreach ($keywords as $kw) {
+            if (str_contains($text, $kw)) {
+                return true;
+            }
+        }
+
+        if (preg_match('/\bime\b/i', $text)) {
+            return true;
+        }
+
+        return false;
     }
 }
 

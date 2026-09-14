@@ -22,6 +22,10 @@ class PoliceCommandController extends Controller
         // 1. Get Online 10-8 Live Streams with Officer info (Deduplicated strictly by video_id)
         $activeStreams = ActiveStream::with('officer')
             ->where('status', 'LIVE')
+            ->where(function ($q) {
+                $q->whereHas('officer', fn($o) => $o->where('is_active', true))
+                  ->orWhereNull('officer_id');
+            })
             ->get()
             ->unique('video_id')
             ->map(function ($stream) use ($host) {
@@ -151,6 +155,10 @@ class PoliceCommandController extends Controller
         // 1. Online 10-8 Live Streams with Officer info (Deduplicated strictly by video_id)
         $activeStreams = ActiveStream::with('officer')
             ->where('status', 'LIVE')
+            ->where(function ($q) {
+                $q->whereHas('officer', fn($o) => $o->where('is_active', true))
+                  ->orWhereNull('officer_id');
+            })
             ->get()
             ->unique('video_id')
             ->map(function ($stream) use ($host) {
