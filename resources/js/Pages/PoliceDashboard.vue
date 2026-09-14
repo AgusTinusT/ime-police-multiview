@@ -2329,10 +2329,10 @@ const submitFeedbackForm = async () => {
         </header>
 
         <!-- Department Filter Toolbar & Search / Grid Controls -->
-        <div class="bg-[#090f1a] border-b border-slate-800/80 px-4 py-2 flex flex-wrap items-center justify-between gap-2.5">
+        <div class="bg-[#090f1a] border-b border-slate-800/80 px-3 sm:px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-2.5">
             
-            <!-- Department Tabs (Horizontal Scrollable Bar) -->
-            <div class="flex items-center space-x-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-1 w-full relative z-30 pb-1.5">
+            <!-- Department Tabs (Horizontal Scrollable Bar on Left) -->
+            <div class="flex items-center space-x-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-1 flex-1 min-w-0 relative z-30">
                 <button 
                     v-for="dept in departments" 
                     :key="dept.id"
@@ -2431,8 +2431,8 @@ const submitFeedbackForm = async () => {
                 </div>
             </div>
 
-            <!-- Search & Grid Layout Switcher (Side-by-side) -->
-            <div class="flex items-center space-x-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+            <!-- Search & Grid Layout Switcher (Side-by-side on right side of categories on desktop/tablet) -->
+            <div class="flex items-center space-x-2 w-full md:w-auto shrink-0 z-30 justify-between md:justify-end">
                 <!-- Search Input -->
                 <div class="relative flex-1 sm:w-60 flex items-center">
                     <input 
