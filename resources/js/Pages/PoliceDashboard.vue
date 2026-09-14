@@ -77,6 +77,7 @@ const selectedLayout = ref('auto'); // 'auto', 'grid-2x2', 'grid-3x3', 'grid-4x4
 const activeAudioVideoId = ref(null);
 const searchFilter = ref('');
 const focusedStreamId = ref(null);
+const activeMobileNav = ref(null); // Mobile bottom sheet state ('TAC', 'MENU', or null)
 
 // Tactical Radio Channels (TAC 1 to TAC 10) State
 const defaultTacChannels = [
@@ -430,8 +431,8 @@ const expiringTacChannel = computed(() => {
     );
 });
 
-// Focus Mode Right-Column Live Chat State
-const isRightChatOpen = ref(false);
+// Focus Mode Right-Column Live Chat State (Default Open)
+const isRightChatOpen = ref(true);
 
 // Browser Fullscreen State & Controller
 const isFullscreen = ref(false);
@@ -1072,6 +1073,11 @@ onMounted(() => {
     updateTime();
     timeInterval = setInterval(updateTime, 1000);
     window.addEventListener('click', closeMoreTac);
+    
+    // Auto-detect mobile screen and default to Focus Mode
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        selectedLayout.value = 'focus';
+    }
 });
 onUnmounted(() => {
     if (timeInterval) clearInterval(timeInterval);
@@ -2173,88 +2179,88 @@ const submitFeedbackForm = async () => {
 <template>
     <Head title="IME RP - Police Command Center & Tactical Multiview" />
 
-    <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased">
+    <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased pb-20 md:pb-6">
         
         <!-- Tactical Header Bar -->
-        <header class="bg-[#0b1320] border-b border-blue-900/40 px-4 py-2 flex items-center justify-between gap-3 sticky top-0 z-40 shadow-xl backdrop-blur-md">
+        <header class="bg-[#0b1320] border-b border-blue-900/40 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 max-w-full overflow-hidden sticky top-0 z-40 shadow-xl backdrop-blur-md">
             
             <!-- Left Area: Branding & Standalone Page Navigation Links -->
-            <div class="flex items-center space-x-3 shrink-0">
+            <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 shrink-0">
                 <!-- Branding: IME Roleplay Police Division -->
-                <div class="flex items-center space-x-2.5 shrink-0">
-                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden">
+                <div class="flex items-center space-x-2 shrink-0">
+                    <div class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden">
                         <img :src="logoSaspColor" class="w-full h-full object-contain rounded" alt="SASP Badge" />
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase leading-tight">IME ROLEPLAY</span>
-                        <span class="text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DIVISION</span>
+                        <span class="text-[11px] sm:text-xs font-black tracking-wider text-blue-400 uppercase leading-tight">IME ROLEPLAY</span>
+                        <span class="text-[9px] sm:text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DIVISION</span>
                     </div>
                 </div>
 
-                <!-- Vertical Divider -->
-                <div class="h-6 w-px bg-slate-800/80 hidden md:block"></div>
+                <!-- Vertical Divider (Visible on tablet & desktop) -->
+                <div class="h-5 w-px bg-slate-800/80 hidden md:block"></div>
 
-                <!-- Page Navigation Links (Clean Minimalist Text Tabs) -->
-                <nav class="hidden md:flex items-center space-x-1">
+                <!-- Page Navigation Links (Clean Minimalist Text Tabs - Visible on md: / iPad Air 4 & desktop) -->
+                <nav class="hidden md:flex items-center space-x-0.5 lg:space-x-1 shrink-0">
                     <Link 
                         href="/officers"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
+                        class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition shrink-0"
                         title="Officer Directory (LSPD, BCSO, SASP)"
                     >
-                        Officer Directory
+                        <span class="hidden xl:inline">Officer </span>Directory
                     </Link>
                     
                     <Link 
                         href="/about"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
+                        class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition shrink-0"
                         title="About Police Command Center"
                     >
-                        About Platform
+                        <span class="hidden xl:inline">About </span>Platform
                     </Link> 
 
                     <Link 
                         href="/qna"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
+                        class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition shrink-0"
                         title="QnA & Tactical FAQ Guide"
                     >
-                        QnA & FAQ
+                        QnA<span class="hidden xl:inline"> & FAQ</span>
                     </Link>
 
                     <Link 
                         href="/feedback"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-sky-300 hover:bg-sky-950/40 transition"
+                        class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-sky-300 hover:bg-sky-950/40 transition shrink-0"
                         title="Channel Requests & System Feedback"
                     >
-                        Feedback & Reports
+                        Feedback<span class="hidden xl:inline"> & Reports</span>
                     </Link>
                 </nav>
             </div>
 
-            <!-- Right Area: In-Page Player & Stream Actions (Toolbar Group) -->
-            <div class="flex items-center space-x-2">
+            <!-- Right Area: In-Page Player & Stream Actions (Desktop / Tablet Toolbar) -->
+            <div class="hidden md:flex items-center space-x-1 sm:space-x-1.5 shrink-0">
                 
                 <!-- Label Badge for Actions Group -->
-                <span class="hidden xl:inline-block text-[10px] font-mono text-slate-500 uppercase tracking-wider font-semibold mr-1">Player Actions:</span>
+                <span class="hidden 2xl:inline-block text-[10px] font-mono text-slate-500 uppercase tracking-wider font-semibold mr-1">Player Actions:</span>
 
                 <!-- 1. Mode Switcher (Saver vs Play All) -->
-                <div class="flex items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800">
+                <div class="flex items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0">
                     <button 
                         @click="enableDataSaver" 
                         :class="isDataSaverEnabled ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/30' : 'text-slate-400 hover:text-slate-200'"
-                        class="px-2 py-1 text-xs rounded transition flex items-center gap-1.5"
+                        class="px-1.5 py-1 sm:px-2 sm:py-1 text-xs rounded transition flex items-center gap-1"
                         title="Mode Saver: Hold video playback to save bandwidth"
                     >
-                        <img :src="iconSaver" class="w-3.5 h-3.5 invert" alt="Saver" />
-                        <span class="hidden sm:inline">Saver</span>
+                        <img :src="iconSaver" class="w-3.5 h-3.5 invert shrink-0" alt="Saver" />
+                        <span class="hidden 2xl:inline">Saver</span>
                     </button>
                     <button 
                         @click="disableDataSaverAndPlayAll" 
                         :class="!isDataSaverEnabled ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30' : 'text-slate-400 hover:text-slate-200'"
-                        class="px-2 py-1 text-xs rounded transition flex items-center gap-1.5"
+                        class="px-1.5 py-1 sm:px-2 sm:py-1 text-xs rounded transition flex items-center gap-1"
                         title="Play All: Play all video feeds simultaneously"
                     >
-                        <img :src="iconPlayAll" class="w-3 h-3 invert" alt="Play All" />
-                        <span class="hidden sm:inline">Play All</span>
+                        <img :src="iconPlayAll" class="w-3 h-3 invert shrink-0" alt="Play All" />
+                        <span class="hidden 2xl:inline">Play All</span>
                     </button>
                 </div>
 
@@ -2262,66 +2268,77 @@ const submitFeedbackForm = async () => {
                 <button 
                     @click="triggerManualSync" 
                     :disabled="isSyncingFeeds"
-                    class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/80 transition flex items-center gap-1.5 disabled:opacity-50"
+                    class="px-1.5 py-1 sm:px-2 sm:py-1 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/80 transition flex items-center gap-1 disabled:opacity-50 shrink-0"
                     title="Resynchronize live feeds from YouTube"
                 >
-                    <img :src="iconRefresh" class="w-3.5 h-3.5 invert opacity-90" :class="{ 'animate-spin': isSyncingFeeds }" alt="Sync" />
-                    <span class="hidden sm:inline">{{ isSyncingFeeds ? 'Syncing...' : 'Sync' }}</span>
+                    <img :src="iconRefresh" class="w-3.5 h-3.5 invert opacity-90 shrink-0" :class="{ 'animate-spin': isSyncingFeeds }" alt="Sync" />
+                    <span class="hidden 2xl:inline">{{ isSyncingFeeds ? 'Syncing...' : 'Sync' }}</span>
                 </button>
 
                 <!-- 3. Quick Feed Button (In-Page Drawer Action with Emerald Accent) -->
                 <button 
                     @click="openRightDrawer('QUICK_ADD')"
-                    class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-300 border border-emerald-500/40 transition flex items-center gap-1.5 shadow-sm shadow-emerald-950/50"
+                    class="px-1.5 py-1 sm:px-2 sm:py-1 text-xs font-bold rounded-lg bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-300 border border-emerald-500/40 transition flex items-center gap-1 shadow-sm shadow-emerald-950/50 shrink-0"
                     title="Add External YouTube URL to CCTV Wall (In-Page Modal)"
                 >
-                    <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert opacity-90" alt="Quick Feed" />
-                    <span class="hidden sm:inline">Quick Feed</span>
+                    <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert opacity-90 shrink-0" alt="Quick Feed" />
+                    <span class="hidden 2xl:inline">Quick Feed</span>
                 </button>
 
                 <!-- 4. Fullscreen Button -->
                 <button 
                     @click="toggleBrowserFullscreen"
                     :class="isFullscreen ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40 border-blue-400' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-700/80'"
-                    class="px-2.5 py-1 text-xs font-bold rounded-lg border transition flex items-center gap-1.5"
+                    class="px-1.5 py-1 sm:px-2 sm:py-1 text-xs font-bold rounded-lg border transition flex items-center gap-1 shrink-0"
                     title="Toggle Mode Fullscreen CCTV Wall"
                 >
-                    <img :src="isFullscreen ? iconExitFullscreen : iconFullscreen" class="w-3.5 h-3.5 invert opacity-90" alt="Fullscreen" />
-                    <span class="hidden md:inline">{{ isFullscreen ? 'Exit' : 'Fullscreen' }}</span>
+                    <img :src="isFullscreen ? iconExitFullscreen : iconFullscreen" class="w-3.5 h-3.5 invert opacity-90 shrink-0" alt="Fullscreen" />
+                    <span class="hidden 2xl:inline">{{ isFullscreen ? 'Exit' : 'Fullscreen' }}</span>
                 </button>
 
                 <!-- 5. Admin Hub & Logout (When Authenticated) -->
-                <div v-if="$page.props.auth?.user" class="flex items-center space-x-1 bg-cyan-950/40 p-0.5 rounded-lg border border-cyan-500/50">
+                <div v-if="$page.props.auth?.user" class="flex items-center space-x-1 bg-cyan-950/40 p-0.5 rounded-lg border border-cyan-500/50 shrink-0">
                     <Link 
                         href="/admin/officers"
-                        class="px-2.5 py-1 text-xs font-bold rounded bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/30 transition flex items-center gap-1.5"
+                        class="px-2 py-1 text-xs font-bold rounded bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/30 transition flex items-center gap-1 shrink-0"
                         title="Dispatcher Admin Hub"
                     >
                         <span>Admin Hub</span>
                     </Link>
                     <button 
                         @click="handleAdminLogout"
-                        class="px-2 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-red-900/50 text-red-400 hover:text-red-200 border border-slate-700 transition flex items-center gap-1"
+                        class="px-1.5 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-red-900/50 text-red-400 hover:text-red-200 border border-slate-700 transition flex items-center gap-1 shrink-0"
                         title="Logout Admin"
                     >
-                        <img :src="iconLogout" class="w-3.5 h-3.5 invert opacity-80" alt="Logout" />
+                        <img :src="iconLogout" class="w-3.5 h-3.5 invert opacity-80 shrink-0" alt="Logout" />
                     </button>
                 </div>
 
+            </div>
+
+            <!-- Right Area Mobile Quick Action (< md) -->
+            <div class="flex md:hidden items-center space-x-2 shrink-0">
+                <button 
+                    @click="openRightDrawer('QUICK_ADD')"
+                    class="p-2 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 transition flex items-center justify-center shadow-md"
+                    title="Quick Add Feed"
+                >
+                    <img :src="iconQuickAdd" class="w-4 h-4 invert opacity-95" alt="Quick Add" />
+                </button>
             </div>
         </header>
 
         <!-- Department Filter Toolbar & Search / Grid Controls -->
         <div class="bg-[#090f1a] border-b border-slate-800/80 px-4 py-2 flex flex-wrap items-center justify-between gap-2.5">
             
-            <!-- Department Tabs -->
-            <div class="flex items-center space-x-1.5 flex-wrap md:flex-nowrap py-0.5 max-w-full relative z-30">
+            <!-- Department Tabs (Horizontal Scrollable Bar) -->
+            <div class="flex items-center space-x-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-1 w-full relative z-30 pb-1.5">
                 <button 
                     v-for="dept in departments" 
                     :key="dept.id"
                     @click="selectedDepartment = dept.id"
                     :class="[
-                        'px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap',
+                        'px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap shrink-0',
                         selectedDepartment === dept.id 
                             ? (dept.id === 'PERSONAL' 
                                 ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400' 
@@ -2337,22 +2354,22 @@ const submitFeedbackForm = async () => {
                                     : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'))
                     ]"
                 >
-                    <img v-if="dept.isSvg" :src="dept.icon" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90" alt="" />
-                    <span v-else>{{ dept.icon }}</span>
-                    <span>{{ dept.name }}</span>
+                    <img v-if="dept.isSvg" :src="dept.icon" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90 shrink-0" alt="" />
+                    <span v-else class="shrink-0">{{ dept.icon }}</span>
+                    <span class="shrink-0">{{ dept.name }}</span>
                     
                     <!-- Personal count badge -->
-                    <span v-if="dept.id === 'PERSONAL'" class="text-[10px] px-1.5 py-0.2 bg-black/50 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30">
+                    <span v-if="dept.id === 'PERSONAL'" class="text-[10px] px-1.5 py-0.2 bg-black/50 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30 shrink-0">
                         {{ totalPersonalCount }}/6
                     </span>
                     <!-- TAC count badge -->
-                    <span v-else-if="dept.isTac" class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
+                    <span v-else-if="dept.isTac" class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold shrink-0"
                         :class="getTacUnitCount(dept.id) > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-black/40 text-slate-500'"
                     >
                         {{ getTacUnitCount(dept.id) }}
                     </span>
                     <!-- Standard dept count -->
-                    <span v-else-if="dept.id !== 'ALL'" class="text-[10px] px-1 py-0.2 bg-black/40 rounded-full font-mono">
+                    <span v-else-if="dept.id !== 'ALL'" class="text-[10px] px-1.5 py-0.2 bg-black/40 rounded-full font-mono shrink-0">
                         {{ allActiveStreams.filter(s => s.officer?.department === dept.id || (dept.id === 'SAPR' && (s.officer?.department === 'SAPR' || s.officer?.department === 'PARK RANGER'))).length }}
                     </span>
                 </button>
@@ -2435,8 +2452,8 @@ const submitFeedbackForm = async () => {
                     </button>
                 </div>
 
-                <!-- Layout Selector (Only visible on Department / CCTV Grid Mode) -->
-                <div v-if="selectedDepartment !== 'ALL'" class="flex items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0">
+                <!-- Layout Selector (Desktop Only: hidden on mobile) -->
+                <div v-if="selectedDepartment !== 'ALL'" class="hidden md:flex items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0">
                     <button 
                         @click="selectedLayout = 'auto'" 
                         :class="selectedLayout === 'auto' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
@@ -3490,26 +3507,26 @@ const submitFeedbackForm = async () => {
                             <div class="bg-slate-950 rounded-xl overflow-hidden border border-slate-800 shadow-2xl relative">
                             
                             <!-- Large Stream HUD Top Bar -->
-                            <div class="bg-slate-900/95 px-4 py-2.5 flex items-center justify-between border-b border-slate-800">
-                                <div class="flex items-center space-x-2.5 min-w-0">
-                                    <span class="px-2.5 py-0.5 text-xs font-black rounded border tracking-wider shrink-0" :class="getDeptBadgeClass(primaryFocusedStream.officer?.department)">
+                            <div class="bg-slate-900/95 px-3 sm:px-4 py-2 flex flex-wrap sm:flex-nowrap items-center justify-between border-b border-slate-800 gap-1.5">
+                                <div class="flex items-center space-x-2 min-w-0 flex-1 truncate">
+                                    <span class="px-2 py-0.5 text-[10px] sm:text-xs font-black rounded border tracking-wider shrink-0" :class="getDeptBadgeClass(primaryFocusedStream.officer?.department)">
                                         [{{ primaryFocusedStream.officer?.department }}] {{ primaryFocusedStream.officer?.callsign }}
                                     </span>
-                                    <div class="truncate">
-                                        <span class="text-sm font-bold text-slate-100 mr-2">{{ primaryFocusedStream.officer?.officer_name }}</span>
-                                        <span class="text-xs text-slate-400 font-mono">({{ primaryFocusedStream.officer?.rank }})</span>
+                                    <div class="truncate min-w-0">
+                                        <span class="text-xs sm:text-sm font-bold text-slate-100 mr-1 sm:mr-2 truncate">{{ primaryFocusedStream.officer?.officer_name }}</span>
+                                        <span class="text-[10px] sm:text-xs text-slate-400 font-mono hidden sm:inline">({{ primaryFocusedStream.officer?.rank }})</span>
                                     </div>
                                 </div>
                                 
-                                <div class="flex items-center space-x-2 shrink-0">
+                                <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
                                     <!-- Pin / Personal Toggle Button -->
                                     <button 
                                         @click="togglePersonalStream(primaryFocusedStream.video_id)" 
                                         :class="isPersonalStream(primaryFocusedStream.video_id) ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 border-purple-400' : 'bg-slate-800 text-slate-300 hover:text-purple-300 hover:bg-slate-700 border-slate-700'"
-                                        class="px-2.5 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1.5 font-mono border"
+                                        class="px-2 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1 font-mono border shrink-0"
                                         :title="isPersonalStream(primaryFocusedStream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
                                     >
-                                        <img :src="isPersonalStream(primaryFocusedStream.video_id) ? iconPinMinus : iconPinPlus" class="w-3.5 h-3.5 invert" alt="" />
+                                        <img :src="isPersonalStream(primaryFocusedStream.video_id) ? iconPinMinus : iconPinPlus" class="w-3.5 h-3.5 invert shrink-0" alt="" />
                                         <span class="hidden sm:inline">Personal</span>
                                     </button>
 
@@ -3596,37 +3613,38 @@ const submitFeedbackForm = async () => {
                             </div>
 
                             <!-- Stream HUD Bottom Bar -->
-                            <div class="bg-[#0b121e] px-4 py-2.5 flex items-center justify-between text-xs text-slate-400 border-t border-slate-800">
-                                <div class="flex items-center space-x-3 truncate">
-                                    <span class="font-mono text-blue-400 font-semibold truncate">📍 {{ primaryFocusedStream.officer?.patrol_zone || 'Mission Row Sector' }}</span>
-                                    <span class="text-slate-700">|</span>
-                                    <span class="font-mono text-slate-300 truncate">Badge: {{ primaryFocusedStream.officer?.badge_number || '#000' }}</span>
+                            <div class="bg-[#0b121e] px-3 sm:px-4 py-2 flex flex-wrap sm:flex-nowrap items-center justify-between text-xs text-slate-400 border-t border-slate-800 gap-1.5">
+                                <div class="flex items-center space-x-2 min-w-0 flex-1 truncate">
+                                    <span class="font-mono text-blue-400 font-semibold truncate text-[11px] sm:text-xs">📍 {{ primaryFocusedStream.officer?.patrol_zone || 'Mission Row Sector' }}</span>
+                                    <span class="text-slate-700 hidden sm:inline">|</span>
+                                    <span class="font-mono text-slate-300 truncate hidden sm:inline">Badge: {{ primaryFocusedStream.officer?.badge_number || '#000' }}</span>
                                     <span class="text-slate-700 hidden sm:inline">|</span>
                                     <span class="font-mono text-slate-400 truncate hidden sm:inline">Streamer: {{ primaryFocusedStream.officer?.streamer_name }}</span>
                                 </div>
-                                <div class="flex items-center space-x-2.5 shrink-0">
+                                <div class="flex items-center space-x-1.5 shrink-0">
                                     <!-- 1-Click YouTube Subscribe Popup Button -->
                                     <button 
                                         v-if="primaryFocusedStream.officer?.channel_id || primaryFocusedStream.officer?.handle"
                                         @click="openSubscribePopup(primaryFocusedStream.officer?.channel_id || primaryFocusedStream.officer?.handle, primaryFocusedStream.officer?.officer_name)"
-                                        class="bg-red-600 hover:bg-red-500 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-md shadow-red-600/30 flex items-center gap-1.5 transition transform hover:scale-105"
+                                        class="bg-red-600 hover:bg-red-500 text-white font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-xs shadow-md shadow-red-600/30 flex items-center gap-1 transition shrink-0"
                                         title="Subscribe to this officer's channel without leaving page"
                                     >
-                                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
                                             <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
                                         </svg>
-                                        <span>Subscribe</span>
+                                        <span class="hidden sm:inline">Subscribe</span>
+                                        <span class="sm:hidden font-bold">Sub</span>
                                     </button>
 
                                     <!-- Toggle Live Chat in Right Column -->
                                     <button 
                                         @click="isRightChatOpen = !isRightChatOpen" 
                                         :class="isRightChatOpen ? 'text-amber-400 font-bold bg-amber-950/40 border border-amber-500/30' : 'text-slate-400 hover:text-amber-300'"
-                                        class="font-mono text-xs px-2 py-0.5 rounded flex items-center gap-1.5 transition"
+                                        class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded flex items-center gap-1 transition shrink-0"
                                         title="Toggle Live Chat in Support Column"
                                     >
-                                        <img :src="isRightChatOpen ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-80" alt="" />
-                                        <span>{{ isRightChatOpen ? 'Chat Open' : 'Live Chat' }}</span>
+                                        <img :src="isRightChatOpen ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-80 shrink-0" alt="" />
+                                        <span>{{ isRightChatOpen ? 'Chat' : 'Chat' }}</span>
                                     </button>
                                     
                                     <a 
@@ -3689,11 +3707,11 @@ const submitFeedbackForm = async () => {
                                     <span>{{ isRightChatOpen ? 'HIDE CHAT' : 'LIVE CHAT' }}</span>
                                 </button>
 
-                                <!-- Mode Toggle Button -->
+                                <!-- Mode Toggle Button (Desktop Only) -->
                                 <button 
                                     @click="toggleGlobalDataSaver" 
                                     :class="isDataSaverEnabled ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50' : 'bg-blue-950/80 text-blue-300 border-blue-500/50'"
-                                    class="text-[10px] font-mono px-2 py-0.5 rounded border flex items-center gap-1 transition font-bold"
+                                    class="text-[10px] font-mono px-2 py-0.5 rounded border hidden md:flex items-center gap-1 transition font-bold"
                                     :title="isDataSaverEnabled ? 'Click to Play All support feeds' : 'Click to enable Saver Mode'"
                                 >
                                     <img :src="isDataSaverEnabled ? iconSaver : iconPlayAll" class="w-3 h-3 invert" alt="" />
@@ -3737,8 +3755,8 @@ const submitFeedbackForm = async () => {
                                 class="bg-slate-950 rounded-xl overflow-hidden border transition shadow-lg relative group flex flex-col"
                             >
                                 <!-- Secondary Stream Header -->
-                                <div class="bg-slate-900/95 px-2.5 py-1.5 flex items-center justify-between border-b border-slate-800/80 text-xs">
-                                    <div class="flex items-center space-x-1.5 truncate">
+                                <div class="bg-slate-900/95 px-2.5 py-1.5 flex items-center justify-between border-b border-slate-800/80 text-xs gap-1">
+                                    <div class="flex items-center space-x-1.5 min-w-0 flex-1 truncate">
                                         <span class="px-1.5 py-0.2 text-[10px] font-black rounded border shrink-0" :class="getDeptBadgeClass(stream.officer?.department)">
                                             {{ stream.officer?.department }}
                                         </span>
@@ -3888,16 +3906,16 @@ const submitFeedbackForm = async () => {
                                 </div>
 
                                 <!-- Mini Footer -->
-                                <div class="bg-[#0b121e] px-2.5 py-1 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-800/80 font-mono">
-                                    <span class="truncate text-blue-400">📍 {{ stream.officer?.patrol_zone || 'Patrol' }}</span>
-                                    <div class="flex items-center space-x-2 shrink-0">
+                                <div class="bg-[#0b121e] px-2.5 py-1 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-800/80 font-mono gap-1">
+                                    <span class="truncate text-blue-400 min-w-0 flex-1">📍 {{ stream.officer?.patrol_zone || 'Patrol' }}</span>
+                                    <div class="flex items-center space-x-1.5 shrink-0">
                                         <button 
                                             v-if="stream.officer?.channel_id || stream.officer?.handle"
                                             @click="openSubscribePopup(stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
-                                            class="text-red-400 hover:text-red-300 hover:bg-red-950/60 px-1 py-0.2 rounded transition flex items-center gap-0.5 font-bold"
+                                            class="text-red-400 hover:text-red-300 hover:bg-red-950/60 px-1.5 py-0.5 rounded transition flex items-center gap-0.5 font-bold shrink-0 text-[10px]"
                                             title="Subscribe to channel without leaving page"
                                         >
-                                            <span class="w-2 h-2 rounded-full bg-red-500 mr-0.5"></span>
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-0.5 shrink-0"></span>
                                             <span>Sub</span>
                                         </button>
                                         <a 
@@ -5546,10 +5564,193 @@ const submitFeedbackForm = async () => {
         <!-- Floating Tactical Action Toast -->
         <div 
             v-if="tacticalToast"
-            class="fixed bottom-4 right-4 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl px-4 py-2.5 shadow-2xl backdrop-blur-xl flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200"
+            class="fixed bottom-16 md:bottom-4 right-4 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl px-4 py-2.5 shadow-2xl backdrop-blur-xl flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200"
         >
             <img :src="iconRadio" class="w-4 h-4 brightness-0 invert opacity-90 shrink-0" alt="" />
             <span>{{ tacticalToast.message }}</span>
+        </div>
+
+        <!-- YouTube-Style Fixed Bottom Navigation Bar for Mobile (< md) -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0b1320]/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 flex justify-around items-center shadow-2xl">
+            <!-- 1. Live Feeds (10-8) -->
+            <button 
+                @click="activeTab = '10-8'; selectedDepartment = 'ALL'; activeMobileNav = null;" 
+                :class="activeTab === '10-8' && selectedDepartment === 'ALL' ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'"
+                class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
+            >
+                <div class="relative">
+                    <img :src="iconPlayAll" class="w-5 h-5 invert opacity-90" alt="Feeds" />
+                    <span v-if="allActiveStreams.length > 0" class="absolute -top-1.5 -right-2 bg-red-600 text-white text-[9px] font-bold px-1 rounded-full animate-pulse">
+                        {{ allActiveStreams.length }}
+                    </span>
+                </div>
+                <span class="text-[10px] tracking-tight">10-8 Feeds</span>
+            </button>
+
+            <!-- 2. TAC & Departments -->
+            <button 
+                @click="activeMobileNav = activeMobileNav === 'TAC' ? null : 'TAC'" 
+                :class="activeMobileNav === 'TAC' || isTacDepartment(selectedDepartment) || ['LSPD','BCSO','SASP','SAPR'].includes(selectedDepartment) ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-slate-200'"
+                class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
+            >
+                <img :src="iconRadio" class="w-5 h-5 invert opacity-90" alt="TAC" />
+                <span class="text-[10px] tracking-tight">TAC / Dept</span>
+            </button>
+
+            <!-- 3. Roster (10-7) -->
+            <button 
+                @click="activeTab = '10-7'; selectedDepartment = 'ALL'; activeMobileNav = null;" 
+                :class="activeTab === '10-7' ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'"
+                class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
+            >
+                <img :src="iconRoster" class="w-5 h-5 invert opacity-90" alt="Roster" />
+                <span class="text-[10px] tracking-tight">10-7 Roster</span>
+            </button>
+
+            <!-- 4. Pinned / Personal -->
+            <button 
+                @click="selectedDepartment = 'PERSONAL'; activeMobileNav = null;" 
+                :class="selectedDepartment === 'PERSONAL' ? 'text-purple-400 font-bold' : 'text-slate-400 hover:text-slate-200'"
+                class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
+            >
+                <img :src="iconPersonal" class="w-5 h-5 invert opacity-90" alt="Pinned" />
+                <span class="text-[10px] tracking-tight">Pinned</span>
+            </button>
+
+            <!-- 5. Main Menu / More -->
+            <button 
+                @click="activeMobileNav = activeMobileNav === 'MENU' ? null : 'MENU'" 
+                :class="activeMobileNav === 'MENU' ? 'text-sky-400 font-bold' : 'text-slate-400 hover:text-slate-200'"
+                class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
+            >
+                <div class="w-5 h-5 flex flex-col justify-center items-center space-y-1">
+                    <span class="w-4 h-0.5 bg-current rounded-full"></span>
+                    <span class="w-4 h-0.5 bg-current rounded-full"></span>
+                    <span class="w-4 h-0.5 bg-current rounded-full"></span>
+                </div>
+                <span class="text-[10px] tracking-tight">Menu</span>
+            </button>
+        </nav>
+
+        <!-- Mobile TAC & Department Bottom Sheet Modal (< md) -->
+        <div v-if="activeMobileNav === 'TAC'" class="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end justify-center" @click.self="activeMobileNav = null">
+            <div class="w-full bg-[#0b1320] border-t border-amber-500/40 rounded-t-2xl p-4 space-y-3 max-h-[75vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <div class="flex items-center space-x-2">
+                        <img :src="iconRadio" class="w-4 h-4 invert opacity-90" alt="" />
+                        <h3 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Pilih Kesatuan & Saluran TAC</h3>
+                    </div>
+                    <button @click="activeMobileNav = null" class="text-slate-400 hover:text-white text-xs px-2 py-0.5 bg-slate-800 rounded">✕</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button 
+                        v-for="dept in departments.filter(d => ['ALL','PERSONAL','LSPD','BCSO','SASP','SAPR'].includes(d.id))" 
+                        :key="`mob-${dept.id}`"
+                        @click="selectedDepartment = dept.id; activeMobileNav = null;"
+                        :class="selectedDepartment === dept.id ? 'bg-blue-600 text-white font-bold border-blue-400' : 'bg-slate-900 text-slate-300 border-slate-800'"
+                        class="p-2.5 rounded-xl border text-xs flex items-center space-x-2 transition"
+                    >
+                        <img v-if="dept.isSvg" :src="dept.icon" class="w-4 h-4 object-contain brightness-0 invert opacity-90" alt="" />
+                        <span>{{ dept.name }}</span>
+                    </button>
+                </div>
+                <div class="pt-2 border-t border-slate-800/80">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">Saluran Radio Taktis (TAC):</span>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button 
+                            v-for="tacCode in ['TAC_1','TAC_2','TAC_3','TAC_4','TAC_5','TAC_6','TAC_7','TAC_8','TAC_9','TAC_10']"
+                            :key="`mob-tac-${tacCode}`"
+                            @click="selectedDepartment = tacCode; activeMobileNav = null;"
+                            :class="selectedDepartment === tacCode ? 'bg-amber-600 text-white font-bold border-amber-400' : 'bg-slate-900 text-amber-300 border-amber-900/50'"
+                            class="p-2 rounded-lg border text-xs text-center font-mono transition"
+                        >
+                            {{ tacCode.replace('_', ' ') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Main Menu Bottom Sheet Modal (< md) -->
+        <div v-if="activeMobileNav === 'MENU'" class="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end justify-center" @click.self="activeMobileNav = null">
+            <div class="w-full bg-[#0b1320] border-t border-blue-500/40 rounded-t-2xl p-4 space-y-3 max-h-[75vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider">Navigasi Platform & Menu</h3>
+                    <button @click="activeMobileNav = null" class="text-slate-400 hover:text-white text-xs px-2 py-0.5 bg-slate-800 rounded">✕</button>
+                </div>
+                <div class="space-y-1.5">
+                    <Link 
+                        href="/officers" 
+                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
+                    >
+                        <div class="flex items-center space-x-2.5">
+                            <img :src="iconRoster" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <span>Officer Directory (LSPD, BCSO, SASP)</span>
+                        </div>
+                        <span class="text-slate-500">→</span>
+                    </Link>
+                    <Link 
+                        href="/about" 
+                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
+                    >
+                        <div class="flex items-center space-x-2.5">
+                            <img :src="iconUrl" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <span>About Platform & Credits</span>
+                        </div>
+                        <span class="text-slate-500">→</span>
+                    </Link>
+                    <Link 
+                        href="/qna" 
+                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
+                    >
+                        <div class="flex items-center space-x-2.5">
+                            <img :src="iconRadio" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <span>QnA & Tactical FAQ Guide</span>
+                        </div>
+                        <span class="text-slate-500">→</span>
+                    </Link>
+                    <Link 
+                        href="/feedback" 
+                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
+                    >
+                        <div class="flex items-center space-x-2.5">
+                            <img :src="iconFeedback" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <span>Feedback & Channel Requests</span>
+                        </div>
+                        <span class="text-slate-500">→</span>
+                    </Link>
+                    <button 
+                        @click="if (isDataSaverEnabled) disableDataSaverAndPlayAll(); else enableDataSaver(); activeMobileNav = null;" 
+                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
+                    >
+                        <div class="flex items-center space-x-2.5">
+                            <img :src="iconSaver" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <span>Mode Hemat Bandwidth (Saver)</span>
+                        </div>
+                        <span class="text-xs font-bold font-mono" :class="isDataSaverEnabled ? 'text-emerald-400' : 'text-slate-500'">
+                            {{ isDataSaverEnabled ? 'AKTIF' : 'NON-AKTIF' }}
+                        </span>
+                    </button>
+                    <Link 
+                        v-if="!$page.props.auth?.user" 
+                        href="/login" 
+                        class="w-full p-2.5 rounded-xl bg-blue-950/60 hover:bg-blue-900/70 border border-blue-500/40 text-xs text-blue-300 font-bold flex items-center justify-between transition"
+                    >
+                        <div class="flex items-center space-x-2.5">
+                            <img :src="iconUser" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <span>Admin Login Dispatcher</span>
+                        </div>
+                        <span class="text-blue-400">→</span>
+                    </Link>
+                    <div v-else class="p-2.5 rounded-xl bg-cyan-950/60 border border-cyan-500/40 text-xs flex items-center justify-between">
+                        <div class="flex items-center space-x-2.5">
+                            <img :src="iconUser" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <span class="text-cyan-300 font-bold">Logged in as Admin</span>
+                        </div>
+                        <button @click="handleAdminLogout" class="text-red-400 hover:underline font-semibold">Logout</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
