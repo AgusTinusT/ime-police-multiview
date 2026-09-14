@@ -95,12 +95,13 @@ class OfficerManagementController extends Controller
             $officer = Officer::create($validated);
         }
 
-        // Trigger background live stream sync
+        // Non-blocking stream sync trigger (if queue driver is active)
         try {
-            $job = new SyncOfficerStreamsJob();
-            app()->call([$job, 'handle']);
-        } catch (\Exception $e) {
-            // Log without failing response
+            if (config('queue.default') !== 'sync') {
+                SyncOfficerStreamsJob::dispatch();
+            }
+        } catch (\Throwable $e) {
+            // Ignore queue dispatch error to prevent slowing down HTTP store response
         }
 
         return response()->json([
