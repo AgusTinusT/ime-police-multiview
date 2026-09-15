@@ -84,6 +84,39 @@ Route::middleware('auth')->prefix('api/v1/user/watchlist')->group(function () {
     Route::post('/toggle', [UserWatchlistController::class, 'toggle']);
 });
 
+// Admin-Protected Agencies, Ranks, Divisions & Certifications API
+use App\Http\Controllers\AgencyController;
+use App\Http\Controllers\RankController;
+use App\Http\Controllers\DivisionController;
+use App\Http\Controllers\CertificationController;
+
+Route::middleware(['auth', 'admin'])->prefix('api/v1/agencies')->group(function () {
+    Route::get('/', [AgencyController::class, 'index']);
+    Route::post('/', [AgencyController::class, 'store']);
+    Route::put('/{id}', [AgencyController::class, 'update']);
+    Route::delete('/{id}', [AgencyController::class, 'destroy']);
+});
+
+Route::middleware(['auth', 'admin'])->prefix('api/v1/ranks')->group(function () {
+    Route::get('/', [RankController::class, 'index']);
+    Route::post('/', [RankController::class, 'store']);
+    Route::put('/{id}', [RankController::class, 'update']);
+    Route::delete('/{id}', [RankController::class, 'destroy']);
+});
+
+Route::middleware(['auth', 'admin'])->prefix('api/v1/divisions')->group(function () {
+    Route::get('/', [DivisionController::class, 'index']);
+    Route::post('/', [DivisionController::class, 'store']);
+    Route::put('/{id}', [DivisionController::class, 'update']);
+    Route::delete('/{id}', [DivisionController::class, 'destroy']);
+});
+
+Route::middleware(['auth', 'admin'])->prefix('api/v1/certifications')->group(function () {
+    Route::get('/', [CertificationController::class, 'index']);
+    Route::post('/', [CertificationController::class, 'store']);
+    Route::delete('/{id}', [CertificationController::class, 'destroy']);
+});
+
 // Admin-Protected User Accounts Management API
 use App\Http\Controllers\UserManagementController;
 Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/users')->group(function () {

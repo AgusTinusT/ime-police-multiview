@@ -21,8 +21,13 @@ class Officer extends Model
         'department',
         'rank',
         'patrol_zone',
+        'agency_id',
+        'rank_id',
+        'division_id',
+        'duty_status',
         'subscriber_count',
         'subscriber_count_text',
+        'avatar_url',
         'is_active',
     ];
 
@@ -30,6 +35,38 @@ class Officer extends Model
         'subscriber_count' => 'integer',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Relational Agency (LSPD, BCSO, SASP, SAPR)
+     */
+    public function agency()
+    {
+        return $this->belongsTo(Agency::class);
+    }
+
+    /**
+     * Relational Rank
+     */
+    public function rankRelation()
+    {
+        return $this->belongsTo(Rank::class, 'rank_id');
+    }
+
+    /**
+     * Relational Sub-Division
+     */
+    public function division()
+    {
+        return $this->belongsTo(Division::class);
+    }
+
+    /**
+     * Tactical Certifications held by officer
+     */
+    public function certifications(): HasMany
+    {
+        return $this->hasMany(Certification::class);
+    }
 
     /**
      * Get all streams for this officer.

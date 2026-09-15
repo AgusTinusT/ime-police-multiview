@@ -459,6 +459,9 @@ class DatabaseSeeder extends Seeder
 
         // Run UserSeeder for admin and member accounts
         $this->call(UserSeeder::class);
+
+        // Run Agencies, Ranks, Divisions & Link Officers
+        $this->call(AgenciesRanksDivisionsSeeder::class);
     }
 }
 

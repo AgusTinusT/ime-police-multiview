@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Officer;
+use App\Models\Agency;
+use App\Models\Rank;
+use App\Models\Division;
+use App\Models\Certification;
 use App\Models\ActiveStream;
 use App\Jobs\SyncOfficerStreamsJob;
 use Illuminate\Http\Request;
@@ -15,7 +19,7 @@ class OfficerManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Officer::query();
+        $query = Officer::with(['agency', 'rankRelation', 'division', 'certifications']);
 
         if ($request->filled('dept') && $request->dept !== 'ALL') {
             $query->where('department', $request->dept);
@@ -56,6 +60,10 @@ class OfficerManagementController extends Controller
             'rank' => 'nullable|string|max:100',
             'badge_number' => 'nullable|string|max:50',
             'patrol_zone' => 'nullable|string|max:150',
+            'agency_id' => 'nullable|exists:agencies,id',
+            'rank_id' => 'nullable|exists:ranks,id',
+            'division_id' => 'nullable|exists:divisions,id',
+            'duty_status' => 'nullable|string|max:50',
             'channel_id' => 'nullable|string|max:64',
             'avatar_url' => 'nullable|string|max:500',
             'is_active' => 'nullable|boolean',
@@ -78,9 +86,24 @@ class OfficerManagementController extends Controller
             $validated['avatar_url'] = "https://api.dicebear.com/7.x/bottts/svg?seed={$seed}";
         }
 
+        // Backward compatibility mapping for department and rank
+        if (!empty($validated['agency_id'])) {
+            $agency = Agency::find($validated['agency_id']);
+            if ($agency) {
+                $validated['department'] = $agency->agency_code;
+            }
+        }
+        if (!empty($validated['rank_id'])) {
+            $rankModel = Rank::find($validated['rank_id']);
+            if ($rankModel) {
+                $validated['rank'] = $rankModel->rank_title;
+            }
+        }
+
         $validated['rank'] = $validated['rank'] ?? 'Officer';
         $validated['badge_number'] = $validated['badge_number'] ?? '#000';
         $validated['patrol_zone'] = $validated['patrol_zone'] ?? 'Los Santos Metropolitan';
+        $validated['duty_status'] = $validated['duty_status'] ?? '10-8 (On-Duty)';
         $validated['is_active'] = $request->boolean('is_active', true);
 
         // Check if handle or channel_id already exists
@@ -107,7 +130,7 @@ class OfficerManagementController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => "Officer {$officer->officer_name} ({$officer->callsign}) successfully added to database.",
-            'data' => $officer,
+            'data' => $officer->load(['agency', 'rankRelation', 'division', 'certifications']),
         ], 201);
     }
 
@@ -127,6 +150,10 @@ class OfficerManagementController extends Controller
             'rank' => 'nullable|string|max:100',
             'badge_number' => 'nullable|string|max:50',
             'patrol_zone' => 'nullable|string|max:150',
+            'agency_id' => 'nullable|exists:agencies,id',
+            'rank_id' => 'nullable|exists:ranks,id',
+            'division_id' => 'nullable|exists:divisions,id',
+            'duty_status' => 'nullable|string|max:50',
             'channel_id' => 'nullable|string|max:64',
             'avatar_url' => 'nullable|string|max:500',
             'is_active' => 'nullable|boolean',
@@ -138,12 +165,26 @@ class OfficerManagementController extends Controller
         }
         $validated['handle'] = $handle;
 
+        // Backward compatibility mapping for department and rank
+        if (!empty($validated['agency_id'])) {
+            $agency = Agency::find($validated['agency_id']);
+            if ($agency) {
+                $validated['department'] = $agency->agency_code;
+            }
+        }
+        if (!empty($validated['rank_id'])) {
+            $rankModel = Rank::find($validated['rank_id']);
+            if ($rankModel) {
+                $validated['rank'] = $rankModel->rank_title;
+            }
+        }
+
         $officer->update($validated);
 
         return response()->json([
             'status' => 'success',
             'message' => "Officer {$officer->officer_name} updated successfully.",
-            'data' => $officer,
+            'data' => $officer->load(['agency', 'rankRelation', 'division', 'certifications']),
         ]);
     }
 
@@ -203,6 +244,8 @@ class OfficerManagementController extends Controller
         $saprCount = Officer::where('is_active', true)->whereIn('department', ['SAPR', 'PARK RANGER'])->count();
         $liveCount = ActiveStream::where('status', 'LIVE')->count();
 
+        $agenciesMaster = Agency::with(['ranks', 'divisions'])->get();
+
         return \Inertia\Inertia::render('Admin/OfficerManagement', [
             'stats' => [
                 'total_officers' => $officersCount,
@@ -213,6 +256,7 @@ class OfficerManagementController extends Controller
                 'sasp' => $saspCount,
                 'sapr' => $saprCount,
             ],
+            'agenciesMaster' => $agenciesMaster,
             'auth' => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,
