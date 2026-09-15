@@ -38,11 +38,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
 // REST API Endpoints (Public Stream Telemetry & Visitor Feedback)
 Route::prefix('api/v1')->group(function () {
-    Route::get('/streams', [PoliceCommandController::class, 'apiStreams']);
-    Route::post('/sync', [PoliceCommandController::class, 'apiSync']);
-    Route::match(['get', 'post'], '/search-live', [PoliceCommandController::class, 'apiSearchLive']);
-    Route::get('/stream-details', [PoliceCommandController::class, 'apiStreamDetails']);
-    Route::match(['get', 'post'], '/telemetry', [PoliceCommandController::class, 'apiTelemetry']);
+    Route::get('/streams', [PoliceCommandController::class, 'apiStreams'])->middleware('throttle:60,1');
+    Route::post('/sync', [PoliceCommandController::class, 'apiSync'])->middleware('throttle:60,1');
+    Route::match(['get', 'post'], '/search-live', [PoliceCommandController::class, 'apiSearchLive'])->middleware('throttle:60,1');
+    Route::get('/stream-details', [PoliceCommandController::class, 'apiStreamDetails'])->middleware('throttle:60,1');
+    Route::match(['get', 'post'], '/telemetry', [PoliceCommandController::class, 'apiTelemetry'])->middleware('throttle:60,1');
     Route::post('/feedback', [FeedbackController::class, 'submit'])->middleware('throttle:5,1');
     
     // TAC Tactical Radio Channels

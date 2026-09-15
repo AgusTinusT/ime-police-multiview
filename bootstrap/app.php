@@ -22,7 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            'api/*',
+            'api/v1/sync',
+            'api/v1/telemetry',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

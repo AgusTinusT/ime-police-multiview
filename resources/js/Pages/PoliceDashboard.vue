@@ -634,10 +634,10 @@ onUnmounted(() => {
 // Origin URL & Embed Domain for YouTube API Handshake (Clean Unencoded Origin for YouTube API)
 const originUrl = ref(typeof window !== 'undefined' ? (window.location.origin || (window.location.protocol + '//' + window.location.host)) : '');
 const chatEmbedDomain = computed(() => {
-    if (typeof window !== 'undefined' && window.location) {
+    if (typeof window !== 'undefined' && window.location && window.location.hostname) {
         return window.location.hostname;
     }
-    return 'ime-police-multiview.test';
+    return 'localhost';
 });
 
 // Bandwidth Optimization & Data Saver State
@@ -1872,7 +1872,7 @@ const handleQuickAddStream = () => {
         status: 'LIVE',
         incident_code: '10-8 Tactical Add',
         viewers_count: 0,
-        live_chat_url: `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${window.location.hostname}`,
+        live_chat_url: `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${chatEmbedDomain.value}`,
         officer: {
             id: 999,
             channel_id: 'custom-' + Date.now(),
