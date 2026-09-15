@@ -1,9 +1,9 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import TacticalLayout from '@/Layouts/TacticalLayout.vue';
 
 // Icons & Branding
 import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
-import iconSaspColor from '@/Components/Icons/SASP_256.jpg';
 import iconLspdColor from '@/Components/Icons/LSPD_256.jpg';
 import iconBcsoColor from '@/Components/Icons/LSCSD_256.jpg';
 import iconSaprColor from '@/Components/Icons/SAPR_256.png';
@@ -30,77 +30,8 @@ const props = defineProps({
 <template>
     <Head title="Tentang Platform — IME RP SASP Police Duty Multiview" />
 
-    <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased">
-        
-        <!-- Tactical Header Bar -->
-        <header class="bg-[#0b1320] border-b border-blue-900/40 px-4 py-2 flex items-center justify-between gap-3 sticky top-0 z-40 shadow-xl backdrop-blur-md">
-            
-            <!-- Left Area: Branding & Standalone Page Navigation Links -->
-            <div class="flex items-center space-x-3 shrink-0">
-                <!-- Branding: IME Roleplay Police Division -->
-                <Link href="/" class="flex items-center space-x-2.5 shrink-0 group">
-                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden group-hover:border-blue-400 transition">
-                        <img :src="logoSaspColor" class="w-full h-full object-contain rounded" alt="SASP Badge" />
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase leading-tight group-hover:text-blue-300 transition">IME ROLEPLAY</span>
-                        <span class="text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DIVISION</span>
-                    </div>
-                </Link>
-
-                <!-- Vertical Divider -->
-                <div class="h-6 w-px bg-slate-800/80 hidden md:block"></div>
-
-                <!-- Page Navigation Links (Clean Minimalist Text Tabs) -->
-                <nav class="hidden md:flex items-center space-x-1">
-                    <Link 
-                        href="/officers"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
-                        title="Officer Directory (LSPD, BCSO, SASP)"
-                    >
-                        Officer Directory
-                    </Link>
-
-                    <Link 
-                        href="/about"
-                        class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600/30 text-blue-300 border border-blue-500/50 shadow-sm transition"
-                        title="Active Page: About Police Command Center"
-                    >
-                        About Platform
-                    </Link>
-
-                    <Link 
-                        href="/qna"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
-                        title="QnA & Tactical FAQ Guide"
-                    >
-                        QnA & FAQ
-                    </Link>
-
-                    <Link 
-                        href="/feedback"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
-                        title="Channel Requests & System Feedback"
-                    >
-                        Feedback & Reports
-                    </Link>
-                </nav>
-            </div>
-
-            <!-- Right Controls -->
-            <div class="flex items-center space-x-2">
-                <Link 
-                    href="/" 
-                    class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 transition flex items-center gap-1.5"
-                    title="Kembali ke Halaman Utama CCTV Multiview"
-                >
-                    <span>Multiview</span>
-                </Link>
-            </div>
-        </header>
-
-        <!-- Main Content Area -->
-        <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <TacticalLayout activeTab="about">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             
             <!-- Hero Card -->
             <div class="bg-gradient-to-br from-blue-950/70 via-slate-900 to-slate-950 border border-blue-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col sm:flex-row items-center gap-6">
@@ -109,14 +40,16 @@ const props = defineProps({
                 </div>
                 <div class="flex-1 text-center sm:text-left">
                     <div class="flex items-center justify-center sm:justify-start gap-2 mb-2">
-                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase font-mono">IME ROLEPLAY POLICE DIVISION
-</span>
+                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase font-mono">
+                            IME ROLEPLAY POLICE DIVISION
+                        </span>
                     </div>
                     <h1 class="text-2xl sm:text-3xl font-black text-slate-100 tracking-tight leading-tight">
                         Community Bodycam & Patrol Multiview
                     </h1>
                     <p class="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
-Tempat kumpul penonton buat mantau aksi patroli seluruh unit kepolisian di server GTA V IME Roleplay secara langsung. Nonton bodycam petugas bareng-bareng dari berbagai sudut pandang tanpa ribet, dan lancar.                   </p>
+                        Tempat kumpul penonton buat mantau aksi patroli seluruh unit kepolisian di server GTA V IME Roleplay secara langsung. Nonton bodycam petugas bareng-bareng dari berbagai sudut pandang tanpa ribet, dan lancar.
+                    </p>
                 </div>
             </div>
 
@@ -353,9 +286,10 @@ Tempat kumpul penonton buat mantau aksi patroli seluruh unit kepolisian di serve
                             </div>
 
                             <p class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl">
-Platform ini murni proyek nirlaba buat support teman-teman di komunitas IME Roleplay. Untuk sekarang, biaya operasional server masih ditanggung mandiri dengan estimasi bertahan sampai bulan November.
+                                Platform ini murni proyek nirlaba buat support teman-teman di komunitas IME Roleplay. Untuk sekarang, biaya operasional server masih ditanggung mandiri dengan estimasi bertahan sampai bulan November.
 
-Buat kalian yang merasa terbantu dan ingin ikut kontribusi secara sukarela agar platform ini bisa terus berlanjut serta terus berkembang, kalian bisa kirim dukungan. Terima kasih banyak atas dukungannya!                            </p>
+                                Buat kalian yang merasa terbantu dan ingin ikut kontribusi secara sukarela agar platform ini bisa terus berlanjut serta terus berkembang, kalian bisa kirim dukungan. Terima kasih banyak atas dukungannya!
+                            </p>
 
                             <!-- Links & Action Buttons -->
                             <div class="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
@@ -444,26 +378,7 @@ Buat kalian yang merasa terbantu dan ingin ikut kontribusi secara sukarela agar 
                 </div>
             </div>
 
-        </main>
-
-        <!-- TACTICAL COMMAND CENTER FOOTER -->
-        <footer class="mt-20 bg-[#080d18]/95 border-t border-blue-900/40 text-slate-400 text-xs backdrop-blur-md">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-                    <div>
-                        <h4 class="text-sm font-black text-blue-400 uppercase font-mono">IME ROLEPLAY POLICE DIVISION</h4>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Tactical Command Center & Multiview System</p>
-                    </div>
-                    <div class="flex items-center space-x-3 text-xs">
-                        <Link href="/" class="text-slate-300 hover:text-white">Multiview</Link>
-                        <span>•</span>
-                        <Link href="/officers" class="text-slate-300 hover:text-white">Direktori</Link>
-                        <span>•</span>
-                        <Link href="/feedback" class="text-sky-400 hover:text-sky-300">Lapor / Usul</Link>
-                    </div>
-                </div>
-            </div>
-        </footer>
-
-    </div>
+        </div>
+    </TacticalLayout>
 </template>
+

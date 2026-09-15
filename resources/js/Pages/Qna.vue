@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import TacticalLayout from '@/Layouts/TacticalLayout.vue';
 import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
 import iconSearch from '@/Components/Icons/search-svgrepo-com.svg';
 import iconCategory from '@/Components/Icons/category-svgrepo-com.svg';
@@ -21,9 +22,6 @@ const props = defineProps({
 // Category Filter State
 const activeCategory = ref('ALL');
 const searchQuery = ref('');
-
-// Mobile Nav Toggle
-const mobileMenuOpen = ref(false);
 
 // Accordion Expanded State (Array of active FAQ IDs)
 const openFaqIds = ref([1, 5]); // Default open 1st & 5th FAQ for immediate visual engagement
@@ -62,103 +60,80 @@ const faqs = [
         category: 'MULTIVIEW',
         categoryLabel: 'Multiview & Fitur',
         badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-        question: 'Bagaimana cara kerja fitur Bandwidth Saver / Standby Play Mode?',
-        answer: 'Fitur <strong>Bandwidth Saver</strong> bekerja dengan cara menghentikan pemutaran otomatis (auto-play) dan menampilkan thumbnail standby yang ringan. Video baru akan diputar secara manual saat Anda memilih unit yang ingin ditonton, sehingga penggunaan kuota internet dan konsumsi memori (RAM) browser dapat ditekan hingga 70%.'
+        question: 'Apa perbedaan antara Mode Saver dan Play All?',
+        answer: '<strong>Mode Saver</strong> menahan pemutaran video otomatis untuk menghemat penggunaan kuota internet dan beban CPU browser Anda. Video akan menampilkan thumbnail berkualitas tinggi dan baru akan diputar saat Anda mengkliknya. <strong>Mode Play All</strong> akan memutar seluruh video secara bersamaan untuk pemantauan penuh.'
     },
     {
         id: 4,
         category: 'MULTIVIEW',
         categoryLabel: 'Multiview & Fitur',
         badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-        question: 'Bagaimana cara mengatur kualitas / resolusi video (1080p, 720p, 480p)?',
-        answer: 'Kualitas video diatur langsung melalui ikon gerigi (Settings) pada pemutar video <strong>YouTube</strong> itu sendiri. Perlu diperhatikan bahwa pemutar embed YouTube menerapkan resolusi secara global pada browser Anda: <strong>jika Anda mengubah 1 video ke resolusi 1080p (atau 480p/720p), maka secara otomatis seluruh pemutar video perwira lainnya akan ikut berubah ke resolusi tersebut</strong>.'
+        question: 'Bagaimana cara menambahkan video ke kategori Personal Watchlist?',
+        answer: 'Anda dapat menekan tombol <strong>Pin (bintang/jarum)</strong> pada kartu video perwira manapun. Video tersebut akan secara otomatis tersimpan di browser Anda (LocalStorage) dan terkumpul di tab 📌 <strong>Personal</strong> (maksimal 6 video aktif).'
     },
+
+    // Category: RADIO TAKTIS (TAC)
     {
         id: 5,
-        category: 'MULTIVIEW',
-        categoryLabel: 'Multiview & Fitur',
-        badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-        question: 'Akun YouTube mana yang terhubung saat berinteraksi di Live Chat atau Subscribe?',
-        answer: 'Interaksi pada player video, fitur 1-Klik Subscribe, maupun Live Chat secara otomatis <strong>mengikuti akun YouTube yang sedang aktif / digunakan pada browser Anda (youtube.com)</strong>. Situs ini tidak pernah meminta, mengakses, atau menyimpan kredensial/kata sandi akun Anda.'
+        category: 'TAC',
+        categoryLabel: 'Radio Taktis (TAC)',
+        badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+        question: 'Apa fungsi dari Saluran Radio Taktis (TAC 1 - 10)?',
+        answer: 'Saluran TAC (Tactical Radio) digunakan oleh perwira dan komando untuk mengelompokkan siaran unit yang sedang menangani operasi atau situasi darurat tertentu (seperti 10-80 High Speed Pursuit, 10-90 Robbery, atau SWAT Raid). Memilih tab TAC akan secara otomatis menyaring seluruh unit yang terhubung ke saluran tersebut.'
     },
     {
         id: 6,
-        category: 'MULTIVIEW',
-        categoryLabel: 'Multiview & Fitur',
-        badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-        question: 'Apa perbedaan antara Grid View, Focus Mode, dan Cinema Hub?',
-        answer: '<strong>Grid View</strong> menampilkan seluruh perwira aktif dalam tata letak kisi berukuran sama. <strong>Focus Mode</strong> memperbesar 1 perwira utama di tengah dengan thumbnail perwira lainnya di samping. <strong>Cinema Hub</strong> menampilkan rekaman patroli/VOD terbaru saat tidak ada perwira yang sedang 10-8 (Live).'
+        category: 'TAC',
+        categoryLabel: 'Radio Taktis (TAC)',
+        badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+        question: 'Berapa lama batas waktu alokasi situasi TAC Radio?',
+        answer: 'Setiap alokasi TAC memiliki timer hitung mundur default selama <strong>30 Menit</strong>. Ketika waktu tersisa kurang dari 60 detik, sistem akan menampilkan konfirmasi alert. Anda atau petugas dapat memperpanjang waktu situasi (+20 menit) atau membubarkan saluran jika situasi telah selesai.'
     },
 
-    // Category: STREAMER & PERWIRA
+    // Category: STREAMER & PENDAFTARAN
     {
         id: 7,
-        category: 'OFFICER',
-        categoryLabel: 'Streamer & Perwira',
-        badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
-        question: 'Bagaimana cara mendaftarkan channel stream perwira baru?',
-        answer: 'Perwira yang baru bergabung atau berpindah channel dapat mengajukan penambahan melalui halaman <a href="/feedback" class="text-blue-400 font-bold underline hover:text-blue-300">Feedback & Reports</a>. Pilih kategori <strong>Usulan Channel Streamer Baru</strong>, lalu masukkan Nama Perwira, Callsign, Departemen (LSPD/BCSO/SASP/SAPR), serta Link Channel YouTube/Twitch Anda.'
+        category: 'OFFICERS',
+        categoryLabel: 'Streamer & Pendaftaran',
+        badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+        question: 'Saya perwira polisi baru di IME Roleplay, bagaimana cara mendaftarkan channel siaran saya?',
+        answer: 'Anda dapat mengajukan pendaftaran channel siaran langsung Anda melalui menu <a href="/feedback" class="text-sky-400 underline font-bold">Feedback & Reports</a> atau melalui server Discord IME Roleplay. Cantumkan Nama Perwira, Callsign, Kesatuan (LSPD/BCSO/SASP/SAPR), dan Link Channel YouTube Anda.'
     },
     {
         id: 8,
-        category: 'OFFICER',
-        categoryLabel: 'Streamer & Perwira',
-        badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
-        question: 'Mengapa status live stream saya terdeteksi OFFLINE padahal saya sedang Live?',
-        answer: 'Sistem auto-telemetry mengenali stream berdasarkan kata kunci di judul live stream Anda. Pastikan judul live stream menyertakan setidaknya salah satu kata kunci seperti <code>IME</code>, <code>IME ROLEPLAY</code>, <code>POLICE</code>, <code>LSPD</code>, <code>BCSO</code>, atau <code>SASP</code>. Jika masih tidak deteksi, periksa apakah link channel di direktori sudah tepat.'
-    },
-    {
-        id: 9,
-        category: 'OFFICER',
-        categoryLabel: 'Streamer & Perwira',
-        badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
-        question: 'Apakah unit non-kepolisian (seperti EMS, Mekanik, atau Warga) bisa didaftarkan?',
-        answer: 'Saat ini platform ini secara khusus dikhususkan untuk <strong>Police Tactical Command Center</strong> (LSPD, BCSO, SASP, SAPR) demi menjamin ruang pantau operasi taktis kepolisian. Namun, usulan fitur integrasi unit darurat lain (seperti EMS) sedang dalam pertimbangan pengembang.'
+        category: 'OFFICERS',
+        categoryLabel: 'Streamer & Pendaftaran',
+        badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+        question: 'Apakah sistem ini mendukung pemantauan streamer non-polisi (Target/Gang)?',
+        answer: 'Ya! Anda dapat menggunakan fitur <strong>Quick Feed / Live Search</strong> pada header untuk mencari stream live berdasarkan hashtag (seperti <code>#imeroleplay</code>, <code>#DOJ</code>, <code>#Vagabond</code>) atau memasukkan URL/Video ID YouTube secara manual untuk ditambahkan ke CCTV Wall Anda.'
     },
 
-    // Category: TAC RADIO
-    {
-        id: 8,
-        category: 'TAC_RADIO',
-        categoryLabel: 'TAC Radio Channel',
-        badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-        question: 'Apa itu fitur TAC Channel pada header dashboard?',
-        answer: 'Fitur TAC (Tactical Radio Channel) menampilkan alokasi frekuensi radio taktis (seperti TAC-1, TAC-2, TAC-3) yang digunakan jajaran perwira saat melakukan operasi khusus, penyergapan (Code 3), atau perbantuan lintas unit (Pursuit).'
-    },
+    // Category: KENDALA TEKNIS
     {
         id: 9,
-        category: 'TAC_RADIO',
-        categoryLabel: 'TAC Radio Channel',
-        badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-        question: 'Siapa yang berwenang menetapkan atau mereset saluran TAC Radio?',
-        answer: 'Pengaturan dan alokasi TAC Radio dilakukan secara real-time oleh Command Staff / Dispatcher terdaftar melalui panel Admin. Setiap alokasi TAC memiliki timer otomatis yang akan kembali netral jika operasi taktis telah selesai.'
+        category: 'TROUBLESHOOTING',
+        categoryLabel: 'Kendala Teknis',
+        badgeColor: 'bg-red-500/20 text-red-300 border-red-500/40',
+        question: 'Mengapa layar pemutar video berwarna hitam atau muncul tulisan "Playback Error"?',
+        answer: 'Beberapa penyebab umum playback error meliputi: (1) Perwira telah mengakhiri siaran live, (2) Pemilik channel membatasi playback embed di luar YouTube, atau (3) Ekstensi adblocker di browser Anda memblokir script player YouTube. Coba tekan tombol <strong>Sync (Refresh Feeds)</strong> atau buka video langsung di situs YouTube.'
     },
-
-    // Category: TROUBLESHOOTING
     {
         id: 10,
         category: 'TROUBLESHOOTING',
-        categoryLabel: 'Troubleshooting',
-        badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-        question: 'Video mengalami buffering berulang atau layar hitam (Black Screen)?',
-        answer: 'Masalah ini biasanya disebabkan oleh salah satu dari hal berikut: (1) Ad-Blocker pihak ketiga memblokir embed player, (2) Batasan koneksi internet lokal, atau (3) YouTube/Twitch membatasi akses embed. Coba muat ulang halaman (F5) atau matikan ekstensi pemblokir iklan di browser Anda.'
-    },
-    {
-        id: 11,
-        category: 'TROUBLESHOOTING',
-        categoryLabel: 'Troubleshooting',
-        badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-        question: 'Mengapa sering muncul iklan pada pemutar video (stream)?',
-        answer: 'Iklan yang muncul saat memutar video sepenuhnya disajikan dan dikontrol langsung oleh <strong>YouTube / platform penyedia siaran</strong> (sesuai status monetisasi channel perwira yang bersangkutan). <strong>Website IME Police Multiview ini 100% bersih dari iklan komersial bawaan</strong> dan tidak memasang ad-banner pihak ketiga sama sekali.'
-    },
-    {
-        id: 12,
-        category: 'TROUBLESHOOTING',
-        categoryLabel: 'Troubleshooting',
-        badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-        question: 'Apakah platform ini aman dan bebas dari pelacakan?',
-        answer: 'Ya, platform IME Police Multiview dibuat murni sebagai alat bantu komunitas tanpa iklan berbayar (No Ads), tanpa tracker komersial, serta mematuhi kebijakan privasi embed resmi dari platform penyedia konten.'
-    },
+        categoryLabel: 'Kendala Teknis',
+        badgeColor: 'bg-red-500/20 text-red-300 border-red-500/40',
+        question: 'Apakah aplikasi ini dapat dipasang sebagai PWA di HP Android atau iPhone?',
+        answer: 'Tentu saja! Platform ini sepenuhnya mendukung Progressive Web App (PWA). Buka situs ini melalui browser Google Chrome (Android) atau Safari (iOS), lalu pilih menu browser <strong>"Add to Home Screen" (Tambahkan ke Layar Utama)</strong> untuk menginstalnya sebagai aplikasi desktop/mobile.'
+    }
+];
+
+// Categories array for filter buttons
+const categories = [
+    { id: 'ALL', name: 'Semua Topik FAQ' },
+    { id: 'MULTIVIEW', name: 'Multiview & Fitur' },
+    { id: 'TAC', name: 'Radio Taktis (TAC)' },
+    { id: 'OFFICERS', name: 'Streamer & Pendaftaran' },
+    { id: 'TROUBLESHOOTING', name: 'Kendala Teknis' },
 ];
 
 // Computed Filtered FAQs
@@ -183,97 +158,11 @@ const filteredFaqs = computed(() => {
 </script>
 
 <template>
-    <Head title="Panduan & FAQ — IME RP SASP Police Duty Multiview" />
-
-    <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased">
-        
-        <!-- Tactical Header Bar -->
-        <header class="bg-[#0b1320] border-b border-blue-900/40 px-4 py-2 flex items-center justify-between gap-3 sticky top-0 z-40 shadow-xl backdrop-blur-md">
-            
-            <!-- Left Area: Branding & Navigation -->
-            <div class="flex items-center space-x-3 shrink-0">
-                <!-- Branding: IME Roleplay Police Division -->
-                <Link href="/" class="flex items-center space-x-2.5 shrink-0 group">
-                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden group-hover:border-blue-400 transition">
-                        <img :src="logoSaspColor" class="w-full h-full object-contain rounded" alt="SASP Badge" />
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase leading-tight group-hover:text-blue-300 transition">IME ROLEPLAY</span>
-                        <span class="text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DIVISION</span>
-                    </div>
-                </Link>
-
-                <!-- Vertical Divider -->
-                <div class="h-6 w-px bg-slate-800/80 hidden md:block"></div>
-
-                <!-- Page Navigation Links -->
-                <nav class="hidden md:flex items-center space-x-1">
-                    <Link 
-                        href="/officers"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
-                        title="Officer Directory (LSPD, BCSO, SASP)"
-                    >
-                        Officer Directory
-                    </Link>
-
-                    <Link 
-                        href="/about"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
-                        title="About Police Command Center"
-                    >
-                        About Platform
-                    </Link>
-
-                    <Link 
-                        href="/qna"
-                        class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600/30 text-blue-300 border border-blue-500/50 shadow-sm transition"
-                        title="Active Page: QnA & Tactical FAQ Guide"
-                    >
-                        QnA & FAQ
-                    </Link>
-
-                    <Link 
-                        href="/feedback"
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition"
-                        title="Channel Requests & System Feedback"
-                    >
-                        Feedback & Reports
-                    </Link>
-                </nav>
-            </div>
-
-            <!-- Right Controls -->
-            <div class="flex items-center space-x-2">
-                <Link 
-                    href="/" 
-                    class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 transition flex items-center gap-1.5"
-                    title="Kembali ke Halaman Utama CCTV Multiview"
-                >
-                    <span>Multiview</span>
-                </Link>
-
-                <!-- Mobile Menu Button -->
-                <button 
-                    @click="mobileMenuOpen = !mobileMenuOpen"
-                    class="md:hidden p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white"
-                >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-            </div>
-        </header>
-
-        <!-- Mobile Navigation Menu Modal -->
-        <div v-if="mobileMenuOpen" class="md:hidden bg-[#0b1320] border-b border-blue-900/40 px-4 py-3 space-y-2">
-            <Link href="/officers" class="block px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800">Officer Directory</Link>
-            <Link href="/about" class="block px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800">About Platform</Link>
-            <Link href="/qna" class="block px-3 py-2 rounded-lg text-sm font-bold text-blue-400 bg-blue-950/50">QnA & FAQ</Link>
-            <Link href="/feedback" class="block px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-slate-800">Feedback & Reports</Link>
-        </div>
+    <TacticalLayout>
+        <Head title="Panduan & FAQ — IME RP SASP Police Duty Multiview" />
 
         <!-- Main Content Area -->
-        <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             
             <!-- Hero Header Banner -->
             <div class="bg-gradient-to-br from-blue-950/70 via-slate-900 to-slate-950 border border-blue-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
@@ -454,19 +343,5 @@ const filteredFaqs = computed(() => {
                 </Link>
             </div>
         </main>
-
-        <!-- Tactical Footer -->
-        <footer class="mt-auto border-t border-slate-800/80 bg-[#070b12] py-6 px-4 text-center text-xs text-slate-500">
-            <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="flex items-center space-x-2">
-                    <span class="font-bold text-slate-400">IME POLICE MULTIVIEW</span>
-                    <span>•</span>
-                    <span>v{{ appVersion }}</span>
-                </div>
-                <div>
-                    Platform Pendukung Komunitas IME Roleplay Police Division
-                </div>
-            </div>
-        </footer>
-    </div>
+    </TacticalLayout>
 </template>

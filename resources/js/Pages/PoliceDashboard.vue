@@ -39,6 +39,7 @@ import iconChat from '@/Components/Icons/chat-svgrepo-com.svg';
 import iconChatRemove from '@/Components/Icons/chat-remove-svgrepo-com.svg';
 import iconTarget from '@/Components/Icons/target-svgrepo-com.svg';
 import UserAccountMenu from '@/Components/UserAccountMenu.vue';
+import TacticalFooter from '@/Components/TacticalFooter.vue';
 
 const props = defineProps({
     initialStreams: {
@@ -5878,15 +5879,8 @@ const submitFeedbackForm = async () => {
             </div>
         </div>
 
-        <!-- Footer Credit Bar -->
-        <footer class="mt-8 pt-4 pb-2 border-t border-slate-800/80 text-center text-xs text-slate-500 font-sans px-4">
-            <p class="font-medium text-slate-400">
-                © {{ new Date().getFullYear() }} IME Roleplay Community — SASP Police Duty Multiview
-            </p>
-            <p class="mt-1 text-[11px] text-slate-500">
-                Developed by <span class="text-blue-400 font-semibold">Gusti Aidan (Agus Tinus Turnip)</span> • Community Fan-Made Project
-            </p>
-        </footer>
+        <!-- Tactical Footer -->
+        <TacticalFooter />
 
     </div>
 </template>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import TacticalLayout from '@/Layouts/TacticalLayout.vue';
 
 const props = defineProps({
     stats: {
@@ -581,14 +582,14 @@ onMounted(() => {
 <template>
     <Head title="Admin Command Hub - Tactical Police Multiview" />
 
-    <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black">
-        <!-- TOP HEADER / NAVBAR -->
-        <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-xl px-4 lg:px-8 py-3.5">
-            <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-                <!-- Brand / Logo -->
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-400/30">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <TacticalLayout activeTab="admin">
+        <!-- MAIN CONTENT AREA -->
+        <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            <!-- PAGE HEADER CARD -->
+            <div class="bg-gradient-to-r from-blue-950/80 via-slate-900 to-slate-950 border border-blue-900/50 rounded-2xl p-5 shadow-xl flex items-center justify-between gap-4">
+                <div class="flex items-center space-x-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-400/30 shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
                     </div>
@@ -607,41 +608,13 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <!-- Right Quick Links & User Profile -->
-                <div class="flex items-center space-x-3 sm:space-x-4">
-                    <!-- Public Dashboard Link -->
-                    <Link 
-                        href="/" 
-                        class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700 shadow transition flex items-center space-x-1.5"
-                    >
-                        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                        <span class="hidden sm:inline">Open Public Dashboard</span>
-                    </Link>
-
-                    <!-- User Account / Logout -->
-                    <div class="flex items-center space-x-2.5 pl-2 border-l border-slate-800">
-                        <div class="text-right hidden sm:block">
-                            <div class="text-xs font-bold text-white leading-tight">{{ auth.user?.name || 'Admin' }}</div>
-                            <div class="text-[10px] text-slate-400 leading-tight">{{ auth.user?.email || 'admin@dispatch' }}</div>
-                        </div>
-                        <button 
-                            @click="handleLogout" 
-                            class="p-2 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-800/40 transition hover:text-red-300 shadow"
-                            title="Sign Out"
-                        >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                        </button>
-                    </div>
+                <div class="flex items-center space-x-2 text-xs font-mono text-slate-400">
+                    <span class="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-300">
+                        Logged in as: <strong class="text-cyan-400 font-bold">{{ auth.user?.name || 'Admin' }}</strong>
+                    </span>
                 </div>
             </div>
-        </header>
 
-        <!-- MAIN CONTENT AREA -->
-        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
             <!-- ADMIN TABS -->
             <div class="flex items-center space-x-2 border-b border-slate-800 pb-2">
                 <button 
@@ -1124,7 +1097,7 @@ onMounted(() => {
                 </div>
             </div> <!-- End TAB 3 -->
 
-        </main>
+        </div>
 
         <!-- MODAL: ADD / EDIT OFFICER -->
         <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
@@ -1469,5 +1442,5 @@ onMounted(() => {
             </div>
         </Teleport>
 
-    </div>
+    </TacticalLayout>
 </template>

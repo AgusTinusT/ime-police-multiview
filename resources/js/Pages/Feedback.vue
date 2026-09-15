@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import TacticalLayout from '@/Layouts/TacticalLayout.vue';
 
 import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
 import iconFeedback from '@/Components/Icons/report-svgrepo-com.svg';
@@ -66,7 +67,7 @@ const submitFeedbackForm = async () => {
                 message: '',
             };
         } else {
-            errorMessage.value = data.message || 'Gagal mengirim masukan. Silakan coba lagi.';
+            errorMessage.value = data.message || 'Gagal mengirim laporan. Silakan coba lagi.';
         }
     } catch (e) {
         errorMessage.value = 'Terjadi kesalahan jaringan saat mengirim laporan.';
@@ -77,79 +78,11 @@ const submitFeedbackForm = async () => {
 </script>
 
 <template>
-    <Head title="Feedback & Reports — IME RP SASP Police Duty Multiview" />
-
-    <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased">
-        
-        <!-- Tactical Header Bar -->
-        <header class="bg-[#0b1320] border-b border-blue-900/40 px-4 py-2 flex items-center justify-between gap-3 sticky top-0 z-40 shadow-xl backdrop-blur-md">
-            
-            <!-- Left Area: Branding & Standalone Page Navigation Links -->
-            <div class="flex items-center space-x-3 shrink-0">
-                <!-- Branding: IME Roleplay Police Division -->
-                <Link href="/" class="flex items-center space-x-2.5 shrink-0 group">
-                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden group-hover:border-blue-400 transition">
-                        <img :src="logoSaspColor" class="w-full h-full object-contain rounded" alt="SASP Badge" />
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xs font-black tracking-wider text-blue-400 uppercase leading-tight group-hover:text-blue-300 transition">IME ROLEPLAY</span>
-                        <span class="text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DIVISION</span>
-                    </div>
-                </Link>
-
-                <!-- Vertical Divider -->
-                <div class="h-6 w-px bg-slate-800/80 hidden md:block"></div>
-
-                <!-- Page Navigation Links (Clean Tab Style) -->
-                <nav class="hidden md:flex items-center space-x-1">
-                    <Link 
-                        href="/officers"
-                        class="px-2.5 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-1.5 group"
-                        title="Officer Directory (LSPD, BCSO, SASP)"
-                    >
-                        <span>Officer Directory</span>
-                    </Link>
-
-                    <Link 
-                        href="/about"
-                        class="px-2.5 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-1.5 group"
-                        title="About Police Command Center"
-                    >
-                        <span>About Platform</span>
-                    </Link> 
-
-                    <Link 
-                        href="/qna"
-                        class="px-2.5 py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-1.5 group"
-                        title="QnA & Tactical FAQ Guide"
-                    >
-                        <span>QnA & FAQ</span>
-                    </Link>
-
-                    <Link 
-                        href="/feedback"
-                        class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600/30 text-blue-300 border border-blue-500/50 shadow-sm transition"
-                        title="Active Page: Channel Requests & System Feedback"
-                    >
-                        <span>Feedback & Reports</span>
-                    </Link>
-                </nav>
-            </div>
-
-            <!-- Right Controls -->
-            <div class="flex items-center space-x-2">
-                <Link 
-                    href="/" 
-                    class="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 transition flex items-center gap-1.5"
-                    title="Kembali ke Halaman Utama CCTV Multiview"
-                >
-                    <span>Multiview</span>
-                </Link>
-            </div>
-        </header>
+    <TacticalLayout>
+        <Head title="Feedback & Reports — IME RP SASP Police Duty Multiview" />
 
         <!-- Main Content Portal -->
-        <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-8 sm:py-12 flex flex-col gap-6">
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">">
             
             <!-- Hero Title -->
             <div class="space-y-2 text-center sm:text-left">
@@ -319,14 +252,5 @@ const submitFeedbackForm = async () => {
             </form>
 
         </main>
-
-        <!-- Page Footer -->
-        <footer class="bg-[#080d18] border-t border-slate-800/80 py-6 text-center text-xs text-slate-500 font-mono">
-            <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <span>© 2026 IME Roleplay Police Command Center.</span>
-                <span>Direct Dispatcher Integration</span>
-            </div>
-        </footer>
-
-    </div>
+    </TacticalLayout>
 </template>
