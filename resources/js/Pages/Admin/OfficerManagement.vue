@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import TacticalLayout from '@/Layouts/TacticalLayout.vue';
+import axios from 'axios';
 
 const props = defineProps({
     stats: {
@@ -614,19 +615,12 @@ const verifyYouTubeChannel = async () => {
 
     isCheckingChannel.value = true;
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const res = await fetch('/admin/api/check-channel', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({ handle: form.value.handle }),
+        const res = await axios.post('/admin/api/check-channel', {
+            handle: form.value.handle,
         });
 
-        const json = await res.json();
-        if (res.ok && json.status === 'success') {
+        const json = res.data;
+        if (json.status === 'success' && json.data) {
             const data = json.data;
             if (data.channel_id) form.value.channel_id = data.channel_id;
             if (data.handle) form.value.handle = data.handle;
@@ -637,7 +631,11 @@ const verifyYouTubeChannel = async () => {
             showToast(json.message || 'YouTube channel not found.', 'error');
         }
     } catch (e) {
-        showToast('Failed to verify channel: ' + e.message, 'error');
+        if (e.response && e.response.status === 419) {
+            showToast('Sesi Anda telah berakhir (CSRF Expired). Silakan muat ulang halaman (Ctrl+R).', 'error');
+        } else {
+            showToast('Failed to verify channel: ' + (e.response?.data?.message || e.message), 'error');
+        }
     } finally {
         isCheckingChannel.value = false;
     }
@@ -651,23 +649,14 @@ const saveOfficer = async () => {
     }
 
     isSavingOfficer.value = true;
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     const url = isEditMode.value ? `/api/v1/officers/${form.value.id}` : '/api/v1/officers';
-    const method = isEditMode.value ? 'PUT' : 'POST';
+    const method = isEditMode.value ? 'put' : 'post';
 
     try {
-        const res = await fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify(form.value),
-        });
+        const res = await axios[method](url, form.value);
+        const json = res.data;
 
-        const json = await res.json();
-        if (res.ok && json.status === 'success') {
+        if (json.status === 'success') {
             showToast(json.message || (isEditMode.value ? 'Officer updated successfully!' : 'Officer added successfully!'), 'success');
             showModal.value = false;
             fetchOfficers();
@@ -675,7 +664,11 @@ const saveOfficer = async () => {
             showToast(json.message || 'Failed to save officer data.', 'error');
         }
     } catch (e) {
-        showToast('An error occurred while saving: ' + e.message, 'error');
+        if (e.response && e.response.status === 419) {
+            showToast('Sesi Anda telah berakhir (CSRF Expired). Silakan muat ulang halaman (Ctrl+R).', 'error');
+        } else {
+            showToast('An error occurred while saving: ' + (e.response?.data?.message || e.message), 'error');
+        }
     } finally {
         isSavingOfficer.value = false;
     }
@@ -742,23 +735,20 @@ const executeDeleteOfficer = async () => {
 // Trigger Live Stream Sync
 const triggerSyncStreams = async () => {
     isSyncingStreams.value = true;
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     try {
-        const res = await fetch('/admin/api/sync-streams', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            },
-        });
-        const json = await res.json();
-        if (res.ok && json.status === 'success') {
+        const res = await axios.post('/admin/api/sync-streams');
+        const json = res.data;
+        if (json.status === 'success') {
             showToast(json.message, 'success');
         } else {
             showToast(json.message || 'Stream sync failed.', 'error');
         }
     } catch (e) {
-        showToast('Failed to sync live streams: ' + e.message, 'error');
+        if (e.response && e.response.status === 419) {
+            showToast('Sesi Anda telah berakhir (CSRF Expired). Silakan muat ulang halaman (Ctrl+R).', 'error');
+        } else {
+            showToast('Failed to sync live streams: ' + (e.response?.data?.message || e.message), 'error');
+        }
     } finally {
         isSyncingStreams.value = false;
     }
@@ -767,24 +757,21 @@ const triggerSyncStreams = async () => {
 // Trigger Subscriber Count Sync
 const triggerSyncSubs = async () => {
     isSyncingSubs.value = true;
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     try {
-        const res = await fetch('/admin/api/sync-subscribers', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            },
-        });
-        const json = await res.json();
-        if (res.ok && json.status === 'success') {
+        const res = await axios.post('/admin/api/sync-subscribers');
+        const json = res.data;
+        if (json.status === 'success') {
             showToast(json.message, 'success');
             fetchOfficers();
         } else {
             showToast(json.message || 'Failed to sync subscribers.', 'error');
         }
     } catch (e) {
-        showToast('Failed to sync subscribers: ' + e.message, 'error');
+        if (e.response && e.response.status === 419) {
+            showToast('Sesi Anda telah berakhir (CSRF Expired). Silakan muat ulang halaman (Ctrl+R).', 'error');
+        } else {
+            showToast('Failed to sync subscribers: ' + (e.response?.data?.message || e.message), 'error');
+        }
     } finally {
         isSyncingSubs.value = false;
     }

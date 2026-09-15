@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
+import axios from 'axios';
 
 const page = usePage();
 const currentUser = computed(() => page.props.auth?.user || null);
@@ -92,19 +93,12 @@ const sendMessage = async () => {
     errorMessage.value = '';
 
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const res = await fetch('/api/v1/chat/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({ message: newMessageText.value.trim() }),
+        const res = await axios.post('/api/v1/chat/messages', {
+            message: newMessageText.value.trim(),
         });
 
-        const json = await res.json();
-        if (res.ok && json.status === 'success') {
+        const json = res.data;
+        if (json.status === 'success') {
             newMessageText.value = '';
             if (json.data) {
                 messages.value.push(json.data);
@@ -114,7 +108,11 @@ const sendMessage = async () => {
             errorMessage.value = json.message || 'Gagal mengirim pesan.';
         }
     } catch (e) {
-        errorMessage.value = 'Gagal terhubung ke server chat.';
+        if (e.response && e.response.status === 419) {
+            errorMessage.value = 'Sesi Anda telah berakhir. Silakan muat ulang halaman (Ctrl+R).';
+        } else {
+            errorMessage.value = e.response?.data?.message || 'Gagal terhubung ke server chat.';
+        }
     } finally {
         isSending.value = false;
     }
@@ -124,12 +122,8 @@ const sendMessage = async () => {
 const deleteMessage = async (id) => {
     if (!confirm('Hapus pesan ini dari chat komunitas?')) return;
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const res = await fetch(`/api/v1/chat/messages/${id}`, {
-            method: 'DELETE',
-            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-        });
-        if (res.ok) {
+        const res = await axios.delete(`/api/v1/chat/messages/${id}`);
+        if (res.status === 200 || res.status === 204) {
             messages.value = messages.value.filter(m => m.id !== id);
             if (pinnedMessage.value && pinnedMessage.value.id === id) {
                 pinnedMessage.value = null;
@@ -143,13 +137,9 @@ const deleteMessage = async (id) => {
 // Admin Action: Toggle Pin Message
 const togglePinMessage = async (id) => {
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        const res = await fetch(`/api/v1/chat/messages/${id}/pin`, {
-            method: 'PATCH',
-            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-        });
-        const json = await res.json();
-        if (res.ok && json.status === 'success') {
+        const res = await axios.patch(`/api/v1/chat/messages/${id}/pin`);
+        const json = res.data;
+        if (json.status === 'success') {
             fetchMessages(true);
         }
     } catch (e) {
