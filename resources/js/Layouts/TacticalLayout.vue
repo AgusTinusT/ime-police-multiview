@@ -11,6 +11,7 @@ import iconRoster from '@/Components/Icons/doc-svgrepo-com.svg';
 import iconUrl from '@/Components/Icons/url-checker-svgrepo-com.svg';
 import UserAccountMenu from '@/Components/UserAccountMenu.vue';
 import TacticalFooter from '@/Components/TacticalFooter.vue';
+import TacticalChatDrawer from '@/Components/TacticalChatDrawer.vue';
 
 const isFullscreen = ref(false);
 const isMobileMenuOpen = ref(false);
@@ -193,6 +194,9 @@ onUnmounted(() => {
 
         <!-- Reusable Tactical Footer -->
         <TacticalFooter />
+
+        <!-- Floating Tactical Community Chat -->
+        <TacticalChatDrawer />
 
     </div>
 </template>

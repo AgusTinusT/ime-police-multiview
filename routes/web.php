@@ -84,6 +84,17 @@ Route::middleware('auth')->prefix('api/v1/user/watchlist')->group(function () {
     Route::post('/toggle', [UserWatchlistController::class, 'toggle']);
 });
 
+// Tactical Community Group Chat API
+use App\Http\Controllers\ChatMessageController;
+Route::get('/api/v1/chat/messages', [ChatMessageController::class, 'index']);
+Route::middleware('auth')->prefix('api/v1/chat/messages')->group(function () {
+    Route::post('/', [ChatMessageController::class, 'store']);
+});
+Route::middleware(['auth', 'admin'])->prefix('api/v1/chat/messages')->group(function () {
+    Route::delete('/{id}', [ChatMessageController::class, 'destroy']);
+    Route::patch('/{id}/pin', [ChatMessageController::class, 'togglePin']);
+});
+
 // Admin-Protected Agencies, Ranks, Divisions & Certifications API
 use App\Http\Controllers\AgencyController;
 use App\Http\Controllers\RankController;

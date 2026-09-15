@@ -40,6 +40,7 @@ import iconChatRemove from '@/Components/Icons/chat-remove-svgrepo-com.svg';
 import iconTarget from '@/Components/Icons/target-svgrepo-com.svg';
 import UserAccountMenu from '@/Components/UserAccountMenu.vue';
 import TacticalFooter from '@/Components/TacticalFooter.vue';
+import TacticalChatDrawer from '@/Components/TacticalChatDrawer.vue';
 
 const props = defineProps({
     initialStreams: {
@@ -5881,6 +5882,9 @@ const submitFeedbackForm = async () => {
 
         <!-- Tactical Footer -->
         <TacticalFooter />
+
+        <!-- Floating Tactical Community Chat -->
+        <TacticalChatDrawer />
 
     </div>
 </template>
