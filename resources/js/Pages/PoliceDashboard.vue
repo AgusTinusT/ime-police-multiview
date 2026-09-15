@@ -1159,6 +1159,18 @@ const dropdownTacDepartments = [
 ];
 
 const isMoreTacOpen = ref(false);
+const tacDropdownPos = ref({ top: 0, left: 0 });
+
+const toggleMoreTac = (event) => {
+    isMoreTacOpen.value = !isMoreTacOpen.value;
+    if (isMoreTacOpen.value && event?.currentTarget) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        tacDropdownPos.value = {
+            top: rect.bottom + 6,
+            left: Math.min(rect.left, Math.max(10, window.innerWidth - 205)),
+        };
+    }
+};
 
 const getDeptIcon = (dept) => {
     if (typeof dept === 'string' && dept.startsWith('TAC_')) return iconRadio;
@@ -1267,6 +1279,12 @@ const visibleStreams = computed(() => {
 // Displayed Grid Streams (Respects layout limits to prevent offscreen video bandwidth drain)
 const displayedGridStreams = computed(() => {
     const list = visibleStreams.value;
+    if (selectedLayout.value === 'grid-1x2') {
+        return list.slice(0, 2);
+    }
+    if (selectedLayout.value === 'grid-1x3') {
+        return list.slice(0, 3);
+    }
     if (selectedLayout.value === 'grid-2x2') {
         return list.slice(0, 4);
     }
@@ -1278,6 +1296,8 @@ const displayedGridStreams = computed(() => {
     }
     return list;
 });
+
+
 
 // ==========================================
 // NETFLIX-STYLE CINEMA HUB COMPUTED CATEGORIES
@@ -1708,6 +1728,12 @@ onMounted(() => {
 
 // Layout Grid CSS Class Computation
 const layoutGridClass = computed(() => {
+    if (selectedLayout.value === 'grid-1x2') {
+        return 'grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-2';
+    }
+    if (selectedLayout.value === 'grid-1x3') {
+        return 'grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3';
+    }
     if (selectedLayout.value === 'grid-2x2') {
         return 'grid grid-cols-1 md:grid-cols-2 gap-3.5';
     }
@@ -2412,60 +2438,61 @@ const submitFeedbackForm = async () => {
                             {{ allActiveStreams.filter(s => s.officer?.department === dept.id || (dept.id === 'SAPR' && (s.officer?.department === 'SAPR' || s.officer?.department === 'PARK RANGER'))).length }}
                         </span>
                     </button>
-                </div>
 
-                <!-- More TAC Dropdown Selector (TAC 4 to TAC 10) - Unclipped outside overflow-x-auto -->
-                <div class="relative shrink-0 text-left z-40">
-                    <button
-                        @click.stop="isMoreTacOpen = !isMoreTacOpen"
-                        :class="[
-                            'px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap font-medium',
-                            dropdownTacDepartments.some(d => d.id === selectedDepartment)
-                                ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400 ring-1 ring-amber-400'
-                                : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
-                        ]"
-                        :title="dropdownTacDepartments.some(d => d.id === selectedDepartment) ? `Kanal Terpilih: ${selectedDepartment.replace('_', ' ')}` : 'Kanal TAC Tambahan (TAC 4 - 10)'"
-                    >
-                        <img :src="iconRadio" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90" alt="" />
-                        <span>{{ dropdownTacDepartments.some(d => d.id === selectedDepartment) ? selectedDepartment.replace('_', ' ') : 'More TAC' }}</span>
-                        <span class="text-[10px] text-amber-400/80">▾</span>
-                    </button>
+                    <!-- More TAC Dropdown Selector (TAC 4 to TAC 10) - Sejajar persis setelah TAC 3 di dalam scrollbar kategori -->
+                    <div class="relative shrink-0 text-left z-40 inline-block">
+                        <button
+                            @click.stop="toggleMoreTac($event)"
+                            :class="[
+                                'px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap font-medium',
+                                dropdownTacDepartments.some(d => d.id === selectedDepartment)
+                                    ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400 ring-1 ring-amber-400'
+                                    : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
+                            ]"
+                            :title="dropdownTacDepartments.some(d => d.id === selectedDepartment) ? `Kanal Terpilih: ${selectedDepartment.replace('_', ' ')}` : 'Kanal TAC Tambahan (TAC 4 - 10)'"
+                        >
+                            <img :src="iconRadio" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90" alt="" />
+                            <span>{{ dropdownTacDepartments.some(d => d.id === selectedDepartment) ? selectedDepartment.replace('_', ' ') : 'More TAC' }}</span>
+                            <span class="text-[10px] text-amber-400/80">▾</span>
+                        </button>
 
-                    <!-- Dropdown Menu Popover -->
-                    <div
-                        v-if="isMoreTacOpen"
-                        class="absolute right-0 md:left-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/50 rounded-xl p-2 shadow-2xl backdrop-blur-xl text-xs w-48 animate-in fade-in zoom-in-95 font-sans"
-                        @click.stop
-                    >
-                        <div class="px-2 py-1 mb-1 border-b border-slate-800/80 flex items-center justify-between text-[11px] font-mono font-bold text-amber-400">
-                            <span>RADIO TAC (4 – 10)</span>
-                            <button @click="isMoreTacOpen = false" class="text-slate-400 hover:text-white text-[10px]">✕</button>
-                        </div>
-                        <div class="space-y-1 max-h-60 overflow-y-auto">
-                            <button
-                                v-for="tac in dropdownTacDepartments"
-                                :key="tac.id"
-                                @click="selectedDepartment = tac.id; isMoreTacOpen = false"
-                                :class="[
-                                    'w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between transition text-xs font-mono font-bold',
-                                    selectedDepartment === tac.id
-                                        ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30 border border-amber-400'
-                                        : (getTacUnitCount(tac.id) > 0
-                                            ? 'bg-amber-950/40 text-amber-300 hover:bg-amber-900/60 border border-amber-500/30'
-                                            : 'bg-slate-900/80 text-slate-300 hover:bg-slate-800 border border-slate-800/80')
-                                ]"
-                            >
-                                <div class="flex items-center space-x-2">
-                                    <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
-                                    <span>{{ tac.name }}</span>
-                                </div>
-                                <span 
-                                    class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
-                                    :class="selectedDepartment === tac.id ? 'bg-black/40 text-white' : (getTacUnitCount(tac.id) > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-black/40 text-slate-500')"
+                        <!-- Dropdown Menu Popover (Fixed Positioning) -->
+                        <div
+                            v-if="isMoreTacOpen"
+                            class="fixed z-50 bg-slate-950/95 border border-amber-500/50 rounded-xl p-2 shadow-2xl backdrop-blur-xl text-xs w-48 animate-in fade-in zoom-in-95 font-sans"
+                            :style="{ top: tacDropdownPos.top + 'px', left: tacDropdownPos.left + 'px' }"
+                            @click.stop
+                        >
+                            <div class="px-2 py-1 mb-1 border-b border-slate-800/80 flex items-center justify-between text-[11px] font-mono font-bold text-amber-400">
+                                <span>RADIO TAC (4 – 10)</span>
+                                <button @click="isMoreTacOpen = false" class="text-slate-400 hover:text-white text-[10px]">✕</button>
+                            </div>
+                            <div class="space-y-1 max-h-60 overflow-y-auto">
+                                <button
+                                    v-for="tac in dropdownTacDepartments"
+                                    :key="tac.id"
+                                    @click="selectedDepartment = tac.id; isMoreTacOpen = false"
+                                    :class="[
+                                        'w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between transition text-xs font-mono font-bold',
+                                        selectedDepartment === tac.id
+                                            ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30 border border-amber-400'
+                                            : (getTacUnitCount(tac.id) > 0
+                                                ? 'bg-amber-950/40 text-amber-300 hover:bg-amber-900/60 border border-amber-500/30'
+                                                : 'bg-slate-900/80 text-slate-300 hover:bg-slate-800 border border-slate-800/80')
+                                    ]"
                                 >
-                                    {{ getTacUnitCount(tac.id) }}
-                                </span>
-                            </button>
+                                    <div class="flex items-center space-x-2">
+                                        <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
+                                        <span>{{ tac.name }}</span>
+                                    </div>
+                                    <span 
+                                        class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
+                                        :class="selectedDepartment === tac.id ? 'bg-black/40 text-white' : (getTacUnitCount(tac.id) > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-black/40 text-slate-500')"
+                                    >
+                                        {{ getTacUnitCount(tac.id) }}
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2492,7 +2519,44 @@ const submitFeedbackForm = async () => {
                     </button>
                 </div>
 
-                <!-- Layout Selector (Desktop Only: hidden on mobile) -->
+                <!-- Mobile Layout Selector (< md: visible on mobile smartphones) -->
+                <div v-if="selectedDepartment !== 'ALL'" class="flex md:hidden items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0">
+                    <button 
+                        @click="selectedLayout = 'focus'" 
+                        :class="selectedLayout === 'focus' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-2 py-1 text-xs rounded transition flex items-center gap-1"
+                        title="Focus Priority Lead"
+                    >
+                        <img :src="iconFocus" class="w-3 h-3 invert opacity-90" alt="Focus" />
+                        <span>Focus</span>
+                    </button>
+                    <button 
+                        @click="selectedLayout = 'grid-1x2'" 
+                        :class="selectedLayout === 'grid-1x2' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-2 py-1 text-xs rounded transition"
+                        title="Mobile 1x2 Layout"
+                    >
+                        1x2
+                    </button>
+                    <button 
+                        @click="selectedLayout = 'grid-1x3'" 
+                        :class="selectedLayout === 'grid-1x3' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-2 py-1 text-xs rounded transition"
+                        title="Mobile 1x3 Layout"
+                    >
+                        1x3
+                    </button>
+                    <button 
+                        @click="selectedLayout = 'auto'" 
+                        :class="selectedLayout === 'auto' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-2 py-1 text-xs rounded transition"
+                        title="Auto Layout"
+                    >
+                        Auto
+                    </button>
+                </div>
+
+                <!-- Desktop / Tablet Layout Selector (hidden on mobile) -->
                 <div v-if="selectedDepartment !== 'ALL'" class="hidden md:flex items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0">
                     <button 
                         @click="selectedLayout = 'auto'" 
@@ -2501,6 +2565,22 @@ const submitFeedbackForm = async () => {
                         title="Tata Letak Otomatis (Auto-Fit Grid)"
                     >
                         Auto
+                    </button>
+                    <button 
+                        @click="selectedLayout = 'grid-1x2'" 
+                        :class="selectedLayout === 'grid-1x2' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-2.5 py-1 text-xs rounded transition"
+                        title="1x2 Vertical Stack Layout"
+                    >
+                        1x2
+                    </button>
+                    <button 
+                        @click="selectedLayout = 'grid-1x3'" 
+                        :class="selectedLayout === 'grid-1x3' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-2.5 py-1 text-xs rounded transition"
+                        title="1x3 Tactical Layout"
+                    >
+                        1x3
                     </button>
                     <button 
                         @click="selectedLayout = 'grid-2x2'" 
@@ -2521,7 +2601,7 @@ const submitFeedbackForm = async () => {
                     <button 
                         @click="selectedLayout = 'grid-4x4'" 
                         :class="selectedLayout === 'grid-4x4' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
-                        class="px-2.5 py-1 text-xs rounded transition hidden md:inline-block"
+                        class="px-2.5 py-1 text-xs rounded transition hidden lg:inline-block"
                         title="4x4 Tactical Wall Layout"
                     >
                         4x4
