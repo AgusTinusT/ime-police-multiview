@@ -23,6 +23,12 @@ import iconLogout from '@/Components/Icons/leave-svgrepo-com.svg';
 import iconSearch from '@/Components/Icons/search-svgrepo-com.svg';
 import iconRefresh from '@/Components/Icons/refresh-cw-svgrepo-com.svg';
 import iconPinPlus from '@/Components/Icons/star-line-svgrepo-com.svg';
+
+// Refactored Sub-Components
+import AnnouncementBanner from '@/Components/AnnouncementBanner.vue';
+import TacChannelToolbar from '@/Components/TacChannelToolbar.vue';
+import QuickFeedDrawer from '@/Components/QuickFeedDrawer.vue';
+import StreamGridCard from '@/Components/StreamGridCard.vue';
 import iconPinMinus from '@/Components/Icons/star-svgrepo-com.svg';
 import iconEdit from '@/Components/Icons/edit-2-svgrepo-com.svg';
 import iconDelete from '@/Components/Icons/delete-2-svgrepo-com.svg';
@@ -2625,80 +2631,11 @@ const submitFeedbackForm = async () => {
         <!-- Main Content Area -->
         <main class="flex-1 p-3.5 md:p-4 overflow-y-auto">
             
-            <!-- GLOBAL PROMO / ANNOUNCEMENT BANNERS (CAROUSEL) -->
-            <div v-if="activeAnnouncements.length > 0 && activeTab === '10-8' && selectedDepartment === 'ALL'" 
-                 class="mb-8 relative w-full max-w-[1400px] mx-auto rounded-3xl overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.6)] group border border-white/5 bg-slate-900"
-                 @mouseenter="pausePromoTimer" @mouseleave="startPromoTimer">
-                 
-                <!-- Carousel Track -->
-                <div class="relative w-full overflow-hidden min-h-[220px] md:min-h-[280px]">
-                    <TransitionGroup name="promo-fade" tag="div" class="w-full h-full">
-                        <div v-for="(promo, index) in activeAnnouncements" :key="'promo-'+promo.id" v-show="index === activePromoIndex"
-                            class="absolute inset-0 w-full h-full flex flex-col sm:flex-row items-start sm:items-center p-6 md:p-12 gap-6 backdrop-blur-xl"
-                            :class="{
-                                'bg-blue-950/70': promo.type === 'info',
-                                'bg-purple-950/70': promo.type === 'promo',
-                                'bg-amber-950/70': promo.type === 'poll'
-                            }"
-                        >
-                            <!-- Background Image (Hybrid Mode - Desktop Only) -->
-                            <div v-if="promo.image_url" 
-                                 class="hidden md:block absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60 z-0 pointer-events-none transition-transform duration-[5000ms] scale-100 group-hover:scale-105"
-                                 :style="{ backgroundImage: 'url(' + promo.image_url + ')' }"
-                            ></div>
-                            <div v-if="promo.image_url" class="hidden md:block absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/80 to-transparent z-0 pointer-events-none"></div>
-
-                            <!-- Icon / Type Indicator -->
-                            <div class="shrink-0 rounded-2xl p-4 flex items-center justify-center border relative z-10 shadow-inner"
-                                :class="{
-                                    'bg-blue-500/20 border-blue-500/30 text-blue-400 shadow-blue-500/20': promo.type === 'info',
-                                    'bg-purple-500/20 border-purple-500/30 text-purple-400 shadow-purple-500/20': promo.type === 'promo',
-                                    'bg-amber-500/20 border-amber-500/30 text-amber-400 shadow-amber-500/20': promo.type === 'poll'
-                                }"
-                            >
-                                <img v-if="promo.icon" :src="promo.icon" class="w-8 h-8 md:w-12 md:h-12 object-contain" />
-                                <svg v-else-if="promo.type === 'info'" class="w-8 h-8 md:w-12 md:h-12 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.037 2 11c0 2.87 1.54 5.43 3.93 7.07.28.19.46.5.46.84v2.54c0 .52.59.81 1.01.5l3.29-2.47a1 1 0 0 1 .6-.2 10.95 10.95 0 0 0 3.71.62c5.523 0 10-4.037 10-9S17.523 2 12 2zM8 10h8v2H8v-2zm0-3h8v2H8V7z"/></svg>
-                                <svg v-else-if="promo.type === 'poll'" class="w-8 h-8 md:w-12 md:h-12 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M5 4h14v2H5V4zm0 5h14v2H5V9zm0 5h10v2H5v-2z"/></svg>
-                                <svg v-else class="w-8 h-8 md:w-12 md:h-12 fill-current drop-shadow-md" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                            </div>
-
-                            <!-- Content -->
-                            <div class="flex-1 pr-12 relative z-10">
-                                <h3 class="text-lg md:text-3xl font-black text-white mb-3 tracking-wide" style="text-shadow: 0 2px 6px rgba(0,0,0,0.9);">{{ promo.title }}</h3>
-                                <p class="text-sm md:text-lg text-slate-300 leading-relaxed font-semibold max-w-3xl" style="text-shadow: 0 1px 4px rgba(0,0,0,0.9);">{{ promo.message }}</p>
-                            </div>
-
-                            <!-- Action Button -->
-                            <a v-if="promo.action_text && promo.action_url" :href="promo.action_url" target="_blank"
-                               class="shrink-0 px-6 py-3 md:px-8 md:py-4 rounded-xl font-bold text-sm md:text-base shadow-lg transition-transform hover:scale-105 active:scale-95 relative z-10"
-                               :class="{
-                                   'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/50': promo.type === 'info',
-                                   'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-900/50': promo.type === 'promo',
-                                   'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-900/50': promo.type === 'poll'
-                               }"
-                            >
-                                {{ promo.action_text }}
-                            </a>
-                        </div>
-                    </TransitionGroup>
-                </div>
-
-                <!-- Navigation Arrows -->
-                <button v-if="activeAnnouncements.length > 1" @click="prevPromo" class="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-slate-950/60 text-white hover:bg-slate-800 transition z-20 border border-white/10 opacity-0 group-hover:opacity-100 backdrop-blur-md">
-                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                </button>
-                <button v-if="activeAnnouncements.length > 1" @click="nextPromo" class="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-slate-950/60 text-white hover:bg-slate-800 transition z-20 border border-white/10 opacity-0 group-hover:opacity-100 backdrop-blur-md">
-                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                </button>
-
-                <!-- Dots Indicator -->
-                <div v-if="activeAnnouncements.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
-                    <button v-for="(promo, index) in activeAnnouncements" :key="'dot-'+promo.id" @click="setPromo(index)"
-                        class="w-2.5 h-2.5 rounded-full transition-all duration-300 shadow-md"
-                        :class="activePromoIndex === index ? 'bg-white w-6' : 'bg-white/40 hover:bg-white/70'"
-                    ></button>
-                </div>
-            </div>
+            <!-- GLOBAL PROMO / ANNOUNCEMENT BANNERS (REFACTORED COMPONENT) -->
+            <AnnouncementBanner 
+                v-if="activeTab === '10-8' && selectedDepartment === 'ALL'" 
+                :announcements="activeAnnouncements" 
+            />
 
             <!-- TAB 1: 10-8 ACTIVE LIVE BODYCAM FEEDS -->
             <div v-if="activeTab === '10-8'">
@@ -3552,74 +3489,16 @@ const submitFeedbackForm = async () => {
                 <!-- MODE B: SPECIFIC DEPARTMENTS / TAC / PERSONAL -> TACTICAL CCTV GRID       -->
                 <!-- ========================================================================= -->
                 <template v-else>
-                    <div v-if="isTacDepartment(selectedDepartment)" class="mb-4 space-y-2.5">
-                        <div class="bg-gradient-to-r from-amber-950/70 via-slate-900/95 to-slate-950 border border-amber-500/40 rounded-xl p-3 shadow-xl backdrop-blur flex flex-wrap items-center justify-between gap-3">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
-                                    <img :src="iconRadio" class="w-5 h-5 brightness-0 invert opacity-90" alt="" />
-                                </div>
-                                <div>
-                                    <div class="flex items-center space-x-2">
-                                        <h3 class="text-sm font-bold text-amber-300 font-mono tracking-wide uppercase">
-                                            KANAL RADIO TAKTIS: {{ selectedDepartment.replace('_', ' ') }}
-                                        </h3>
-                                        <span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                                            {{ visibleStreams.length }} UNIT TERHUBUNG
-                                        </span>
-                                    </div>
-                                    <p class="text-[11px] text-slate-400 mt-0.5 font-mono">
-                                        Kanal radio taktis aktif untuk pemantauan POV bersama.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Timer Countdown -->
-                            <div class="flex items-center space-x-2">
-                                <div class="flex items-center space-x-1.5 bg-black/60 border border-amber-500/30 px-3 py-1.5 rounded-lg font-mono">
-                                    <img :src="iconClock" class="w-3.5 h-3.5 brightness-0 invert opacity-80" alt="" />
-                                    <span class="text-[10px] text-slate-400 uppercase">Sisa Waktu:</span>
-                                    <span class="text-xs font-bold" :class="getTacRemainingSeconds(selectedDepartment) <= 60 ? 'text-red-400 animate-pulse' : 'text-amber-300'">
-                                        {{ formatRemainingTime(getTacRemainingSeconds(selectedDepartment)) }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Near Expiration Confirmation Prompt Alert (Active ONLY in last 1 minute / 60 seconds) -->
-                        <div 
-                            v-if="getTacRemainingSeconds(selectedDepartment) > 0 && getTacRemainingSeconds(selectedDepartment) <= 60"
-                            class="bg-red-950/95 border-2 border-red-500 rounded-xl p-3.5 shadow-2xl backdrop-blur flex flex-wrap items-center justify-between gap-3 animate-pulse"
-                        >
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 rounded-full bg-red-500/30 border border-red-400 flex items-center justify-center text-red-300 text-base font-bold shrink-0">
-                                    ⚠️
-                                </div>
-                                <div>
-                                    <h4 class="text-xs font-bold text-red-200 font-mono tracking-wide uppercase">
-                                        KONFIRMASI SITUASI: WAKTU {{ selectedDepartment.replace('_', ' ') }} TERSISA {{ formatRemainingTime(getTacRemainingSeconds(selectedDepartment)) }}!
-                                    </h4>
-                                    <p class="text-[11px] text-red-300/80 mt-0.5">
-                                        Apakah kanal radio ini masih aktif digunakan, atau telah selesai?
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <button 
-                                    @click="extendTacTimer(selectedDepartment, 20)"
-                                    class="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg shadow-lg transition flex items-center gap-1.5 font-mono transform hover:scale-105"
-                                >
-                                    <span>🔥 Ya, Lanjutkan (+20 Menit)</span>
-                                </button>
-                                <button 
-                                    @click="disbandTacChannel(selectedDepartment)"
-                                    class="px-3 py-1.5 bg-black/60 hover:bg-black/90 text-slate-200 font-bold text-xs rounded-lg border border-slate-600 transition flex items-center gap-1.5 font-mono"
-                                >
-                                    <span>✓ Situasi Selesai (Bubarkan)</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <TacChannelToolbar 
+                        v-if="isTacDepartment(selectedDepartment)"
+                        :selectedDepartment="selectedDepartment"
+                        :visibleStreamsCount="visibleStreams.length"
+                        :remainingSeconds="getTacRemainingSeconds(selectedDepartment)"
+                        :iconRadio="iconRadio"
+                        :iconClock="iconClock"
+                        @extendTimer="extendTacTimer"
+                        @disbandChannel="disbandTacChannel"
+                    />
 
                     <!-- FOCUS MODE VIEW (Primary Large Video on Left + Right Support Column with Collapsible Live Chat) -->
                     <div v-if="selectedLayout === 'focus'" class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
