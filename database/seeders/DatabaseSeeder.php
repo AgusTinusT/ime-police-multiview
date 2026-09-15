@@ -457,13 +457,8 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // Default admin user
-        User::updateOrCreate(
-            ['email' => 'dispatch@imerp-police.local'],
-            [
-                'name' => 'Head Dispatcher',
-                'password' => bcrypt('password'),
-            ]
-        );
+        // Run UserSeeder for admin and member accounts
+        $this->call(UserSeeder::class);
     }
 }
+

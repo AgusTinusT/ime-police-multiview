@@ -1,8 +1,4 @@
 <script setup>
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -34,74 +30,72 @@ const updatePassword = () => {
 </script>
 
 <template>
-    <section>
-        <header>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Update Password
+    <section class="space-y-6">
+        <header class="space-y-1">
+            <h2 class="text-base font-bold text-white font-mono uppercase tracking-wider">
+                Keamanan & Ubah Password
             </h2>
-
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Ensure your account is using a long, random password to stay
-                secure.
+            <p class="text-xs text-slate-400">
+                Pastikan akun Anda menggunakan kata sandi yang kuat dan aman.
             </p>
         </header>
 
-        <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
-            <div>
-                <InputLabel for="current_password" value="Current Password" />
-
-                <TextInput
+        <form @submit.prevent="updatePassword" class="space-y-4 text-xs">
+            <div class="space-y-1">
+                <label for="current_password" class="block text-slate-300 font-medium">Password Saat Ini</label>
+                <input
                     id="current_password"
                     ref="currentPasswordInput"
                     v-model="form.current_password"
                     type="password"
-                    class="mt-1 block w-full"
                     autocomplete="current-password"
+                    placeholder="••••••••"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                 />
-
-                <InputError
-                    :message="form.errors.current_password"
-                    class="mt-2"
-                />
+                <div v-if="form.errors.current_password" class="text-red-400 text-[11px] mt-1">
+                    {{ form.errors.current_password }}
+                </div>
             </div>
 
-            <div>
-                <InputLabel for="password" value="New Password" />
-
-                <TextInput
+            <div class="space-y-1">
+                <label for="password" class="block text-slate-300 font-medium">Password Baru</label>
+                <input
                     id="password"
                     ref="passwordInput"
                     v-model="form.password"
                     type="password"
-                    class="mt-1 block w-full"
                     autocomplete="new-password"
+                    placeholder="••••••••"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                 />
-
-                <InputError :message="form.errors.password" class="mt-2" />
+                <div v-if="form.errors.password" class="text-red-400 text-[11px] mt-1">
+                    {{ form.errors.password }}
+                </div>
             </div>
 
-            <div>
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password"
-                />
-
-                <TextInput
+            <div class="space-y-1">
+                <label for="password_confirmation" class="block text-slate-300 font-medium">Konfirmasi Password Baru</label>
+                <input
                     id="password_confirmation"
                     v-model="form.password_confirmation"
                     type="password"
-                    class="mt-1 block w-full"
                     autocomplete="new-password"
+                    placeholder="••••••••"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                 />
-
-                <InputError
-                    :message="form.errors.password_confirmation"
-                    class="mt-2"
-                />
+                <div v-if="form.errors.password_confirmation" class="text-red-400 text-[11px] mt-1">
+                    {{ form.errors.password_confirmation }}
+                </div>
             </div>
 
-            <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+            <div class="flex items-center gap-4 pt-2">
+                <button
+                    type="submit"
+                    :disabled="form.processing"
+                    class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs transition shadow-md"
+                >
+                    {{ form.processing ? 'Menyimpan...' : 'Perbarui Password' }}
+                </button>
 
                 <Transition
                     enter-active-class="transition ease-in-out"
@@ -111,9 +105,9 @@ const updatePassword = () => {
                 >
                     <p
                         v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600 dark:text-gray-400"
+                        class="text-xs font-semibold text-emerald-400 flex items-center gap-1"
                     >
-                        Saved.
+                        ✓ Password berhasil diperbarui.
                     </p>
                 </Transition>
             </div>

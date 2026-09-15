@@ -28,3 +28,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Documentation & Scratch Files
+ACCOUNTS_SEEDER.md
+PROJECT_IMPROVEMENTS_ROADMAP.md

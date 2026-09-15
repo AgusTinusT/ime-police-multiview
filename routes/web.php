@@ -20,21 +20,21 @@ Route::get('/feedback', [PoliceCommandController::class, 'feedbackPage'])->name(
 
 // Admin direct slash route (hidden access)
 Route::get('/admin', function () {
-    return auth()->check() ? redirect()->route('admin.officers') : redirect()->route('login');
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    return auth()->user()->isAdmin() ? redirect()->route('admin.officers') : redirect()->route('dashboard');
 })->name('admin');
 
-// Dedicated Standalone Admin Command Hub (Protected by Auth)
-Route::middleware('auth')->prefix('admin')->group(function () {
+// Dedicated Standalone Admin Command Hub (Protected by Auth & Admin Role)
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/officers', [OfficerManagementController::class, 'adminPage'])->name('admin.officers');
     Route::post('/api/sync-streams', [OfficerManagementController::class, 'syncStreams'])->name('admin.sync-streams');
     Route::post('/api/sync-subscribers', [OfficerManagementController::class, 'syncSubscribers'])->name('admin.sync-subscribers');
     Route::post('/api/check-channel', [OfficerManagementController::class, 'checkChannel'])->name('admin.check-channel');
 });
 
-// Redirect any attempt to access /register to home
-Route::get('/register', function () {
-    return redirect()->route('home');
-});
+
 
 // REST API Endpoints (Public Stream Telemetry & Visitor Feedback)
 Route::prefix('api/v1')->group(function () {
@@ -57,7 +57,7 @@ Route::prefix('api/v1')->group(function () {
 
 
 // Admin-Protected Officer Master Management API (MySQL)
-Route::middleware('auth')->prefix('api/v1/officers')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('api/v1/officers')->group(function () {
     Route::get('/', [OfficerManagementController::class, 'index']);
     Route::post('/', [OfficerManagementController::class, 'store']);
     Route::put('/{id}', [OfficerManagementController::class, 'update']);
@@ -67,7 +67,7 @@ Route::middleware('auth')->prefix('api/v1/officers')->group(function () {
 
 // Admin-Protected Announcements API
 use App\Http\Controllers\AnnouncementController;
-Route::middleware('auth')->prefix('api/v1/announcements')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('api/v1/announcements')->group(function () {
     Route::get('/', [AnnouncementController::class, 'index']);
     Route::post('/', [AnnouncementController::class, 'store']);
     Route::put('/{id}', [AnnouncementController::class, 'update']);
@@ -76,6 +76,21 @@ Route::middleware('auth')->prefix('api/v1/announcements')->group(function () {
 });
 
 Route::get('/api/v1/active-announcements', [AnnouncementController::class, 'getActive']);
+
+// Authenticated User Cloud Watchlist API
+use App\Http\Controllers\UserWatchlistController;
+Route::middleware('auth')->prefix('api/v1/user/watchlist')->group(function () {
+    Route::get('/', [UserWatchlistController::class, 'index']);
+    Route::post('/toggle', [UserWatchlistController::class, 'toggle']);
+});
+
+// Admin-Protected User Accounts Management API
+use App\Http\Controllers\UserManagementController;
+Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/users')->group(function () {
+    Route::get('/', [UserManagementController::class, 'index']);
+    Route::delete('/{id}', [UserManagementController::class, 'destroy']);
+});
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -516,9 +516,65 @@ const handleLogout = () => {
     router.post(route('logout'));
 };
 
+// Registered Users Management
+const usersList = ref([]);
+const isLoadingUsers = ref(false);
+const userSearchQuery = ref('');
+const selectedUserWatchlistModal = ref(null);
+
+const fetchUsers = async () => {
+    isLoadingUsers.value = true;
+    try {
+        const res = await fetch('/api/v1/admin/users', {
+            headers: { 'Accept': 'application/json' }
+        });
+        const json = await res.json();
+        if (res.ok && json.status === 'success') {
+            usersList.value = json.data || [];
+        }
+    } catch (e) {
+        console.warn('Failed to fetch registered users:', e);
+    } finally {
+        isLoadingUsers.value = false;
+    }
+};
+
+const filteredUsers = computed(() => {
+    if (!userSearchQuery.value) return usersList.value;
+    const q = userSearchQuery.value.toLowerCase().trim();
+    return usersList.value.filter(u => 
+        u.name?.toLowerCase().includes(q) || 
+        u.email?.toLowerCase().includes(q)
+    );
+});
+
+const handleDeleteUser = async (id, name) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus akun member "${name}"?`)) return;
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const res = await fetch(`/api/v1/admin/users/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+            },
+        });
+        const json = await res.json();
+        if (res.ok && json.status === 'success') {
+            showToast('Akun member berhasil dihapus.', 'success');
+            fetchUsers();
+        } else {
+            showToast(json.message || 'Gagal menghapus user.', 'error');
+        }
+    } catch (e) {
+        showToast('Gagal menghapus user: ' + e.message, 'error');
+    }
+};
+
 onMounted(() => {
     fetchOfficers();
     fetchAnnouncements();
+    fetchUsers();
 });
 </script>
 
@@ -599,6 +655,13 @@ onMounted(() => {
                     :class="['px-4 py-2 rounded-lg text-sm font-bold font-mono tracking-wide transition', activeTab === 'announcements' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-inner' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800']"
                 >
                     Promotions & Alerts
+                </button>
+                <button 
+                    @click="activeTab = 'users'" 
+                    :class="['px-4 py-2 rounded-lg text-sm font-bold font-mono tracking-wide transition flex items-center gap-1.5', activeTab === 'users' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-inner' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800']"
+                >
+                    <span>👥 Member Accounts</span>
+                    <span class="px-1.5 py-0.2 text-[10px] bg-cyan-950 text-cyan-300 rounded-full font-mono border border-cyan-700/50">{{ usersList.length }}</span>
                 </button>
             </div>
 
@@ -945,6 +1008,122 @@ onMounted(() => {
                 </div>
             </div> <!-- End TAB 2 -->
 
+            <!-- TAB 3: REGISTERED MEMBERS -->
+            <div v-if="activeTab === 'users'" class="space-y-6">
+                <!-- STATS CARDS -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 shadow-lg flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider block">Total Registered Members</span>
+                            <div class="text-3xl font-black text-white mt-1">{{ usersList.length }}</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 text-xl font-bold">
+                            👥
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/80 border border-purple-900/40 rounded-2xl p-5 shadow-lg flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider block">Total Cloud Watchlist Syncs</span>
+                            <div class="text-3xl font-black text-purple-400 mt-1">
+                                {{ usersList.reduce((acc, u) => acc + (u.watchlists_count || 0), 0) }}
+                            </div>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-purple-400 text-xl font-bold">
+                            ⭐
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/80 border border-cyan-900/40 rounded-2xl p-5 shadow-lg flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider block">Active Admin Account</span>
+                            <div class="text-sm font-bold text-white mt-1 truncate max-w-[200px]">{{ auth.user?.email || 'admin@dispatch' }}</div>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-cyan-600/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-xl font-bold">
+                            🛡️
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEARCH & ACTION BAR -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="relative flex-1 w-full max-w-md">
+                        <input 
+                            v-model="userSearchQuery"
+                            type="text" 
+                            placeholder="Cari nama atau email member..." 
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                        />
+                    </div>
+                    <button 
+                        @click="fetchUsers"
+                        class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition flex items-center gap-1.5"
+                    >
+                        🔄 Refresh List
+                    </button>
+                </div>
+
+                <!-- MEMBERS TABLE -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs font-sans">
+                            <thead class="bg-slate-950 text-slate-400 font-mono uppercase text-[11px] border-b border-slate-800">
+                                <tr>
+                                    <th class="py-3.5 px-4 font-bold">ID</th>
+                                    <th class="py-3.5 px-4 font-bold">User Member</th>
+                                    <th class="py-3.5 px-4 font-bold">Email</th>
+                                    <th class="py-3.5 px-4 font-bold">Terdaftar Pada</th>
+                                    <th class="py-3.5 px-4 font-bold text-center">Cloud Watchlist</th>
+                                    <th class="py-3.5 px-4 font-bold text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-slate-200">
+                                <tr v-if="isLoadingUsers">
+                                    <td colspan="6" class="py-8 text-center text-slate-500 font-mono">Memuat daftar member...</td>
+                                </tr>
+                                <tr v-else-if="filteredUsers.length === 0">
+                                    <td colspan="6" class="py-8 text-center text-slate-500 font-mono">Tidak ada member ditemukan.</td>
+                                </tr>
+                                <tr v-else v-for="u in filteredUsers" :key="u.id" class="hover:bg-slate-800/40 transition">
+                                    <td class="py-3.5 px-4 font-mono font-bold text-slate-500">#{{ u.id }}</td>
+                                    <td class="py-3.5 px-4 font-bold text-white">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="w-7 h-7 rounded-full bg-blue-600/30 border border-blue-500/40 flex items-center justify-center text-blue-300 font-bold text-xs">
+                                                {{ u.name?.charAt(0).toUpperCase() || 'U' }}
+                                            </div>
+                                            <span>{{ u.name }}</span>
+                                            <span v-if="u.id === auth.user?.id" class="px-1.5 py-0.5 text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-700/50 rounded font-mono font-bold">You (Admin)</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4 font-mono text-slate-300">{{ u.email }}</td>
+                                    <td class="py-3.5 px-4 text-slate-400 font-mono">
+                                        {{ new Date(u.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+                                    </td>
+                                    <td class="py-3.5 px-4 text-center">
+                                        <button 
+                                            @click="selectedUserWatchlistModal = u"
+                                            class="px-2.5 py-1 rounded-full bg-purple-950/60 border border-purple-500/40 text-purple-300 font-mono font-bold text-[11px] hover:bg-purple-900/60 transition inline-flex items-center gap-1"
+                                        >
+                                            <span>⭐ {{ u.watchlists_count || 0 }} Stream</span>
+                                        </button>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <button 
+                                            v-if="u.id !== auth.user?.id"
+                                            @click="handleDeleteUser(u.id, u.name)"
+                                            class="px-2.5 py-1 rounded-lg bg-red-950/60 text-red-400 border border-red-800/40 hover:bg-red-900/60 hover:text-red-200 text-xs font-semibold transition"
+                                        >
+                                            Hapus
+                                        </button>
+                                        <span v-else class="text-[11px] text-slate-500 italic">Aktif</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div> <!-- End TAB 3 -->
+
         </main>
 
         <!-- MODAL: ADD / EDIT OFFICER -->
@@ -1248,5 +1427,47 @@ onMounted(() => {
                 <button @click="toast.show = false" class="text-slate-400 hover:text-white">✕</button>
             </div>
         </transition>
+
+
+
+        <!-- USER WATCHLIST DETAIL MODAL -->
+        <Teleport to="body">
+            <div v-if="selectedUserWatchlistModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                <div class="relative w-full max-w-lg bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-6 text-slate-100 font-sans space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl">⭐</span>
+                            <div>
+                                <h3 class="text-sm font-bold font-mono text-white">Cloud Watchlist Member</h3>
+                                <p class="text-xs text-slate-400">{{ selectedUserWatchlistModal.name }} ({{ selectedUserWatchlistModal.email }})</p>
+                            </div>
+                        </div>
+                        <button @click="selectedUserWatchlistModal = null" class="text-slate-400 hover:text-white text-lg">✕</button>
+                    </div>
+
+                    <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
+                        <div v-if="!selectedUserWatchlistModal.watchlists || selectedUserWatchlistModal.watchlists.length === 0" class="py-6 text-center text-slate-500 font-mono text-xs">
+                            Member ini belum menyimpan stream ke Cloud Watchlist.
+                        </div>
+                        <div v-else v-for="item in selectedUserWatchlistModal.watchlists" :key="item.id" class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+                            <div>
+                                <div class="font-bold text-slate-200">{{ item.officer_name || item.video_id }}</div>
+                                <div class="text-[10px] text-slate-500 font-mono">Video ID: {{ item.video_id }}</div>
+                            </div>
+                            <a :href="`https://youtube.com/watch?v=${item.video_id}`" target="_blank" class="px-2 py-1 bg-red-950 text-red-300 border border-red-800/40 rounded text-[11px] font-mono hover:bg-red-900 transition">
+                                YouTube ↗
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 text-right border-t border-slate-800">
+                        <button @click="selectedUserWatchlistModal = null" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl text-slate-200 transition">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
     </div>
 </template>

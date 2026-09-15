@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { usePage, Head, Link, router } from '@inertiajs/vue3';
 
 // SVG Icon Assets & Branding Logos
 import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
@@ -38,6 +38,7 @@ import iconUrl from '@/Components/Icons/url-checker-svgrepo-com.svg';
 import iconChat from '@/Components/Icons/chat-svgrepo-com.svg';
 import iconChatRemove from '@/Components/Icons/chat-remove-svgrepo-com.svg';
 import iconTarget from '@/Components/Icons/target-svgrepo-com.svg';
+import UserAccountMenu from '@/Components/UserAccountMenu.vue';
 
 const props = defineProps({
     initialStreams: {
@@ -597,6 +598,7 @@ onMounted(() => {
     document.addEventListener('click', handleGlobalClick);
     window.addEventListener('error', handleYouTubeInternalError, true);
     loadPersonalStreamsFromStorage();
+    syncCloudWatchlist();
     fetchAnnouncements();
     
     // Load YouTube IFrame API script to register parent controller
@@ -741,9 +743,55 @@ const openSubscribePopup = (channelIdOrHandle, officerName = '') => {
     );
 };
 
-// Modals State
 const isQuickAddModalOpen = ref(false);
 const activeChatVideoId = ref(null);
+
+const handleLogout = () => {
+    router.post('/logout');
+};
+
+const syncCloudWatchlist = async () => {
+    const user = usePage().props.auth?.user;
+    if (!user) return;
+    try {
+        const res = await fetch('/api/v1/user/watchlist', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'success' && Array.isArray(data.video_ids)) {
+                const merged = Array.from(new Set([...personalVideoIds.value, ...data.video_ids]));
+                personalVideoIds.value = merged;
+                savePersonalStreamsToStorage();
+            }
+        }
+    } catch (e) {
+        console.warn('Failed to fetch cloud watchlist:', e);
+    }
+};
+
+const toggleCloudWatchlist = async (videoId) => {
+    const user = usePage().props.auth?.user;
+    if (!user) return;
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        await fetch('/api/v1/user/watchlist/toggle', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify({ video_id: videoId })
+        });
+    } catch (e) {
+        console.warn('Failed to sync watchlist toggle to cloud:', e);
+    }
+};
 
 // Personal Category & Custom Ad-hoc Streams (Browser LocalStorage, Max 6 Active Videos)
 const MAX_PERSONAL_STREAMS = 6;
@@ -855,12 +903,14 @@ const togglePersonalStream = (videoId) => {
         personalVideoIds.value.push(videoId);
         savePersonalStreamsToStorage();
     }
+    toggleCloudWatchlist(videoId);
 };
 
 const removePersonalStream = (id) => {
     personalVideoIds.value = personalVideoIds.value.filter(itemId => itemId !== id);
     customStreams.value = customStreams.value.filter(s => s.video_id !== id && s.id !== id);
     savePersonalStreamsToStorage();
+    toggleCloudWatchlist(id);
 };
 
 const clearAllPersonalStreams = () => {
@@ -2182,7 +2232,7 @@ const submitFeedbackForm = async () => {
     <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased pb-20 md:pb-6">
         
         <!-- Tactical Header Bar -->
-        <header class="bg-[#0b1320] border-b border-blue-900/40 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 max-w-full overflow-hidden sticky top-0 z-40 shadow-xl backdrop-blur-md">
+        <header class="bg-[#0b1320] border-b border-blue-900/40 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 max-w-full sticky top-0 z-40 shadow-xl backdrop-blur-md">
             
             <!-- Left Area: Branding & Standalone Page Navigation Links -->
             <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 shrink-0">
@@ -2296,23 +2346,8 @@ const submitFeedbackForm = async () => {
                     <span class="hidden 2xl:inline">{{ isFullscreen ? 'Exit' : 'Fullscreen' }}</span>
                 </button>
 
-                <!-- 5. Admin Hub & Logout (When Authenticated) -->
-                <div v-if="$page.props.auth?.user" class="flex items-center space-x-1 bg-cyan-950/40 p-0.5 rounded-lg border border-cyan-500/50 shrink-0">
-                    <Link 
-                        href="/admin/officers"
-                        class="px-2 py-1 text-xs font-bold rounded bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-600/30 transition flex items-center gap-1 shrink-0"
-                        title="Dispatcher Admin Hub"
-                    >
-                        <span>Admin Hub</span>
-                    </Link>
-                    <button 
-                        @click="handleAdminLogout"
-                        class="px-1.5 py-1 text-xs font-semibold rounded bg-slate-900 hover:bg-red-900/50 text-red-400 hover:text-red-200 border border-slate-700 transition flex items-center gap-1 shrink-0"
-                        title="Logout Admin"
-                    >
-                        <img :src="iconLogout" class="w-3.5 h-3.5 invert opacity-80 shrink-0" alt="Logout" />
-                    </button>
-                </div>
+                <!-- 5. User Account Sign In / Profile / Logout (YouTube-Style Dropdown) -->
+                <UserAccountMenu />
 
             </div>
 
@@ -2325,57 +2360,62 @@ const submitFeedbackForm = async () => {
                 >
                     <img :src="iconQuickAdd" class="w-4 h-4 invert opacity-95" alt="Quick Add" />
                 </button>
+
+                <UserAccountMenu />
             </div>
         </header>
 
         <!-- Department Filter Toolbar & Search / Grid Controls -->
         <div class="bg-[#090f1a] border-b border-slate-800/80 px-3 sm:px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-2.5">
             
-            <!-- Department Tabs (Horizontal Scrollable Bar on Left) -->
-            <div class="flex items-center space-x-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-1 flex-1 min-w-0 relative z-30">
-                <button 
-                    v-for="dept in departments" 
-                    :key="dept.id"
-                    @click="selectedDepartment = dept.id"
-                    :class="[
-                        'px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap shrink-0',
-                        selectedDepartment === dept.id 
-                            ? (dept.id === 'PERSONAL' 
-                                ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400' 
-                                : (dept.isTac 
-                                    ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400 ring-1 ring-amber-400' 
-                                    : 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400'))
-                            : (dept.id === 'PERSONAL' 
-                                ? 'bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 border-purple-500/40' 
-                                : (dept.isTac 
-                                    ? (getTacUnitCount(dept.id) > 0 
-                                        ? 'bg-amber-950/50 text-amber-300 hover:bg-amber-900/60 border-amber-500/50 shadow-sm shadow-amber-500/10 font-semibold' 
-                                        : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 border-slate-800 opacity-70 hover:opacity-100')
-                                    : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'))
-                    ]"
-                >
-                    <img v-if="dept.isSvg" :src="dept.icon" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90 shrink-0" alt="" />
-                    <span v-else class="shrink-0">{{ dept.icon }}</span>
-                    <span class="shrink-0">{{ dept.name }}</span>
-                    
-                    <!-- Personal count badge -->
-                    <span v-if="dept.id === 'PERSONAL'" class="text-[10px] px-1.5 py-0.2 bg-black/50 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30 shrink-0">
-                        {{ totalPersonalCount }}/6
-                    </span>
-                    <!-- TAC count badge -->
-                    <span v-else-if="dept.isTac" class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold shrink-0"
-                        :class="getTacUnitCount(dept.id) > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-black/40 text-slate-500'"
+            <!-- Department Tabs (Horizontal Scrollable Bar on Left + Fixed More TAC Dropdown) -->
+            <div class="flex items-center space-x-1.5 flex-1 min-w-0 relative z-30">
+                <!-- Scrollable Department Tabs -->
+                <div class="flex items-center space-x-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-1 flex-1 min-w-0">
+                    <button 
+                        v-for="dept in departments" 
+                        :key="dept.id"
+                        @click="selectedDepartment = dept.id"
+                        :class="[
+                            'px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap shrink-0',
+                            selectedDepartment === dept.id 
+                                ? (dept.id === 'PERSONAL' 
+                                    ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400' 
+                                    : (dept.isTac 
+                                        ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400 ring-1 ring-amber-400' 
+                                        : 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400'))
+                                : (dept.id === 'PERSONAL' 
+                                    ? 'bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 border-purple-500/40' 
+                                    : (dept.isTac 
+                                        ? (getTacUnitCount(dept.id) > 0 
+                                            ? 'bg-amber-950/50 text-amber-300 hover:bg-amber-900/60 border-amber-500/50 shadow-sm shadow-amber-500/10 font-semibold' 
+                                            : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 border-slate-800 opacity-70 hover:opacity-100')
+                                        : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'))
+                        ]"
                     >
-                        {{ getTacUnitCount(dept.id) }}
-                    </span>
-                    <!-- Standard dept count -->
-                    <span v-else-if="dept.id !== 'ALL'" class="text-[10px] px-1.5 py-0.2 bg-black/40 rounded-full font-mono shrink-0">
-                        {{ allActiveStreams.filter(s => s.officer?.department === dept.id || (dept.id === 'SAPR' && (s.officer?.department === 'SAPR' || s.officer?.department === 'PARK RANGER'))).length }}
-                    </span>
-                </button>
+                        <img v-if="dept.isSvg" :src="dept.icon" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90 shrink-0" alt="" />
+                        <span v-else class="shrink-0">{{ dept.icon }}</span>
+                        <span class="shrink-0">{{ dept.name }}</span>
+                        
+                        <!-- Personal count badge -->
+                        <span v-if="dept.id === 'PERSONAL'" class="text-[10px] px-1.5 py-0.2 bg-black/50 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30 shrink-0">
+                            {{ totalPersonalCount }}/6
+                        </span>
+                        <!-- TAC count badge -->
+                        <span v-else-if="dept.isTac" class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold shrink-0"
+                            :class="getTacUnitCount(dept.id) > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-black/40 text-slate-500'"
+                        >
+                            {{ getTacUnitCount(dept.id) }}
+                        </span>
+                        <!-- Standard dept count -->
+                        <span v-else-if="dept.id !== 'ALL'" class="text-[10px] px-1.5 py-0.2 bg-black/40 rounded-full font-mono shrink-0">
+                            {{ allActiveStreams.filter(s => s.officer?.department === dept.id || (dept.id === 'SAPR' && (s.officer?.department === 'SAPR' || s.officer?.department === 'PARK RANGER'))).length }}
+                        </span>
+                    </button>
+                </div>
 
-                <!-- More TAC Dropdown Selector (TAC 4 to TAC 10) -->
-                <div class="relative inline-block text-left shrink-0">
+                <!-- More TAC Dropdown Selector (TAC 4 to TAC 10) - Unclipped outside overflow-x-auto -->
+                <div class="relative shrink-0 text-left z-40">
                     <button
                         @click.stop="isMoreTacOpen = !isMoreTacOpen"
                         :class="[
@@ -2394,7 +2434,7 @@ const submitFeedbackForm = async () => {
                     <!-- Dropdown Menu Popover -->
                     <div
                         v-if="isMoreTacOpen"
-                        class="absolute left-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/50 rounded-xl p-2 shadow-2xl backdrop-blur-xl text-xs w-48 animate-in fade-in zoom-in-95 font-sans"
+                        class="absolute right-0 md:left-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/50 rounded-xl p-2 shadow-2xl backdrop-blur-xl text-xs w-48 animate-in fade-in zoom-in-95 font-sans"
                         @click.stop
                     >
                         <div class="px-2 py-1 mb-1 border-b border-slate-800/80 flex items-center justify-between text-[11px] font-mono font-bold text-amber-400">
@@ -5736,18 +5776,23 @@ const submitFeedbackForm = async () => {
                         href="/login" 
                         class="w-full p-2.5 rounded-xl bg-blue-950/60 hover:bg-blue-900/70 border border-blue-500/40 text-xs text-blue-300 font-bold flex items-center justify-between transition"
                     >
-                        <div class="flex items-center space-x-2.5">
-                            <img :src="iconUser" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
-                            <span>Admin Login Dispatcher</span>
-                        </div>
+                        <span>Sign In / Register Account</span>
                         <span class="text-blue-400">→</span>
                     </Link>
-                    <div v-else class="p-2.5 rounded-xl bg-cyan-950/60 border border-cyan-500/40 text-xs flex items-center justify-between">
+                    <div v-else class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-between">
                         <div class="flex items-center space-x-2.5">
-                            <img :src="iconUser" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
-                            <span class="text-cyan-300 font-bold">Logged in as Admin</span>
+                            <div class="w-7 h-7 rounded-full bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-xs text-blue-300 font-bold">
+                                {{ $page.props.auth.user.name?.charAt(0).toUpperCase() || 'U' }}
+                            </div>
+                            <div>
+                                <span class="text-slate-200 font-bold block leading-tight">{{ $page.props.auth.user.name }}</span>
+                                <span class="text-[10px] text-slate-400 font-mono leading-tight block">{{ $page.props.auth.user.email }}</span>
+                            </div>
                         </div>
-                        <button @click="handleAdminLogout" class="text-red-400 hover:underline font-semibold">Logout</button>
+                        <div class="flex items-center space-x-2">
+                            <Link href="/admin/officers" class="px-2 py-1 bg-cyan-600 text-white rounded text-[11px] font-bold">Admin Hub</Link>
+                            <button @click="handleLogout" class="px-2 py-1 bg-red-950/80 text-red-300 border border-red-800/60 rounded text-[11px] font-semibold">Sign Out</button>
+                        </div>
                     </div>
                 </div>
             </div>

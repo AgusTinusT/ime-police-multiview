@@ -1,10 +1,5 @@
 <script setup>
-import DangerButton from '@/Components/DangerButton.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
 import Modal from '@/Components/Modal.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
 import { useForm } from '@inertiajs/vue3';
 import { nextTick, ref } from 'vue';
 
@@ -17,90 +12,87 @@ const form = useForm({
 
 const confirmUserDeletion = () => {
     confirmingUserDeletion.value = true;
-
-    nextTick(() => passwordInput.value.focus());
+    nextTick(() => passwordInput.value?.focus());
 };
 
 const deleteUser = () => {
     form.delete(route('profile.destroy'), {
         preserveScroll: true,
         onSuccess: () => closeModal(),
-        onError: () => passwordInput.value.focus(),
+        onError: () => passwordInput.value?.focus(),
         onFinish: () => form.reset(),
     });
 };
 
 const closeModal = () => {
     confirmingUserDeletion.value = false;
-
     form.clearErrors();
     form.reset();
 };
 </script>
 
 <template>
-    <section class="space-y-6">
-        <header>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Delete Account
+    <section class="space-y-4">
+        <header class="space-y-1">
+            <h2 class="text-base font-bold text-red-400 font-mono uppercase tracking-wider flex items-center gap-1.5">
+                <span>⚠️ Hapus Akun Permanen</span>
             </h2>
-
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Once your account is deleted, all of its resources and data will
-                be permanently deleted. Before deleting your account, please
-                download any data or information that you wish to retain.
+            <p class="text-xs text-slate-400">
+                Setelah akun Anda dihapus, seluruh data dan preferensi tersimpan akan dihapus secara permanen.
             </p>
         </header>
 
-        <DangerButton @click="confirmUserDeletion">Delete Account</DangerButton>
+        <div class="pt-1">
+            <button
+                @click="confirmUserDeletion"
+                class="px-4 py-2 rounded-lg bg-red-950 hover:bg-red-900 text-red-300 hover:text-white border border-red-800/60 font-bold text-xs transition shadow-md"
+            >
+                Hapus Akun Pengguna
+            </button>
+        </div>
 
+        <!-- Danger Confirmation Modal (Dark Red Glassmorphism) -->
         <Modal :show="confirmingUserDeletion" @close="closeModal">
-            <div class="p-6">
-                <h2
-                    class="text-lg font-medium text-gray-900 dark:text-gray-100"
-                >
-                    Are you sure you want to delete your account?
-                </h2>
+            <div class="p-6 bg-slate-950 border border-red-900/60 rounded-2xl text-slate-100 space-y-4">
+                <div class="space-y-1">
+                    <h3 class="text-base font-bold text-red-400 flex items-center gap-2">
+                        <span>⚠️ Konfirmasi Penghapusan Akun</span>
+                    </h3>
+                    <p class="text-xs text-slate-300">
+                        Apakah Anda yakin ingin menghapus akun Anda secara permanen? Masukkan password akun Anda untuk mengonfirmasi tindakan ini.
+                    </p>
+                </div>
 
-                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Once your account is deleted, all of its resources and data
-                    will be permanently deleted. Please enter your password to
-                    confirm you would like to permanently delete your account.
-                </p>
-
-                <div class="mt-6">
-                    <InputLabel
-                        for="password"
-                        value="Password"
-                        class="sr-only"
-                    />
-
-                    <TextInput
+                <div class="space-y-1">
+                    <input
                         id="password"
                         ref="passwordInput"
                         v-model="form.password"
                         type="password"
-                        class="mt-1 block w-3/4"
-                        placeholder="Password"
+                        placeholder="Masukkan Password Anda"
                         @keyup.enter="deleteUser"
+                        class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition text-xs"
                     />
-
-                    <InputError :message="form.errors.password" class="mt-2" />
+                    <div v-if="form.errors.password" class="text-red-400 text-[11px] mt-1">
+                        {{ form.errors.password }}
+                    </div>
                 </div>
 
-                <div class="mt-6 flex justify-end">
-                    <SecondaryButton @click="closeModal">
-                        Cancel
-                    </SecondaryButton>
+                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+                    <button
+                        @click="closeModal"
+                        class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
+                    >
+                        Batal
+                    </button>
 
-                    <DangerButton
-                        class="ms-3"
-                        :class="{ 'opacity-25': form.processing }"
+                    <button
                         :disabled="form.processing"
                         @click="deleteUser"
+                        class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-xs font-bold transition shadow-md"
                     >
-                        Delete Account
-                    </DangerButton>
+                        {{ form.processing ? 'Menghapus...' : 'Ya, Hapus Akun' }}
+                    </button>
                 </div>
             </div>
         </Modal>

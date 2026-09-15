@@ -7,6 +7,7 @@ import iconUser from '@/Components/Icons/user-svgrepo-com.svg';
 import iconRadio from '@/Components/Icons/radio-signal-svgrepo-com.svg';
 import iconFeedback from '@/Components/Icons/report-svgrepo-com.svg';
 import iconFocus from '@/Components/Icons/focus-point-round-844-svgrepo-com.svg';
+import UserAccountMenu from '@/Components/UserAccountMenu.vue';
 
 const isFullscreen = ref(false);
 
@@ -103,7 +104,7 @@ onUnmounted(() => {
                 </nav>
             </div>
 
-            <!-- Right Controls: Return to Multiview -->
+            <!-- Right Controls: Return to Multiview & User Dropdown -->
             <div class="flex items-center space-x-2">
                 <Link 
                     href="/" 
@@ -116,6 +117,9 @@ onUnmounted(() => {
                     <img :src="iconFocus" class="w-3.5 h-3.5 invert" alt="" />
                     <span>CCTV Multiview</span>
                 </Link>
+
+                <!-- YouTube-Style User Account Dropdown -->
+                <UserAccountMenu />
             </div>
         </header>
 
