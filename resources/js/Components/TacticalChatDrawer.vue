@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
 import axios from 'axios';
+import iconChatLine from '@/Components/Icons/chat-line-svgrepo-com.svg';
 
 const page = usePage();
 const currentUser = computed(() => page.props.auth?.user || null);
@@ -9,6 +10,7 @@ const currentUser = computed(() => page.props.auth?.user || null);
 // Drawer Open State
 const isOpen = ref(false);
 const unreadCount = ref(0);
+const drawerWrapperRef = ref(null);
 
 // Messages State
 const messages = ref([]);
@@ -156,34 +158,52 @@ const toggleDrawer = () => {
     }
 };
 
+// Auto Close on Outside Click or ESC Key
+const handleClickOutside = (event) => {
+    if (!isOpen.value) return;
+    if (drawerWrapperRef.value && !drawerWrapperRef.value.contains(event.target)) {
+        isOpen.value = false;
+    }
+};
+
+const handleKeydown = (event) => {
+    if (event.key === 'Escape' && isOpen.value) {
+        isOpen.value = false;
+    }
+};
+
 onMounted(() => {
     fetchMessages(true);
     pollInterval = setInterval(() => {
         fetchMessages(false);
     }, 3000);
+    document.addEventListener('pointerdown', handleClickOutside);
+    document.addEventListener('keydown', handleKeydown);
 });
 
 onUnmounted(() => {
     if (pollInterval) clearInterval(pollInterval);
+    document.removeEventListener('pointerdown', handleClickOutside);
+    document.removeEventListener('keydown', handleKeydown);
 });
 </script>
 
 <template>
-    <div class="hidden sm:block fixed bottom-5 right-5 z-50 font-sans selection:bg-blue-600 selection:text-white">
+    <div ref="drawerWrapperRef" class="hidden sm:block fixed bottom-4 right-4 z-50 font-sans selection:bg-blue-600 selection:text-white">
         
-        <!-- FLOATING TOGGLE BUTTON -->
+        <!-- FLOATING TOGGLE BUTTON (MINIMALIST TACTICAL PILL) -->
         <button 
-            @click="toggleDrawer"
-            class="relative px-4 py-3 rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white font-bold text-xs shadow-2xl shadow-blue-600/40 border border-blue-400/40 flex items-center space-x-2.5 transition transform hover:scale-105 active:scale-95"
-            title="Buka Tactical Community Chat"
+            @click.stop="toggleDrawer"
+            class="relative px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white font-bold text-xs shadow-xl border border-slate-800 hover:border-blue-500/40 flex items-center space-x-2 transition cursor-pointer backdrop-blur-md"
+            title="Buka Chat Komunitas Member"
         >
-            <span class="text-base leading-none">💬</span>
-            <span class="font-mono font-bold uppercase tracking-wider hidden sm:inline">Tactical Chat</span>
+            <img :src="iconChatLine" class="w-3.5 h-3.5 invert opacity-80 shrink-0" alt="Chat" />
+            <span class="font-mono text-xs font-semibold uppercase tracking-wider hidden sm:inline">Member Chat</span>
             
-            <!-- Unread Badge -->
+            <!-- Unread Badge (Sleek static badge without bouncing) -->
             <span 
                 v-if="unreadCount > 0"
-                class="absolute -top-1.5 -right-1.5 px-2 py-0.5 rounded-full bg-red-600 text-white font-mono text-[10px] font-black border-2 border-[#070b12] shadow-lg animate-bounce"
+                class="px-1.5 py-0.2 rounded-full bg-red-600 text-white font-mono text-[9px] font-bold border border-slate-900 shadow-sm"
             >
                 {{ unreadCount }}
             </span>
@@ -197,12 +217,12 @@ onUnmounted(() => {
             <!-- PANEL HEADER -->
             <div class="px-4 py-3.5 bg-gradient-to-r from-blue-950/80 via-slate-900 to-slate-950 border-b border-blue-900/40 flex items-center justify-between">
                 <div class="flex items-center space-x-2.5">
-                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" title="Live Sync Active"></div>
+                    <img :src="iconChatLine" class="w-4 h-4 invert opacity-90 shrink-0" alt="Chat" />
                     <div>
                         <h3 class="text-xs font-black tracking-wider text-white font-mono uppercase">
-                            COMMUNITY PATROL CHAT
+                            MEMBER COMMUNITY CHAT
                         </h3>
-                        <p class="text-[10px] text-slate-400 font-mono">Real-Time Dispatch Channel</p>
+                        <p class="text-[10px] text-slate-400 font-mono">Saluran Obrolan Bebas Antar Member</p>
                     </div>
                 </div>
                 <button 
@@ -211,6 +231,15 @@ onUnmounted(() => {
                 >
                     ✕
                 </button>
+            </div>
+
+            <!-- INFORMATIONAL NOTICE FOR MEMBERS -->
+            <div class="bg-blue-950/40 border-b border-blue-500/20 px-3.5 py-2.5 flex items-start space-x-2 text-[11px] text-blue-200/90 shrink-0">
+                <span class="text-xs shrink-0">💡</span>
+                <div class="flex-1 min-w-0 leading-snug">
+                    <span>Ruang chat terbuka untuk <strong>seluruh member & perwira</strong>. Untuk pengaduan/masukan resmi ke Dispatcher, silakan gunakan menu </span>
+                    <Link href="/feedback" class="text-sky-300 font-bold underline hover:text-white">Feedback & Reports</Link>.
+                </div>
             </div>
 
             <!-- PINNED MESSAGE BANNER (IF ANY) -->
@@ -232,7 +261,7 @@ onUnmounted(() => {
             >
                 <!-- Empty State -->
                 <div v-if="messages.length === 0" class="py-12 text-center text-slate-500 font-mono text-xs">
-                    Belum ada pesan. Mulai obrolan taktis komunitas!
+                    Belum ada pesan. Mulai obrolan komunitas member!
                 </div>
 
                 <!-- Message Item -->
@@ -303,7 +332,7 @@ onUnmounted(() => {
                     <input 
                         v-model="newMessageText"
                         type="text"
-                        placeholder="Tulis pesan taktis patroli..."
+                        placeholder="Tulis pesan obrolan..."
                         maxlength="500"
                         class="flex-1 bg-slate-950/90 border border-slate-800 text-slate-100 placeholder-slate-500 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-blue-500 shadow-inner font-sans"
                     />

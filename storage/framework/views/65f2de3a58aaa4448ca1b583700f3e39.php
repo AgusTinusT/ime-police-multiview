@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
-        <title inertia>IME RP — SASP Police Duty Multiview</title>
+        <title inertia>IME RP — SASP Police Duty</title>
 
         <!-- Favicon / Browser Icon (With Cache Buster) -->
         <link rel="icon" type="image/x-icon" href="<?php echo e(asset('favicon.ico')); ?>?v=<?php echo e(filemtime(public_path('favicon.ico'))); ?>">

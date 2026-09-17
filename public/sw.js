@@ -1,4 +1,4 @@
-// Service Worker for IME RP SASP Police Duty Multiview PWA
+// Service Worker for IME RP SASP Police Duty PWA
 const CACHE_NAME = 'ime-police-pwa-v1';
 
 self.addEventListener('install', (event) => {

@@ -15,7 +15,7 @@ class SyncOfficerSubscribersCommand extends Command
 
     public function handle(YouTubeScraperService $scraper)
     {
-        $this->info('Starting subscriber count sync for active officers...');
+        $this->info('Starting subscriber count & channel metadata sync for active officers...');
 
         $officers = Officer::where('is_active', true)->get();
         if ($officers->isEmpty()) {
@@ -33,7 +33,7 @@ class SyncOfficerSubscribersCommand extends Command
                     if (!empty($handle)) {
                         $cleanHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
                         $url = "https://www.youtube.com/{$cleanHandle}";
-                    } elseif (!empty($officer->channel_id)) {
+                    } elseif (!empty($officer->channel_id) && !str_starts_with($officer->channel_id, 'UC_')) {
                         $url = "https://www.youtube.com/channel/{$officer->channel_id}";
                     } else {
                         continue;
@@ -48,20 +48,57 @@ class SyncOfficerSubscribersCommand extends Command
                     $html = $res->body();
                     $extracted = YouTubeScraperService::extractSubscriberCountFromHtml($html);
 
+                    $updateData = [];
+
                     if ($extracted['count'] !== null) {
-                        $officer->update([
-                            'subscriber_count' => $extracted['count'],
-                            'subscriber_count_text' => $extracted['text'],
-                        ]);
+                        $updateData['subscriber_count'] = $extracted['count'];
+                        $updateData['subscriber_count_text'] = $extracted['text'];
+                    }
+
+                    // Extract real YouTube channel_id from HTML
+                    $realChannelId = null;
+                    if (preg_match('/"externalId"\s*:\s*"(UC[a-zA-Z0-9_-]{22})"/i', $html, $m)) {
+                        $realChannelId = $m[1];
+                    } elseif (preg_match('/"channelId"\s*:\s*"(UC[a-zA-Z0-9_-]{22})"/i', $html, $m)) {
+                        $realChannelId = $m[1];
+                    } elseif (preg_match('/itemprop="channelId"\s+content="(UC[a-zA-Z0-9_-]{22})"/i', $html, $m)) {
+                        $realChannelId = $m[1];
+                    } elseif (preg_match('/<link rel="alternate" type="application\/rss\+xml" title="RSS" href="https:\/\/www\.youtube\.com\/feeds\/videos\.xml\?channel_id=(UC[a-zA-Z0-9_-]{22})"/i', $html, $m)) {
+                        $realChannelId = $m[1];
+                    }
+
+                    if ($realChannelId && (str_starts_with($officer->channel_id, 'UC_') || $officer->channel_id !== $realChannelId)) {
+                        $oldChannelId = $officer->channel_id;
+                        $updateData['channel_id'] = $realChannelId;
+                        
+                        if (!empty($oldChannelId)) {
+                            \Illuminate\Support\Facades\DB::table('active_streams')->where('channel_id', $oldChannelId)->update(['channel_id' => $realChannelId]);
+                        }
+                    }
+
+                    // Extract avatar URL if currently dicebear placeholder or empty
+                    if (str_contains($officer->avatar_url ?? '', 'dicebear') || empty($officer->avatar_url)) {
+                        if (preg_match('/"avatar"\s*:\s*\{\s*"thumbnails"\s*:\s*\[\s*\{\s*"url"\s*:\s*"([^"]+)"/i', $html, $am)) {
+                            $updateData['avatar_url'] = str_replace('\u0026', '&', $am[1]);
+                        } elseif (preg_match('/<meta property="og:image" content="([^"]+)"/i', $html, $am)) {
+                            $updateData['avatar_url'] = $am[1];
+                        }
+                    }
+
+                    if (!empty($updateData)) {
+                        $officer->update($updateData);
                         $totalUpdated++;
-                        $this->line("Updated {$officer->officer_name} ({$officer->handle}): {$extracted['text']} ({$extracted['count']})");
+                        $this->line("Updated {$officer->officer_name} ({$officer->handle}): " . json_encode($updateData));
                     }
                 }
             }
             usleep(500000); // 500ms delay between chunks to prevent aggressive rate-limiting
         }
 
-        $this->info("Successfully updated subscriber counts for {$totalUpdated} officers.");
+        // Flush Cinema Hub Cache so VODs refresh immediately
+        \Illuminate\Support\Facades\Cache::forget('cinema_hub_replays_cache');
+
+        $this->info("Successfully updated subscriber counts and channel metadata for {$totalUpdated} officers.");
         return 0;
     }
 }

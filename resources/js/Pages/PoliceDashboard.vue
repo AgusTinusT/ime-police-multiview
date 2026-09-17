@@ -2303,11 +2303,11 @@ const submitFeedbackForm = async () => {
                     </Link> 
 
                     <Link 
-                        href="/qna"
+                        href="/faq"
                         class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition shrink-0"
-                        title="QnA & Tactical FAQ Guide"
+                        title="Tactical FAQ Guide"
                     >
-                        QnA<span class="hidden xl:inline"> & FAQ</span>
+                        FAQ
                     </Link>
 
                     <Link 
@@ -2327,11 +2327,11 @@ const submitFeedbackForm = async () => {
                 <span class="hidden 2xl:inline-block text-[10px] font-mono text-slate-500 uppercase tracking-wider font-semibold mr-1">Player Actions:</span>
 
                 <!-- 1. Mode Switcher (Saver vs Play All) -->
-                <div class="flex items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0">
+                <div class="flex items-center h-8 bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0">
                     <button 
                         @click="enableDataSaver" 
                         :class="isDataSaverEnabled ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/30' : 'text-slate-400 hover:text-slate-200'"
-                        class="px-1.5 py-1 sm:px-2 sm:py-1 text-xs rounded transition flex items-center gap-1"
+                        class="h-full px-2 sm:px-2.5 text-xs rounded transition flex items-center gap-1"
                         title="Mode Saver: Hold video playback to save bandwidth"
                     >
                         <img :src="iconSaver" class="w-3.5 h-3.5 invert shrink-0" alt="Saver" />
@@ -2340,7 +2340,7 @@ const submitFeedbackForm = async () => {
                     <button 
                         @click="disableDataSaverAndPlayAll" 
                         :class="!isDataSaverEnabled ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30' : 'text-slate-400 hover:text-slate-200'"
-                        class="px-1.5 py-1 sm:px-2 sm:py-1 text-xs rounded transition flex items-center gap-1"
+                        class="h-full px-2 sm:px-2.5 text-xs rounded transition flex items-center gap-1"
                         title="Play All: Play all video feeds simultaneously"
                     >
                         <img :src="iconPlayAll" class="w-3 h-3 invert shrink-0" alt="Play All" />
@@ -2352,7 +2352,7 @@ const submitFeedbackForm = async () => {
                 <button 
                     @click="triggerManualSync" 
                     :disabled="isSyncingFeeds"
-                    class="px-1.5 py-1 sm:px-2 sm:py-1 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/80 transition flex items-center gap-1 disabled:opacity-50 shrink-0"
+                    class="h-8 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/80 transition flex items-center gap-1.5 disabled:opacity-50 shrink-0"
                     title="Resynchronize live feeds from YouTube"
                 >
                     <img :src="iconRefresh" class="w-3.5 h-3.5 invert opacity-90 shrink-0" :class="{ 'animate-spin': isSyncingFeeds }" alt="Sync" />
@@ -2362,7 +2362,7 @@ const submitFeedbackForm = async () => {
                 <!-- 3. Quick Feed Button (In-Page Drawer Action with Emerald Accent) -->
                 <button 
                     @click="openRightDrawer('QUICK_ADD')"
-                    class="px-1.5 py-1 sm:px-2 sm:py-1 text-xs font-bold rounded-lg bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-300 border border-emerald-500/40 transition flex items-center gap-1 shadow-sm shadow-emerald-950/50 shrink-0"
+                    class="h-8 px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-300 border border-emerald-500/40 transition flex items-center gap-1.5 shadow-sm shadow-emerald-950/50 shrink-0"
                     title="Add External YouTube URL to CCTV Wall (In-Page Modal)"
                 >
                     <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert opacity-90 shrink-0" alt="Quick Feed" />
@@ -2373,7 +2373,7 @@ const submitFeedbackForm = async () => {
                 <button 
                     @click="toggleBrowserFullscreen"
                     :class="isFullscreen ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40 border-blue-400' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-700/80'"
-                    class="px-1.5 py-1 sm:px-2 sm:py-1 text-xs font-bold rounded-lg border transition flex items-center gap-1 shrink-0"
+                    class="h-8 px-2.5 py-1 text-xs font-bold rounded-lg border transition flex items-center gap-1.5 shrink-0"
                     title="Toggle Mode Fullscreen CCTV Wall"
                 >
                     <img :src="isFullscreen ? iconExitFullscreen : iconFullscreen" class="w-3.5 h-3.5 invert opacity-90 shrink-0" alt="Fullscreen" />
@@ -3686,40 +3686,6 @@ const submitFeedbackForm = async () => {
 
                     <!-- RIGHT COLUMN: COLLAPSIBLE LIVE CHAT AT TOP + SUPPORT UNITS BELOW -->
                     <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-3">
-                        
-                        <!-- Supporting Units & Chat Header Bar -->
-                        <div class="bg-slate-900/90 px-3.5 py-2 rounded-xl border border-slate-800 flex items-center justify-between flex-wrap gap-2">
-                            <div class="flex items-center space-x-2">
-                                <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-80" alt="" />
-                                <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">
-                                    SUPPORT UNITS ({{ secondaryStreams.length }})
-                                </h3>
-                            </div>
-                            
-                            <div class="flex items-center space-x-1.5">
-                                <!-- Collapsible Live Chat Toggle Button -->
-                                <button 
-                                    @click="isRightChatOpen = !isRightChatOpen" 
-                                    :class="isRightChatOpen ? 'bg-amber-600 text-white shadow-md shadow-amber-500/40 border-amber-400' : 'bg-slate-800 text-slate-300 hover:text-amber-300 hover:bg-slate-700 border-slate-700'"
-                                    class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border flex items-center gap-1 transition"
-                                    title="Toggle YouTube Live Chat for Lead Stream"
-                                >
-                                    <img :src="isRightChatOpen ? iconChatRemove : iconChat" class="w-3 h-3 invert opacity-90" alt="" />
-                                    <span>{{ isRightChatOpen ? 'HIDE CHAT' : 'LIVE CHAT' }}</span>
-                                </button>
-
-                                <!-- Mode Toggle Button (Desktop Only) -->
-                                <button 
-                                    @click="toggleGlobalDataSaver" 
-                                    :class="isDataSaverEnabled ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50' : 'bg-blue-950/80 text-blue-300 border-blue-500/50'"
-                                    class="text-[10px] font-mono px-2 py-0.5 rounded border hidden md:flex items-center gap-1 transition font-bold"
-                                    :title="isDataSaverEnabled ? 'Click to Play All support feeds' : 'Click to enable Saver Mode'"
-                                >
-                                    <img :src="isDataSaverEnabled ? iconSaver : iconPlayAll" class="w-3 h-3 invert" alt="" />
-                                    <span>{{ isDataSaverEnabled ? 'SAVER' : 'PLAY ALL' }}</span>
-                                </button>
-                            </div>
-                        </div>
 
                         <!-- 1. COLLAPSIBLE LIVE CHAT CONTAINER (With user preferred 520px height) -->
                         <div v-if="isRightChatOpen && primaryFocusedStream" class="bg-slate-950 rounded-xl overflow-hidden border border-amber-500/50 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">

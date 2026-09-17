@@ -103,7 +103,7 @@ class PoliceCommandController extends Controller
             ->get();
         $scraper = app(\App\Services\YouTubeScraperService::class);
         $recentReplays = Cache::remember('cinema_hub_replays_cache', 300, function () use ($unmatchedOfficers, $scraper) {
-            return $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 35);
+            return $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 100);
         });
 
         // 4. Department Unit Breakdown Stats
@@ -234,7 +234,7 @@ class PoliceCommandController extends Controller
             ->whereNotIn('channel_id', $liveChannelIds)
             ->get();
         $scraper = app(\App\Services\YouTubeScraperService::class);
-        $recentReplays = $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 35);
+        $recentReplays = $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 100);
 
         // 4. Department Unit Breakdown Stats
         $deptStats = [
@@ -480,13 +480,18 @@ class PoliceCommandController extends Controller
     }
 
     /**
-     * Dedicated Page: QnA & Tactical FAQ Guide.
+     * Dedicated Page: Tactical FAQ & Help Guide.
      */
-    public function qnaPage(Request $request)
+    public function faqPage(Request $request)
     {
-        return Inertia::render('Qna', [
+        return Inertia::render('Faq', [
             'appVersion' => '2.4.0-Pro',
         ]);
+    }
+
+    public function qnaPage(Request $request)
+    {
+        return $this->faqPage($request);
     }
 
     /**

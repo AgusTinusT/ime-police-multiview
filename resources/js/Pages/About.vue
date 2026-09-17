@@ -28,7 +28,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <Head title="Tentang Platform — IME RP SASP Police Duty Multiview" />
+    <Head title="Tentang Platform — IME RP SASP Police Duty" />
 
     <TacticalLayout activeTab="about">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">

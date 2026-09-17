@@ -1588,6 +1588,75 @@ onMounted(() => {
             </div>
         </div>
 
+        <!-- MODAL: ADD / EDIT ANNOUNCEMENT / ALERT -->
+        <div v-if="showAnnouncementModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4 font-mono text-xs">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <h3 class="text-sm font-bold text-white uppercase">{{ isEditAnnouncement ? 'Edit Announcement / Alert' : 'Tambah Announcement / Alert Baru' }}</h3>
+                    <button @click="showAnnouncementModal = false" class="text-slate-400 hover:text-white">✕</button>
+                </div>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Tipe Alert *</label>
+                            <select v-model="announcementForm.type" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2">
+                                <option value="info">Info (Biru)</option>
+                                <option value="warning">Peringatan (Kuning)</option>
+                                <option value="danger">Bahaya / Darurat (Merah)</option>
+                                <option value="success">Sukses (Hijau)</option>
+                                <option value="promo">Promosi / Event (Ungu)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Status *</label>
+                            <select v-model="announcementForm.is_active" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2">
+                                <option :value="true">Aktif (Tampil)</option>
+                                <option :value="false">Nonaktif (Sembunyikan)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 mb-1 font-bold">Judul Alert / Banner *</label>
+                        <input v-model="announcementForm.title" type="text" placeholder="Contoh: CODE 3 EMERGENCY ANNOUNCEMENT" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-300 mb-1 font-bold">Pesan Pengumuman *</label>
+                        <textarea v-model="announcementForm.message" rows="3" placeholder="Tulis isi pengumuman atau instruksi taktis..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2 resize-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Teks Tombol Aksi (Opsional)</label>
+                            <input v-model="announcementForm.action_text" type="text" placeholder="Contoh: Lihat Detail" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">URL Aksi (Opsional)</label>
+                            <input v-model="announcementForm.action_url" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Icon (Opsional)</label>
+                            <input v-model="announcementForm.icon" type="text" placeholder="Contoh: 🚨, 📢, ⚠️" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">URL Banner Image (Opsional)</label>
+                            <input v-model="announcementForm.image_url" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2">
+                    <button @click="showAnnouncementModal = false" class="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700">Batal</button>
+                    <button @click="saveAnnouncement" :disabled="isSavingAnnouncement" class="px-4 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50">
+                        {{ isSavingAnnouncement ? 'Menyimpan...' : (isEditAnnouncement ? 'Update Alert' : 'Simpan Alert Baru') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- TOAST NOTIFICATION POPUP -->
         <transition 
             enter-active-class="transform transition ease-out duration-300"

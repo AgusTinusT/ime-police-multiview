@@ -75,7 +75,27 @@ class OfficerManagementController extends Controller
         }
         $validated['handle'] = $handle;
 
-        // Auto-generate unique channel_id if not provided
+        // Resolve real YouTube channel info if possible
+        if (!empty($handle)) {
+            try {
+                $scraper = app(\App\Services\YouTubeScraperService::class);
+                $info = $scraper->fetchChannelInfo($handle);
+                if ($info && !empty($info['channel_id'])) {
+                    $validated['channel_id'] = $info['channel_id'];
+                    if (!empty($info['avatar_url']) && empty($validated['avatar_url'])) {
+                        $validated['avatar_url'] = $info['avatar_url'];
+                    }
+                    if (isset($info['subscriber_count'])) {
+                        $validated['subscriber_count'] = $info['subscriber_count'];
+                        $validated['subscriber_count_text'] = $info['subscriber_count_text'] ?? null;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Fallback to auto-generated if network check fails
+            }
+        }
+
+        // Auto-generate unique channel_id if still empty
         if (empty($validated['channel_id'])) {
             $validated['channel_id'] = 'UC_' . Str::slug(str_replace('@', '', $handle), '_') . '_' . substr(md5($handle . time()), 0, 8);
         }

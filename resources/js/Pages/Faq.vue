@@ -45,7 +45,7 @@ const faqs = [
         categoryLabel: 'Multiview & Fitur',
         badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
         question: 'Bagaimana cara kerja platform IME Police Multiview ini?',
-        answer: 'Platform ini dirancang khusus sebagai Tactical Command Center untuk jajaran kepolisian IME Roleplay. Sistem secara otomatis mengagregasi dan menampilkan live bodycam/stream dari perwira aktif (LSPD, BCSO, SASP, SAPR) secara real-time dari platform YouTube, Twitch, dan Kick sehingga komando dan penonton dapat memantau berbagai sudut operasi secara bersamaan.'
+        answer: 'Platform ini dirancang khusus sebagai Tactical Command Center untuk jajaran kepolisian IME Roleplay. Sistem menampilkan live bodycam/stream dari perwira aktif (LSPD, BCSO, SASP, SAPR) secara real-time dari platform YouTube sehingga komando dan penonton dapat memantau berbagai sudut operasi secara bersamaan.<br/><br/><strong>Ketentuan Judul Live Stream:</strong> Judul/title streaming perwira harus menambahkan minimal salah satu hashtag wajib <code>#imeroleplay</code> atau <code>#imepolice</code> agar siaran langsung terdeteksi dan tampil otomatis pada sistem.'
     },
     {
         id: 2,
@@ -61,7 +61,7 @@ const faqs = [
         categoryLabel: 'Multiview & Fitur',
         badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
         question: 'Apa perbedaan antara Mode Saver dan Play All?',
-        answer: '<strong>Mode Saver</strong> menahan pemutaran video otomatis untuk menghemat penggunaan kuota internet dan beban CPU browser Anda. Video akan menampilkan thumbnail berkualitas tinggi dan baru akan diputar saat Anda mengkliknya. <strong>Mode Play All</strong> akan memutar seluruh video secara bersamaan untuk pemantauan penuh.'
+        answer: '<strong>Mode Saver</strong> menahan pemutaran otomatis dan menampilkan poster thumbnail ringan untuk menghemat kuota internet serta beban CPU browser Anda. Saat video diklik atau difokuskan (Focus Mode), sistem secara otomatis memutar video dalam kualitas <strong>1080p HD penuh</strong> yang jernih setara dengan YouTube.com.<br/><br/><strong>Mode Play All</strong> memutar seluruh siaran video secara bersamaan dalam resolusi 1080p HD untuk pemantauan taktis secara penuh.'
     },
     {
         id: 4,
@@ -97,7 +97,7 @@ const faqs = [
         categoryLabel: 'Streamer & Pendaftaran',
         badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
         question: 'Saya perwira polisi baru di IME Roleplay, bagaimana cara mendaftarkan channel siaran saya?',
-        answer: 'Anda dapat mengajukan pendaftaran channel siaran langsung Anda melalui menu <a href="/feedback" class="text-sky-400 underline font-bold">Feedback & Reports</a> atau melalui server Discord IME Roleplay. Cantumkan Nama Perwira, Callsign, Kesatuan (LSPD/BCSO/SASP/SAPR), dan Link Channel YouTube Anda.'
+        answer: 'Anda dapat mengajukan pendaftaran channel siaran langsung Anda melalui menu <a href="/feedback" class="text-sky-400 underline font-bold">Feedback & Reports</a>. Cantumkan Nama Perwira, Callsign, Kesatuan (LSPD/BCSO/SASP/SAPR), dan Link Channel YouTube Anda. Pastikan judul streaming Anda selalu menyertakan minimal salah satu hashtag wajib <code>#imeroleplay</code> atau <code>#imepolice</code>.'
     },
     {
         id: 8,
@@ -124,6 +124,14 @@ const faqs = [
         badgeColor: 'bg-red-500/20 text-red-300 border-red-500/40',
         question: 'Apakah aplikasi ini dapat dipasang sebagai PWA di HP Android atau iPhone?',
         answer: 'Tentu saja! Platform ini sepenuhnya mendukung Progressive Web App (PWA). Buka situs ini melalui browser Google Chrome (Android) atau Safari (iOS), lalu pilih menu browser <strong>"Add to Home Screen" (Tambahkan ke Layar Utama)</strong> untuk menginstalnya sebagai aplikasi desktop/mobile.'
+    },
+    {
+        id: 11,
+        category: 'MULTIVIEW',
+        categoryLabel: 'Multiview & Fitur',
+        badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+        question: 'Mengapa saya tidak bisa mengirim Super Chat, Gift Membership, atau Join Member pada Live Chat di website ini?',
+        answer: 'Berdasarkan kebijakan keamanan resmi Google & YouTube (<em>Cross-Origin Security & Anti-Clickjacking Policy</em>), transaksi keuangan seperti <strong>Super Chat, Super Stickers, Gift Membership, dan Join Member</strong> dilarang di dalam <code>&lt;iframe&gt;</code> embed situs pihak ketiga untuk mencegah penipuan data pembayaran.<br/><br/>Jika Anda ingin mengirimkan Super Chat, Gift, atau bergabung menjadi Member channel perwira, silakan klik tombol eksternal <strong>"Buka di YouTube" (ikon panah keluar)</strong> pada kartu siaran untuk memutar dan bertransaksi langsung di situs resmi <strong>YouTube.com</strong>.'
     }
 ];
 
@@ -159,7 +167,7 @@ const filteredFaqs = computed(() => {
 
 <template>
     <TacticalLayout>
-        <Head title="Panduan & FAQ — IME RP SASP Police Duty Multiview" />
+        <Head title="Panduan & FAQ — IME RP SASP Police Duty" />
 
         <!-- Main Content Area -->
         <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -172,10 +180,10 @@ const filteredFaqs = computed(() => {
                     <div class="space-y-2 max-w-2xl">
                         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold uppercase tracking-wider">
                             <img :src="iconHelp" class="w-3.5 h-3.5 invert opacity-80" alt="Help" />
-                            <span>Pusat Bantuan & Tanya Jawab</span>
+                            <span>Pusat Bantuan & FAQ</span>
                         </div>
                         <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                            Pertanyaan Umum (QnA) & Panduan Operasional
+                            Pertanyaan Umum (FAQ) & Panduan Operasional
                         </h1>
                         <p class="text-sm text-slate-300 leading-relaxed">
                             Temukan jawaban cepat mengenai penggunaan Multiview, alokasi TAC Radio taktis, pendaftaran channel perwira, serta solusi masalah teknis secara mandiri.
@@ -233,28 +241,28 @@ const filteredFaqs = computed(() => {
                 </button>
 
                 <button 
-                    @click="activeCategory = 'OFFICER'"
+                    @click="activeCategory = 'OFFICERS'"
                     :class="[
                         'px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition border flex items-center gap-2',
-                        activeCategory === 'OFFICER'
+                        activeCategory === 'OFFICERS'
                             ? 'bg-teal-600 text-white border-teal-500 shadow-md shadow-teal-600/30'
                             : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800/60'
                     ]"
                 >
-                    <img :src="iconUser" class="w-4 h-4 invert" :class="activeCategory !== 'OFFICER' ? 'opacity-60' : ''" alt="" />
+                    <img :src="iconUser" class="w-4 h-4 invert" :class="activeCategory !== 'OFFICERS' ? 'opacity-60' : ''" alt="" />
                     <span>Police Streamer & Perwira</span>
                 </button>
 
                 <button 
-                    @click="activeCategory = 'TAC_RADIO'"
+                    @click="activeCategory = 'TAC'"
                     :class="[
                         'px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition border flex items-center gap-2',
-                        activeCategory === 'TAC_RADIO'
+                        activeCategory === 'TAC'
                             ? 'bg-amber-600 text-white border-amber-500 shadow-md shadow-amber-600/30'
                             : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800/60'
                     ]"
                 >
-                    <img :src="iconRadio" class="w-4 h-4 invert" :class="activeCategory !== 'TAC_RADIO' ? 'opacity-60' : ''" alt="" />
+                    <img :src="iconRadio" class="w-4 h-4 invert" :class="activeCategory !== 'TAC' ? 'opacity-60' : ''" alt="" />
                     <span>TAC Radio Channel</span>
                 </button>
 

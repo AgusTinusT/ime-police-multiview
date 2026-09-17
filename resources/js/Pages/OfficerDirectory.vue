@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import TacticalLayout from '@/Layouts/TacticalLayout.vue';
 
 // SVG Icon Assets & Branding Logos
@@ -40,6 +40,10 @@ const isSyncing = ref(false);
 const isFullscreen = ref(false);
 const isQuickAddOpen = ref(false);
 
+const handleAvatarError = (e, officer) => {
+    e.target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(officer.callsign || officer.officer_name || 'officer')}`;
+};
+
 // Personal Streams saved to localStorage
 const personalIds = ref([]);
 const loadPersonalStorage = () => {
@@ -76,15 +80,21 @@ const togglePin = (identifier) => {
     }
 };
 
-// 1-Click Subscribe Popup Modal
-const openSubscribePopup = (channelIdOrHandle, officerName = '') => {
-    if (!channelIdOrHandle) return;
+// 1-Click Subscribe Popup Modal (With Smart Fallback to Video URL)
+const openSubscribePopup = (channelIdOrHandle, officerName = '', videoId = '') => {
     let subUrl = '';
-    if (channelIdOrHandle.startsWith('UC')) {
-        subUrl = `https://www.youtube.com/channel/${channelIdOrHandle}?sub_confirmation=1`;
+    if (channelIdOrHandle && typeof channelIdOrHandle === 'string' && channelIdOrHandle.trim() !== '') {
+        const cleanStr = channelIdOrHandle.trim();
+        if (cleanStr.startsWith('UC')) {
+            subUrl = `https://www.youtube.com/channel/${cleanStr}?sub_confirmation=1`;
+        } else {
+            const cleanHandle = cleanStr.startsWith('@') ? cleanStr : `@${cleanStr}`;
+            subUrl = `https://www.youtube.com/${cleanHandle}?sub_confirmation=1`;
+        }
+    } else if (videoId && typeof videoId === 'string' && videoId.trim() !== '') {
+        subUrl = `https://www.youtube.com/watch?v=${videoId.trim()}?sub_confirmation=1`;
     } else {
-        const cleanHandle = channelIdOrHandle.startsWith('@') ? channelIdOrHandle : `@${channelIdOrHandle}`;
-        subUrl = `https://www.youtube.com/${cleanHandle}?sub_confirmation=1`;
+        subUrl = 'https://www.youtube.com/';
     }
     const width = 640;
     const height = 660;
@@ -140,6 +150,9 @@ const filteredOfficers = computed(() => {
         } else if (sortBy.value === 'subs_desc') {
             return (b.subscriber_count || 0) - (a.subscriber_count || 0);
         } else if (sortBy.value === 'subs_asc') {
+            const isTargetA = (a.subscriber_count || 0) < 1000 ? 0 : 1;
+            const isTargetB = (b.subscriber_count || 0) < 1000 ? 0 : 1;
+            if (isTargetA !== isTargetB) return isTargetA - isTargetB;
             return (a.subscriber_count || 0) - (b.subscriber_count || 0);
         } else if (sortBy.value === 'name') {
             return (a.officer_name || '').localeCompare(b.officer_name || '');
@@ -175,7 +188,7 @@ const toggleFullscreen = () => {
 
 <template>
     <TacticalLayout>
-        <Head title="Direktori Officer — IME RP SASP Police Duty Multiview" />
+        <Head title="Direktori Officer — IME RP SASP Police Duty" />
 
         <!-- Main Content Area -->
         <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -288,7 +301,7 @@ const toggleFullscreen = () => {
                     </div>
 
                     <!-- Sort Dropdown -->
-                    <div class="flex items-center gap-1.5 shrink-0 font-mono">
+                    <div class="flex items-center gap-2 shrink-0 font-mono">
                         <select 
                             v-model="sortBy" 
                             class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
@@ -316,12 +329,13 @@ const toggleFullscreen = () => {
                 </button>
             </div>
 
+            <!-- Officers Cards Grid -->
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div 
                     v-for="officer in filteredOfficers" 
                     :key="officer.id"
                     class="bg-slate-900/90 border rounded-2xl p-4 flex flex-col justify-between transition-all duration-200 hover:border-slate-700 hover:shadow-xl group"
-                    :class="officer.is_online ? 'border-emerald-500/40 shadow-md shadow-emerald-500/5' : 'border-slate-800'"
+                    :class="officer.is_online ? 'border-emerald-500/40' : 'border-slate-800'"
                 >
                     <div>
                         <!-- Card Top: Department Badge, Callsign, Status -->
@@ -341,9 +355,9 @@ const toggleFullscreen = () => {
                             <div class="shrink-0">
                                 <span 
                                     v-if="officer.is_online" 
-                                    class="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold shadow-sm"
+                                    class="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold"
                                 >
-                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                                     <span>10-8 ON DUTY</span>
                                 </span>
                                 <span 
@@ -355,50 +369,74 @@ const toggleFullscreen = () => {
                             </div>
                         </div>
 
-                        <!-- Officer Identity -->
-                        <h3 class="text-base font-bold text-slate-100 truncate group-hover:text-blue-300 transition" :title="officer.officer_name">
-                            {{ officer.officer_name }}
-                        </h3>
-
-                        <div class="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5 truncate font-mono">
-                            <span class="text-slate-300 font-semibold">{{ officer.rank }}</span>
-                            <span>•</span>
-                            <span class="text-blue-400">{{ officer.handle }}</span>
-                            <span v-if="officer.streamer_name" class="text-slate-500 truncate">({{ officer.streamer_name }})</span>
-                        </div>
-
-                        <div class="text-[11px] font-mono text-slate-500 truncate mt-1">
-                            📍 {{ officer.patrol_zone || 'Los Santos Sector' }}
-                        </div>
-
-                        <!-- Milestone Progress (Towards 1K Subs) -->
-                        <div class="mt-3.5 bg-slate-950/80 border border-slate-800/80 rounded-xl p-2.5">
-                            <div class="flex items-center justify-between text-[11px] font-mono mb-1.5">
-                                <span class="text-slate-400 flex items-center gap-1">
-                                    <img :src="iconTarget" class="w-3.5 h-3.5 invert opacity-80" alt="" />
-                                    <span>{{ (officer.subscriber_count || 0) < 1000 ? 'Road to 1,000 Subs' : 'Total Subscribers' }}:</span>
-                                </span>
-                                <span class="font-bold text-slate-200">
-                                    {{ officer.subscriber_count ? Number(officer.subscriber_count).toLocaleString('id-ID') : '0' }} / 1.000
-                                </span>
+                        <!-- Officer Identity Block with YouTube Profile Photo -->
+                        <div class="flex items-start gap-3 mt-1.5">
+                            <!-- YouTube Profile Avatar (Clean, no distracting pulse/ring overlays) -->
+                            <div class="shrink-0">
+                                <img 
+                                    :src="officer.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(officer.callsign || officer.officer_name || 'officer')}`" 
+                                    :alt="officer.officer_name"
+                                    @error="(e) => handleAvatarError(e, officer)"
+                                    class="w-11 h-11 rounded-full object-cover border border-slate-700/80 shadow-md transition-transform duration-200 group-hover:scale-105"
+                                />
                             </div>
-                            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                                <div 
-                                    class="h-full rounded-full transition-all duration-500"
-                                    :class="(officer.subscriber_count || 0) >= 1000 ? 'bg-emerald-500' : 'bg-red-500'"
-                                    :style="{ width: `${Math.min(100, Math.round(((officer.subscriber_count || 0) / 1000) * 100))}%` }"
-                                ></div>
+
+                            <!-- Identity Info -->
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-base font-bold text-slate-100 truncate group-hover:text-blue-300 transition" :title="officer.officer_name">
+                                    {{ officer.officer_name }}
+                                </h3>
+
+                                <div class="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5 truncate font-mono">
+                                    <span class="text-slate-300 font-semibold">{{ officer.rank }}</span>
+                                    <template v-if="officer.streamer_name">
+                                        <span class="text-slate-600">•</span>
+                                        <span class="text-slate-400 truncate">{{ officer.streamer_name }}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subscriber Info & Milestone Progress -->
+                        <div class="mt-3 font-mono">
+                            <!-- Road to 1K Progress Bar (Only for officers < 1000 subs) -->
+                            <div v-if="(officer.subscriber_count || 0) < 1000" class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-2">
+                                <div class="flex items-center justify-between text-[11px] mb-1">
+                                    <span class="text-slate-400 flex items-center gap-1">
+                                        <img :src="iconTarget" class="w-3 h-3 invert opacity-70" alt="" />
+                                        <span>Road to 1,000 Subs:</span>
+                                    </span>
+                                    <span class="font-bold text-slate-300">
+                                        {{ officer.subscriber_count ? Number(officer.subscriber_count).toLocaleString('id-ID') : '0' }} / 1.000
+                                    </span>
+                                </div>
+                                <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                    <div 
+                                        class="h-full bg-amber-500 rounded-full transition-all duration-500"
+                                        :style="{ width: `${Math.min(100, Math.round(((officer.subscriber_count || 0) / 1000) * 100))}%` }"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <!-- Simplified Clean Text for officers >= 1000 subs -->
+                            <div v-else class="text-[11px] text-slate-400 flex items-center justify-between px-1">
+                                <span>Total Subscribers:</span>
+                                <span class="font-bold text-slate-200">{{ Number(officer.subscriber_count || 0).toLocaleString('id-ID') }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Card Action Footer -->
-                    <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                        <div class="flex items-center space-x-1.5">
+                    <!-- Card Action Footer: Minimalist Symmetrical Icon Buttons -->
+                    <div class="mt-3.5 pt-2.5 border-t border-slate-800/80 flex items-center justify-between">
+                        <div class="text-[10px] font-mono text-slate-500 truncate">
+                            <span>Sektor: <strong class="text-slate-400">{{ officer.patrol_zone || 'LS' }}</strong></span>
+                        </div>
+
+                        <div class="flex items-center space-x-1.5 shrink-0">
                             <!-- Pin to Personal Watchlist -->
                             <button 
                                 @click="togglePin(officer.channel_id || officer.handle)"
-                                class="p-2 rounded-xl border transition text-xs flex items-center gap-1"
+                                class="w-8 h-8 rounded-xl border transition flex items-center justify-center"
                                 :class="isPinned(officer.channel_id || officer.handle) ? 'text-purple-300 bg-purple-950/80 border-purple-500/50' : 'text-slate-400 hover:text-purple-300 bg-slate-950 hover:bg-slate-800 border-slate-800'"
                                 :title="isPinned(officer.channel_id || officer.handle) ? 'Hapus dari Personal' : 'Pin ke Personal Tab'"
                             >
@@ -408,32 +446,20 @@ const toggleFullscreen = () => {
                             <!-- 1-Click YouTube Subscribe Modal -->
                             <button 
                                 @click="openSubscribePopup(officer.channel_id || officer.handle, officer.officer_name)"
-                                class="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-sm shadow-red-600/30 transition flex items-center gap-1.5"
+                                class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white transition-all duration-200 flex items-center justify-center font-mono"
                                 title="Subscribe ke YouTube channel"
                             >
-                                <span class="w-2 h-2 rounded-full bg-white"></span>
-                                <span>Subscribe</span>
+                                <span class="text-[10px] font-black">SUB</span>
                             </button>
-                        </div>
 
-                        <!-- Live Action or Channel Link -->
-                        <div>
-                            <Link 
-                                v-if="officer.is_online && officer.live_video_id"
-                                href="/" 
-                                class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/30 transition flex items-center gap-1.5"
-                            >
-                                <img :src="iconFocus" class="w-3.5 h-3.5 invert" alt="" />
-                                <span>Tonton Multiview</span>
-                            </Link>
+                            <!-- YouTube Channel External Link -->
                             <a 
-                                v-else
                                 :href="`https://www.youtube.com/${officer.handle}`" 
                                 target="_blank" 
-                                class="text-xs text-blue-400 hover:underline flex items-center gap-1 font-mono px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-blue-500/40 transition"
+                                class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 hover:border-blue-500/50 transition flex items-center justify-center"
+                                title="Buka Channel YouTube"
                             >
-                                <span>Channel</span>
-                                <img :src="iconExternal" class="w-3 h-3 invert opacity-70" alt="" />
+                                <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="" />
                             </a>
                         </div>
                     </div>

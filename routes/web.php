@@ -15,7 +15,10 @@ Route::get('/dashboard', [PoliceCommandController::class, 'dashboard'])->name('d
 // Dedicated Standalone Pages
 Route::get('/officers', [PoliceCommandController::class, 'officers'])->name('officers.index');
 Route::get('/about', [PoliceCommandController::class, 'about'])->name('about');
-Route::get('/qna', [PoliceCommandController::class, 'qnaPage'])->name('qna');
+Route::get('/faq', [PoliceCommandController::class, 'faqPage'])->name('faq');
+Route::get('/qna', function () {
+    return redirect()->route('faq');
+})->name('qna');
 Route::get('/feedback', [PoliceCommandController::class, 'feedbackPage'])->name('feedback');
 
 // Admin direct slash route (hidden access)

@@ -42,7 +42,7 @@ onUnmounted(() => {
                 <!-- Avatar Circle with Initial -->
                 <div 
                     :class="[
-                        'w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full flex items-center justify-center text-xs sm:text-sm font-black shadow-lg tracking-wider border-2 transition',
+                        'w-8 h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-black shadow-lg tracking-wider border-2 transition',
                         $page.props.auth.user.role === 'admin' 
                             ? 'bg-gradient-to-br from-amber-500 via-yellow-600 to-amber-700 text-slate-950 border-amber-400 shadow-amber-950/60 group-hover:border-amber-300' 
                             : 'bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-800 text-white border-blue-400/80 shadow-blue-950/60 group-hover:border-blue-300'

@@ -20,7 +20,7 @@ router.on('navigate', () => {
 });
 
 createInertiaApp({
-    title: (title) => title ? title : 'IME RP — SASP Police Duty Multiview',
+    title: (title) => title ? title : 'IME RP — SASP Police Duty',
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.vue`,

@@ -762,7 +762,7 @@ class YouTubeScraperService
      * @param int $limit
      * @return array
      */
-    public function fetchLatestOfficerVideos(iterable $officers, int $limit = 35): array
+    public function fetchLatestOfficerVideos(iterable $officers, int $limit = 100): array
     {
         $officerList = collect($officers);
         if ($officerList->isEmpty()) {
@@ -919,20 +919,21 @@ class YouTubeScraperService
                             }
                         }
 
-                        // Filter candidate streams by freshness (< 30 days) and relevance
-                        $validCandidates = array_filter($candidateStreams, function ($s) use ($isStreamTooOld) {
+                        // Filter candidate streams by freshness (< 30 days)
+                        $validCandidates = array_values(array_filter($candidateStreams, function ($s) use ($isStreamTooOld) {
                             return !empty($s['video_id']) && !$isStreamTooOld($s['time_text']);
-                        });
+                        }));
 
                         if (!empty($validCandidates)) {
-                            // Sort by relevance score while keeping recent broadcast order
-                            usort($validCandidates, function ($a, $b) use ($calculateRelevanceScore) {
-                                $scoreA = $calculateRelevanceScore($a['title']);
-                                $scoreB = $calculateRelevanceScore($b['title']);
-                                return $scoreB <=> $scoreA;
-                            });
-
+                            // Prioritize recency: pick the latest stream chronologically that matches IME RP content criteria
                             $best = $validCandidates[0];
+                            foreach ($validCandidates as $cand) {
+                                if ($calculateRelevanceScore($cand['title']) >= 2) {
+                                    $best = $cand;
+                                    break;
+                                }
+                            }
+
                             $timeLabel = $cleanTimeText($best['time_text']);
                             $vId = $best['video_id'];
 
