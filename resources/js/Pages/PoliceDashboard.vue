@@ -44,6 +44,7 @@ import iconUrl from '@/Components/Icons/url-checker-svgrepo-com.svg';
 import iconChat from '@/Components/Icons/chat-svgrepo-com.svg';
 import iconChatRemove from '@/Components/Icons/chat-remove-svgrepo-com.svg';
 import iconTarget from '@/Components/Icons/target-svgrepo-com.svg';
+import iconShield from '@/Components/Icons/shield-svgrepo-com.svg';
 import UserAccountMenu from '@/Components/UserAccountMenu.vue';
 import TacticalFooter from '@/Components/TacticalFooter.vue';
 import TacticalChatDrawer from '@/Components/TacticalChatDrawer.vue';
@@ -1269,6 +1270,71 @@ const filteredOfflineOfficers = computed(() => {
     return result;
 });
 
+// Custom Grid Sequence Ordering System (#1, #2, #3...)
+const customStreamOrder = ref([]); // Array of video_id strings in priority sequence
+
+const getCustomOrderRank = (videoId) => {
+    if (!videoId) return 0;
+    const strId = String(videoId).trim();
+    
+    // Compute category-relative rank (scoped to currently active category / filteredStreams)
+    const categoryOrderedIds = customStreamOrder.value.filter(id => 
+        filteredStreams.value.some(s => String(s.video_id).trim() === id)
+    );
+
+    const idx = categoryOrderedIds.indexOf(strId);
+    return idx !== -1 ? idx + 1 : 0;
+};
+
+const toggleCustomOrderPin = (videoId) => {
+    if (!videoId) return;
+    const strId = String(videoId).trim();
+    const idx = customStreamOrder.value.indexOf(strId);
+    if (idx !== -1) {
+        customStreamOrder.value.splice(idx, 1);
+        showTacticalToast('Siaran dikeluarkan dari urutan prioritas', 'info');
+    } else {
+        customStreamOrder.value.push(strId);
+        const rank = getCustomOrderRank(strId);
+        showTacticalToast(`Siaran ditambahkan ke urutan prioritas #${rank}`, 'info');
+    }
+};
+
+const moveCustomOrderUp = (videoId) => {
+    const strId = String(videoId).trim();
+    const idx = customStreamOrder.value.indexOf(strId);
+    if (idx > 0) {
+        const item = customStreamOrder.value.splice(idx, 1)[0];
+        customStreamOrder.value.splice(idx - 1, 0, item);
+    } else if (idx === -1) {
+        customStreamOrder.value.unshift(strId);
+    }
+};
+
+const moveCustomOrderDown = (videoId) => {
+    const strId = String(videoId).trim();
+    const idx = customStreamOrder.value.indexOf(strId);
+    if (idx !== -1 && idx < customStreamOrder.value.length - 1) {
+        const item = customStreamOrder.value.splice(idx, 1)[0];
+        customStreamOrder.value.splice(idx + 1, 0, item);
+    }
+};
+
+const moveCustomOrderToTop = (videoId) => {
+    const strId = String(videoId).trim();
+    const idx = customStreamOrder.value.indexOf(strId);
+    if (idx !== -1) {
+        customStreamOrder.value.splice(idx, 1);
+    }
+    customStreamOrder.value.unshift(strId);
+    showTacticalToast('Siaran dijadikan urutan #1 terdepan', 'info');
+};
+
+const resetCustomStreamOrder = () => {
+    customStreamOrder.value = [];
+    showTacticalToast('Urutan grid dikembalikan ke posisi semula', 'info');
+};
+
 // Sidebar Hidden stream video IDs
 const hiddenStreamVideoIds = ref([]);
 const toggleStreamVisibility = (videoId) => {
@@ -1281,7 +1347,19 @@ const toggleStreamVisibility = (videoId) => {
 };
 
 const visibleStreams = computed(() => {
-    return filteredStreams.value.filter(s => !hiddenStreamVideoIds.value.includes(s.video_id));
+    const list = filteredStreams.value.filter(s => !hiddenStreamVideoIds.value.includes(s.video_id));
+    
+    if (customStreamOrder.value.length === 0) return list;
+
+    return [...list].sort((a, b) => {
+        const rankA = getCustomOrderRank(a.video_id);
+        const rankB = getCustomOrderRank(b.video_id);
+
+        if (rankA > 0 && rankB > 0) return rankA - rankB;
+        if (rankA > 0) return -1;
+        if (rankB > 0) return 1;
+        return 0;
+    });
 });
 
 // Displayed Grid Streams (Respects layout limits to prevent offscreen video bandwidth drain)
@@ -1365,16 +1443,77 @@ const trendingStreams = computed(() => {
     return [...allActiveStreams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0));
 });
 
-// Support 1K Subs (Streamers / Officers with < 1,000 subscribers)
-const support1kStreams = computed(() => {
-    return allCatalogStreams.value.filter(s => {
-        const count = s.officer?.subscriber_count;
-        return typeof count === 'number' && count > 0 && count < 1000;
-    }).sort((a, b) => {
+const parseRelativeTimeToSeconds = (str) => {
+    if (!str) return 999999999;
+    const text = String(str).toLowerCase().trim();
+    if (text.includes('baru saja') || text.includes('just now') || text.includes('live')) return 0;
+
+    const numMatch = text.match(/(\d+)/);
+    const num = numMatch ? parseInt(numMatch[1], 10) : 1;
+
+    if (text.includes('detik') || text.includes('second')) return num;
+    if (text.includes('menit') || text.includes('minute')) return num * 60;
+    if (text.includes('jam') || text.includes('hour')) return num * 3600;
+    if (text.includes('hari') || text.includes('day')) return num * 86400;
+    if (text.includes('minggu') || text.includes('week')) return num * 604800;
+    if (text.includes('bulan') || text.includes('month')) return num * 2592000;
+    if (text.includes('tahun') || text.includes('year')) return num * 31536000;
+
+    return 999999999;
+};
+
+// Sort streams helper: 1) LIVE status first, 2) Video streams/replays over static cards, 3) Recency timestamp (newest stream/replay first)
+const sortStreamsByStatusAndRecency = (streamList) => {
+    return [...streamList].sort((a, b) => {
         if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
         if (b.status === 'LIVE' && a.status !== 'LIVE') return 1;
-        return (b.officer?.subscriber_count || 0) - (a.officer?.subscriber_count || 0);
+
+        if (!a.is_officer_card && b.is_officer_card) return -1;
+        if (a.is_officer_card && !b.is_officer_card) return 1;
+
+        const timeA = parseRelativeTimeToSeconds(a.streamed_at || a.incident_code);
+        const timeB = parseRelativeTimeToSeconds(b.streamed_at || b.incident_code);
+        if (timeA !== timeB) {
+            return timeA - timeB;
+        }
+
+        return 0;
     });
+};
+
+// Support 1K Subs (Streamers / Officers with < 1,000 subscribers)
+const support1kStreams = computed(() => {
+    const list = [...allCatalogStreams.value.filter(s => {
+        const count = Number(s.officer?.subscriber_count);
+        return !isNaN(count) && count > 0 && count < 1000;
+    })];
+
+    const seenOfficerIds = new Set(list.map(s => s.officer?.id).filter(Boolean));
+
+    // Fallback: include offline officers with < 1,000 subs who do not have an active stream / VOD replay in catalog
+    (offlineOfficers.value || []).forEach(o => {
+        if (o.id && !seenOfficerIds.has(o.id)) {
+            const count = Number(o.subscriber_count);
+            if (!isNaN(count) && count > 0 && count < 1000) {
+                seenOfficerIds.add(o.id);
+                list.push({
+                    id: `sub1k-officer-${o.id}`,
+                    video_id: `officer-${o.id}`,
+                    title: `Support Officer ${o.officer_name}`,
+                    thumbnail: o.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${o.id}`,
+                    status: 'OFFLINE',
+                    incident_code: '10-7 Road to 1K',
+                    streamed_at: 'Target 1K Milestone',
+                    description: `Dukung ${o.officer_name} mencapai 1.000 subscriber YouTube pertama!`,
+                    viewers_count: 0,
+                    is_officer_card: true,
+                    officer: o,
+                });
+            }
+        }
+    });
+
+    return sortStreamsByStatusAndRecency(list);
 });
 
 // Recent offline patrol video replays / VODs
@@ -2261,7 +2400,7 @@ const submitFeedbackForm = async () => {
 </script>
 
 <template>
-    <Head title="IME RP — SASP Police Duty Multiview | Live Officer Bodycam & Dispatch" />
+    <Head title="IME RP — SASP POLICE DUTY | Live Officer Bodycam & Dispatch" />
 
     <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased pb-20 md:pb-6">
         
@@ -2277,7 +2416,7 @@ const submitFeedbackForm = async () => {
                     </div>
                     <div class="flex flex-col">
                         <span class="text-[11px] sm:text-xs font-black tracking-wider text-blue-400 uppercase leading-tight">IME ROLEPLAY</span>
-                        <span class="text-[9px] sm:text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DUTY MULTIVIEW</span>
+                        <span class="text-[9px] sm:text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DUTY</span>
                     </div>
                 </div>
 
@@ -3500,12 +3639,72 @@ const submitFeedbackForm = async () => {
                         @disbandChannel="disbandTacChannel"
                     />
 
+                    <!-- Department Standby Banner when visibleStreams.length === 0 -->
+                    <div v-if="visibleStreams.length === 0" class="relative rounded-2xl overflow-hidden border border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-8 text-center flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
+                        <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-1">
+                            <img :src="getDeptIcon(selectedDepartment)" class="w-7 h-7 invert opacity-80" alt="" />
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-100 uppercase tracking-wider">
+                            TIDAK ADA SIARAN AKTIF (10-8) DI KATEGORI {{ selectedDepartment.replace('_', ' ') }}
+                        </h3>
+                        <p class="text-xs text-slate-400 max-w-md">
+                            Saat ini belum ada siaran langsung untuk kesatuan {{ selectedDepartment.replace('_', ' ') }}. Anda dapat menyinkronkan data terbaru atau melihat daftar anggota di 10-7 Roster.
+                        </p>
+                        <div class="flex items-center gap-2 mt-2 flex-wrap justify-center">
+                            <button 
+                                @click="triggerManualSync"
+                                :disabled="isSyncingFeeds"
+                                class="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition flex items-center gap-2"
+                            >
+                                <img :src="iconRefresh" class="w-3.5 h-3.5 invert" :class="{ 'animate-spin': isSyncingFeeds }" />
+                                <span>{{ isSyncingFeeds ? 'Menyinkronkan...' : 'Cek Live Sekarang' }}</span>
+                            </button>
+                            <button 
+                                @click="activeTab = '10-7'"
+                                class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
+                            >
+                                Lihat 10-7 Roster
+                            </button>
+                            <button 
+                                @click="selectedDepartment = 'ALL'"
+                                class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
+                            >
+                                Tampilkan Seluruh Unit
+                            </button>
+                        </div>
+
+                        <!-- Offline Roster Officers of this Department -->
+                        <div v-if="filteredOfflineOfficers.length > 0" class="w-full mt-6 pt-6 border-t border-slate-800/80 text-left">
+                            <h4 class="text-xs font-bold text-slate-300 font-mono mb-3 uppercase tracking-wider">
+                                Petugas 10-7 (Offline) Kesatuan {{ selectedDepartment.replace('_', ' ') }}:
+                            </h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                                <div 
+                                    v-for="officer in filteredOfflineOfficers" 
+                                    :key="`dept-off-${officer.channel_id}`"
+                                    class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex flex-col justify-between"
+                                >
+                                    <div>
+                                        <span class="px-1.5 py-0.2 text-[9px] font-black rounded border inline-block mb-1" :class="getDeptBadgeClass(officer.department)">
+                                            {{ officer.department }}
+                                        </span>
+                                        <div class="text-xs font-bold text-slate-200 truncate">{{ officer.officer_name }}</div>
+                                        <div class="text-[10px] text-slate-400 font-mono truncate">{{ officer.callsign }}</div>
+                                    </div>
+                                    <div class="mt-2 text-[10px] text-slate-500 font-mono">10-7 OFFLINE</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- FOCUS MODE VIEW (Primary Large Video on Left + Right Support Column with Collapsible Live Chat) -->
-                    <div v-if="selectedLayout === 'focus'" class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                    <div v-else-if="selectedLayout === 'focus'" class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
                         
                         <!-- LEFT COLUMN: PRIMARY LARGE FEATURED FEED (Takes 8/12 or 9/12 cols) -->
                         <div v-if="primaryFocusedStream" class="lg:col-span-8 xl:col-span-9 flex flex-col gap-2">
-                            <div class="bg-slate-950 rounded-xl overflow-hidden border border-slate-800 shadow-2xl relative">
+                            <div 
+                                class="bg-slate-950 rounded-xl overflow-hidden border border-slate-800/90 shadow-2xl relative"
+                            >
                             
                             <!-- Large Stream HUD Top Bar -->
                             <div class="bg-slate-900/95 px-3 sm:px-4 py-2 flex flex-wrap sm:flex-nowrap items-center justify-between border-b border-slate-800 gap-1.5">
@@ -3514,8 +3713,7 @@ const submitFeedbackForm = async () => {
                                         [{{ primaryFocusedStream.officer?.department }}] {{ primaryFocusedStream.officer?.callsign }}
                                     </span>
                                     <div class="truncate min-w-0">
-                                        <span class="text-xs sm:text-sm font-bold text-slate-100 mr-1 sm:mr-2 truncate">{{ primaryFocusedStream.officer?.officer_name }}</span>
-                                        <span class="text-[10px] sm:text-xs text-slate-400 font-mono hidden sm:inline">({{ primaryFocusedStream.officer?.rank }})</span>
+                                        <span class="text-xs sm:text-sm font-bold text-slate-100 truncate">{{ primaryFocusedStream.officer?.officer_name }}</span>
                                     </div>
                                 </div>
                                 
@@ -3523,11 +3721,11 @@ const submitFeedbackForm = async () => {
                                     <!-- Pin / Personal Toggle Button -->
                                     <button 
                                         @click="togglePersonalStream(primaryFocusedStream.video_id)" 
-                                        :class="isPersonalStream(primaryFocusedStream.video_id) ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 border-purple-400' : 'bg-slate-800 text-slate-300 hover:text-purple-300 hover:bg-slate-700 border-slate-700'"
+                                        :class="isPersonalStream(primaryFocusedStream.video_id) ? 'bg-purple-950/60 text-purple-300 border-purple-500/40 shadow-sm shadow-purple-500/20' : 'bg-slate-900/60 text-slate-400 hover:text-purple-300 hover:bg-slate-800 border-slate-800'"
                                         class="px-2 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1 font-mono border shrink-0"
                                         :title="isPersonalStream(primaryFocusedStream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
                                     >
-                                        <img :src="isPersonalStream(primaryFocusedStream.video_id) ? iconPinMinus : iconPinPlus" class="w-3.5 h-3.5 invert shrink-0" alt="" />
+                                        <img :src="isPersonalStream(primaryFocusedStream.video_id) ? iconPinMinus : iconPinPlus" class="w-3.5 h-3.5 invert shrink-0 opacity-80" alt="" />
                                         <span class="hidden sm:inline">Personal</span>
                                     </button>
 
@@ -3536,10 +3734,10 @@ const submitFeedbackForm = async () => {
                                         <button 
                                             @click.stop="activeTacPopoverVideoId = activeTacPopoverVideoId === primaryFocusedStream.video_id ? null : primaryFocusedStream.video_id" 
                                             class="px-2.5 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1.5 font-mono border"
-                                            :class="getStreamTac(primaryFocusedStream.video_id) ? 'text-amber-300 bg-amber-950/80 border-amber-500/60 shadow-sm shadow-amber-500/20' : 'text-slate-400 hover:text-amber-300 bg-slate-800 border-slate-700'"
+                                            :class="getStreamTac(primaryFocusedStream.video_id) ? 'text-amber-300 bg-amber-950/60 border-amber-500/50 shadow-sm shadow-amber-500/20' : 'text-slate-400 hover:text-amber-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'"
                                             :title="getStreamTac(primaryFocusedStream.video_id) ? `Terhubung ke ${getStreamTac(primaryFocusedStream.video_id).replace('_', ' ')}` : 'Hubungkan ke Tactical Radio TAC 1–5'"
                                         >
-                                            <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
+                                            <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-80" alt="" />
                                             <span>{{ getStreamTac(primaryFocusedStream.video_id) ? getStreamTac(primaryFocusedStream.video_id).replace('_', ' ') : 'TAC' }}</span>
                                         </button>
 
@@ -3592,17 +3790,17 @@ const submitFeedbackForm = async () => {
                                     <!-- Live Audio Toggle Button -->
                                     <button 
                                         @click="toggleAudio(primaryFocusedStream.video_id)" 
-                                        :class="activeAudioVideoId === primaryFocusedStream.video_id ? 'bg-emerald-600 text-white shadow-emerald-500/50' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-                                        class="px-3 py-1 text-xs font-bold rounded transition flex items-center gap-1.5"
+                                        :class="activeAudioVideoId === primaryFocusedStream.video_id ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-950/30 font-bold' : 'bg-slate-900/60 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border-slate-800'"
+                                        class="px-2.5 py-1 text-xs rounded-lg transition border flex items-center gap-1.5"
                                     >
-                                        <img :src="activeAudioVideoId === primaryFocusedStream.video_id ? iconUnmute : iconMute" class="w-3.5 h-3.5 invert" alt="" />
+                                        <img :src="activeAudioVideoId === primaryFocusedStream.video_id ? iconUnmute : iconMute" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                                         <span>{{ activeAudioVideoId === primaryFocusedStream.video_id ? 'LIVE AUDIO' : 'MUTED' }}</span>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Big Video Player Container (With explicit unique key for reliable re-rendering) -->
-                            <div class="relative w-full aspect-video bg-black">
+                            <!-- Big Video Player Container with Floating Hover Overlay Bar -->
+                            <div class="relative w-full aspect-video bg-black group/thumb">
                                 <iframe
                                     :key="`primary-player-${primaryFocusedStream.video_id}`"
                                     :id="`yt-bodycam-${primaryFocusedStream.video_id}`"
@@ -3611,51 +3809,54 @@ const submitFeedbackForm = async () => {
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                     allowfullscreen
                                 ></iframe>
-                            </div>
 
-                            <!-- Stream HUD Bottom Bar -->
-                            <div class="bg-[#0b121e] px-3 sm:px-4 py-2 flex flex-wrap sm:flex-nowrap items-center justify-between text-xs text-slate-400 border-t border-slate-800 gap-1.5">
-                                <div class="flex items-center space-x-2 min-w-0 flex-1 truncate">
-                                    <span class="font-mono text-blue-400 font-semibold truncate text-[11px] sm:text-xs">📍 {{ primaryFocusedStream.officer?.patrol_zone || 'Mission Row Sector' }}</span>
-                                    <span class="text-slate-700 hidden sm:inline">|</span>
-                                    <span class="font-mono text-slate-300 truncate hidden sm:inline">Badge: {{ primaryFocusedStream.officer?.badge_number || '#000' }}</span>
-                                    <span class="text-slate-700 hidden sm:inline">|</span>
-                                    <span class="font-mono text-slate-400 truncate hidden sm:inline">Streamer: {{ primaryFocusedStream.officer?.streamer_name }}</span>
-                                </div>
-                                <div class="flex items-center space-x-1.5 shrink-0">
-                                    <!-- 1-Click YouTube Subscribe Popup Button -->
-                                    <button 
-                                        v-if="primaryFocusedStream.officer?.channel_id || primaryFocusedStream.officer?.handle"
-                                        @click="openSubscribePopup(primaryFocusedStream.officer?.channel_id || primaryFocusedStream.officer?.handle, primaryFocusedStream.officer?.officer_name)"
-                                        class="bg-red-600 hover:bg-red-500 text-white font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-xs shadow-md shadow-red-600/30 flex items-center gap-1 transition shrink-0"
-                                        title="Subscribe to this officer's channel without leaving page"
-                                    >
-                                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
-                                            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-                                        </svg>
-                                        <span class="hidden sm:inline">Subscribe</span>
-                                        <span class="sm:hidden font-bold">Sub</span>
-                                    </button>
+                                <!-- Stream HUD Floating Bottom Overlay (Visible on hover) -->
+                                <div class="absolute bottom-3 left-3 right-3 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 bg-slate-950/90 backdrop-blur-md px-3 sm:px-4 py-2 rounded-xl border border-slate-700/70 shadow-2xl flex flex-wrap sm:flex-nowrap items-center justify-between text-xs text-slate-300 gap-1.5 z-20 pointer-events-auto">
+                                    <div class="flex items-center space-x-2 min-w-0 flex-1 truncate">
+                                        <span class="font-mono text-blue-400 font-semibold truncate text-[11px] sm:text-xs flex items-center gap-1">
+                                            <img :src="iconShield" class="w-3.5 h-3.5 invert opacity-80 shrink-0" alt="" />
+                                            <span>{{ primaryFocusedStream.officer?.patrol_zone || 'Mission Row Sector' }}</span>
+                                        </span>
+                                        <span class="text-slate-600 hidden sm:inline">|</span>
+                                        <span class="font-mono text-slate-300 truncate hidden sm:inline">Badge: {{ primaryFocusedStream.officer?.badge_number || '#000' }}</span>
+                                        <span class="text-slate-600 hidden sm:inline">|</span>
+                                        <span class="font-mono text-slate-400 truncate hidden sm:inline">Streamer: {{ primaryFocusedStream.officer?.streamer_name }}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-1.5 shrink-0">
+                                        <!-- 1-Click YouTube Subscribe Popup Button -->
+                                        <button 
+                                            v-if="primaryFocusedStream.officer?.channel_id || primaryFocusedStream.officer?.handle"
+                                            @click="openSubscribePopup(primaryFocusedStream.officer?.channel_id || primaryFocusedStream.officer?.handle, primaryFocusedStream.officer?.officer_name)"
+                                            class="bg-red-600/90 hover:bg-red-500 text-white font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-xs shadow-md shadow-red-600/30 flex items-center gap-1 transition shrink-0"
+                                            title="Subscribe to this officer's channel without leaving page"
+                                        >
+                                            <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                                                <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                                            </svg>
+                                            <span class="hidden sm:inline">Subscribe</span>
+                                            <span class="sm:hidden font-bold">Sub</span>
+                                        </button>
 
-                                    <!-- Toggle Live Chat in Right Column -->
-                                    <button 
-                                        @click="isRightChatOpen = !isRightChatOpen" 
-                                        :class="isRightChatOpen ? 'text-amber-400 font-bold bg-amber-950/40 border border-amber-500/30' : 'text-slate-400 hover:text-amber-300'"
-                                        class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded flex items-center gap-1 transition shrink-0"
-                                        title="Toggle Live Chat in Support Column"
-                                    >
-                                        <img :src="isRightChatOpen ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-80 shrink-0" alt="" />
-                                        <span>{{ isRightChatOpen ? 'Chat' : 'Chat' }}</span>
-                                    </button>
-                                    
-                                    <a 
-                                        :href="`https://www.youtube.com/watch?v=${primaryFocusedStream.video_id}`" 
-                                        target="_blank" 
-                                        class="p-1.5 hover:text-white text-slate-400 rounded hover:bg-slate-800 transition flex items-center justify-center"
-                                        title="Open on YouTube"
-                                    >
-                                        <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Open on YouTube" />
-                                    </a>
+                                        <!-- Toggle Live Chat in Right Column -->
+                                        <button 
+                                            @click="isRightChatOpen = !isRightChatOpen" 
+                                            :class="isRightChatOpen ? 'text-amber-400 font-bold bg-amber-950/40 border border-amber-500/30' : 'text-slate-300 hover:text-amber-300'"
+                                            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded flex items-center gap-1 transition shrink-0"
+                                            title="Toggle Live Chat in Support Column"
+                                        >
+                                            <img :src="isRightChatOpen ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-80 shrink-0" alt="" />
+                                            <span>{{ isRightChatOpen ? 'Chat' : 'Chat' }}</span>
+                                        </button>
+                                        
+                                        <a 
+                                            :href="`https://www.youtube.com/watch?v=${primaryFocusedStream.video_id}`" 
+                                            target="_blank" 
+                                            class="p-1.5 hover:text-white text-slate-300 rounded hover:bg-slate-800 transition flex items-center justify-center"
+                                            title="Open on YouTube"
+                                        >
+                                            <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Open on YouTube" />
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
 
@@ -3718,8 +3919,8 @@ const submitFeedbackForm = async () => {
                             <div 
                                 v-for="stream in secondaryStreams" 
                                 :key="`support-card-${stream.video_id}`"
-                                :class="activeAudioVideoId === stream.video_id ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-slate-800 hover:border-blue-500/60'"
-                                class="bg-slate-950 rounded-xl overflow-hidden border transition shadow-lg relative group flex flex-col"
+                                :class="getCustomOrderRank(stream.video_id) > 0 ? 'border-amber-500/40 shadow-md shadow-amber-950/20' : 'border-slate-800/80 hover:border-slate-700'"
+                                class="bg-slate-950 rounded-xl overflow-hidden border transition-all duration-300 shadow-lg relative group flex flex-col"
                             >
                                 <!-- Secondary Stream Header -->
                                 <div class="bg-slate-900/95 px-2.5 py-1.5 flex items-center justify-between border-b border-slate-800/80 text-xs gap-1">
@@ -3734,12 +3935,22 @@ const submitFeedbackForm = async () => {
                                     
                                     <!-- Action Buttons -->
                                     <div class="flex items-center space-x-1 shrink-0">
+                                        <!-- Order Rank Badge Button -->
+                                        <button 
+                                            @click="toggleCustomOrderPin(stream.video_id)" 
+                                            class="px-1.5 py-0.5 text-[10px] rounded-md transition font-mono font-bold border"
+                                            :class="getCustomOrderRank(stream.video_id) > 0 ? 'text-amber-300 bg-amber-950/60 border-amber-500/50 shadow-sm' : 'text-slate-500 hover:text-amber-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'"
+                                            :title="getCustomOrderRank(stream.video_id) > 0 ? `Urutan #${getCustomOrderRank(stream.video_id)} (Klik untuk lepas)` : 'Klik untuk jadikan urutan prioritas grid berikutnya'"
+                                        >
+                                            <span>{{ getCustomOrderRank(stream.video_id) > 0 ? `#${getCustomOrderRank(stream.video_id)}` : '#' }}</span>
+                                        </button>
+
                                         <!-- TAC Radio Button -->
                                         <div class="relative">
                                             <button 
                                                 @click.stop="activeTacPopoverVideoId = activeTacPopoverVideoId === stream.video_id ? null : stream.video_id" 
-                                                class="p-1 rounded transition font-mono border"
-                                                :class="getStreamTac(stream.video_id) ? 'text-amber-300 bg-amber-950/80 border-amber-500/60' : 'text-slate-400 hover:text-amber-300 bg-slate-800 border-slate-700'"
+                                                class="p-1 rounded-md transition font-mono border"
+                                                :class="getStreamTac(stream.video_id) ? 'text-amber-300 bg-amber-950/60 border-amber-500/50' : 'text-slate-500 hover:text-amber-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'"
                                                 :title="getStreamTac(stream.video_id) ? `Terhubung ke ${getStreamTac(stream.video_id).replace('_', ' ')}` : 'Hubungkan ke TAC Radio 1–5'"
                                             >
                                                 <img :src="iconRadio" class="w-3 h-3 brightness-0 invert opacity-90" alt="" />
@@ -3793,28 +4004,32 @@ const submitFeedbackForm = async () => {
                                         <!-- Personal Pin Toggle -->
                                         <button 
                                             @click="togglePersonalStream(stream.video_id)" 
-                                            :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/70 border border-purple-500/50' : 'text-slate-400 hover:text-purple-300 bg-slate-800'"
-                                            class="p-1 rounded transition font-mono"
+                                            :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/60 border border-purple-500/40' : 'text-slate-500 hover:text-purple-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'"
+                                            class="p-1 rounded-md transition font-mono border"
                                             :title="isPersonalStream(stream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
                                         >
-                                            <img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" alt="" />
+                                            <img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert opacity-80" alt="" />
                                         </button>
+
+                                        <!-- Audio Switch Toggle -->
                                         <button 
                                             v-if="activePreviewVideoIds.includes(stream.video_id) || !isDataSaverEnabled"
                                             @click="toggleAudio(stream.video_id)" 
-                                            :class="activeAudioVideoId === stream.video_id ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-                                            class="p-1 rounded transition font-mono"
+                                            :class="activeAudioVideoId === stream.video_id ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 font-bold' : 'text-slate-500 hover:text-slate-200 bg-slate-900/60 hover:bg-slate-800 border-slate-800'"
+                                            class="p-1 rounded-md transition font-mono border"
                                             title="Audio Switch"
                                         >
-                                            <img :src="activeAudioVideoId === stream.video_id ? iconUnmute : iconMute" class="w-3 h-3 invert" alt="" />
+                                            <img :src="activeAudioVideoId === stream.video_id ? iconUnmute : iconMute" class="w-3 h-3 invert opacity-80" alt="" />
                                         </button>
+
+                                        <!-- Set as Main Focus Button -->
                                         <button 
                                             @click="setFocusStream(stream.video_id)" 
-                                            class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow transition flex items-center gap-1"
-                                            title="Set as Main Large Focus Video"
+                                            class="bg-blue-950/60 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 hover:border-blue-400 px-2 py-0.5 rounded-md text-[10px] font-bold shadow transition flex items-center gap-1"
+                                            title="Jadikan Siaran Utama (Fokus)"
                                         >
-                                            <img :src="iconFocus" class="w-2.5 h-2.5 invert" alt="" />
-                                            <span>Focus</span>
+                                            <img :src="iconFocus" class="w-2.5 h-2.5 invert opacity-80" alt="" />
+                                            <span>Fokus</span>
                                         </button>
                                     </div>
                                 </div>
@@ -3844,55 +4059,68 @@ const submitFeedbackForm = async () => {
                                         </button>
                                     </template>
 
-                                    <!-- LIGHTWEIGHT POSTER THUMBNAIL -->
+                                    <!-- LIGHTWEIGHT POSTER THUMBNAIL (Minimalist Clean Idle State) -->
                                     <template v-else>
                                         <img 
                                             :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" 
                                             :alt="stream.title"
-                                            class="w-full h-full object-cover opacity-80 group-hover/thumb:opacity-100 transition duration-300"
+                                            class="w-full h-full object-cover opacity-90 group-hover/thumb:opacity-100 transition duration-300"
                                             loading="lazy"
                                         />
 
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/60 flex flex-col items-center justify-center p-3">
-                                            
-                                            <div class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-red-950/70 px-1.5 py-0.5 rounded border border-red-500/40">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
-                                                <span>10-8 LIVE</span>
-                                            </div>
+                                        <!-- Minimalist Standby Live Badge (Always subtle, non-intrusive) -->
+                                        <div class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-red-500/30 z-10 pointer-events-none">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+                                            <span>10-8 LIVE</span>
+                                        </div>
 
+                                        <!-- Hover-to-Reveal Center Action Controls -->
+                                        <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px] opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 flex items-center justify-center gap-2 p-3 z-10">
                                             <button 
                                                 @click="toggleSidebarPreview(stream.video_id)"
-                                                class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1 transform hover:scale-105"
-                                                title="Play stream"
+                                                class="bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg shadow-emerald-950/40 transition flex items-center gap-1.5 transform hover:scale-105"
+                                                title="Putar Siaran Video"
                                             >
-                                                <img :src="iconPlayAll" class="w-3 h-3 invert" alt="" />
+                                                <img :src="iconPlayAll" class="w-3.5 h-3.5 invert" alt="" />
                                                 <span>Play</span>
+                                            </button>
+                                            
+                                            <button 
+                                                @click="setFocusStream(stream.video_id)"
+                                                class="bg-blue-600/90 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg shadow-blue-950/40 transition flex items-center gap-1.5 transform hover:scale-105"
+                                                title="Jadikan Siaran Utama (Fokus)"
+                                            >
+                                                <img :src="iconFocus" class="w-3.5 h-3.5 invert" alt="" />
+                                                <span>Fokus</span>
                                             </button>
                                         </div>
                                     </template>
-                                </div>
 
-                                <!-- Mini Footer -->
-                                <div class="bg-[#0b121e] px-2.5 py-1 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-800/80 font-mono gap-1">
-                                    <span class="truncate text-blue-400 min-w-0 flex-1">📍 {{ stream.officer?.patrol_zone || 'Patrol' }}</span>
-                                    <div class="flex items-center space-x-1.5 shrink-0">
-                                        <button 
-                                            v-if="stream.officer?.channel_id || stream.officer?.handle"
-                                            @click="openSubscribePopup(stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
-                                            class="text-red-400 hover:text-red-300 hover:bg-red-950/60 px-1.5 py-0.5 rounded transition flex items-center gap-0.5 font-bold shrink-0 text-[10px]"
-                                            title="Subscribe to channel without leaving page"
-                                        >
-                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-0.5 shrink-0"></span>
-                                            <span>Sub</span>
-                                        </button>
-                                        <a 
-                                            :href="`https://www.youtube.com/watch?v=${stream.video_id}`" 
-                                            target="_blank" 
-                                            class="p-1 hover:text-white text-slate-400 hover:bg-slate-800 rounded transition flex items-center justify-center"
-                                            title="Open on YouTube"
-                                        >
-                                            <img :src="iconExternal" class="w-3 h-3 invert opacity-70 hover:opacity-100" alt="Open on YouTube" />
-                                        </a>
+                                    <!-- Floating Hover Overlay Bar -->
+                                    <div class="absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 bg-slate-950/90 backdrop-blur-md px-2 py-1 rounded-xl border border-slate-700/70 shadow-2xl flex items-center justify-between text-[10px] text-slate-300 gap-1 z-20 pointer-events-auto">
+                                        <span class="truncate text-blue-400 font-mono flex items-center gap-1">
+                                            <img :src="iconShield" class="w-3 h-3 invert opacity-80 shrink-0" alt="" />
+                                            <span>{{ stream.officer?.patrol_zone || 'Patrol' }}</span>
+                                        </span>
+                                        <div class="flex items-center space-x-1.5 shrink-0">
+                                            <button 
+                                                v-if="stream.officer?.channel_id || stream.officer?.handle"
+                                                @click="openSubscribePopup(stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
+                                                class="text-red-400 hover:text-red-300 hover:bg-red-950/60 px-1.5 py-0.5 rounded transition flex items-center gap-0.5 font-bold shrink-0 text-[10px]"
+                                                title="Subscribe to channel without leaving page"
+                                            >
+                                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-0.5 shrink-0"></span>
+                                                <span>Sub</span>
+                                            </button>
+                                            <a 
+                                                :href="`https://www.youtube.com/watch?v=${stream.video_id}`" 
+                                                target="_blank" 
+                                                class="p-1 hover:text-white text-slate-400 hover:bg-slate-800 rounded transition flex items-center justify-center"
+                                                title="Open on YouTube"
+                                            >
+                                                <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Open on YouTube" />
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -3943,8 +4171,8 @@ const submitFeedbackForm = async () => {
                                     v-for="stream in displayedGridStreams" 
                                     :key="`grid-card-${stream.video_id}`"
                                     :class="[
-                                        activeAudioVideoId === stream.video_id ? 'ring-2 ring-emerald-500 border-emerald-500 shadow-xl shadow-emerald-950/50' : 'border-slate-800 hover:border-blue-500/40',
-                                        activeChatVideoId === stream.video_id ? 'ring-1 ring-amber-500/80 border-amber-500/60 shadow-lg shadow-amber-950/30' : ''
+                                        getCustomOrderRank(stream.video_id) > 0 ? 'border-amber-500/40 shadow-md shadow-amber-950/20' : 'border-slate-800/80 hover:border-slate-700',
+                                        activeChatVideoId === stream.video_id ? 'border-amber-500/60 shadow-md shadow-amber-950/30' : ''
                                     ]"
                                     class="bg-slate-950 rounded-xl overflow-hidden border transition flex flex-col relative group"
                                 >
@@ -3952,38 +4180,47 @@ const submitFeedbackForm = async () => {
                             <div class="bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 flex items-center justify-between border-b border-slate-800/80 z-10">
                                 <!-- Officer Badge & Callsign -->
                                 <div class="flex items-center space-x-2 min-w-0">
-                                    <span class="px-1.5 py-0.5 text-[11px] font-black rounded border tracking-wider shrink-0" :class="getDeptBadgeClass(stream.officer?.department)">
+                                    <span class="px-1.5 py-0.5 text-[11px] font-black rounded border tracking-wider shrink-0 opacity-90" :class="getDeptBadgeClass(stream.officer?.department)">
                                         {{ stream.officer?.department }} {{ stream.officer?.callsign }}
                                     </span>
                                     <div class="truncate">
-                                        <span class="text-xs font-bold text-slate-200 block truncate">{{ stream.officer?.officer_name }}</span>
+                                        <span class="text-xs font-semibold text-slate-200 block truncate opacity-90">{{ stream.officer?.officer_name }}</span>
                                     </div>
                                 </div>
 
-                                <!-- Bodycam Actions: Audio Button & Top Personal Pin Button -->
-                                <div class="flex items-center space-x-1.5 shrink-0">
+                                <!-- Bodycam Actions: Order Rank Badge, Audio, TAC, Personal -->
+                                <div class="flex items-center space-x-1 shrink-0">
+                                    <!-- Order Rank Badge Button -->
+                                    <button 
+                                        @click="toggleCustomOrderPin(stream.video_id)" 
+                                        class="px-1.5 py-0.5 text-[10px] rounded-md transition flex items-center font-mono font-bold border"
+                                        :class="getCustomOrderRank(stream.video_id) > 0 ? 'text-amber-300 bg-amber-500/15 border-amber-500/40' : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800'"
+                                        :title="getCustomOrderRank(stream.video_id) > 0 ? `Urutan #${getCustomOrderRank(stream.video_id)} (Klik untuk lepas)` : 'Klik untuk jadikan urutan prioritas grid berikutnya'"
+                                    >
+                                        <span>{{ getCustomOrderRank(stream.video_id) > 0 ? `#${getCustomOrderRank(stream.video_id)}` : '#' }}</span>
+                                    </button>
+
                                     <!-- Audio Button (In Live / Active Mode) -->
                                     <button 
                                         v-if="!isDataSaverEnabled || activeGridVideoIds.includes(stream.video_id) || activeAudioVideoId === stream.video_id"
                                         @click="toggleAudio(stream.video_id)" 
-                                        :class="activeAudioVideoId === stream.video_id ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/40' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
-                                        class="px-2 py-0.5 text-[11px] rounded transition flex items-center gap-1 font-mono"
-                                        :title="activeAudioVideoId === stream.video_id ? 'Mute audio' : 'Unmute audio (auto-mutes all others)'"
+                                        :class="activeAudioVideoId === stream.video_id ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 font-bold' : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800'"
+                                        class="px-1.5 py-0.5 text-[10px] rounded-md transition flex items-center gap-1 font-mono border"
+                                        :title="activeAudioVideoId === stream.video_id ? 'Mute audio' : 'Unmute audio'"
                                     >
-                                        <img :src="activeAudioVideoId === stream.video_id ? iconUnmute : iconMute" class="w-3 h-3 invert" alt="" />
-                                        <span>{{ activeAudioVideoId === stream.video_id ? 'ON' : 'MUTED' }}</span>
+                                        <img :src="activeAudioVideoId === stream.video_id ? iconUnmute : iconMute" class="w-3 h-3 invert opacity-80" alt="" />
+                                        <span class="text-[9px]">{{ activeAudioVideoId === stream.video_id ? 'ON' : 'MUTED' }}</span>
                                     </button>
 
                                     <!-- 1-Click TAC Radio Selector -->
                                     <div class="relative">
                                         <button 
                                             @click.stop="activeTacPopoverVideoId = activeTacPopoverVideoId === stream.video_id ? null : stream.video_id" 
-                                            class="px-2 py-0.5 text-[11px] rounded transition flex items-center gap-1 font-mono border"
-                                            :class="getStreamTac(stream.video_id) ? 'text-amber-300 bg-amber-950/80 border-amber-500/60 shadow-sm shadow-amber-500/20 font-bold' : 'text-slate-400 hover:text-amber-300 bg-slate-800 border-slate-700'"
-                                            :title="getStreamTac(stream.video_id) ? `Terhubung ke ${getStreamTac(stream.video_id).replace('_', ' ')}` : 'Hubungkan ke Tactical Radio TAC 1–5'"
+                                            class="p-1 rounded-md transition font-mono border"
+                                            :class="getStreamTac(stream.video_id) ? 'text-amber-300 bg-amber-950/60 border-amber-500/40 font-bold' : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800/80'"
+                                            :title="getStreamTac(stream.video_id) ? `Terhubung ke ${getStreamTac(stream.video_id).replace('_', ' ')}` : 'Hubungkan ke TAC Radio 1–5'"
                                         >
-                                            <img :src="iconRadio" class="w-3 h-3 brightness-0 invert opacity-90" alt="" />
-                                            <span class="text-[10px]">{{ getStreamTac(stream.video_id) ? getStreamTac(stream.video_id).replace('_', ' ') : 'TAC' }}</span>
+                                            <img :src="iconRadio" class="w-3 h-3 brightness-0 invert opacity-75" alt="" />
                                         </button>
 
                                         <!-- TAC Popover Menu -->
@@ -4032,15 +4269,14 @@ const submitFeedbackForm = async () => {
                                         </div>
                                     </div>
 
-                                    <!-- Top Personal Pin Button -->
+                                    <!-- Top Personal Pin Button (Ghost Icon) -->
                                     <button 
                                         @click="togglePersonalStream(stream.video_id)" 
-                                        class="px-2 py-0.5 text-[11px] rounded transition flex items-center gap-1 font-mono border"
-                                        :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/70 border-purple-500/50' : 'text-slate-400 hover:text-purple-300 bg-slate-800 border-slate-700'"
+                                        class="p-1 rounded-md transition border"
+                                        :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/60 border-purple-500/40' : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800/80'"
                                         :title="isPersonalStream(stream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
                                     >
-                                        <img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" alt="" />
-                                        <span class="text-[10px] hidden sm:inline">Personal</span>
+                                        <img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert opacity-80" alt="" />
                                     </button>
                                 </div>
                             </div>
@@ -4076,78 +4312,82 @@ const submitFeedbackForm = async () => {
                                         loading="lazy"
                                     />
 
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/70 flex flex-col items-center justify-center p-3">
-                                        <div class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-red-950/80 px-1.5 py-0.5 rounded border border-red-500/40">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40 flex flex-col items-center justify-center p-3">
+                                        <div class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded border border-red-500/30">
                                             <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
                                             <span>10-8 LIVE</span>
                                         </div>
 
-                                        <div class="flex items-center space-x-2">
+                                        <!-- Hover-to-Reveal Minimalist Action Controls -->
+                                        <div class="flex items-center space-x-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 transform scale-95 group-hover/thumb:scale-100">
                                             <button 
                                                 @click="selectedLayout = 'focus'; setFocusStream(stream.video_id)"
-                                                class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-blue-600/40 transition flex items-center gap-1.5 transform hover:scale-105"
+                                                class="bg-blue-600/90 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5 transform hover:scale-105 backdrop-blur-sm"
                                                 title="Focus as Main Screen"
                                             >
-                                                <img :src="iconFocus" class="w-3.5 h-3.5 invert" alt="" />
+                                                <img :src="iconFocus" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                                                 <span>Focus</span>
                                             </button>
                                             
                                             <button 
                                                 @click="toggleGridStreamPlay(stream.video_id)"
-                                                class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow transition flex items-center gap-1.5 hover:scale-105"
+                                                class="bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5 transform hover:scale-105 backdrop-blur-sm"
                                                 title="Play this stream"
                                             >
-                                                <img :src="iconPlayAll" class="w-3.5 h-3.5 invert" alt="" />
+                                                <img :src="iconPlayAll" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                                                 <span>Play</span>
                                             </button>
                                         </div>
                                     </div>
                                 </template>
-                            </div>
 
-                            <!-- BODYCAM FOOTER HUD -->
-                            <div class="bg-[#0b121e] px-3 py-1.5 flex items-center justify-between border-t border-slate-800 text-[11px] text-slate-400">
-                                <!-- Patrol Sector / Rank -->
-                                <div class="flex items-center space-x-2 truncate">
-                                    <span class="font-mono text-blue-400 truncate">📍 {{ stream.officer?.patrol_zone || 'Los Santos Sector' }}</span>
-                                    <span class="text-slate-600">|</span>
-                                    <span class="font-mono text-slate-400 truncate">{{ stream.officer?.badge_number || '#000' }}</span>
-                                </div>
+                                <!-- Floating Hover Overlay Bar -->
+                                <div class="absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-200 bg-slate-950/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/70 shadow-2xl flex items-center justify-between z-20 pointer-events-auto text-[11px] text-slate-300">
+                                    <!-- Patrol Sector / Badge -->
+                                    <div class="flex items-center space-x-2 truncate">
+                                        <span class="font-mono text-blue-400 truncate flex items-center gap-1">
+                                            <img :src="iconShield" class="w-3 h-3 invert opacity-80 shrink-0" alt="" />
+                                            <span>{{ stream.officer?.patrol_zone || 'Los Santos Sector' }}</span>
+                                        </span>
+                                        <span class="text-slate-600">|</span>
+                                        <span class="font-mono text-slate-400 truncate">{{ stream.officer?.badge_number || '#000' }}</span>
+                                    </div>
 
-                                <!-- Action Icons (Subscribe, Focus, Chat, YT Link) -->
-                                <div class="flex items-center space-x-1.5 shrink-0">
-                                    <button 
-                                        v-if="stream.officer?.channel_id || stream.officer?.handle"
-                                        @click="openSubscribePopup(stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
-                                        class="p-1 hover:text-red-400 text-slate-400 hover:bg-red-950/40 rounded transition flex items-center gap-0.5 text-[10px] font-bold"
-                                        title="Subscribe without leaving page"
-                                    >
-                                        <span class="w-2 h-2 rounded-full bg-red-500 mr-0.5"></span>
-                                        <span class="hidden sm:inline">Sub</span>
-                                    </button>
-                                    <button 
-                                        @click="selectedLayout = 'focus'; setFocusStream(stream.video_id)"
-                                        class="p-1.5 hover:text-blue-400 text-slate-400 rounded hover:bg-slate-800 transition"
-                                        title="Focus This Stream as Tactical Lead"
-                                    >
-                                        <img :src="iconFocus" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Focus" />
-                                    </button>
-                                    <button 
-                                        @click="activeChatVideoId = activeChatVideoId === stream.video_id ? null : stream.video_id"
-                                        :class="activeChatVideoId === stream.video_id ? 'bg-amber-600 text-white shadow-md shadow-amber-500/40' : 'text-slate-400 hover:text-amber-400 hover:bg-slate-800'"
-                                        class="p-1.5 rounded transition flex items-center justify-center"
-                                        title="Toggle YouTube Live Chat Drawer"
-                                    >
-                                        <img :src="activeChatVideoId === stream.video_id ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-90" alt="Chat" />
-                                    </button>
-                                    <a 
-                                        :href="`https://www.youtube.com/watch?v=${stream.video_id}`" 
-                                        target="_blank" 
-                                        class="p-1.5 hover:text-white text-slate-400 rounded hover:bg-slate-800 transition"
-                                        title="Open on YouTube"
-                                    >
-                                        <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="External" />
-                                    </a>
+                                    <!-- Action Icons (Subscribe, Focus, Chat, YT Link) -->
+                                    <div class="flex items-center space-x-1.5 shrink-0">
+                                        <button 
+                                            v-if="stream.officer?.channel_id || stream.officer?.handle"
+                                            @click="openSubscribePopup(stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
+                                            class="p-1 hover:text-red-400 text-slate-300 hover:bg-red-950/40 rounded transition flex items-center gap-0.5 text-[10px] font-bold"
+                                            title="Subscribe without leaving page"
+                                        >
+                                            <span class="w-2 h-2 rounded-full bg-red-500 mr-0.5"></span>
+                                            <span class="hidden sm:inline">Sub</span>
+                                        </button>
+                                        <button 
+                                            @click="selectedLayout = 'focus'; setFocusStream(stream.video_id)"
+                                            class="p-1.5 hover:text-blue-400 text-slate-300 rounded hover:bg-slate-800 transition"
+                                            title="Focus This Stream as Tactical Lead"
+                                        >
+                                            <img :src="iconFocus" class="w-3.5 h-3.5 invert opacity-80 hover:opacity-100" alt="Focus" />
+                                        </button>
+                                        <button 
+                                            @click="activeChatVideoId = activeChatVideoId === stream.video_id ? null : stream.video_id"
+                                            :class="activeChatVideoId === stream.video_id ? 'bg-amber-600 text-white shadow-md shadow-amber-500/40' : 'text-slate-300 hover:text-amber-400 hover:bg-slate-800'"
+                                            class="p-1.5 rounded transition flex items-center justify-center"
+                                            title="Toggle YouTube Live Chat Drawer"
+                                        >
+                                            <img :src="activeChatVideoId === stream.video_id ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-90" alt="Chat" />
+                                        </button>
+                                        <a 
+                                            :href="`https://www.youtube.com/watch?v=${stream.video_id}`" 
+                                            target="_blank" 
+                                            class="p-1.5 hover:text-white text-slate-300 rounded hover:bg-slate-800 transition"
+                                            title="Open on YouTube"
+                                        >
+                                            <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-80 hover:opacity-100" alt="External" />
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -4234,8 +4474,9 @@ const submitFeedbackForm = async () => {
                                     <span>•</span>
                                     <span class="font-mono">{{ officer.badge_number }}</span>
                                 </div>
-                                <div class="text-[11px] font-mono text-blue-400/80 truncate mt-1">
-                                    📍 {{ officer.patrol_zone || 'Los Santos' }}
+                                <div class="text-[11px] font-mono text-blue-400/80 truncate mt-1 flex items-center gap-1">
+                                    <img :src="iconShield" class="w-3 h-3 invert opacity-80 shrink-0" alt="" />
+                                    <span>{{ officer.patrol_zone || 'Los Santos' }}</span>
                                 </div>
                                 <div class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500">
                                     <div class="truncate mr-2">Streamer: <span class="text-slate-300 font-semibold">{{ officer.streamer_name }}</span></div>
@@ -5283,8 +5524,9 @@ const submitFeedbackForm = async () => {
                                         <span v-if="officer.streamer_name" class="text-slate-500 truncate">({{ officer.streamer_name }})</span>
                                     </div>
 
-                                    <div class="text-[10px] font-mono text-slate-500 truncate mt-1">
-                                        📍 {{ officer.patrol_zone || 'Los Santos Sector' }}
+                                    <div class="text-[10px] font-mono text-slate-500 truncate mt-1 flex items-center gap-1">
+                                        <img :src="iconShield" class="w-3 h-3 invert opacity-80 shrink-0" alt="" />
+                                        <span>{{ officer.patrol_zone || 'Los Santos Sector' }}</span>
                                     </div>
 
                                     <!-- Milestone Progress (Towards 1K Subs) -->
