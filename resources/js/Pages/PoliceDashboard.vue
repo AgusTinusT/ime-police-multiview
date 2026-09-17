@@ -3974,39 +3974,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition"
-                                                :class="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'text-purple-400 bg-purple-950/70'
-                                                        : 'text-slate-400 hover:text-white'
-                                                "
-                                                :title="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'Hapus'
-                                                        : 'Pin'
-                                                "
-                                            >
-                                                <img
-                                                    :src="
-                                                        isPersonalStream(
-                                                            stream.video_id,
-                                                        )
-                                                            ? iconPinMinus
-                                                            : iconPinPlus
-                                                    "
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -4175,39 +4142,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition"
-                                                :class="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'text-purple-400 bg-purple-950/70'
-                                                        : 'text-slate-400 hover:text-white'
-                                                "
-                                                :title="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'Hapus'
-                                                        : 'Pin'
-                                                "
-                                            >
-                                                <img
-                                                    :src="
-                                                        isPersonalStream(
-                                                            stream.video_id,
-                                                        )
-                                                            ? iconPinMinus
-                                                            : iconPinPlus
-                                                    "
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -4389,39 +4323,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition"
-                                                :class="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'text-purple-400 bg-purple-950/70'
-                                                        : 'text-slate-400 hover:text-white'
-                                                "
-                                                :title="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'Hapus'
-                                                        : 'Pin'
-                                                "
-                                            >
-                                                <img
-                                                    :src="
-                                                        isPersonalStream(
-                                                            stream.video_id,
-                                                        )
-                                                            ? iconPinMinus
-                                                            : iconPinPlus
-                                                    "
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -4658,39 +4559,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition"
-                                                :class="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'text-purple-400 bg-purple-950/70'
-                                                        : 'text-slate-400 hover:text-white'
-                                                "
-                                                :title="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'Hapus'
-                                                        : 'Pin'
-                                                "
-                                            >
-                                                <img
-                                                    :src="
-                                                        isPersonalStream(
-                                                            stream.video_id,
-                                                        )
-                                                            ? iconPinMinus
-                                                            : iconPinPlus
-                                                    "
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -4868,20 +4736,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition text-purple-400 bg-purple-950/70"
-                                                title="Hapus dari Personal"
-                                            >
-                                                <img
-                                                    :src="iconPinMinus"
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -5059,39 +4913,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition"
-                                                :class="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'text-purple-400 bg-purple-950/70'
-                                                        : 'text-slate-400 hover:text-white'
-                                                "
-                                                :title="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'Hapus'
-                                                        : 'Pin'
-                                                "
-                                            >
-                                                <img
-                                                    :src="
-                                                        isPersonalStream(
-                                                            stream.video_id,
-                                                        )
-                                                            ? iconPinMinus
-                                                            : iconPinPlus
-                                                    "
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -5269,39 +5090,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition"
-                                                :class="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'text-purple-400 bg-purple-950/70'
-                                                        : 'text-slate-400 hover:text-white'
-                                                "
-                                                :title="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'Hapus'
-                                                        : 'Pin'
-                                                "
-                                            >
-                                                <img
-                                                    :src="
-                                                        isPersonalStream(
-                                                            stream.video_id,
-                                                        )
-                                                            ? iconPinMinus
-                                                            : iconPinPlus
-                                                    "
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -5479,39 +5267,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition"
-                                                :class="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'text-purple-400 bg-purple-950/70'
-                                                        : 'text-slate-400 hover:text-white'
-                                                "
-                                                :title="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'Hapus'
-                                                        : 'Pin'
-                                                "
-                                            >
-                                                <img
-                                                    :src="
-                                                        isPersonalStream(
-                                                            stream.video_id,
-                                                        )
-                                                            ? iconPinMinus
-                                                            : iconPinPlus
-                                                    "
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -5689,39 +5444,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition"
-                                                :class="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'text-purple-400 bg-purple-950/70'
-                                                        : 'text-slate-400 hover:text-white'
-                                                "
-                                                :title="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'Hapus'
-                                                        : 'Pin'
-                                                "
-                                            >
-                                                <img
-                                                    :src="
-                                                        isPersonalStream(
-                                                            stream.video_id,
-                                                        )
-                                                            ? iconPinMinus
-                                                            : iconPinPlus
-                                                    "
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -5898,39 +5620,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition"
-                                                :class="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'text-purple-400 bg-purple-950/70'
-                                                        : 'text-slate-400 hover:text-white'
-                                                "
-                                                :title="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'Hapus'
-                                                        : 'Pin'
-                                                "
-                                            >
-                                                <img
-                                                    :src="
-                                                        isPersonalStream(
-                                                            stream.video_id,
-                                                        )
-                                                            ? iconPinMinus
-                                                            : iconPinPlus
-                                                    "
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -6077,39 +5766,6 @@ const submitFeedbackForm = async () => {
                                             class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
                                             @click.stop
                                         >
-                                            <button
-                                                @click.stop="
-                                                    togglePersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="p-1 rounded transition"
-                                                :class="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'text-purple-400 bg-purple-950/70'
-                                                        : 'text-slate-400 hover:text-white'
-                                                "
-                                                :title="
-                                                    isPersonalStream(
-                                                        stream.video_id,
-                                                    )
-                                                        ? 'Hapus'
-                                                        : 'Pin'
-                                                "
-                                            >
-                                                <img
-                                                    :src="
-                                                        isPersonalStream(
-                                                            stream.video_id,
-                                                        )
-                                                            ? iconPinMinus
-                                                            : iconPinPlus
-                                                    "
-                                                    class="w-3 h-3 invert"
-                                                />
-                                            </button>
                                             <a
                                                 :href="
                                                     getStreamYoutubeUrl(stream)
@@ -10630,7 +10286,7 @@ const submitFeedbackForm = async () => {
         <!-- Floating Tactical Action Toast -->
         <div
             v-if="tacticalToast"
-            class="fixed bottom-16 md:bottom-4 right-4 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl px-4 py-2.5 shadow-2xl backdrop-blur-xl flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200"
+            class="fixed bottom-16 md:bottom-16 right-4 z-[60] bg-slate-950/95 border border-amber-500/60 rounded-xl px-4 py-2.5 shadow-2xl backdrop-blur-xl flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200 pointer-events-auto"
         >
             <img
                 :src="iconRadio"
