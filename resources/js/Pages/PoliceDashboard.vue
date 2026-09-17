@@ -1,53 +1,53 @@
 <script setup>
-import { ref, onMounted, computed, watch, onUnmounted, nextTick } from 'vue';
-import { usePage, Head, Link, router } from '@inertiajs/vue3';
+import { ref, onMounted, computed, watch, onUnmounted, nextTick } from "vue";
+import { usePage, Head, Link, router } from "@inertiajs/vue3";
 
 // SVG Icon Assets & Branding Logos
-import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
-import iconLspd from '@/Components/Icons/LSPD_HD.svg';
-import iconBcso from '@/Components/Icons/Logo_LSCSD.svg';
-import iconSasp from '@/Components/Icons/SASP_HD.svg';
-import iconSapr from '@/Components/Icons/ranger_logo.svg';
-import iconAllUnits from '@/Components/Icons/category-svgrepo-com.svg';
-import iconPersonal from '@/Components/Icons/star-svgrepo-com.svg';
-import iconSaver from '@/Components/Icons/gauge-low-svgrepo-com.svg';
-import iconPlayAll from '@/Components/Icons/play-full-svgrepo-com.svg';
-import iconMute from '@/Components/Icons/mute-svgrepo-com.svg';
-import iconUnmute from '@/Components/Icons/unmute-svgrepo-com.svg';
-import iconFeedback from '@/Components/Icons/report-svgrepo-com.svg';
-import iconQuickAdd from '@/Components/Icons/button-plus-svgrepo-com.svg';
-import iconFullscreen from '@/Components/Icons/full-screen-svgrepo-com.svg';
-import iconExitFullscreen from '@/Components/Icons/minimize-svgrepo-com.svg';
-import iconFocus from '@/Components/Icons/focus-point-round-844-svgrepo-com.svg';
-import iconLogout from '@/Components/Icons/leave-svgrepo-com.svg';
-import iconSearch from '@/Components/Icons/search-svgrepo-com.svg';
-import iconRefresh from '@/Components/Icons/refresh-cw-svgrepo-com.svg';
-import iconPinPlus from '@/Components/Icons/star-line-svgrepo-com.svg';
+import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
+import iconLspd from "@/Components/Icons/LSPD_HD.svg";
+import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
+import iconSasp from "@/Components/Icons/SASP_HD.svg";
+import iconSapr from "@/Components/Icons/ranger_logo.svg";
+import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
+import iconPersonal from "@/Components/Icons/star-svgrepo-com.svg";
+import iconSaver from "@/Components/Icons/gauge-low-svgrepo-com.svg";
+import iconPlayAll from "@/Components/Icons/play-full-svgrepo-com.svg";
+import iconMute from "@/Components/Icons/mute-svgrepo-com.svg";
+import iconUnmute from "@/Components/Icons/unmute-svgrepo-com.svg";
+import iconFeedback from "@/Components/Icons/report-svgrepo-com.svg";
+import iconQuickAdd from "@/Components/Icons/button-plus-svgrepo-com.svg";
+import iconFullscreen from "@/Components/Icons/full-screen-svgrepo-com.svg";
+import iconExitFullscreen from "@/Components/Icons/minimize-svgrepo-com.svg";
+import iconFocus from "@/Components/Icons/focus-point-round-844-svgrepo-com.svg";
+import iconLogout from "@/Components/Icons/leave-svgrepo-com.svg";
+import iconSearch from "@/Components/Icons/search-svgrepo-com.svg";
+import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
+import iconPinPlus from "@/Components/Icons/star-line-svgrepo-com.svg";
 
 // Refactored Sub-Components
-import AnnouncementBanner from '@/Components/AnnouncementBanner.vue';
-import TacChannelToolbar from '@/Components/TacChannelToolbar.vue';
-import QuickFeedDrawer from '@/Components/QuickFeedDrawer.vue';
-import StreamGridCard from '@/Components/StreamGridCard.vue';
-import iconPinMinus from '@/Components/Icons/star-svgrepo-com.svg';
-import iconEdit from '@/Components/Icons/edit-2-svgrepo-com.svg';
-import iconDelete from '@/Components/Icons/delete-2-svgrepo-com.svg';
-import iconClock from '@/Components/Icons/time-svgrepo-com.svg';
-import iconUser from '@/Components/Icons/user-svgrepo-com.svg';
-import iconRoster from '@/Components/Icons/doc-svgrepo-com.svg';
-import iconBug from '@/Components/Icons/bug-svgrepo-com.svg';
-import iconExternal from '@/Components/Icons/link-external-svgrepo-com.svg';
-import iconRadio from '@/Components/Icons/radio-signal-svgrepo-com.svg';
-import iconReset from '@/Components/Icons/reset-svgrepo-com.svg';
-import iconSend from '@/Components/Icons/send-svgrepo-com.svg';
-import iconUrl from '@/Components/Icons/url-checker-svgrepo-com.svg';
-import iconChat from '@/Components/Icons/chat-svgrepo-com.svg';
-import iconChatRemove from '@/Components/Icons/chat-remove-svgrepo-com.svg';
-import iconTarget from '@/Components/Icons/target-svgrepo-com.svg';
-import iconShield from '@/Components/Icons/shield-svgrepo-com.svg';
-import UserAccountMenu from '@/Components/UserAccountMenu.vue';
-import TacticalFooter from '@/Components/TacticalFooter.vue';
-import TacticalChatDrawer from '@/Components/TacticalChatDrawer.vue';
+import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
+import TacChannelToolbar from "@/Components/TacChannelToolbar.vue";
+import QuickFeedDrawer from "@/Components/QuickFeedDrawer.vue";
+import StreamGridCard from "@/Components/StreamGridCard.vue";
+import iconPinMinus from "@/Components/Icons/star-svgrepo-com.svg";
+import iconEdit from "@/Components/Icons/edit-2-svgrepo-com.svg";
+import iconDelete from "@/Components/Icons/delete-2-svgrepo-com.svg";
+import iconClock from "@/Components/Icons/time-svgrepo-com.svg";
+import iconUser from "@/Components/Icons/user-svgrepo-com.svg";
+import iconRoster from "@/Components/Icons/doc-svgrepo-com.svg";
+import iconBug from "@/Components/Icons/bug-svgrepo-com.svg";
+import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
+import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
+import iconReset from "@/Components/Icons/reset-svgrepo-com.svg";
+import iconSend from "@/Components/Icons/send-svgrepo-com.svg";
+import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
+import iconChat from "@/Components/Icons/chat-svgrepo-com.svg";
+import iconChatRemove from "@/Components/Icons/chat-remove-svgrepo-com.svg";
+import iconTarget from "@/Components/Icons/target-svgrepo-com.svg";
+import iconShield from "@/Components/Icons/shield-svgrepo-com.svg";
+import UserAccountMenu from "@/Components/UserAccountMenu.vue";
+import TacticalFooter from "@/Components/TacticalFooter.vue";
+import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 
 const props = defineProps({
     initialStreams: {
@@ -72,7 +72,7 @@ const props = defineProps({
     },
     lastSyncedAt: {
         type: String,
-        default: '',
+        default: "",
     },
 });
 
@@ -80,33 +80,127 @@ const props = defineProps({
 const streams = ref(props.initialStreams);
 const offlineOfficers = ref(props.initialOfflineOfficers);
 const recentReplays = ref(props.initialReplays || []);
-const selectedDepartment = ref('ALL');
-const activeTab = ref('10-8'); // '10-8' (online feeds) or '10-7' (offline roster)
+const selectedDepartment = ref("ALL");
+const activeTab = ref("10-8"); // '10-8' (online feeds) or '10-7' (offline roster)
 const isSidebarOpen = ref(true);
-const selectedLayout = ref('auto'); // 'auto', 'grid-2x2', 'grid-3x3', 'grid-4x4', 'focus'
+const selectedLayout = ref("auto"); // 'auto', 'grid-2x2', 'grid-3x3', 'grid-4x4', 'focus'
 const activeAudioVideoId = ref(null);
-const searchFilter = ref('');
+const searchFilter = ref("");
 const focusedStreamId = ref(null);
 const activeMobileNav = ref(null); // Mobile bottom sheet state ('TAC', 'MENU', or null)
 
 // Tactical Radio Channels (TAC 1 to TAC 10) State
 const defaultTacChannels = [
-    { id: 1, code: 'TAC_1', name: 'TAC 1', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
-    { id: 2, code: 'TAC_2', name: 'TAC 2', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
-    { id: 3, code: 'TAC_3', name: 'TAC 3', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
-    { id: 4, code: 'TAC_4', name: 'TAC 4', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
-    { id: 5, code: 'TAC_5', name: 'TAC 5', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
-    { id: 6, code: 'TAC_6', name: 'TAC 6', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
-    { id: 7, code: 'TAC_7', name: 'TAC 7', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
-    { id: 8, code: 'TAC_8', name: 'TAC 8', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
-    { id: 9, code: 'TAC_9', name: 'TAC 9', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
-    { id: 10, code: 'TAC_10', name: 'TAC 10', video_ids: [], expires_at: null, remaining_seconds: 0, is_active: false, unit_count: 0 },
+    {
+        id: 1,
+        code: "TAC_1",
+        name: "TAC 1",
+        video_ids: [],
+        expires_at: null,
+        remaining_seconds: 0,
+        is_active: false,
+        unit_count: 0,
+    },
+    {
+        id: 2,
+        code: "TAC_2",
+        name: "TAC 2",
+        video_ids: [],
+        expires_at: null,
+        remaining_seconds: 0,
+        is_active: false,
+        unit_count: 0,
+    },
+    {
+        id: 3,
+        code: "TAC_3",
+        name: "TAC 3",
+        video_ids: [],
+        expires_at: null,
+        remaining_seconds: 0,
+        is_active: false,
+        unit_count: 0,
+    },
+    {
+        id: 4,
+        code: "TAC_4",
+        name: "TAC 4",
+        video_ids: [],
+        expires_at: null,
+        remaining_seconds: 0,
+        is_active: false,
+        unit_count: 0,
+    },
+    {
+        id: 5,
+        code: "TAC_5",
+        name: "TAC 5",
+        video_ids: [],
+        expires_at: null,
+        remaining_seconds: 0,
+        is_active: false,
+        unit_count: 0,
+    },
+    {
+        id: 6,
+        code: "TAC_6",
+        name: "TAC 6",
+        video_ids: [],
+        expires_at: null,
+        remaining_seconds: 0,
+        is_active: false,
+        unit_count: 0,
+    },
+    {
+        id: 7,
+        code: "TAC_7",
+        name: "TAC 7",
+        video_ids: [],
+        expires_at: null,
+        remaining_seconds: 0,
+        is_active: false,
+        unit_count: 0,
+    },
+    {
+        id: 8,
+        code: "TAC_8",
+        name: "TAC 8",
+        video_ids: [],
+        expires_at: null,
+        remaining_seconds: 0,
+        is_active: false,
+        unit_count: 0,
+    },
+    {
+        id: 9,
+        code: "TAC_9",
+        name: "TAC 9",
+        video_ids: [],
+        expires_at: null,
+        remaining_seconds: 0,
+        is_active: false,
+        unit_count: 0,
+    },
+    {
+        id: 10,
+        code: "TAC_10",
+        name: "TAC 10",
+        video_ids: [],
+        expires_at: null,
+        remaining_seconds: 0,
+        is_active: false,
+        unit_count: 0,
+    },
 ];
-const tacChannels = ref(props.initialTacChannels && props.initialTacChannels.length > 0 ? props.initialTacChannels : defaultTacChannels);
+const tacChannels = ref(
+    props.initialTacChannels && props.initialTacChannels.length > 0
+        ? props.initialTacChannels
+        : defaultTacChannels,
+);
 const activeTacPopoverVideoId = ref(null);
 const tacticalToast = ref(null);
 
-const showTacticalToast = (message, type = 'info') => {
+const showTacticalToast = (message, type = "info") => {
     tacticalToast.value = { message, type };
     setTimeout(() => {
         if (tacticalToast.value?.message === message) {
@@ -117,12 +211,14 @@ const showTacticalToast = (message, type = 'info') => {
 
 const getStreamTac = (videoId) => {
     if (!videoId) return null;
-    const ch = tacChannels.value.find(c => c.video_ids && c.video_ids.includes(videoId));
+    const ch = tacChannels.value.find(
+        (c) => c.video_ids && c.video_ids.includes(videoId),
+    );
     return ch ? ch.code : null;
 };
 
 const getTacChannel = (tacCode) => {
-    return tacChannels.value.find(c => c.code === tacCode) || null;
+    return tacChannels.value.find((c) => c.code === tacCode) || null;
 };
 
 const getTacUnitCount = (tacCode) => {
@@ -132,25 +228,27 @@ const getTacUnitCount = (tacCode) => {
 
 const getTacRemainingSeconds = (tacCode) => {
     const ch = getTacChannel(tacCode);
-    return ch ? (ch.remaining_seconds || 0) : 0;
+    return ch ? ch.remaining_seconds || 0 : 0;
 };
 
 const isTacDepartment = (deptId) => {
-    return typeof deptId === 'string' && deptId.startsWith('TAC_');
+    return typeof deptId === "string" && deptId.startsWith("TAC_");
 };
 
 const formatRemainingTime = (seconds) => {
-    if (!seconds || seconds <= 0) return '00:00';
+    if (!seconds || seconds <= 0) return "00:00";
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 };
 
 const getTacStreams = (tacCode) => {
     const ch = getTacChannel(tacCode);
     if (!ch || !ch.video_ids || ch.video_ids.length === 0) return [];
-    const ids = ch.video_ids.map(id => String(id).trim());
-    return allActiveStreams.value.filter(s => ids.includes(String(s.video_id).trim()));
+    const ids = ch.video_ids.map((id) => String(id).trim());
+    return allActiveStreams.value.filter((s) =>
+        ids.includes(String(s.video_id).trim()),
+    );
 };
 
 // Announcements & Promos State
@@ -158,17 +256,20 @@ const activeAnnouncements = ref([]);
 
 const fetchAnnouncements = async () => {
     try {
-        const res = await fetch('/api/v1/active-announcements', {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        const res = await fetch("/api/v1/active-announcements", {
+            headers: {
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
         });
         if (res.ok) {
             const data = await res.json();
-            if (data.status === 'success') {
+            if (data.status === "success") {
                 activeAnnouncements.value = data.data;
             }
         }
     } catch (e) {
-        console.error('Failed to fetch announcements:', e);
+        console.error("Failed to fetch announcements:", e);
     }
 };
 
@@ -191,12 +292,15 @@ const pausePromoTimer = () => {
 
 const nextPromo = () => {
     if (activeAnnouncements.value.length === 0) return;
-    activePromoIndex.value = (activePromoIndex.value + 1) % activeAnnouncements.value.length;
+    activePromoIndex.value =
+        (activePromoIndex.value + 1) % activeAnnouncements.value.length;
 };
 
 const prevPromo = () => {
     if (activeAnnouncements.value.length === 0) return;
-    activePromoIndex.value = (activePromoIndex.value - 1 + activeAnnouncements.value.length) % activeAnnouncements.value.length;
+    activePromoIndex.value =
+        (activePromoIndex.value - 1 + activeAnnouncements.value.length) %
+        activeAnnouncements.value.length;
 };
 
 const setPromo = (index) => {
@@ -205,32 +309,36 @@ const setPromo = (index) => {
 };
 
 // Start timer when announcements are successfully fetched
-watch(activeAnnouncements, (newVal) => {
-    if (newVal.length > 0) {
-        activePromoIndex.value = 0;
-        startPromoTimer();
-    } else {
-        pausePromoTimer();
-    }
-}, { deep: true });
+watch(
+    activeAnnouncements,
+    (newVal) => {
+        if (newVal.length > 0) {
+            activePromoIndex.value = 0;
+            startPromoTimer();
+        } else {
+            pausePromoTimer();
+        }
+    },
+    { deep: true },
+);
 
 // Fetch & Synchronize TAC Channels from Server
 const fetchTacChannels = async () => {
     try {
-        const res = await fetch('/api/v1/tac', {
+        const res = await fetch("/api/v1/tac", {
             headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            }
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
         });
         if (res.ok) {
             const data = await res.json();
-            if (data.status === 'success' && data.data) {
+            if (data.status === "success" && data.data) {
                 tacChannels.value = data.data;
             }
         }
     } catch (e) {
-        console.warn('TAC sync failed:', e);
+        console.warn("TAC sync failed:", e);
     }
 };
 
@@ -238,11 +346,15 @@ const fetchTacChannels = async () => {
 const assignStreamToTac = async (tacCode, videoId) => {
     if (!tacCode || !videoId) return;
     const cleanVideoId = String(videoId).trim();
-    
+
     // Optimistic UI update
-    tacChannels.value.forEach(ch => {
-        if (ch.code !== tacCode && ch.video_ids && ch.video_ids.includes(cleanVideoId)) {
-            ch.video_ids = ch.video_ids.filter(id => id !== cleanVideoId);
+    tacChannels.value.forEach((ch) => {
+        if (
+            ch.code !== tacCode &&
+            ch.video_ids &&
+            ch.video_ids.includes(cleanVideoId)
+        ) {
+            ch.video_ids = ch.video_ids.filter((id) => id !== cleanVideoId);
             ch.unit_count = ch.video_ids.length;
             if (ch.unit_count === 0) {
                 ch.remaining_seconds = 0;
@@ -264,17 +376,22 @@ const assignStreamToTac = async (tacCode, videoId) => {
         targetCh.is_active = true;
     }
 
-    showTacticalToast(`Unit berhasil dimasukkan ke ${tacCode.replace('_', ' ')} (30 Menit)`);
+    showTacticalToast(
+        `Unit berhasil dimasukkan ke ${tacCode.replace("_", " ")} (30 Menit)`,
+    );
 
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-        const res = await fetch('/api/v1/tac/assign', {
-            method: 'POST',
+        const csrfToken =
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content") || "";
+        const res = await fetch("/api/v1/tac/assign", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN": csrfToken,
             },
             body: JSON.stringify({
                 tac_code: tacCode,
@@ -283,14 +400,18 @@ const assignStreamToTac = async (tacCode, videoId) => {
         });
         if (res.ok) {
             const data = await res.json();
-            if (data.status === 'success' && data.data) {
+            if (data.status === "success" && data.data) {
                 tacChannels.value = data.data;
             }
         } else {
-            console.error('TAC Assign API Error:', res.status, await res.text());
+            console.error(
+                "TAC Assign API Error:",
+                res.status,
+                await res.text(),
+            );
         }
     } catch (e) {
-        console.error('Failed to assign stream to TAC:', e);
+        console.error("Failed to assign stream to TAC:", e);
     }
 };
 
@@ -300,10 +421,10 @@ const removeStreamFromTac = async (videoId, tacCode = null) => {
     const cleanVideoId = String(videoId).trim();
 
     // Optimistic UI update
-    tacChannels.value.forEach(ch => {
+    tacChannels.value.forEach((ch) => {
         if (!tacCode || ch.code === tacCode) {
             if (ch.video_ids && ch.video_ids.includes(cleanVideoId)) {
-                ch.video_ids = ch.video_ids.filter(id => id !== cleanVideoId);
+                ch.video_ids = ch.video_ids.filter((id) => id !== cleanVideoId);
                 ch.unit_count = ch.video_ids.length;
                 if (ch.unit_count === 0) {
                     ch.remaining_seconds = 0;
@@ -313,17 +434,20 @@ const removeStreamFromTac = async (videoId, tacCode = null) => {
         }
     });
 
-    showTacticalToast('Unit dilepas dari Tactical Radio');
+    showTacticalToast("Unit dilepas dari Tactical Radio");
 
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-        const res = await fetch('/api/v1/tac/remove', {
-            method: 'POST',
+        const csrfToken =
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content") || "";
+        const res = await fetch("/api/v1/tac/remove", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN": csrfToken,
             },
             body: JSON.stringify({
                 video_id: cleanVideoId,
@@ -332,14 +456,18 @@ const removeStreamFromTac = async (videoId, tacCode = null) => {
         });
         if (res.ok) {
             const data = await res.json();
-            if (data.status === 'success' && data.data) {
+            if (data.status === "success" && data.data) {
                 tacChannels.value = data.data;
             }
         } else {
-            console.error('TAC Remove API Error:', res.status, await res.text());
+            console.error(
+                "TAC Remove API Error:",
+                res.status,
+                await res.text(),
+            );
         }
     } catch (e) {
-        console.error('Failed to remove stream from TAC:', e);
+        console.error("Failed to remove stream from TAC:", e);
     }
 };
 
@@ -350,20 +478,26 @@ const extendTacTimer = async (tacCode, minutes = 20) => {
     // Optimistic UI update
     const targetCh = getTacChannel(tacCode);
     if (targetCh) {
-        targetCh.remaining_seconds = (targetCh.remaining_seconds || 0) + (minutes * 60);
+        targetCh.remaining_seconds =
+            (targetCh.remaining_seconds || 0) + minutes * 60;
     }
 
-    showTacticalToast(`Waktu situasi ${tacCode.replace('_', ' ')} diperpanjang +${minutes} menit`);
+    showTacticalToast(
+        `Waktu situasi ${tacCode.replace("_", " ")} diperpanjang +${minutes} menit`,
+    );
 
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-        const res = await fetch('/api/v1/tac/extend', {
-            method: 'POST',
+        const csrfToken =
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content") || "";
+        const res = await fetch("/api/v1/tac/extend", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN": csrfToken,
             },
             body: JSON.stringify({
                 tac_code: tacCode,
@@ -372,14 +506,18 @@ const extendTacTimer = async (tacCode, minutes = 20) => {
         });
         if (res.ok) {
             const data = await res.json();
-            if (data.status === 'success' && data.data) {
+            if (data.status === "success" && data.data) {
                 tacChannels.value = data.data;
             }
         } else {
-            console.error('TAC Extend API Error:', res.status, await res.text());
+            console.error(
+                "TAC Extend API Error:",
+                res.status,
+                await res.text(),
+            );
         }
     } catch (e) {
-        console.error('Failed to extend TAC timer:', e);
+        console.error("Failed to extend TAC timer:", e);
     }
 };
 
@@ -387,7 +525,11 @@ const extendTacTimer = async (tacCode, minutes = 20) => {
 const disbandTacChannel = async (tacCode) => {
     if (!tacCode) return;
 
-    if (!confirm(`Apakah Anda yakin ingin mengosongkan / membubarkan kanal ${tacCode.replace('_', ' ')} untuk seluruh penonton?`)) {
+    if (
+        !confirm(
+            `Apakah Anda yakin ingin mengosongkan / membubarkan kanal ${tacCode.replace("_", " ")} untuk seluruh penonton?`,
+        )
+    ) {
         return;
     }
 
@@ -401,17 +543,22 @@ const disbandTacChannel = async (tacCode) => {
         targetCh.expires_at = null;
     }
 
-    showTacticalToast(`Kanal ${tacCode.replace('_', ' ')} telah dibubarkan / dikosongkan`);
+    showTacticalToast(
+        `Kanal ${tacCode.replace("_", " ")} telah dibubarkan / dikosongkan`,
+    );
 
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-        const res = await fetch('/api/v1/tac/clear', {
-            method: 'POST',
+        const csrfToken =
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content") || "";
+        const res = await fetch("/api/v1/tac/clear", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN": csrfToken,
             },
             body: JSON.stringify({
                 tac_code: tacCode,
@@ -419,25 +566,26 @@ const disbandTacChannel = async (tacCode) => {
         });
         if (res.ok) {
             const data = await res.json();
-            if (data.status === 'success' && data.data) {
+            if (data.status === "success" && data.data) {
                 tacChannels.value = data.data;
             }
         } else {
-            console.error('TAC Clear API Error:', res.status, await res.text());
+            console.error("TAC Clear API Error:", res.status, await res.text());
         }
     } catch (e) {
-        console.error('Failed to disband TAC channel:', e);
+        console.error("Failed to disband TAC channel:", e);
     }
 };
 
 // Expiring TAC channel for global alert prompt (Active only in last 60 seconds)
 const expiringTacChannel = computed(() => {
-    return tacChannels.value.find(c => 
-        c.video_ids && 
-        c.video_ids.length > 0 && 
-        c.remaining_seconds > 0 && 
-        c.remaining_seconds <= 60 &&
-        selectedDepartment.value !== c.code
+    return tacChannels.value.find(
+        (c) =>
+            c.video_ids &&
+            c.video_ids.length > 0 &&
+            c.remaining_seconds > 0 &&
+            c.remaining_seconds <= 60 &&
+            selectedDepartment.value !== c.code,
     );
 });
 
@@ -448,8 +596,10 @@ const isRightChatOpen = ref(true);
 const isFullscreen = ref(false);
 const toggleBrowserFullscreen = () => {
     if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            console.warn(`Error attempting to enable fullscreen: ${err.message}`);
+        document.documentElement.requestFullscreen().catch((err) => {
+            console.warn(
+                `Error attempting to enable fullscreen: ${err.message}`,
+            );
         });
     } else {
         if (document.exitFullscreen) {
@@ -463,10 +613,10 @@ const handleFullscreenChange = () => {
 };
 
 const handleKeyDown = (e) => {
-    if (e.key === 'F11') {
+    if (e.key === "F11") {
         e.preventDefault();
         toggleBrowserFullscreen();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
         if (showOfficerFormModal.value) {
             showOfficerFormModal.value = false;
         } else if (activeRightDrawer.value) {
@@ -489,18 +639,18 @@ let streamPollInterval = null;
 
 const fetchLiveStreamsSilently = async () => {
     try {
-        const res = await fetch('/api/v1/streams', {
+        const res = await fetch("/api/v1/streams", {
             headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            }
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
         });
         if (res.ok) {
             const json = await res.json();
-            if (json.status === 'success' && Array.isArray(json.data)) {
+            if (json.status === "success" && Array.isArray(json.data)) {
                 // Deduplicate incoming streams strictly by video_id
                 const incomingMap = new Map();
-                json.data.forEach(s => {
+                json.data.forEach((s) => {
                     if (s && s.video_id) {
                         incomingMap.set(String(s.video_id).trim(), s);
                     }
@@ -508,8 +658,10 @@ const fetchLiveStreamsSilently = async () => {
                 const incomingStreams = Array.from(incomingMap.values());
 
                 // 1. Smart merge into streams.value
-                streams.value.forEach(existing => {
-                    const fresh = incomingMap.get(String(existing.video_id).trim());
+                streams.value.forEach((existing) => {
+                    const fresh = incomingMap.get(
+                        String(existing.video_id).trim(),
+                    );
                     if (fresh) {
                         existing.title = fresh.title;
                         existing.viewers_count = fresh.viewers_count;
@@ -523,11 +675,19 @@ const fetchLiveStreamsSilently = async () => {
                 });
 
                 // Remove ended streams from streams.value
-                streams.value = streams.value.filter(existing => incomingMap.has(String(existing.video_id).trim()));
+                streams.value = streams.value.filter((existing) =>
+                    incomingMap.has(String(existing.video_id).trim()),
+                );
 
                 // Add newly detected live streams
-                incomingStreams.forEach(fresh => {
-                    if (!streams.value.some(existing => String(existing.video_id).trim() === String(fresh.video_id).trim())) {
+                incomingStreams.forEach((fresh) => {
+                    if (
+                        !streams.value.some(
+                            (existing) =>
+                                String(existing.video_id).trim() ===
+                                String(fresh.video_id).trim(),
+                        )
+                    ) {
                         streams.value.push(fresh);
                     }
                 });
@@ -542,7 +702,7 @@ const fetchLiveStreamsSilently = async () => {
             }
         }
     } catch (e) {
-        console.warn('Silent live streams polling failed:', e);
+        console.warn("Silent live streams polling failed:", e);
     }
 };
 
@@ -551,22 +711,31 @@ const isSyncingFeeds = ref(false);
 const triggerManualSync = async () => {
     if (isSyncingFeeds.value) return;
     isSyncingFeeds.value = true;
-    showTacticalToast('Menghubungkan ke satelit YouTube untuk mendeteksi unit 10-8...', 'info');
+    showTacticalToast(
+        "Menghubungkan ke satelit YouTube untuk mendeteksi unit 10-8...",
+        "info",
+    );
 
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-        const res = await fetch('/api/v1/sync', {
-            method: 'POST',
+        const csrfToken =
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content") || "";
+        const res = await fetch("/api/v1/sync", {
+            method: "POST",
             headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken,
-            }
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN": csrfToken,
+            },
         });
         await fetchLiveStreamsSilently();
-        showTacticalToast('Sinkronisasi selesai! Siaran terbaru telah dimuat.', 'info');
+        showTacticalToast(
+            "Sinkronisasi selesai! Siaran terbaru telah dimuat.",
+            "info",
+        );
     } catch (e) {
-        console.warn('Manual sync failed:', e);
+        console.warn("Manual sync failed:", e);
         await fetchLiveStreamsSilently();
     } finally {
         isSyncingFeeds.value = false;
@@ -575,7 +744,7 @@ const triggerManualSync = async () => {
 
 const tickTacTimers = () => {
     let hasExpired = false;
-    tacChannels.value.forEach(ch => {
+    tacChannels.value.forEach((ch) => {
         if (ch.remaining_seconds > 0) {
             ch.remaining_seconds -= 1;
             if (ch.remaining_seconds <= 0) {
@@ -594,7 +763,11 @@ const tickTacTimers = () => {
 
 // Suppress YouTube internal iframe postMessage error: isExternalMethodAvailable is not a function
 const handleYouTubeInternalError = (event) => {
-    if (event && (event.message?.includes('isExternalMethodAvailable') || event.error?.message?.includes('isExternalMethodAvailable'))) {
+    if (
+        event &&
+        (event.message?.includes("isExternalMethodAvailable") ||
+            event.error?.message?.includes("isExternalMethodAvailable"))
+    ) {
         if (event.stopImmediatePropagation) event.stopImmediatePropagation();
         if (event.preventDefault) event.preventDefault();
         return true;
@@ -602,19 +775,19 @@ const handleYouTubeInternalError = (event) => {
 };
 
 onMounted(() => {
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    window.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('click', handleGlobalClick);
-    window.addEventListener('error', handleYouTubeInternalError, true);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("click", handleGlobalClick);
+    window.addEventListener("error", handleYouTubeInternalError, true);
     loadPersonalStreamsFromStorage();
     syncCloudWatchlist();
     fetchAnnouncements();
-    
+
     // Load YouTube IFrame API script to register parent controller
-    if (typeof window !== 'undefined' && !window.YT) {
-        const tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        const firstScriptTag = document.getElementsByTagName('script')[0];
+    if (typeof window !== "undefined" && !window.YT) {
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName("script")[0];
         if (firstScriptTag && firstScriptTag.parentNode) {
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         }
@@ -628,10 +801,10 @@ onMounted(() => {
 
 onUnmounted(() => {
     destroyAllPlayers();
-    document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    window.removeEventListener('keydown', handleKeyDown);
-    document.removeEventListener('click', handleGlobalClick);
-    window.removeEventListener('error', handleYouTubeInternalError, true);
+    document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    window.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("click", handleGlobalClick);
+    window.removeEventListener("error", handleYouTubeInternalError, true);
     if (tacTimerInterval) clearInterval(tacTimerInterval);
     if (tacPollInterval) clearInterval(tacPollInterval);
     if (streamPollInterval) clearInterval(streamPollInterval);
@@ -639,12 +812,21 @@ onUnmounted(() => {
 });
 
 // Origin URL & Embed Domain for YouTube API Handshake (Clean Unencoded Origin for YouTube API)
-const originUrl = ref(typeof window !== 'undefined' ? (window.location.origin || (window.location.protocol + '//' + window.location.host)) : '');
+const originUrl = ref(
+    typeof window !== "undefined"
+        ? window.location.origin ||
+              window.location.protocol + "//" + window.location.host
+        : "",
+);
 const chatEmbedDomain = computed(() => {
-    if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+    if (
+        typeof window !== "undefined" &&
+        window.location &&
+        window.location.hostname
+    ) {
         return window.location.hostname;
     }
-    return 'localhost';
+    return "localhost";
 });
 
 // Bandwidth Optimization & Data Saver State
@@ -694,7 +876,7 @@ const enableDataSaver = () => {
     isDataSaverEnabled.value = true;
     activeGridVideoIds.value = [];
     activePreviewVideoIds.value = [];
-    if (selectedLayout.value !== 'focus') {
+    if (selectedLayout.value !== "focus") {
         activeAudioVideoId.value = null;
         muteAll();
     }
@@ -711,10 +893,14 @@ const disableDataSaverAndPlayAll = () => {
                 ensureVideoPlaying(primaryFocusedStream.value.video_id);
             }
             if (secondaryStreams.value) {
-                secondaryStreams.value.forEach(s => ensureVideoPlaying(s.video_id));
+                secondaryStreams.value.forEach((s) =>
+                    ensureVideoPlaying(s.video_id),
+                );
             }
             if (displayedGridStreams.value) {
-                displayedGridStreams.value.forEach(s => ensureVideoPlaying(s.video_id));
+                displayedGridStreams.value.forEach((s) =>
+                    ensureVideoPlaying(s.video_id),
+                );
             }
         }, 300);
     });
@@ -729,14 +915,16 @@ const pauseAllGridStreams = () => {
 };
 
 // 1-Click In-Place YouTube Subscription Popup (Never navigates away from dashboard)
-const openSubscribePopup = (channelIdOrHandle, officerName = '') => {
+const openSubscribePopup = (channelIdOrHandle, officerName = "") => {
     if (!channelIdOrHandle) return;
 
-    let subUrl = '';
-    if (channelIdOrHandle.startsWith('UC')) {
+    let subUrl = "";
+    if (channelIdOrHandle.startsWith("UC")) {
         subUrl = `https://www.youtube.com/channel/${channelIdOrHandle}?sub_confirmation=1`;
     } else {
-        const cleanHandle = channelIdOrHandle.startsWith('@') ? channelIdOrHandle : `@${channelIdOrHandle}`;
+        const cleanHandle = channelIdOrHandle.startsWith("@")
+            ? channelIdOrHandle
+            : `@${channelIdOrHandle}`;
         subUrl = `https://www.youtube.com/${cleanHandle}?sub_confirmation=1`;
     }
 
@@ -747,8 +935,8 @@ const openSubscribePopup = (channelIdOrHandle, officerName = '') => {
 
     window.open(
         subUrl,
-        'YouTubeSubscribeModal',
-        `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,toolbar=no,menubar=no,location=no,resizable=yes`
+        "YouTubeSubscribeModal",
+        `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,toolbar=no,menubar=no,location=no,resizable=yes`,
     );
 };
 
@@ -756,29 +944,31 @@ const isQuickAddModalOpen = ref(false);
 const activeChatVideoId = ref(null);
 
 const handleLogout = () => {
-    router.post('/logout');
+    router.post("/logout");
 };
 
 const syncCloudWatchlist = async () => {
     const user = usePage().props.auth?.user;
     if (!user) return;
     try {
-        const res = await fetch('/api/v1/user/watchlist', {
+        const res = await fetch("/api/v1/user/watchlist", {
             headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            }
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
         });
         if (res.ok) {
             const data = await res.json();
-            if (data.status === 'success' && Array.isArray(data.video_ids)) {
-                const merged = Array.from(new Set([...personalVideoIds.value, ...data.video_ids]));
+            if (data.status === "success" && Array.isArray(data.video_ids)) {
+                const merged = Array.from(
+                    new Set([...personalVideoIds.value, ...data.video_ids]),
+                );
                 personalVideoIds.value = merged;
                 savePersonalStreamsToStorage();
             }
         }
     } catch (e) {
-        console.warn('Failed to fetch cloud watchlist:', e);
+        console.warn("Failed to fetch cloud watchlist:", e);
     }
 };
 
@@ -786,19 +976,22 @@ const toggleCloudWatchlist = async (videoId) => {
     const user = usePage().props.auth?.user;
     if (!user) return;
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-        await fetch('/api/v1/user/watchlist/toggle', {
-            method: 'POST',
+        const csrfToken =
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content") || "";
+        await fetch("/api/v1/user/watchlist/toggle", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRF-TOKEN": csrfToken,
             },
-            body: JSON.stringify({ video_id: videoId })
+            body: JSON.stringify({ video_id: videoId }),
         });
     } catch (e) {
-        console.warn('Failed to sync watchlist toggle to cloud:', e);
+        console.warn("Failed to sync watchlist toggle to cloud:", e);
     }
 };
 
@@ -809,29 +1002,53 @@ const customStreams = ref([]);
 
 const loadPersonalStreamsFromStorage = () => {
     try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-            const savedIds = localStorage.getItem('ime_personal_video_ids');
+        if (typeof window !== "undefined" && window.localStorage) {
+            const savedIds = localStorage.getItem("ime_personal_video_ids");
             if (savedIds) {
-                personalVideoIds.value = JSON.parse(savedIds);
+                const parsed = JSON.parse(savedIds);
+                if (Array.isArray(parsed)) {
+                    personalVideoIds.value = parsed.filter(
+                        (id) =>
+                            typeof id === "string" &&
+                            !id.startsWith("officer-"),
+                    );
+                }
             }
-            const savedCustom = localStorage.getItem('ime_personal_custom_streams');
+            const savedCustom = localStorage.getItem(
+                "ime_personal_custom_streams",
+            );
             if (savedCustom) {
-                customStreams.value = JSON.parse(savedCustom);
+                const parsedCustom = JSON.parse(savedCustom);
+                if (Array.isArray(parsedCustom)) {
+                    customStreams.value = parsedCustom.filter(
+                        (s) =>
+                            s &&
+                            s.video_id &&
+                            !s.is_officer_card &&
+                            !String(s.video_id).startsWith("officer-"),
+                    );
+                }
             }
         }
     } catch (e) {
-        console.warn('Failed to read personal streams from localStorage:', e);
+        console.warn("Failed to read personal streams from localStorage:", e);
     }
 };
 
 const savePersonalStreamsToStorage = () => {
     try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-            localStorage.setItem('ime_personal_video_ids', JSON.stringify(personalVideoIds.value));
-            localStorage.setItem('ime_personal_custom_streams', JSON.stringify(customStreams.value));
+        if (typeof window !== "undefined" && window.localStorage) {
+            localStorage.setItem(
+                "ime_personal_video_ids",
+                JSON.stringify(personalVideoIds.value),
+            );
+            localStorage.setItem(
+                "ime_personal_custom_streams",
+                JSON.stringify(customStreams.value),
+            );
         }
     } catch (e) {
-        console.warn('Failed to save personal streams to localStorage:', e);
+        console.warn("Failed to save personal streams to localStorage:", e);
     }
 };
 
@@ -839,14 +1056,19 @@ const savePersonalStreamsToStorage = () => {
 const allActiveStreams = computed(() => {
     const streamMap = new Map();
     // 1. Add official synced streams first
-    (streams.value || []).forEach(s => {
+    (streams.value || []).forEach((s) => {
         if (s && s.video_id) {
             streamMap.set(String(s.video_id).trim(), s);
         }
     });
     // 2. Add custom streams only if not already present from official sync
-    (customStreams.value || []).forEach(cs => {
-        if (cs && cs.video_id) {
+    (customStreams.value || []).forEach((cs) => {
+        if (
+            cs &&
+            cs.video_id &&
+            !cs.is_officer_card &&
+            !String(cs.video_id).startsWith("officer-")
+        ) {
             const key = String(cs.video_id).trim();
             if (!streamMap.has(key)) {
                 streamMap.set(key, cs);
@@ -859,16 +1081,23 @@ const allActiveStreams = computed(() => {
 // Currently selected stream for Grid Mode Live Chat Sidebar
 const activeGridChatStream = computed(() => {
     if (!activeChatVideoId.value) return null;
-    return allActiveStreams.value.find(s => s.video_id === activeChatVideoId.value) || null;
+    return (
+        allActiveStreams.value.find(
+            (s) => s.video_id === activeChatVideoId.value,
+        ) || null
+    );
 });
 
 // Currently active/online personal streams (matches video_id, officer channel/handle, or custom stream)
 const activePersonalStreams = computed(() => {
-    return allActiveStreams.value.filter(s => 
-        personalVideoIds.value.includes(s.video_id) || 
-        (s.officer?.channel_id && personalVideoIds.value.includes(s.officer.channel_id)) ||
-        (s.officer?.handle && personalVideoIds.value.includes(s.officer.handle)) ||
-        customStreams.value.some(cs => cs.video_id === s.video_id)
+    return allActiveStreams.value.filter(
+        (s) =>
+            personalVideoIds.value.includes(s.video_id) ||
+            (s.officer?.channel_id &&
+                personalVideoIds.value.includes(s.officer.channel_id)) ||
+            (s.officer?.handle &&
+                personalVideoIds.value.includes(s.officer.handle)) ||
+            customStreams.value.some((cs) => cs.video_id === s.video_id),
     );
 });
 
@@ -881,73 +1110,151 @@ const totalPersonalCount = computed(() => {
 const totalSavedPersonalCount = computed(() => {
     const combined = new Set([
         ...personalVideoIds.value,
-        ...customStreams.value.map(s => s.video_id)
+        ...customStreams.value.map((s) => s.video_id),
     ]);
     return combined.size;
 });
 
 const isPersonalStream = (streamOrId) => {
     if (!streamOrId) return false;
-    if (typeof streamOrId === 'string') {
-        return personalVideoIds.value.includes(streamOrId) || customStreams.value.some(s => s.video_id === streamOrId);
+    if (typeof streamOrId === "string") {
+        if (streamOrId.startsWith("officer-")) return false;
+        return (
+            personalVideoIds.value.includes(streamOrId) ||
+            customStreams.value.some((s) => s.video_id === streamOrId)
+        );
     }
     const s = streamOrId;
-    return personalVideoIds.value.includes(s.video_id) || 
-           (s.officer?.channel_id && personalVideoIds.value.includes(s.officer.channel_id)) ||
-           (s.officer?.handle && personalVideoIds.value.includes(s.officer.handle)) ||
-           customStreams.value.some(cs => cs.video_id === s.video_id);
+    if (s.is_officer_card || String(s.video_id).startsWith("officer-"))
+        return false;
+    return (
+        personalVideoIds.value.includes(s.video_id) ||
+        (s.officer?.channel_id &&
+            personalVideoIds.value.includes(s.officer.channel_id)) ||
+        (s.officer?.handle &&
+            personalVideoIds.value.includes(s.officer.handle)) ||
+        customStreams.value.some((cs) => cs.video_id === s.video_id)
+    );
 };
 
-const togglePersonalStream = (videoId) => {
-    const idx = personalVideoIds.value.indexOf(videoId);
-    if (idx !== -1) {
-        personalVideoIds.value.splice(idx, 1);
-        customStreams.value = customStreams.value.filter(s => s.video_id !== videoId);
-        savePersonalStreamsToStorage();
-    } else {
-        if (activePersonalStreams.value.length >= MAX_PERSONAL_STREAMS) {
-            alert(`Maksimal ${MAX_PERSONAL_STREAMS} video aktif untuk kategori Personal! Hapus atau unpin salah satu video aktif terlebih dahulu.`);
+const togglePersonalStream = (streamOrId) => {
+    if (!streamOrId) return;
+
+    // Reject dummy officer support cards (is_officer_card or video_id starting with officer-)
+    if (typeof streamOrId === "object" && streamOrId !== null) {
+        if (
+            streamOrId.is_officer_card ||
+            String(streamOrId.video_id).startsWith("officer-")
+        ) {
+            const handle = streamOrId.officer?.handle
+                ? streamOrId.officer.handle.replace(/^@/, "")
+                : "";
+            if (handle) {
+                window.open(`https://www.youtube.com/@${handle}`, "_blank");
+                showTacticalToast(
+                    `Membuka channel YouTube ${streamOrId.officer?.officer_name || "Officer"}...`,
+                    "info",
+                );
+            } else {
+                showTacticalToast(
+                    "Unit offline tidak dapat disematkan ke Personal Watchlist.",
+                    "warning",
+                );
+            }
             return;
         }
-        personalVideoIds.value.push(videoId);
-        savePersonalStreamsToStorage();
     }
-    toggleCloudWatchlist(videoId);
+    if (typeof streamOrId === "string" && streamOrId.startsWith("officer-")) {
+        showTacticalToast(
+            "Unit offline tidak dapat disematkan ke Personal Watchlist.",
+            "warning",
+        );
+        return;
+    }
+
+    let targetId = streamOrId;
+    if (typeof streamOrId === "object" && streamOrId !== null) {
+        targetId =
+            streamOrId.officer?.channel_id ||
+            streamOrId.officer?.handle ||
+            streamOrId.video_id;
+    } else if (typeof streamOrId === "string") {
+        const foundStream = allActiveStreams.value.find(
+            (s) => s.video_id === streamOrId,
+        );
+        if (foundStream?.officer?.channel_id) {
+            targetId = foundStream.officer.channel_id;
+        } else if (foundStream?.officer?.handle) {
+            targetId = foundStream.officer.handle;
+        }
+    }
+
+    if (!targetId || targetId.startsWith("officer-")) return;
+
+    const idx = personalVideoIds.value.indexOf(targetId);
+    if (idx !== -1) {
+        personalVideoIds.value.splice(idx, 1);
+        customStreams.value = customStreams.value.filter(
+            (s) =>
+                s.video_id !== targetId &&
+                s.officer?.channel_id !== targetId &&
+                s.officer?.handle !== targetId,
+        );
+        savePersonalStreamsToStorage();
+        showTacticalToast("Unit dilepas dari Personal Watchlist", "info");
+    } else {
+        if (activePersonalStreams.value.length >= MAX_PERSONAL_STREAMS) {
+            alert(
+                `Maksimal ${MAX_PERSONAL_STREAMS} video aktif untuk kategori Personal! Hapus atau unpin salah satu video aktif terlebih dahulu.`,
+            );
+            return;
+        }
+        personalVideoIds.value.push(targetId);
+        savePersonalStreamsToStorage();
+        showTacticalToast("Unit ditambahkan ke Personal Watchlist 📌", "info");
+    }
+    toggleCloudWatchlist(targetId);
 };
 
 const removePersonalStream = (id) => {
-    personalVideoIds.value = personalVideoIds.value.filter(itemId => itemId !== id);
-    customStreams.value = customStreams.value.filter(s => s.video_id !== id && s.id !== id);
+    personalVideoIds.value = personalVideoIds.value.filter(
+        (itemId) => itemId !== id,
+    );
+    customStreams.value = customStreams.value.filter(
+        (s) => s.video_id !== id && s.id !== id,
+    );
     savePersonalStreamsToStorage();
     toggleCloudWatchlist(id);
 };
 
 const clearAllPersonalStreams = () => {
-    if (confirm('Apakah Anda yakin ingin mengosongkan seluruh daftar pin / feed tersimpan di kategori Personal?')) {
+    if (
+        confirm(
+            "Apakah Anda yakin ingin mengosongkan seluruh daftar pin / feed tersimpan di kategori Personal?",
+        )
+    ) {
         personalVideoIds.value = [];
         customStreams.value = [];
         savePersonalStreamsToStorage();
     }
 };
 
-
-
 // Safe HTML escaping helper to prevent XSS
 const escapeHtml = (text) => {
-    if (!text) return '';
+    if (!text) return "";
     return String(text)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 };
 
 // Format description with clickable links and preserved line breaks
 const formatDescriptionWithLinks = (text) => {
-    if (!text) return '';
+    if (!text) return "";
     const safeText = escapeHtml(text);
-    
+
     // Convert standard URLs (https://, http://) into clickable styled links
     const urlRegex = /(https?:\/\/[^\s<>"']+)/g;
     return safeText.replace(urlRegex, (url) => {
@@ -966,16 +1273,18 @@ const fetchFullStreamDetails = async (videoId) => {
         const res = await fetch(`/api/v1/stream-details?video_id=${videoId}`);
         if (res.ok) {
             const json = await res.json();
-            if (json.status === 'success' && json.data) {
+            if (json.status === "success" && json.data) {
                 const data = json.data;
                 // Update in customStreams if present
-                const cs = customStreams.value.find(s => s.video_id === videoId);
+                const cs = customStreams.value.find(
+                    (s) => s.video_id === videoId,
+                );
                 if (cs) {
                     if (data.description) cs.description = data.description;
                     if (data.title) cs.title = data.title;
                 }
                 // Update in streams if present
-                const s = streams.value.find(s => s.video_id === videoId);
+                const s = streams.value.find((s) => s.video_id === videoId);
                 if (s) {
                     if (data.description) s.description = data.description;
                     if (data.title) s.title = data.title;
@@ -984,7 +1293,7 @@ const fetchFullStreamDetails = async (videoId) => {
             }
         }
     } catch (e) {
-        console.warn('Failed to fetch stream details for ' + videoId, e);
+        console.warn("Failed to fetch stream details for " + videoId, e);
     } finally {
         isFetchingStreamDetail.value[videoId] = false;
     }
@@ -996,19 +1305,24 @@ const toggleStreamInfo = (videoId) => {
         expandedInfoVideoIds.value.splice(idx, 1);
         return;
     }
-    
+
     expandedInfoVideoIds.value.push(videoId);
 
     // If description is missing or ends with "..." (search snippet), fetch full description in background
-    const targetStream = allActiveStreams.value.find(s => s.video_id === videoId);
-    if (!targetStream?.description || targetStream.description.endsWith('...') || targetStream.description.endsWith('…')) {
+    const targetStream = allActiveStreams.value.find(
+        (s) => s.video_id === videoId,
+    );
+    if (
+        !targetStream?.description ||
+        targetStream.description.endsWith("...") ||
+        targetStream.description.endsWith("…")
+    ) {
         fetchFullStreamDetails(videoId);
     }
 };
 
-const isStreamInfoOpen = (videoId) => expandedInfoVideoIds.value.includes(videoId);
-
-
+const isStreamInfoOpen = (videoId) =>
+    expandedInfoVideoIds.value.includes(videoId);
 
 // Unified list of saved personal items with online/offline status for drawer management
 const savedPersonalList = computed(() => {
@@ -1016,15 +1330,17 @@ const savedPersonalList = computed(() => {
     const seen = new Set();
 
     // 1. Add from customStreams
-    customStreams.value.forEach(cs => {
+    customStreams.value.forEach((cs) => {
         if (!seen.has(cs.video_id)) {
             seen.add(cs.video_id);
-            const isOnline = allActiveStreams.value.some(s => s.video_id === cs.video_id);
+            const isOnline = allActiveStreams.value.some(
+                (s) => s.video_id === cs.video_id,
+            );
             list.push({
                 id: cs.video_id,
                 rawId: cs.video_id,
                 video_id: cs.video_id,
-                name: cs.officer?.officer_name || cs.title || 'Custom Stream',
+                name: cs.officer?.officer_name || cs.title || "Custom Stream",
                 subtext: cs.officer?.callsign || cs.video_id,
                 thumbnail: cs.thumbnail,
                 isOnline: isOnline,
@@ -1033,14 +1349,17 @@ const savedPersonalList = computed(() => {
     });
 
     // 2. Add from personalVideoIds
-    personalVideoIds.value.forEach(id => {
+    personalVideoIds.value.forEach((id) => {
         if (!seen.has(id)) {
             seen.add(id);
-            const activeStream = allActiveStreams.value.find(s => 
-                s.video_id === id || s.officer?.channel_id === id || s.officer?.handle === id
+            const activeStream = allActiveStreams.value.find(
+                (s) =>
+                    s.video_id === id ||
+                    s.officer?.channel_id === id ||
+                    s.officer?.handle === id,
             );
-            const offlineOfficer = offlineOfficers.value.find(o => 
-                o.channel_id === id || o.handle === id
+            const offlineOfficer = offlineOfficers.value.find(
+                (o) => o.channel_id === id || o.handle === id,
             );
 
             if (activeStream) {
@@ -1048,8 +1367,14 @@ const savedPersonalList = computed(() => {
                     id: id,
                     rawId: id,
                     video_id: activeStream.video_id,
-                    name: activeStream.officer?.officer_name || activeStream.title || id,
-                    subtext: activeStream.officer?.callsign || activeStream.officer?.handle || id,
+                    name:
+                        activeStream.officer?.officer_name ||
+                        activeStream.title ||
+                        id,
+                    subtext:
+                        activeStream.officer?.callsign ||
+                        activeStream.officer?.handle ||
+                        id,
                     thumbnail: activeStream.thumbnail,
                     isOnline: true,
                 });
@@ -1069,8 +1394,11 @@ const savedPersonalList = computed(() => {
                     rawId: id,
                     video_id: id,
                     name: id.length === 11 ? `Video (${id})` : id,
-                    subtext: 'Ended / Offline Stream',
-                    thumbnail: id.length === 11 ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null,
+                    subtext: "Ended / Offline Stream",
+                    thumbnail:
+                        id.length === 11
+                            ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
+                            : null,
                     isOnline: false,
                 });
             }
@@ -1081,45 +1409,45 @@ const savedPersonalList = computed(() => {
 });
 
 // Quick Add Live Hashtag / Keyword Search State
-const quickAddMode = ref('SEARCH'); // 'SEARCH' or 'MANUAL'
-const liveSearchQuery = ref('#imeroleplay');
+const quickAddMode = ref("SEARCH"); // 'SEARCH' or 'MANUAL'
+const liveSearchQuery = ref("#imeroleplay");
 const isLiveSearching = ref(false);
 const liveSearchResults = ref([]);
-const liveSearchError = ref('');
-const liveSearchSuccessNotice = ref('');
+const liveSearchError = ref("");
+const liveSearchSuccessNotice = ref("");
 
 // Popular / Gang Hashtag Preset Chips
 const popularHashtagPresets = [
-    { label: '#imeroleplay', query: '#imeroleplay' },
-    { label: '#EMS', query: '#imeroleplay #emsime' },
-    { label: '#DOJ', query: '#imeroleplay #DOJ' },
-    { label: '#DOC', query: '#imeroleplay #DOC' },
-    { label: '#GOV', query: '#imeroleplay #GOV' },
-    { label: '#Vagabond', query: '#imeroleplay #Vagabond' },
-    { label: '#Allstars', query: '#imeroleplay #Allstars' },
-    { label: '#4Blood', query: '#imeroleplay #4Blood' },
-    { label: '#5tar', query: '#imeroleplay #5tar' },
+    { label: "#imeroleplay", query: "#imeroleplay" },
+    { label: "#EMS", query: "#imeroleplay #emsime" },
+    { label: "#DOJ", query: "#imeroleplay #DOJ" },
+    { label: "#DOC", query: "#imeroleplay #DOC" },
+    { label: "#GOV", query: "#imeroleplay #GOV" },
+    { label: "#Vagabond", query: "#imeroleplay #Vagabond" },
+    { label: "#Allstars", query: "#imeroleplay #Allstars" },
+    { label: "#4Blood", query: "#imeroleplay #4Blood" },
+    { label: "#5tar", query: "#imeroleplay #5tar" },
 ];
 
 const quickAddInput = ref({
-    urlOrId: '',
-    officerName: 'External Unit',
-    callsign: 'TAC-UNIT',
-    department: 'LSPD',
-    patrolZone: 'Incident Sector',
+    urlOrId: "",
+    officerName: "External Unit",
+    callsign: "TAC-UNIT",
+    department: "LSPD",
+    patrolZone: "Incident Sector",
 });
 
 // Tactical Clock
-const currentTime = ref('');
-const currentDate = ref('');
+const currentTime = ref("");
+const currentDate = ref("");
 const updateTime = () => {
     const now = new Date();
-    currentTime.value = now.toLocaleTimeString('en-US', { hour12: false });
-    currentDate.value = now.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+    currentTime.value = now.toLocaleTimeString("en-US", { hour12: false });
+    currentDate.value = now.toLocaleDateString("en-US", {
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
     });
 };
 
@@ -1131,40 +1459,146 @@ const closeMoreTac = () => {
 onMounted(() => {
     updateTime();
     timeInterval = setInterval(updateTime, 1000);
-    window.addEventListener('click', closeMoreTac);
-    
+    window.addEventListener("click", closeMoreTac);
+
     // Auto-detect mobile screen and default to Focus Mode
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-        selectedLayout.value = 'focus';
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+        selectedLayout.value = "focus";
     }
 });
 onUnmounted(() => {
     if (timeInterval) clearInterval(timeInterval);
-    window.removeEventListener('click', closeMoreTac);
+    window.removeEventListener("click", closeMoreTac);
 });
 
 // Main Visible Department Tabs (ALL, PERSONAL, LSPD, BCSO, SASP, SAPR + Primary TAC 1 to 3)
 const departments = [
-    { id: 'ALL', name: 'ALL UNITS', icon: iconAllUnits, isSvg: true, color: 'border-slate-600 text-slate-300' },
-    { id: 'PERSONAL', name: 'PERSONAL', icon: iconPersonal, isSvg: true, color: 'border-purple-500 text-purple-300 bg-purple-950/40' },
-    { id: 'LSPD', name: 'LSPD', icon: iconLspd, isSvg: true, color: 'border-blue-500 text-blue-400 bg-blue-950/40' },
-    { id: 'BCSO', name: 'BCSO', icon: iconBcso, isSvg: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
-    { id: 'SASP', name: 'SASP', icon: iconSasp, isSvg: true, color: 'border-teal-500 text-teal-400 bg-teal-950/40' },
-    { id: 'SAPR', name: 'SAPR', icon: iconSapr, isSvg: true, color: 'border-green-500 text-green-400 bg-green-950/40' },
-    { id: 'TAC_1', name: 'TAC 1', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
-    { id: 'TAC_2', name: 'TAC 2', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
-    { id: 'TAC_3', name: 'TAC 3', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
+    {
+        id: "ALL",
+        name: "ALL UNITS",
+        icon: iconAllUnits,
+        isSvg: true,
+        color: "border-slate-600 text-slate-300",
+    },
+    {
+        id: "PERSONAL",
+        name: "PERSONAL",
+        icon: iconPersonal,
+        isSvg: true,
+        color: "border-purple-500 text-purple-300 bg-purple-950/40",
+    },
+    {
+        id: "LSPD",
+        name: "LSPD",
+        icon: iconLspd,
+        isSvg: true,
+        color: "border-blue-500 text-blue-400 bg-blue-950/40",
+    },
+    {
+        id: "BCSO",
+        name: "BCSO",
+        icon: iconBcso,
+        isSvg: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
+    {
+        id: "SASP",
+        name: "SASP",
+        icon: iconSasp,
+        isSvg: true,
+        color: "border-teal-500 text-teal-400 bg-teal-950/40",
+    },
+    {
+        id: "SAPR",
+        name: "SAPR",
+        icon: iconSapr,
+        isSvg: true,
+        color: "border-green-500 text-green-400 bg-green-950/40",
+    },
+    {
+        id: "TAC_1",
+        name: "TAC 1",
+        icon: iconRadio,
+        isSvg: true,
+        isTac: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
+    {
+        id: "TAC_2",
+        name: "TAC 2",
+        icon: iconRadio,
+        isSvg: true,
+        isTac: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
+    {
+        id: "TAC_3",
+        name: "TAC 3",
+        icon: iconRadio,
+        isSvg: true,
+        isTac: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
 ];
 
 // Extended Dropdown TAC Channels (TAC 4 to TAC 10)
 const dropdownTacDepartments = [
-    { id: 'TAC_4', name: 'TAC 4', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
-    { id: 'TAC_5', name: 'TAC 5', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
-    { id: 'TAC_6', name: 'TAC 6', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
-    { id: 'TAC_7', name: 'TAC 7', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
-    { id: 'TAC_8', name: 'TAC 8', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
-    { id: 'TAC_9', name: 'TAC 9', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
-    { id: 'TAC_10', name: 'TAC 10', icon: iconRadio, isSvg: true, isTac: true, color: 'border-amber-500 text-amber-400 bg-amber-950/40' },
+    {
+        id: "TAC_4",
+        name: "TAC 4",
+        icon: iconRadio,
+        isSvg: true,
+        isTac: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
+    {
+        id: "TAC_5",
+        name: "TAC 5",
+        icon: iconRadio,
+        isSvg: true,
+        isTac: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
+    {
+        id: "TAC_6",
+        name: "TAC 6",
+        icon: iconRadio,
+        isSvg: true,
+        isTac: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
+    {
+        id: "TAC_7",
+        name: "TAC 7",
+        icon: iconRadio,
+        isSvg: true,
+        isTac: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
+    {
+        id: "TAC_8",
+        name: "TAC 8",
+        icon: iconRadio,
+        isSvg: true,
+        isTac: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
+    {
+        id: "TAC_9",
+        name: "TAC 9",
+        icon: iconRadio,
+        isSvg: true,
+        isTac: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
+    {
+        id: "TAC_10",
+        name: "TAC 10",
+        icon: iconRadio,
+        isSvg: true,
+        isTac: true,
+        color: "border-amber-500 text-amber-400 bg-amber-950/40",
+    },
 ];
 
 const isMoreTacOpen = ref(false);
@@ -1182,28 +1616,40 @@ const toggleMoreTac = (event) => {
 };
 
 const getDeptIcon = (dept) => {
-    if (typeof dept === 'string' && dept.startsWith('TAC_')) return iconRadio;
+    if (typeof dept === "string" && dept.startsWith("TAC_")) return iconRadio;
     switch (dept) {
-        case 'LSPD': return iconLspd;
-        case 'BCSO': return iconBcso;
-        case 'SASP': return iconSasp;
-        case 'SAPR':
-        case 'PARK RANGER': return iconSapr;
-        case 'PERSONAL': return iconPersonal;
-        default: return iconAllUnits;
+        case "LSPD":
+            return iconLspd;
+        case "BCSO":
+            return iconBcso;
+        case "SASP":
+            return iconSasp;
+        case "SAPR":
+        case "PARK RANGER":
+            return iconSapr;
+        case "PERSONAL":
+            return iconPersonal;
+        default:
+            return iconAllUnits;
     }
 };
 
 // Department styling helper
 const getDeptBadgeClass = (dept) => {
-    if (typeof dept === 'string' && dept.startsWith('TAC_')) return 'bg-amber-600/30 text-amber-300 border-amber-500/50';
+    if (typeof dept === "string" && dept.startsWith("TAC_"))
+        return "bg-amber-600/30 text-amber-300 border-amber-500/50";
     switch (dept) {
-        case 'LSPD': return 'bg-blue-600/30 text-blue-300 border-blue-500/50';
-        case 'BCSO': return 'bg-amber-600/30 text-amber-300 border-amber-500/50';
-        case 'SASP': return 'bg-teal-600/30 text-teal-300 border-teal-500/50';
-        case 'SAPR':
-        case 'PARK RANGER': return 'bg-green-600/30 text-green-300 border-green-500/50';
-        default: return 'bg-slate-700/40 text-slate-300 border-slate-600';
+        case "LSPD":
+            return "bg-blue-600/30 text-blue-300 border-blue-500/50";
+        case "BCSO":
+            return "bg-amber-600/30 text-amber-300 border-amber-500/50";
+        case "SASP":
+            return "bg-teal-600/30 text-teal-300 border-teal-500/50";
+        case "SAPR":
+        case "PARK RANGER":
+            return "bg-green-600/30 text-green-300 border-green-500/50";
+        default:
+            return "bg-slate-700/40 text-slate-300 border-slate-600";
     }
 };
 
@@ -1211,27 +1657,42 @@ const getDeptBadgeClass = (dept) => {
 const filteredStreams = computed(() => {
     let result = allActiveStreams.value;
 
-    if (selectedDepartment.value === 'PERSONAL') {
+    if (selectedDepartment.value === "PERSONAL") {
         result = activePersonalStreams.value;
     } else if (isTacDepartment(selectedDepartment.value)) {
         result = getTacStreams(selectedDepartment.value);
-    } else if (selectedDepartment.value !== 'ALL') {
-        if (selectedDepartment.value === 'SAPR') {
-            result = result.filter(s => s.officer && (s.officer.department === 'SAPR' || s.officer.department === 'PARK RANGER'));
+    } else if (selectedDepartment.value !== "ALL") {
+        if (selectedDepartment.value === "SAPR") {
+            result = result.filter(
+                (s) =>
+                    s.officer &&
+                    (s.officer.department === "SAPR" ||
+                        s.officer.department === "PARK RANGER"),
+            );
         } else {
-            result = result.filter(s => s.officer && s.officer.department === selectedDepartment.value);
+            result = result.filter(
+                (s) =>
+                    s.officer &&
+                    s.officer.department === selectedDepartment.value,
+            );
         }
     }
 
-    if (searchFilter.value.trim() !== '') {
+    if (searchFilter.value.trim() !== "") {
         const query = searchFilter.value.toLowerCase();
-        result = result.filter(s => 
-            (s.title && s.title.toLowerCase().includes(query)) || 
-            (s.officer?.officer_name && s.officer.officer_name.toLowerCase().includes(query)) || 
-            (s.officer?.callsign && s.officer.callsign.toLowerCase().includes(query)) || 
-            (s.officer?.badge_number && s.officer.badge_number.toLowerCase().includes(query)) || 
-            (s.officer?.streamer_name && s.officer.streamer_name.toLowerCase().includes(query)) || 
-            (s.officer?.patrol_zone && s.officer.patrol_zone.toLowerCase().includes(query))
+        result = result.filter(
+            (s) =>
+                (s.title && s.title.toLowerCase().includes(query)) ||
+                (s.officer?.officer_name &&
+                    s.officer.officer_name.toLowerCase().includes(query)) ||
+                (s.officer?.callsign &&
+                    s.officer.callsign.toLowerCase().includes(query)) ||
+                (s.officer?.badge_number &&
+                    s.officer.badge_number.toLowerCase().includes(query)) ||
+                (s.officer?.streamer_name &&
+                    s.officer.streamer_name.toLowerCase().includes(query)) ||
+                (s.officer?.patrol_zone &&
+                    s.officer.patrol_zone.toLowerCase().includes(query)),
         );
     }
 
@@ -1246,24 +1707,35 @@ const filteredOfflineOfficers = computed(() => {
 
     let result = offlineOfficers.value;
 
-    if (selectedDepartment.value === 'PERSONAL') {
-        result = result.filter(o => personalVideoIds.value.includes(o.channel_id) || (o.handle && personalVideoIds.value.includes(o.handle)));
-    } else if (selectedDepartment.value !== 'ALL') {
-        if (selectedDepartment.value === 'SAPR') {
-            result = result.filter(o => o.department === 'SAPR' || o.department === 'PARK RANGER');
+    if (selectedDepartment.value === "PERSONAL") {
+        result = result.filter(
+            (o) =>
+                personalVideoIds.value.includes(o.channel_id) ||
+                (o.handle && personalVideoIds.value.includes(o.handle)),
+        );
+    } else if (selectedDepartment.value !== "ALL") {
+        if (selectedDepartment.value === "SAPR") {
+            result = result.filter(
+                (o) =>
+                    o.department === "SAPR" || o.department === "PARK RANGER",
+            );
         } else {
-            result = result.filter(o => o.department === selectedDepartment.value);
+            result = result.filter(
+                (o) => o.department === selectedDepartment.value,
+            );
         }
     }
 
-    if (searchFilter.value.trim() !== '') {
+    if (searchFilter.value.trim() !== "") {
         const query = searchFilter.value.toLowerCase();
-        result = result.filter(o => 
-            o.officer_name.toLowerCase().includes(query) || 
-            o.callsign.toLowerCase().includes(query) ||
-            o.streamer_name.toLowerCase().includes(query) ||
-            (o.badge_number && o.badge_number.toLowerCase().includes(query)) ||
-            (o.patrol_zone && o.patrol_zone.toLowerCase().includes(query))
+        result = result.filter(
+            (o) =>
+                o.officer_name.toLowerCase().includes(query) ||
+                o.callsign.toLowerCase().includes(query) ||
+                o.streamer_name.toLowerCase().includes(query) ||
+                (o.badge_number &&
+                    o.badge_number.toLowerCase().includes(query)) ||
+                (o.patrol_zone && o.patrol_zone.toLowerCase().includes(query)),
         );
     }
 
@@ -1276,10 +1748,10 @@ const customStreamOrder = ref([]); // Array of video_id strings in priority sequ
 const getCustomOrderRank = (videoId) => {
     if (!videoId) return 0;
     const strId = String(videoId).trim();
-    
+
     // Compute category-relative rank (scoped to currently active category / filteredStreams)
-    const categoryOrderedIds = customStreamOrder.value.filter(id => 
-        filteredStreams.value.some(s => String(s.video_id).trim() === id)
+    const categoryOrderedIds = customStreamOrder.value.filter((id) =>
+        filteredStreams.value.some((s) => String(s.video_id).trim() === id),
     );
 
     const idx = categoryOrderedIds.indexOf(strId);
@@ -1292,11 +1764,14 @@ const toggleCustomOrderPin = (videoId) => {
     const idx = customStreamOrder.value.indexOf(strId);
     if (idx !== -1) {
         customStreamOrder.value.splice(idx, 1);
-        showTacticalToast('Siaran dikeluarkan dari urutan prioritas', 'info');
+        showTacticalToast("Siaran dikeluarkan dari urutan prioritas", "info");
     } else {
         customStreamOrder.value.push(strId);
         const rank = getCustomOrderRank(strId);
-        showTacticalToast(`Siaran ditambahkan ke urutan prioritas #${rank}`, 'info');
+        showTacticalToast(
+            `Siaran ditambahkan ke urutan prioritas #${rank}`,
+            "info",
+        );
     }
 };
 
@@ -1327,12 +1802,12 @@ const moveCustomOrderToTop = (videoId) => {
         customStreamOrder.value.splice(idx, 1);
     }
     customStreamOrder.value.unshift(strId);
-    showTacticalToast('Siaran dijadikan urutan #1 terdepan', 'info');
+    showTacticalToast("Siaran dijadikan urutan #1 terdepan", "info");
 };
 
 const resetCustomStreamOrder = () => {
     customStreamOrder.value = [];
-    showTacticalToast('Urutan grid dikembalikan ke posisi semula', 'info');
+    showTacticalToast("Urutan grid dikembalikan ke posisi semula", "info");
 };
 
 // Sidebar Hidden stream video IDs
@@ -1347,8 +1822,10 @@ const toggleStreamVisibility = (videoId) => {
 };
 
 const visibleStreams = computed(() => {
-    const list = filteredStreams.value.filter(s => !hiddenStreamVideoIds.value.includes(s.video_id));
-    
+    const list = filteredStreams.value.filter(
+        (s) => !hiddenStreamVideoIds.value.includes(s.video_id),
+    );
+
     if (customStreamOrder.value.length === 0) return list;
 
     return [...list].sort((a, b) => {
@@ -1365,25 +1842,56 @@ const visibleStreams = computed(() => {
 // Displayed Grid Streams (Respects layout limits to prevent offscreen video bandwidth drain)
 const displayedGridStreams = computed(() => {
     const list = visibleStreams.value;
-    if (selectedLayout.value === 'grid-1x2') {
+    if (selectedLayout.value === "grid-1x2") {
         return list.slice(0, 2);
     }
-    if (selectedLayout.value === 'grid-1x3') {
+    if (selectedLayout.value === "grid-1x3") {
         return list.slice(0, 3);
     }
-    if (selectedLayout.value === 'grid-2x2') {
+    if (selectedLayout.value === "grid-2x2") {
         return list.slice(0, 4);
     }
-    if (selectedLayout.value === 'grid-3x3') {
+    if (selectedLayout.value === "grid-3x3") {
         return list.slice(0, 9);
     }
-    if (selectedLayout.value === 'grid-4x4') {
+    if (selectedLayout.value === "grid-4x4") {
         return list.slice(0, 16);
     }
     return list;
 });
 
+// ==========================================
+// UNICODE FONT NORMALIZATION & HASHTAG VERIFICATION
+// ==========================================
 
+// Unicode NFKD Normalization for fancy streamer fonts (Double-Struck, Bold, Italics, Fullwidth, Circled, etc.)
+const normalizeUnicodeText = (text) => {
+    if (!text) return "";
+    try {
+        return text
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+    } catch (e) {
+        return (text || "").toLowerCase();
+    }
+};
+
+// Check if a stream or replay video is specifically an IME POLICE / PATROL stream
+const hasRequiredImeHashtag = (stream) => {
+    if (!stream) return false;
+
+    // Support officer card fallbacks are always valid
+    if (stream.is_officer_card) return true;
+
+    // Must check STREAM TITLE ONLY (not auto-generated description) normalized for Unicode fonts
+    const normTitle = normalizeUnicodeText(stream.title || "");
+
+    // Required Police Duty Hashtags & Keywords in TITLE
+    const policeTags = ["imepolice", "ime police", "969garage", "969"];
+
+    return policeTags.some((tag) => normTitle.includes(tag));
+};
 
 // ==========================================
 // NETFLIX-STYLE CINEMA HUB COMPUTED CATEGORIES
@@ -1394,15 +1902,15 @@ const allCatalogStreams = computed(() => {
     const catalogMap = new Map();
 
     // 1. Prioritize active live streams first
-    allActiveStreams.value.forEach(s => {
-        if (s && s.video_id) {
+    allActiveStreams.value.forEach((s) => {
+        if (s && s.video_id && hasRequiredImeHashtag(s)) {
             catalogMap.set(String(s.video_id).trim(), s);
         }
     });
 
-    // 2. Add recent replays only if video_id is not already present
-    (recentReplays.value || []).forEach(replay => {
-        if (replay && replay.video_id) {
+    // 2. Add recent replays only if video_id is not already present and passes hashtag check
+    (recentReplays.value || []).forEach((replay) => {
+        if (replay && replay.video_id && hasRequiredImeHashtag(replay)) {
             const key = String(replay.video_id).trim();
             if (!catalogMap.has(key)) {
                 catalogMap.set(key, replay);
@@ -1412,52 +1920,76 @@ const allCatalogStreams = computed(() => {
 
     let list = Array.from(catalogMap.values());
 
-    if (searchFilter.value.trim() !== '') {
-        const query = searchFilter.value.toLowerCase();
-        return list.filter(s => 
-            (s.title && s.title.toLowerCase().includes(query)) || 
-            (s.officer?.officer_name && s.officer.officer_name.toLowerCase().includes(query)) ||
-            (s.officer?.callsign && s.officer.callsign.toLowerCase().includes(query)) ||
-            (s.officer?.badge_number && s.officer.badge_number.toLowerCase().includes(query)) ||
-            (s.officer?.streamer_name && s.officer.streamer_name.toLowerCase().includes(query)) ||
-            (s.officer?.patrol_zone && s.officer.patrol_zone.toLowerCase().includes(query))
-        );
+    if (searchFilter.value.trim() !== "") {
+        const query = normalizeUnicodeText(searchFilter.value);
+        list = list.filter((s) => {
+            const normTitle = normalizeUnicodeText(s.title);
+            const normOfficerName = normalizeUnicodeText(
+                s.officer?.officer_name,
+            );
+            const normCallsign = normalizeUnicodeText(s.officer?.callsign);
+            const normBadge = normalizeUnicodeText(s.officer?.badge_number);
+            const normStreamer = normalizeUnicodeText(s.officer?.streamer_name);
+            const normZone = normalizeUnicodeText(s.officer?.patrol_zone);
+
+            return (
+                normTitle.includes(query) ||
+                normOfficerName.includes(query) ||
+                normCallsign.includes(query) ||
+                normBadge.includes(query) ||
+                normStreamer.includes(query) ||
+                normZone.includes(query)
+            );
+        });
     }
 
-    return list;
+    return sortStreamsByStatusAndRecency(list);
 });
 
 // Hero Spotlight: #1 Live patrol stream, or if none live -> #1 Latest patrol replay
 const topHeroStream = computed(() => {
-    if (allActiveStreams.value.length > 0) {
-        return [...allActiveStreams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0))[0];
+    const validLive = allActiveStreams.value.filter((s) =>
+        hasRequiredImeHashtag(s),
+    );
+    if (validLive.length > 0) {
+        return [...validLive].sort(
+            (a, b) => (b.viewers_count || 0) - (a.viewers_count || 0),
+        )[0];
     }
-    if (recentReplays.value.length > 0) {
-        return recentReplays.value[0];
+    const validReplays = recentReplayStreams.value;
+    if (validReplays.length > 0) {
+        return validReplays[0];
     }
     return null;
 });
 
-// Live trending streams (sorted by viewers)
+// Live trending streams (sorted by viewers, strictly filtered for police hashtags in title)
 const trendingStreams = computed(() => {
-    return [...allActiveStreams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0));
+    return allActiveStreams.value
+        .filter((s) => hasRequiredImeHashtag(s))
+        .sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0));
 });
 
 const parseRelativeTimeToSeconds = (str) => {
     if (!str) return 999999999;
     const text = String(str).toLowerCase().trim();
-    if (text.includes('baru saja') || text.includes('just now') || text.includes('live')) return 0;
+    if (
+        text.includes("baru saja") ||
+        text.includes("just now") ||
+        text.includes("live")
+    )
+        return 0;
 
     const numMatch = text.match(/(\d+)/);
     const num = numMatch ? parseInt(numMatch[1], 10) : 1;
 
-    if (text.includes('detik') || text.includes('second')) return num;
-    if (text.includes('menit') || text.includes('minute')) return num * 60;
-    if (text.includes('jam') || text.includes('hour')) return num * 3600;
-    if (text.includes('hari') || text.includes('day')) return num * 86400;
-    if (text.includes('minggu') || text.includes('week')) return num * 604800;
-    if (text.includes('bulan') || text.includes('month')) return num * 2592000;
-    if (text.includes('tahun') || text.includes('year')) return num * 31536000;
+    if (text.includes("detik") || text.includes("second")) return num;
+    if (text.includes("menit") || text.includes("minute")) return num * 60;
+    if (text.includes("jam") || text.includes("hour")) return num * 3600;
+    if (text.includes("hari") || text.includes("day")) return num * 86400;
+    if (text.includes("minggu") || text.includes("week")) return num * 604800;
+    if (text.includes("bulan") || text.includes("month")) return num * 2592000;
+    if (text.includes("tahun") || text.includes("year")) return num * 31536000;
 
     return 999999999;
 };
@@ -1465,14 +1997,18 @@ const parseRelativeTimeToSeconds = (str) => {
 // Sort streams helper: 1) LIVE status first, 2) Video streams/replays over static cards, 3) Recency timestamp (newest stream/replay first)
 const sortStreamsByStatusAndRecency = (streamList) => {
     return [...streamList].sort((a, b) => {
-        if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
-        if (b.status === 'LIVE' && a.status !== 'LIVE') return 1;
+        if (a.status === "LIVE" && b.status !== "LIVE") return -1;
+        if (b.status === "LIVE" && a.status !== "LIVE") return 1;
 
         if (!a.is_officer_card && b.is_officer_card) return -1;
         if (a.is_officer_card && !b.is_officer_card) return 1;
 
-        const timeA = parseRelativeTimeToSeconds(a.streamed_at || a.incident_code);
-        const timeB = parseRelativeTimeToSeconds(b.streamed_at || b.incident_code);
+        const timeA = parseRelativeTimeToSeconds(
+            a.streamed_at || a.incident_code,
+        );
+        const timeB = parseRelativeTimeToSeconds(
+            b.streamed_at || b.incident_code,
+        );
         if (timeA !== timeB) {
             return timeA - timeB;
         }
@@ -1483,15 +2019,19 @@ const sortStreamsByStatusAndRecency = (streamList) => {
 
 // Support 1K Subs (Streamers / Officers with < 1,000 subscribers)
 const support1kStreams = computed(() => {
-    const list = [...allCatalogStreams.value.filter(s => {
-        const count = Number(s.officer?.subscriber_count);
-        return !isNaN(count) && count > 0 && count < 1000;
-    })];
+    const list = [
+        ...allCatalogStreams.value.filter((s) => {
+            const count = Number(s.officer?.subscriber_count);
+            return !isNaN(count) && count > 0 && count < 1000;
+        }),
+    ];
 
-    const seenOfficerIds = new Set(list.map(s => s.officer?.id).filter(Boolean));
+    const seenOfficerIds = new Set(
+        list.map((s) => s.officer?.id).filter(Boolean),
+    );
 
     // Fallback: include offline officers with < 1,000 subs who do not have an active stream / VOD replay in catalog
-    (offlineOfficers.value || []).forEach(o => {
+    (offlineOfficers.value || []).forEach((o) => {
         if (o.id && !seenOfficerIds.has(o.id)) {
             const count = Number(o.subscriber_count);
             if (!isNaN(count) && count > 0 && count < 1000) {
@@ -1500,10 +2040,12 @@ const support1kStreams = computed(() => {
                     id: `sub1k-officer-${o.id}`,
                     video_id: `officer-${o.id}`,
                     title: `Support Officer ${o.officer_name}`,
-                    thumbnail: o.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${o.id}`,
-                    status: 'OFFLINE',
-                    incident_code: '10-7 Road to 1K',
-                    streamed_at: 'Target 1K Milestone',
+                    thumbnail:
+                        o.avatar_url ||
+                        `https://api.dicebear.com/7.x/bottts/svg?seed=${o.id}`,
+                    status: "OFFLINE",
+                    incident_code: "10-7 Road to 1K",
+                    streamed_at: "Target 1K Milestone",
                     description: `Dukung ${o.officer_name} mencapai 1.000 subscriber YouTube pertama!`,
                     viewers_count: 0,
                     is_officer_card: true,
@@ -1516,74 +2058,143 @@ const support1kStreams = computed(() => {
     return sortStreamsByStatusAndRecency(list);
 });
 
-// Recent offline patrol video replays / VODs
+// Recent offline patrol video replays / VODs (Sorted newest first, filtered for valid IME RP/Police hashtags)
 const recentReplayStreams = computed(() => {
-    const liveIds = new Set(allActiveStreams.value.map(s => String(s.video_id).trim()));
-    return recentReplays.value.filter(r => !liveIds.has(String(r.video_id).trim()));
+    const liveIds = new Set(
+        allActiveStreams.value.map((s) => String(s.video_id).trim()),
+    );
+    const list = (recentReplays.value || []).filter((r) => {
+        if (!r || !r.video_id) return false;
+        if (liveIds.has(String(r.video_id).trim())) return false;
+        return hasRequiredImeHashtag(r);
+    });
+    return sortStreamsByStatusAndRecency(list);
 });
 
 // Department Catalog Streams (Live + Replay VODs)
 const lspdCatalogStreams = computed(() => {
-    return allCatalogStreams.value.filter(s => s.officer && s.officer.department === 'LSPD');
+    return allCatalogStreams.value.filter(
+        (s) => s.officer && s.officer.department === "LSPD",
+    );
 });
 
 const bcsoCatalogStreams = computed(() => {
-    return allCatalogStreams.value.filter(s => s.officer && s.officer.department === 'BCSO');
+    return allCatalogStreams.value.filter(
+        (s) => s.officer && s.officer.department === "BCSO",
+    );
 });
 
 const saspCatalogStreams = computed(() => {
-    return allCatalogStreams.value.filter(s => s.officer && s.officer.department === 'SASP');
+    return allCatalogStreams.value.filter(
+        (s) => s.officer && s.officer.department === "SASP",
+    );
 });
 
 const saprCatalogStreams = computed(() => {
-    return allCatalogStreams.value.filter(s => s.officer && (s.officer.department === 'SAPR' || s.officer.department === 'PARK RANGER'));
+    return allCatalogStreams.value.filter(
+        (s) =>
+            s.officer &&
+            (s.officer.department === "SAPR" ||
+                s.officer.department === "PARK RANGER"),
+    );
 });
 
 const specialOpsCatalogStreams = computed(() => {
-    return allCatalogStreams.value.filter(s => {
-        const text = `${s.officer?.rank || ''} ${s.officer?.callsign || ''} ${s.title || ''}`.toLowerCase();
-        return text.includes('swat') || text.includes('k9') || text.includes('k-9') || text.includes('srt') || text.includes('air') || text.includes('trooper') || text.includes('investigation') || text.includes('detective');
+    return allCatalogStreams.value.filter((s) => {
+        const text =
+            `${s.officer?.rank || ""} ${s.officer?.callsign || ""} ${s.title || ""}`.toLowerCase();
+        return (
+            text.includes("swat") ||
+            text.includes("k9") ||
+            text.includes("k-9") ||
+            text.includes("srt") ||
+            text.includes("air") ||
+            text.includes("trooper") ||
+            text.includes("investigation") ||
+            text.includes("detective")
+        );
     });
 });
 
 const tacSituationalStreams = computed(() => {
     const allTacVideoIds = [];
-    tacChannels.value.forEach(ch => {
+    tacChannels.value.forEach((ch) => {
         if (ch.video_ids && Array.isArray(ch.video_ids)) {
-            ch.video_ids.forEach(id => allTacVideoIds.push(String(id).trim()));
+            ch.video_ids.forEach((id) =>
+                allTacVideoIds.push(String(id).trim()),
+            );
         }
     });
-    return allActiveStreams.value.filter(s => allTacVideoIds.includes(String(s.video_id).trim()));
+    return allActiveStreams.value.filter((s) =>
+        allTacVideoIds.includes(String(s.video_id).trim()),
+    );
 });
 
 // Scroll helper for horizontal swimlane rows
-const scrollRow = (rowId, direction = 'right') => {
+const scrollRow = (rowId, direction = "right") => {
     const el = document.getElementById(rowId);
     if (!el) return;
-    const scrollAmount = direction === 'left' ? -650 : 650;
-    el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    const scrollAmount = direction === "left" ? -650 : 650;
+    el.scrollBy({ left: scrollAmount, behavior: "smooth" });
+};
+
+// Helper to construct YouTube URL safely (Handles officer support cards)
+const getStreamYoutubeUrl = (stream) => {
+    if (!stream) return "#";
+    if (
+        stream.is_officer_card ||
+        (typeof stream.video_id === "string" &&
+            stream.video_id.startsWith("officer-"))
+    ) {
+        const handle = stream.officer?.handle
+            ? stream.officer.handle.replace(/^@/, "")
+            : "";
+        return handle ? `https://www.youtube.com/@${handle}` : "#";
+    }
+    return `https://www.youtube.com/watch?v=${stream.video_id}`;
 };
 
 // 1-Click Launch from Cinema Hub into Focus Lead View
 const playStreamInFocus = (stream) => {
     if (!stream) return;
+
+    // Check for dummy officer support card (is_officer_card or video_id starting with officer-)
+    if (
+        stream.is_officer_card ||
+        (typeof stream.video_id === "string" &&
+            stream.video_id.startsWith("officer-"))
+    ) {
+        const handle = stream.officer?.handle
+            ? stream.officer.handle.replace(/^@/, "")
+            : "";
+        if (handle) {
+            window.open(`https://www.youtube.com/@${handle}`, "_blank");
+            showTacticalToast(
+                `Membuka channel YouTube ${stream.officer?.officer_name || "Officer"} (Road to 1K)...`,
+                "info",
+            );
+        } else {
+            showTacticalToast(
+                `Unit ${stream.officer?.officer_name || "Officer"} sedang 10-7 Offline (Belum ada siaran/VOD).`,
+                "info",
+            );
+        }
+        return;
+    }
+
     if (stream.officer?.department) {
         selectedDepartment.value = stream.officer.department;
     }
-    selectedLayout.value = 'focus';
+    selectedLayout.value = "focus";
     focusedStreamId.value = stream.video_id || stream.id;
-    
-    // If it's a VOD not yet in allActiveStreams, inject into customStreams so Focus mode displays it
-    if (!allActiveStreams.value.some(s => s.video_id === stream.video_id)) {
-        if (!customStreams.value.some(cs => cs.video_id === stream.video_id)) {
-            customStreams.value.push(stream);
-        }
-    }
 
     if (!isDataSaverEnabled.value) {
         toggleGridStreamPlay(stream.video_id);
     }
-    showTacticalToast(`Memutar siaran unit: ${stream.officer?.callsign || 'Unit'} (${stream.officer?.officer_name || 'Officer'})`, 'info');
+    showTacticalToast(
+        `Memutar siaran unit: ${stream.officer?.callsign || "Unit"} (${stream.officer?.officer_name || "Officer"})`,
+        "info",
+    );
 };
 
 // YouTube Player Engine & Resilient Audio Controller
@@ -1591,13 +2202,13 @@ let players = {};
 const ytApiReady = ref(false);
 
 const destroyAllPlayers = () => {
-    Object.keys(players).forEach(id => {
+    Object.keys(players).forEach((id) => {
         if (players[id]) {
             try {
-                if (typeof players[id].destroy === 'function') {
+                if (typeof players[id].destroy === "function") {
                     players[id].destroy();
                 }
-            } catch(e) {}
+            } catch (e) {}
             delete players[id];
         }
     });
@@ -1611,11 +2222,11 @@ const loadYouTubeAPI = () => {
         return;
     }
 
-    if (!document.getElementById('yt-iframe-api-script')) {
-        const tag = document.createElement('script');
-        tag.id = 'yt-iframe-api-script';
+    if (!document.getElementById("yt-iframe-api-script")) {
+        const tag = document.createElement("script");
+        tag.id = "yt-iframe-api-script";
         tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
+        const firstScriptTag = document.getElementsByTagName("script")[0];
         if (firstScriptTag && firstScriptTag.parentNode) {
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         }
@@ -1629,20 +2240,26 @@ const loadYouTubeAPI = () => {
 
 const ensureVideoPlaying = (videoId) => {
     if (!videoId) return;
-    const iframes = document.querySelectorAll(`iframe[id="yt-bodycam-${videoId}"]`);
-    iframes.forEach(iframe => {
+    const iframes = document.querySelectorAll(
+        `iframe[id="yt-bodycam-${videoId}"]`,
+    );
+    iframes.forEach((iframe) => {
         if (iframe && iframe.contentWindow) {
             try {
                 iframe.contentWindow.postMessage(
-                    JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-                    '*'
+                    JSON.stringify({
+                        event: "command",
+                        func: "playVideo",
+                        args: [],
+                    }),
+                    "*",
                 );
             } catch (e) {}
         }
     });
     if (players[videoId]) {
         try {
-            if (typeof players[videoId].playVideo === 'function') {
+            if (typeof players[videoId].playVideo === "function") {
                 players[videoId].playVideo();
             }
         } catch (e) {}
@@ -1651,7 +2268,9 @@ const ensureVideoPlaying = (videoId) => {
 
 const initializePlayer = (videoId) => {
     if (!videoId) return;
-    const isFocusedLead = (selectedLayout.value === 'focus' && primaryFocusedStream.value?.video_id === videoId);
+    const isFocusedLead =
+        selectedLayout.value === "focus" &&
+        primaryFocusedStream.value?.video_id === videoId;
     const isAudioActive = activeAudioVideoId.value === videoId;
 
     controlPlayerAudio(videoId, isAudioActive);
@@ -1660,26 +2279,26 @@ const initializePlayer = (videoId) => {
 };
 
 const initializeAllPlayers = () => {
-    if (selectedLayout.value === 'focus') {
+    if (selectedLayout.value === "focus") {
         if (primaryFocusedStream.value) {
             initializePlayer(primaryFocusedStream.value.video_id);
         }
         if (!isDataSaverEnabled.value) {
-            secondaryStreams.value.forEach(stream => {
+            secondaryStreams.value.forEach((stream) => {
                 initializePlayer(stream.video_id);
             });
         } else {
-            activePreviewVideoIds.value.forEach(id => {
+            activePreviewVideoIds.value.forEach((id) => {
                 initializePlayer(id);
             });
         }
     } else {
         if (!isDataSaverEnabled.value) {
-            displayedGridStreams.value.forEach(stream => {
+            displayedGridStreams.value.forEach((stream) => {
                 initializePlayer(stream.video_id);
             });
         } else {
-            activeGridVideoIds.value.forEach(id => {
+            activeGridVideoIds.value.forEach((id) => {
                 initializePlayer(id);
             });
             if (activeAudioVideoId.value) {
@@ -1692,23 +2311,33 @@ const initializeAllPlayers = () => {
 // Core Resilient Audio Controller (HTML5 postMessage + YT API fallback)
 const controlPlayerAudio = (videoId, shouldUnmute) => {
     // 1. Direct IFrame HTML5 postMessage (Instant across all iframes)
-    const iframes = document.querySelectorAll(`iframe[id="yt-bodycam-${videoId}"]`);
-    iframes.forEach(iframe => {
+    const iframes = document.querySelectorAll(
+        `iframe[id="yt-bodycam-${videoId}"]`,
+    );
+    iframes.forEach((iframe) => {
         if (iframe && iframe.contentWindow) {
             try {
-                const func = shouldUnmute ? 'unMute' : 'mute';
+                const func = shouldUnmute ? "unMute" : "mute";
                 iframe.contentWindow.postMessage(
-                    JSON.stringify({ event: 'command', func: func, args: [] }),
-                    '*'
+                    JSON.stringify({ event: "command", func: func, args: [] }),
+                    "*",
                 );
                 if (shouldUnmute) {
                     iframe.contentWindow.postMessage(
-                        JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
-                        '*'
+                        JSON.stringify({
+                            event: "command",
+                            func: "setVolume",
+                            args: [100],
+                        }),
+                        "*",
                     );
                     iframe.contentWindow.postMessage(
-                        JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
-                        '*'
+                        JSON.stringify({
+                            event: "command",
+                            func: "playVideo",
+                            args: [],
+                        }),
+                        "*",
                     );
                 }
             } catch (err) {
@@ -1721,12 +2350,12 @@ const controlPlayerAudio = (videoId, shouldUnmute) => {
     if (players[videoId]) {
         try {
             if (shouldUnmute) {
-                if (typeof players[videoId].unMute === 'function') {
+                if (typeof players[videoId].unMute === "function") {
                     players[videoId].unMute();
                     players[videoId].setVolume(100);
                 }
             } else {
-                if (typeof players[videoId].mute === 'function') {
+                if (typeof players[videoId].mute === "function") {
                     players[videoId].mute();
                 }
             }
@@ -1738,40 +2367,58 @@ const controlPlayerAudio = (videoId, shouldUnmute) => {
 
 // Video Playback Quality Controller (Enforces 144p/360p for Data Saver, Auto-HD for Lead Focus)
 const applyQualityToPlayer = (videoId, isHighQuality) => {
-    const targetQuality = isHighQuality ? 'highres' : 'small';
-    const qualityRange = isHighQuality ? ['hd1080', 'highres', 'default'] : ['small', 'medium'];
+    const targetQuality = isHighQuality ? "highres" : "small";
+    const qualityRange = isHighQuality
+        ? ["hd1080", "highres", "default"]
+        : ["small", "medium"];
 
     // 1. YT.Player API
     if (players[videoId]) {
         try {
-            if (typeof players[videoId].setPlaybackQualityRange === 'function') {
+            if (
+                typeof players[videoId].setPlaybackQualityRange === "function"
+            ) {
                 players[videoId].setPlaybackQualityRange(qualityRange);
             }
-            if (typeof players[videoId].setPlaybackQuality === 'function') {
+            if (typeof players[videoId].setPlaybackQuality === "function") {
                 players[videoId].setPlaybackQuality(targetQuality);
             }
-            if (typeof players[videoId].setSuggestedQuality === 'function') {
+            if (typeof players[videoId].setSuggestedQuality === "function") {
                 players[videoId].setSuggestedQuality(targetQuality);
             }
         } catch (e) {}
     }
 
     // 2. Direct HTML5 postMessage (Instant across all iframes)
-    const iframes = document.querySelectorAll(`iframe[id="yt-bodycam-${videoId}"]`);
-    iframes.forEach(iframe => {
+    const iframes = document.querySelectorAll(
+        `iframe[id="yt-bodycam-${videoId}"]`,
+    );
+    iframes.forEach((iframe) => {
         if (iframe && iframe.contentWindow) {
             try {
                 iframe.contentWindow.postMessage(
-                    JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: [targetQuality] }),
-                    '*'
+                    JSON.stringify({
+                        event: "command",
+                        func: "setPlaybackQuality",
+                        args: [targetQuality],
+                    }),
+                    "*",
                 );
                 iframe.contentWindow.postMessage(
-                    JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: qualityRange }),
-                    '*'
+                    JSON.stringify({
+                        event: "command",
+                        func: "setPlaybackQualityRange",
+                        args: qualityRange,
+                    }),
+                    "*",
                 );
                 iframe.contentWindow.postMessage(
-                    JSON.stringify({ event: 'command', func: 'setSuggestedQuality', args: [targetQuality] }),
-                    '*'
+                    JSON.stringify({
+                        event: "command",
+                        func: "setSuggestedQuality",
+                        args: [targetQuality],
+                    }),
+                    "*",
                 );
             } catch (err) {}
         }
@@ -1779,18 +2426,18 @@ const applyQualityToPlayer = (videoId, isHighQuality) => {
 };
 
 const updateAllStreamQualities = () => {
-    if (selectedLayout.value === 'focus') {
+    if (selectedLayout.value === "focus") {
         const leadId = primaryFocusedStream.value?.video_id;
         if (leadId) {
             applyQualityToPlayer(leadId, true);
         }
-        activePreviewVideoIds.value.forEach(id => {
+        activePreviewVideoIds.value.forEach((id) => {
             if (id !== leadId) {
                 applyQualityToPlayer(id, false);
             }
         });
     } else {
-        displayedGridStreams.value.forEach(stream => {
+        displayedGridStreams.value.forEach((stream) => {
             applyQualityToPlayer(stream.video_id, false);
         });
     }
@@ -1813,10 +2460,10 @@ const toggleAudio = (videoId) => {
     }
 
     // Mute ALL other players first (Strict Single Audio Rule)
-    allActiveStreams.value.forEach(s => {
+    allActiveStreams.value.forEach((s) => {
         controlPlayerAudio(s.video_id, false);
     });
-    Object.keys(players).forEach(id => {
+    Object.keys(players).forEach((id) => {
         controlPlayerAudio(id, false);
     });
 
@@ -1826,10 +2473,10 @@ const toggleAudio = (videoId) => {
 };
 
 const muteAll = () => {
-    allActiveStreams.value.forEach(s => {
+    allActiveStreams.value.forEach((s) => {
         controlPlayerAudio(s.video_id, false);
     });
-    Object.keys(players).forEach(id => {
+    Object.keys(players).forEach((id) => {
         controlPlayerAudio(id, false);
     });
     activeAudioVideoId.value = null;
@@ -1842,7 +2489,7 @@ watch(selectedDepartment, () => {
 
 // Watch for layout changes to automatically route audio & high-quality to Lead Unit in Focus Mode
 watch(selectedLayout, (newLayout) => {
-    if (newLayout === 'focus' && primaryFocusedStream.value) {
+    if (newLayout === "focus" && primaryFocusedStream.value) {
         activeAudioVideoId.value = primaryFocusedStream.value.video_id;
         nextTick(() => {
             setTimeout(() => {
@@ -1860,14 +2507,18 @@ watch(selectedLayout, (newLayout) => {
 });
 
 // Watch for visible streams changes or layout changes
-watch([visibleStreams, selectedLayout, isDataSaverEnabled], () => {
-    nextTick(() => {
-        setTimeout(() => {
-            initializeAllPlayers();
-            updateAllStreamQualities();
-        }, 200);
-    });
-}, { deep: true });
+watch(
+    [visibleStreams, selectedLayout, isDataSaverEnabled],
+    () => {
+        nextTick(() => {
+            setTimeout(() => {
+                initializeAllPlayers();
+                updateAllStreamQualities();
+            }, 200);
+        });
+    },
+    { deep: true },
+);
 
 onMounted(() => {
     loadYouTubeAPI();
@@ -1875,32 +2526,33 @@ onMounted(() => {
 
 // Layout Grid CSS Class Computation
 const layoutGridClass = computed(() => {
-    if (selectedLayout.value === 'grid-1x2') {
-        return 'grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-2';
+    if (selectedLayout.value === "grid-1x2") {
+        return "grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-2";
     }
-    if (selectedLayout.value === 'grid-1x3') {
-        return 'grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3';
+    if (selectedLayout.value === "grid-1x3") {
+        return "grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3";
     }
-    if (selectedLayout.value === 'grid-2x2') {
-        return 'grid grid-cols-1 md:grid-cols-2 gap-3.5';
+    if (selectedLayout.value === "grid-2x2") {
+        return "grid grid-cols-1 md:grid-cols-2 gap-3.5";
     }
-    if (selectedLayout.value === 'grid-3x3') {
-        return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5';
+    if (selectedLayout.value === "grid-3x3") {
+        return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5";
     }
-    if (selectedLayout.value === 'grid-4x4') {
-        return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3';
+    if (selectedLayout.value === "grid-4x4") {
+        return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3";
     }
-    if (selectedLayout.value === 'focus') {
-        return '';
+    if (selectedLayout.value === "focus") {
+        return "";
     }
-    
+
     // Auto mode
     const count = visibleStreams.value.length;
-    if (count <= 1) return 'grid grid-cols-1 gap-4';
-    if (count === 2) return 'grid grid-cols-1 md:grid-cols-2 gap-4';
-    if (count <= 4) return 'grid grid-cols-1 md:grid-cols-2 gap-3.5';
-    if (count <= 6) return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5';
-    return 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5';
+    if (count <= 1) return "grid grid-cols-1 gap-4";
+    if (count === 2) return "grid grid-cols-1 md:grid-cols-2 gap-4";
+    if (count <= 4) return "grid grid-cols-1 md:grid-cols-2 gap-3.5";
+    if (count <= 6)
+        return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5";
+    return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5";
 });
 
 // Prioritize Personal Streams in Focus Mode (Personal units appear first)
@@ -1924,29 +2576,38 @@ const sortedFocusStreams = computed(() => {
 
 // Focus mode stream selector
 const primaryFocusedStream = computed(() => {
-    if (!sortedFocusStreams.value.length) return null;
     if (focusedStreamId.value) {
-        const found = sortedFocusStreams.value.find(s => s.video_id === focusedStreamId.value);
+        const foundInCatalog = allCatalogStreams.value.find(
+            (s) => s.video_id === focusedStreamId.value,
+        );
+        if (foundInCatalog) return foundInCatalog;
+
+        const found = sortedFocusStreams.value.find(
+            (s) => s.video_id === focusedStreamId.value,
+        );
         if (found) return found;
     }
+    if (!sortedFocusStreams.value.length) return null;
     return sortedFocusStreams.value[0];
 });
 
 const secondaryStreams = computed(() => {
     if (!primaryFocusedStream.value) return [];
-    return sortedFocusStreams.value.filter(s => s.video_id !== primaryFocusedStream.value.video_id);
+    return sortedFocusStreams.value.filter(
+        (s) => s.video_id !== primaryFocusedStream.value.video_id,
+    );
 });
 
 // Swap or set focus stream (Safe re-target with Auto-Audio Follow & Auto-HD)
 const setFocusStream = (videoId) => {
     // 1. Mute all other streams and downgrade quality
-    allActiveStreams.value.forEach(s => {
+    allActiveStreams.value.forEach((s) => {
         if (s.video_id !== videoId) {
             controlPlayerAudio(s.video_id, false);
             applyQualityToPlayer(s.video_id, false);
         }
     });
-    Object.keys(players).forEach(id => {
+    Object.keys(players).forEach((id) => {
         if (id !== videoId) {
             controlPlayerAudio(id, false);
             applyQualityToPlayer(id, false);
@@ -1994,43 +2655,52 @@ const handleQuickAddStream = () => {
     if (!quickAddInput.value.urlOrId) return;
 
     let videoId = quickAddInput.value.urlOrId.trim();
-    const match = videoId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    const match = videoId.match(
+        /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/,
+    );
     if (match) {
         videoId = match[1];
     }
 
     if (videoId.length !== 11) {
-        alert('Invalid YouTube Video ID atau URL. Masukkan 11-digit Video ID atau URL YouTube yang valid.');
+        alert(
+            "Invalid YouTube Video ID atau URL. Masukkan 11-digit Video ID atau URL YouTube yang valid.",
+        );
         return;
     }
 
-    if (activePersonalStreams.value.length >= MAX_PERSONAL_STREAMS && !customStreams.value.some(s => s.video_id === videoId)) {
-        alert(`Maksimal ${MAX_PERSONAL_STREAMS} video aktif pada kategori Personal / Custom! Hapus salah satu video terlebih dahulu.`);
+    if (
+        activePersonalStreams.value.length >= MAX_PERSONAL_STREAMS &&
+        !customStreams.value.some((s) => s.video_id === videoId)
+    ) {
+        alert(
+            `Maksimal ${MAX_PERSONAL_STREAMS} video aktif pada kategori Personal / Custom! Hapus salah satu video terlebih dahulu.`,
+        );
         return;
     }
 
     const newStream = {
-        id: 'custom-' + Date.now(),
+        id: "custom-" + Date.now(),
         video_id: videoId,
-        title: quickAddInput.value.officerName + ' - Tactical Live Feed',
+        title: quickAddInput.value.officerName + " - Tactical Live Feed",
         thumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-        status: 'LIVE',
-        incident_code: '10-8 Tactical Add',
+        status: "LIVE",
+        incident_code: "10-8 Tactical Add",
         viewers_count: 0,
         live_chat_url: `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${chatEmbedDomain.value}`,
         officer: {
             id: 999,
-            channel_id: 'custom-' + Date.now(),
-            handle: '@TacticalFeed',
-            streamer_name: 'Tactical Dispatch Feed',
+            channel_id: "custom-" + Date.now(),
+            handle: "@TacticalFeed",
+            streamer_name: "Tactical Dispatch Feed",
             officer_name: quickAddInput.value.officerName,
-            callsign: quickAddInput.value.callsign || 'TAC-01',
-            badge_number: '#999',
+            callsign: quickAddInput.value.callsign || "TAC-01",
+            badge_number: "#999",
             department: quickAddInput.value.department,
-            rank: 'Tactical Unit',
-            patrol_zone: quickAddInput.value.patrolZone || 'Tactical Sector',
+            rank: "Tactical Unit",
+            patrol_zone: quickAddInput.value.patrolZone || "Tactical Sector",
             avatar_url: null,
-        }
+        },
     };
 
     customStreams.value.push(newStream);
@@ -2042,49 +2712,55 @@ const handleQuickAddStream = () => {
 
     closeRightDrawer();
     quickAddInput.value = {
-        urlOrId: '',
-        officerName: 'External Unit',
-        callsign: 'TAC-UNIT',
-        department: 'LSPD',
-        patrolZone: 'Incident Sector',
+        urlOrId: "",
+        officerName: "External Unit",
+        callsign: "TAC-UNIT",
+        department: "LSPD",
+        patrolZone: "Incident Sector",
     };
 };
 
 // Live Hashtag Search Action
 const handleSearchLiveStreams = async (searchOverride = null) => {
-    const queryToSearch = (typeof searchOverride === 'string' ? searchOverride : liveSearchQuery.value).trim();
+    const queryToSearch = (
+        typeof searchOverride === "string"
+            ? searchOverride
+            : liveSearchQuery.value
+    ).trim();
     if (!queryToSearch) return;
 
-    if (typeof searchOverride === 'string') {
+    if (typeof searchOverride === "string") {
         liveSearchQuery.value = searchOverride;
     }
 
     isLiveSearching.value = true;
-    liveSearchError.value = '';
+    liveSearchError.value = "";
     liveSearchResults.value = [];
 
     try {
-        const response = await fetch('/api/v1/search-live', {
-            method: 'POST',
+        const response = await fetch("/api/v1/search-live", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-XSRF-TOKEN': getCsrfToken(),
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-XSRF-TOKEN": getCsrfToken(),
             },
             body: JSON.stringify({ q: queryToSearch }),
         });
 
         const data = await response.json();
-        if (data.status === 'success') {
+        if (data.status === "success") {
             liveSearchResults.value = data.data || [];
             if (liveSearchResults.value.length === 0) {
                 liveSearchError.value = `Tidak ada stream YouTube yang sedang LIVE untuk "${queryToSearch}". Coba kata kunci atau hashtag lain.`;
             }
         } else {
-            liveSearchError.value = data.message || 'Gagal mencari live stream YouTube.';
+            liveSearchError.value =
+                data.message || "Gagal mencari live stream YouTube.";
         }
     } catch (err) {
-        liveSearchError.value = 'Terjadi kendala jaringan saat mencari live stream.';
+        liveSearchError.value =
+            "Terjadi kendala jaringan saat mencari live stream.";
     } finally {
         isLiveSearching.value = false;
     }
@@ -2094,44 +2770,63 @@ const handleAddLiveStreamToPersonal = (streamItem) => {
     const videoId = streamItem.video_id;
     if (!videoId) return;
 
-    if (activePersonalStreams.value.length >= MAX_PERSONAL_STREAMS && !isPersonalStream(videoId)) {
-        alert(`Maksimal ${MAX_PERSONAL_STREAMS} video aktif untuk kategori Personal! Hapus salah satu video terlebih dahulu.`);
+    if (
+        activePersonalStreams.value.length >= MAX_PERSONAL_STREAMS &&
+        !isPersonalStream(videoId)
+    ) {
+        alert(
+            `Maksimal ${MAX_PERSONAL_STREAMS} video aktif untuk kategori Personal! Hapus salah satu video terlebih dahulu.`,
+        );
         return;
     }
 
-    const existingCustomIdx = customStreams.value.findIndex(s => s.video_id === videoId);
+    const existingCustomIdx = customStreams.value.findIndex(
+        (s) => s.video_id === videoId,
+    );
     if (existingCustomIdx === -1) {
         const newStream = {
-            id: 'search-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+            id:
+                "search-" +
+                Date.now() +
+                "-" +
+                Math.random().toString(36).substring(2, 6),
             video_id: videoId,
             title: streamItem.title,
-            thumbnail: streamItem.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-            status: 'LIVE',
-            incident_code: 'Target / Gang Feed',
-            description: streamItem.description || '',
+            thumbnail:
+                streamItem.thumbnail_url ||
+                `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+            status: "LIVE",
+            incident_code: "Target / Gang Feed",
+            description: streamItem.description || "",
             viewers_count: streamItem.viewers_count || 0,
-            viewers: streamItem.viewers || 'Live',
+            viewers: streamItem.viewers || "Live",
             live_chat_url: `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${chatEmbedDomain.value}`,
             officer: {
                 id: 9999,
-                channel_id: 'target-' + videoId,
-                handle: streamItem.channel_name ? ('@' + streamItem.channel_name.replace(/\s+/g, '')) : '@Target',
-                streamer_name: streamItem.channel_name || 'Gang / Target Streamer',
-                officer_name: streamItem.channel_name || 'Target Unit',
-                callsign: 'TARGET',
-                badge_number: '#GANG',
-                department: 'PERSONAL',
-                rank: 'Opponent / Gang',
-                patrol_zone: 'Target Sector',
+                channel_id: "target-" + videoId,
+                handle: streamItem.channel_name
+                    ? "@" + streamItem.channel_name.replace(/\s+/g, "")
+                    : "@Target",
+                streamer_name:
+                    streamItem.channel_name || "Gang / Target Streamer",
+                officer_name: streamItem.channel_name || "Target Unit",
+                callsign: "TARGET",
+                badge_number: "#GANG",
+                department: "PERSONAL",
+                rank: "Opponent / Gang",
+                patrol_zone: "Target Sector",
                 avatar_url: null,
-            }
+            },
         };
         customStreams.value.push(newStream);
     } else {
         customStreams.value[existingCustomIdx].title = streamItem.title;
-        customStreams.value[existingCustomIdx].description = streamItem.description || '';
-        customStreams.value[existingCustomIdx].viewers = streamItem.viewers || 'Live';
-        customStreams.value[existingCustomIdx].viewers_count = streamItem.viewers_count || 0;
+        customStreams.value[existingCustomIdx].description =
+            streamItem.description || "";
+        customStreams.value[existingCustomIdx].viewers =
+            streamItem.viewers || "Live";
+        customStreams.value[existingCustomIdx].viewers_count =
+            streamItem.viewers_count || 0;
     }
 
     if (!personalVideoIds.value.includes(videoId)) {
@@ -2142,14 +2837,14 @@ const handleAddLiveStreamToPersonal = (streamItem) => {
 
     liveSearchSuccessNotice.value = `✓ "${streamItem.channel_name}" berhasil ditambahkan ke 📌 Personal!`;
     setTimeout(() => {
-        liveSearchSuccessNotice.value = '';
+        liveSearchSuccessNotice.value = "";
     }, 3500);
 };
 
 // Officer Directory State & Filtering
-const directorySearch = ref('');
-const directoryDeptFilter = ref('ALL'); // 'ALL', 'LIVE_ONLY', 'LSPD', 'BCSO', 'SASP'
-const directorySortBy = ref('status'); // 'status', 'subs_desc', 'subs_asc', 'name'
+const directorySearch = ref("");
+const directoryDeptFilter = ref("ALL"); // 'ALL', 'LIVE_ONLY', 'LSPD', 'BCSO', 'SASP'
+const directorySortBy = ref("status"); // 'status', 'subs_desc', 'subs_asc', 'name'
 
 // All Registered Officers Combined (Deduplicated with real-time online status and subscriber data)
 const allDirectoryOfficers = computed(() => {
@@ -2158,23 +2853,24 @@ const allDirectoryOfficers = computed(() => {
     const seenIds = new Set();
 
     // 1. First add all currently live/active officers
-    allActiveStreams.value.forEach(s => {
+    allActiveStreams.value.forEach((s) => {
         if (!s.officer) return;
-        const key = s.officer.handle || s.officer.channel_id || s.officer.officer_name;
+        const key =
+            s.officer.handle || s.officer.channel_id || s.officer.officer_name;
         if (!seenHandles.has(key)) {
             seenHandles.add(key);
             if (s.officer.id) seenIds.add(s.officer.id);
             list.push({
                 id: s.officer.id || `live-${s.video_id}`,
                 channel_id: s.officer.channel_id,
-                handle: s.officer.handle || '',
-                streamer_name: s.officer.streamer_name || '',
-                officer_name: s.officer.officer_name || '',
-                callsign: s.officer.callsign || '',
-                department: s.officer.department || 'LSPD',
-                rank: s.officer.rank || 'Officer',
-                badge_number: s.officer.badge_number || '#000',
-                patrol_zone: s.officer.patrol_zone || '',
+                handle: s.officer.handle || "",
+                streamer_name: s.officer.streamer_name || "",
+                officer_name: s.officer.officer_name || "",
+                callsign: s.officer.callsign || "",
+                department: s.officer.department || "LSPD",
+                rank: s.officer.rank || "Officer",
+                badge_number: s.officer.badge_number || "#000",
+                patrol_zone: s.officer.patrol_zone || "",
                 avatar_url: s.officer.avatar_url || null,
                 subscriber_count: s.officer.subscriber_count || 0,
                 is_online: true,
@@ -2184,21 +2880,21 @@ const allDirectoryOfficers = computed(() => {
     });
 
     // 2. Then add all offline officers from props
-    offlineOfficers.value.forEach(o => {
+    offlineOfficers.value.forEach((o) => {
         const key = o.handle || o.channel_id || o.officer_name;
         if (!seenHandles.has(key) && (!o.id || !seenIds.has(o.id))) {
             seenHandles.add(key);
             list.push({
                 id: o.id,
                 channel_id: o.channel_id,
-                handle: o.handle || '',
-                streamer_name: o.streamer_name || '',
-                officer_name: o.officer_name || '',
-                callsign: o.callsign || '',
-                department: o.department || 'LSPD',
-                rank: o.rank || 'Officer',
-                badge_number: o.badge_number || '#000',
-                patrol_zone: o.patrol_zone || '',
+                handle: o.handle || "",
+                streamer_name: o.streamer_name || "",
+                officer_name: o.officer_name || "",
+                callsign: o.callsign || "",
+                department: o.department || "LSPD",
+                rank: o.rank || "Officer",
+                badge_number: o.badge_number || "#000",
+                patrol_zone: o.patrol_zone || "",
                 avatar_url: o.avatar_url || null,
                 subscriber_count: o.subscriber_count || 0,
                 is_online: false,
@@ -2209,112 +2905,215 @@ const allDirectoryOfficers = computed(() => {
 
     // 3. Filter by department or online status
     let filtered = list;
-    if (directoryDeptFilter.value === 'LIVE_ONLY') {
-        filtered = filtered.filter(o => o.is_online);
-    } else if (directoryDeptFilter.value !== 'ALL') {
-        filtered = filtered.filter(o => o.department === directoryDeptFilter.value);
+    if (directoryDeptFilter.value === "LIVE_ONLY") {
+        filtered = filtered.filter((o) => o.is_online);
+    } else if (directoryDeptFilter.value !== "ALL") {
+        filtered = filtered.filter(
+            (o) => o.department === directoryDeptFilter.value,
+        );
     }
 
     // 4. Filter by search term (name, callsign, handle, badge, streamer, rank, zone)
     if (directorySearch.value.trim()) {
         const q = directorySearch.value.toLowerCase().trim();
-        filtered = filtered.filter(o => 
-            (o.officer_name && o.officer_name.toLowerCase().includes(q)) ||
-            (o.callsign && o.callsign.toLowerCase().includes(q)) ||
-            (o.streamer_name && o.streamer_name.toLowerCase().includes(q)) ||
-            (o.handle && o.handle.toLowerCase().includes(q)) ||
-            (o.badge_number && o.badge_number.toLowerCase().includes(q)) ||
-            (o.patrol_zone && o.patrol_zone.toLowerCase().includes(q)) ||
-            (o.rank && o.rank.toLowerCase().includes(q))
+        filtered = filtered.filter(
+            (o) =>
+                (o.officer_name && o.officer_name.toLowerCase().includes(q)) ||
+                (o.callsign && o.callsign.toLowerCase().includes(q)) ||
+                (o.streamer_name &&
+                    o.streamer_name.toLowerCase().includes(q)) ||
+                (o.handle && o.handle.toLowerCase().includes(q)) ||
+                (o.badge_number && o.badge_number.toLowerCase().includes(q)) ||
+                (o.patrol_zone && o.patrol_zone.toLowerCase().includes(q)) ||
+                (o.rank && o.rank.toLowerCase().includes(q)),
         );
     }
 
     // 5. Sorting
     return filtered.sort((a, b) => {
-        if (directorySortBy.value === 'status') {
+        if (directorySortBy.value === "status") {
             if (a.is_online && !b.is_online) return -1;
             if (!a.is_online && b.is_online) return 1;
             return (b.subscriber_count || 0) - (a.subscriber_count || 0);
-        } else if (directorySortBy.value === 'subs_desc') {
+        } else if (directorySortBy.value === "subs_desc") {
             return (b.subscriber_count || 0) - (a.subscriber_count || 0);
-        } else if (directorySortBy.value === 'subs_asc') {
+        } else if (directorySortBy.value === "subs_asc") {
             return (a.subscriber_count || 0) - (b.subscriber_count || 0);
-        } else if (directorySortBy.value === 'name') {
-            return (a.officer_name || '').localeCompare(b.officer_name || '');
+        } else if (directorySortBy.value === "name") {
+            return (a.officer_name || "").localeCompare(b.officer_name || "");
         }
         return 0;
     });
 });
 
 // 10-Codes and Radio Operational Protocols State & Data
-const radioCodesActiveTab = ref('CODES'); // 'CODES' or 'TAC'
-const radioCodesSearch = ref('');
+const radioCodesActiveTab = ref("CODES"); // 'CODES' or 'TAC'
+const radioCodesSearch = ref("");
 
 const standardPolice10Codes = [
-    { code: '10-4', title: 'Message Received / Roger', meaning: 'Pesan atau instruksi telah diterima dengan jelas dan dipahami sepenuhnya.', category: 'Umum' },
-    { code: '10-7', title: 'Out of Service / Off Duty', meaning: 'Petugas keluar dari dinas patroli atau unit dinonaktifkan.', category: 'Status' },
-    { code: '10-8', title: 'In Service / On Duty', meaning: 'Petugas aktif bertugas, siap menerima panggilan dispatch dan penugasan.', category: 'Status' },
-    { code: '10-20', title: 'Location / Coordinates', meaning: 'Permintaan atau konfirmasi posisi / lokasi spesifik unit saat ini.', category: 'Navigasi' },
-    { code: '10-23', title: 'Arrived on Scene', meaning: 'Unit telah tiba di lokasi kejadian / Tempat Kejadian Perkara (TKP).', category: 'Taktis' },
-    { code: '10-33', title: 'Officer in Distress / Emergency', meaning: 'Panggilan darurat kritis! Petugas berada di bawah ancaman dan butuh bantuan segera.', category: 'Darurat' },
-    { code: '10-50', title: 'Motor Vehicle Accident', meaning: 'Terjadi tabrakan atau kecelakaan lalu lintas kendaraan bermotor.', category: 'Lantas' },
-    { code: '10-70', title: 'Foot Pursuit', meaning: 'Pengejaran tersangka dengan berlari / berjalan kaki.', category: 'Pengejaran' },
-    { code: '10-80', title: 'High Speed Pursuit', meaning: 'Pengejaran kendaraan berkecepatan tinggi yang berpotensi membahayakan publik.', category: 'Pengejaran' },
-    { code: '10-90', title: 'Armed Robbery in Progress', meaning: 'Perampokan bersenjata sedang berlangsung (Toko, Bank, Perhiasan).', category: 'Darurat' },
-    { code: '10-99', title: 'Situation Under Control / Code 4', meaning: 'Situasi telah sepenuhnya terkendali, area aman kembali.', category: 'Status' },
-    { code: 'Code 1', title: 'Routine Response', meaning: 'Respon rutin normal tanpa sirine dan tanpa strobo, patuhi lalu lintas umum.', category: 'Respon' },
-    { code: 'Code 2', title: 'Urgent Silent Run', meaning: 'Respon mendesak dengan lampu strobo tanpa sirine untuk mendekati TKP diam-diam.', category: 'Respon' },
-    { code: 'Code 3', title: 'Emergency Full Lights & Sirens', meaning: 'Respon darurat penuh prioritas tertinggi, sirine dan strobo aktif.', category: 'Respon' },
-    { code: 'Code 4', title: 'No Further Assistance Needed', meaning: 'Situasi aman, tidak diperlukan penambahan unit tambahan ke lokasi.', category: 'Respon' },
-    { code: 'Signal 100', title: 'Radio Silence for High-Risk Event', meaning: 'Seluruh unit dilarang berbicara di radio selain unit komando penanganan situasi.', category: 'Protokol' },
+    {
+        code: "10-4",
+        title: "Message Received / Roger",
+        meaning:
+            "Pesan atau instruksi telah diterima dengan jelas dan dipahami sepenuhnya.",
+        category: "Umum",
+    },
+    {
+        code: "10-7",
+        title: "Out of Service / Off Duty",
+        meaning: "Petugas keluar dari dinas patroli atau unit dinonaktifkan.",
+        category: "Status",
+    },
+    {
+        code: "10-8",
+        title: "In Service / On Duty",
+        meaning:
+            "Petugas aktif bertugas, siap menerima panggilan dispatch dan penugasan.",
+        category: "Status",
+    },
+    {
+        code: "10-20",
+        title: "Location / Coordinates",
+        meaning:
+            "Permintaan atau konfirmasi posisi / lokasi spesifik unit saat ini.",
+        category: "Navigasi",
+    },
+    {
+        code: "10-23",
+        title: "Arrived on Scene",
+        meaning:
+            "Unit telah tiba di lokasi kejadian / Tempat Kejadian Perkara (TKP).",
+        category: "Taktis",
+    },
+    {
+        code: "10-33",
+        title: "Officer in Distress / Emergency",
+        meaning:
+            "Panggilan darurat kritis! Petugas berada di bawah ancaman dan butuh bantuan segera.",
+        category: "Darurat",
+    },
+    {
+        code: "10-50",
+        title: "Motor Vehicle Accident",
+        meaning:
+            "Terjadi tabrakan atau kecelakaan lalu lintas kendaraan bermotor.",
+        category: "Lantas",
+    },
+    {
+        code: "10-70",
+        title: "Foot Pursuit",
+        meaning: "Pengejaran tersangka dengan berlari / berjalan kaki.",
+        category: "Pengejaran",
+    },
+    {
+        code: "10-80",
+        title: "High Speed Pursuit",
+        meaning:
+            "Pengejaran kendaraan berkecepatan tinggi yang berpotensi membahayakan publik.",
+        category: "Pengejaran",
+    },
+    {
+        code: "10-90",
+        title: "Armed Robbery in Progress",
+        meaning:
+            "Perampokan bersenjata sedang berlangsung (Toko, Bank, Perhiasan).",
+        category: "Darurat",
+    },
+    {
+        code: "10-99",
+        title: "Situation Under Control / Code 4",
+        meaning: "Situasi telah sepenuhnya terkendali, area aman kembali.",
+        category: "Status",
+    },
+    {
+        code: "Code 1",
+        title: "Routine Response",
+        meaning:
+            "Respon rutin normal tanpa sirine dan tanpa strobo, patuhi lalu lintas umum.",
+        category: "Respon",
+    },
+    {
+        code: "Code 2",
+        title: "Urgent Silent Run",
+        meaning:
+            "Respon mendesak dengan lampu strobo tanpa sirine untuk mendekati TKP diam-diam.",
+        category: "Respon",
+    },
+    {
+        code: "Code 3",
+        title: "Emergency Full Lights & Sirens",
+        meaning:
+            "Respon darurat penuh prioritas tertinggi, sirine dan strobo aktif.",
+        category: "Respon",
+    },
+    {
+        code: "Code 4",
+        title: "No Further Assistance Needed",
+        meaning:
+            "Situasi aman, tidak diperlukan penambahan unit tambahan ke lokasi.",
+        category: "Respon",
+    },
+    {
+        code: "Signal 100",
+        title: "Radio Silence for High-Risk Event",
+        meaning:
+            "Seluruh unit dilarang berbicara di radio selain unit komando penanganan situasi.",
+        category: "Protokol",
+    },
 ];
 
 const tacChannelGuides = [
     {
-        code: 'TAC 1',
-        title: 'Dispatch & General Patrol',
-        badgeColor: 'blue',
-        scope: 'Komunikasi lalu lintas patroli reguler, tilang harian, dan respon panggilan 911 standar.',
-        protocol: 'Digunakan oleh seluruh unit patroli LSPD, BCSO, dan SASP saat tidak berada dalam situasi khusus. Pertahankan transmisi singkat dan jelas.'
+        code: "TAC 1",
+        title: "Dispatch & General Patrol",
+        badgeColor: "blue",
+        scope: "Komunikasi lalu lintas patroli reguler, tilang harian, dan respon panggilan 911 standar.",
+        protocol:
+            "Digunakan oleh seluruh unit patroli LSPD, BCSO, dan SASP saat tidak berada dalam situasi khusus. Pertahankan transmisi singkat dan jelas.",
     },
     {
-        code: 'TAC 2',
-        title: 'High Speed Vehicle Pursuit (10-80)',
-        badgeColor: 'amber',
-        scope: 'Pengejaran kendaraan tersangka dan koordinasi formasi interception di jalan raya.',
-        protocol: 'Lead unit bertanggung jawab memberikan callout arah (heading, visual, nomor plat, kecepatan). Unit sekunder menyiapkan manuver PIT atau Spikestrip.'
+        code: "TAC 2",
+        title: "High Speed Vehicle Pursuit (10-80)",
+        badgeColor: "amber",
+        scope: "Pengejaran kendaraan tersangka dan koordinasi formasi interception di jalan raya.",
+        protocol:
+            "Lead unit bertanggung jawab memberikan callout arah (heading, visual, nomor plat, kecepatan). Unit sekunder menyiapkan manuver PIT atau Spikestrip.",
     },
     {
-        code: 'TAC 3',
-        title: 'Major Robbery & Bank Heist (10-90)',
-        badgeColor: 'red',
-        scope: 'Penanganan perampokan toko bersenjata, Fleeca Bank, Paleto Bank, Pacific Standard.',
-        protocol: 'Hanya unit yang ditugaskan di perimeter dalam dan negosiator yang berkomunikasi. Unit lain menjaga perimeter luar dan jalur pelarian.'
+        code: "TAC 3",
+        title: "Major Robbery & Bank Heist (10-90)",
+        badgeColor: "red",
+        scope: "Penanganan perampokan toko bersenjata, Fleeca Bank, Paleto Bank, Pacific Standard.",
+        protocol:
+            "Hanya unit yang ditugaskan di perimeter dalam dan negosiator yang berkomunikasi. Unit lain menjaga perimeter luar dan jalur pelarian.",
     },
     {
-        code: 'TAC 4',
-        title: 'Special Weapons & SWAT Tactical Ops',
-        badgeColor: 'purple',
-        scope: 'Operasi penggerebekan senjata berat, drug lab raid, dan hostile hostage rescue.',
-        protocol: 'Di bawah komando langsung SWAT Commander / Tactical Supervisor. Disiplin radio penuh, gunakan formasi breaching standar.'
+        code: "TAC 4",
+        title: "Special Weapons & SWAT Tactical Ops",
+        badgeColor: "purple",
+        scope: "Operasi penggerebekan senjata berat, drug lab raid, dan hostile hostage rescue.",
+        protocol:
+            "Di bawah komando langsung SWAT Commander / Tactical Supervisor. Disiplin radio penuh, gunakan formasi breaching standar.",
     },
     {
-        code: 'TAC 5',
-        title: 'Air Support & Inter-Agency Joint Command',
-        badgeColor: 'indigo',
-        scope: 'Koordinasi unit udara Air-1/Helikopter, Unit Maritim, dan komando gabungan lintas instansi.',
-        protocol: 'Memberikan visual bird-eye view kepada ground units. Koordinasi gabungan LSPD, BCSO, SASP, dan EMS.'
+        code: "TAC 5",
+        title: "Air Support & Inter-Agency Joint Command",
+        badgeColor: "indigo",
+        scope: "Koordinasi unit udara Air-1/Helikopter, Unit Maritim, dan komando gabungan lintas instansi.",
+        protocol:
+            "Memberikan visual bird-eye view kepada ground units. Koordinasi gabungan LSPD, BCSO, SASP, dan EMS.",
     },
 ];
 
 const filteredPolice10Codes = computed(() => {
     if (!radioCodesSearch.value.trim()) return standardPolice10Codes;
     const q = radioCodesSearch.value.toLowerCase().trim();
-    return standardPolice10Codes.filter(c => 
-        c.code.toLowerCase().includes(q) ||
-        c.title.toLowerCase().includes(q) ||
-        c.meaning.toLowerCase().includes(q) ||
-        c.category.toLowerCase().includes(q)
+    return standardPolice10Codes.filter(
+        (c) =>
+            c.code.toLowerCase().includes(q) ||
+            c.title.toLowerCase().includes(q) ||
+            c.meaning.toLowerCase().includes(q) ||
+            c.category.toLowerCase().includes(q),
     );
 });
 
@@ -2323,22 +3122,22 @@ const activeRightDrawer = ref(null);
 
 const openRightDrawer = (drawerName, extra = null) => {
     activeRightDrawer.value = drawerName;
-    if (drawerName === 'QUICK_ADD') {
+    if (drawerName === "QUICK_ADD") {
         if (liveSearchResults.value.length === 0) {
-            handleSearchLiveStreams('#imeroleplay');
+            handleSearchLiveStreams("#imeroleplay");
         }
-    } else if (drawerName === 'FEEDBACK') {
+    } else if (drawerName === "FEEDBACK") {
         feedbackForm.value = {
-            type: extra || 'CHANNEL_REQUEST',
-            sender_name: '',
-            handle_or_url: '',
-            officer_name: '',
-            callsign: '',
-            department: 'LSPD',
-            message: '',
+            type: extra || "CHANNEL_REQUEST",
+            sender_name: "",
+            handle_or_url: "",
+            officer_name: "",
+            callsign: "",
+            department: "LSPD",
+            message: "",
         };
-        feedbackSuccessToast.value = '';
-    } else if (drawerName === 'ROSTER') {
+        feedbackSuccessToast.value = "";
+    } else if (drawerName === "ROSTER") {
         fetchRosterOfficers();
     }
 };
@@ -2351,72 +3150,85 @@ const closeRightDrawer = () => {
 // Admin Roster Management State & Methods (Protected for Admin)
 const rosterOfficers = ref([]);
 const isRosterLoading = ref(false);
-const rosterSearch = ref('');
+const rosterSearch = ref("");
 // Visitor Feedback & Channel Request State & Methods (Option 1 Discord Webhook)
 const isSubmittingFeedback = ref(false);
-const feedbackSuccessToast = ref('');
+const feedbackSuccessToast = ref("");
 const feedbackForm = ref({
-    type: 'CHANNEL_REQUEST', // 'CHANNEL_REQUEST', 'DATA_CORRECTION', 'BUG_REPORT', 'OTHER'
-    sender_name: '',
-    handle_or_url: '',
-    officer_name: '',
-    callsign: '',
-    department: 'LSPD',
-    message: '',
+    type: "CHANNEL_REQUEST", // 'CHANNEL_REQUEST', 'DATA_CORRECTION', 'BUG_REPORT', 'OTHER'
+    sender_name: "",
+    handle_or_url: "",
+    officer_name: "",
+    callsign: "",
+    department: "LSPD",
+    message: "",
 });
 
 const submitFeedbackForm = async () => {
     isSubmittingFeedback.value = true;
     try {
-        const res = await fetch('/api/v1/feedback', {
-            method: 'POST',
+        const res = await fetch("/api/v1/feedback", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-XSRF-TOKEN': getCsrfToken(),
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                "X-XSRF-TOKEN": getCsrfToken(),
             },
             body: JSON.stringify(feedbackForm.value),
         });
         const data = await res.json();
         if (res.ok) {
-            feedbackSuccessToast.value = data.message || 'Laporan berhasil dikirim ke Command Center!';
+            feedbackSuccessToast.value =
+                data.message || "Laporan berhasil dikirim ke Command Center!";
             setTimeout(() => {
                 closeRightDrawer();
-                feedbackSuccessToast.value = '';
+                feedbackSuccessToast.value = "";
             }, 3000);
         } else {
-            alert(data.message || 'Gagal mengirim masukan. Silakan coba lagi.');
+            alert(data.message || "Gagal mengirim masukan. Silakan coba lagi.");
         }
     } catch (e) {
-        alert('Terjadi kesalahan jaringan saat mengirim laporan.');
+        alert("Terjadi kesalahan jaringan saat mengirim laporan.");
     } finally {
         isSubmittingFeedback.value = false;
     }
 };
-
-
-
-
 </script>
 
 <template>
     <Head title="IME RP — SASP POLICE DUTY | Live Officer Bodycam & Dispatch" />
 
-    <div class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased pb-20 md:pb-6">
-        
+    <div
+        class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased pb-20 md:pb-6"
+    >
         <!-- Tactical Header Bar -->
-        <header class="bg-[#0b1320] border-b border-blue-900/40 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 max-w-full sticky top-0 z-40 shadow-xl backdrop-blur-md">
-            
+        <header
+            class="bg-[#0b1320] border-b border-blue-900/40 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 max-w-full sticky top-0 z-40 shadow-xl backdrop-blur-md"
+        >
             <!-- Left Area: Branding & Standalone Page Navigation Links -->
-            <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 shrink-0">
+            <div
+                class="flex items-center space-x-2 sm:space-x-3 min-w-0 shrink-0"
+            >
                 <!-- Branding: IME Roleplay Police Division -->
                 <div class="flex items-center space-x-2 shrink-0">
-                    <div class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden">
-                        <img :src="logoSaspColor" class="w-full h-full object-contain rounded" alt="SASP Badge" />
+                    <div
+                        class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 shadow-inner p-1 overflow-hidden"
+                    >
+                        <img
+                            :src="logoSaspColor"
+                            class="w-full h-full object-contain rounded"
+                            alt="SASP Badge"
+                        />
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-[11px] sm:text-xs font-black tracking-wider text-blue-400 uppercase leading-tight">IME ROLEPLAY</span>
-                        <span class="text-[9px] sm:text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight">POLICE DUTY</span>
+                        <span
+                            class="text-[11px] sm:text-xs font-black tracking-wider text-blue-400 uppercase leading-tight"
+                            >IME ROLEPLAY</span
+                        >
+                        <span
+                            class="text-[9px] sm:text-[10px] font-bold tracking-wide text-slate-300 uppercase leading-tight"
+                            >POLICE DUTY</span
+                        >
                     </div>
                 </div>
 
@@ -2424,24 +3236,26 @@ const submitFeedbackForm = async () => {
                 <div class="h-5 w-px bg-slate-800/80 hidden md:block"></div>
 
                 <!-- Page Navigation Links (Clean Minimalist Text Tabs - Visible on md: / iPad Air 4 & desktop) -->
-                <nav class="hidden md:flex items-center space-x-0.5 lg:space-x-1 shrink-0">
-                    <Link 
+                <nav
+                    class="hidden md:flex items-center space-x-0.5 lg:space-x-1 shrink-0"
+                >
+                    <Link
                         href="/officers"
                         class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition shrink-0"
                         title="Officer Directory (LSPD, BCSO, SASP)"
                     >
                         <span class="hidden xl:inline">Officer </span>Directory
                     </Link>
-                    
-                    <Link 
+
+                    <Link
                         href="/about"
                         class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition shrink-0"
                         title="About Police Command Center"
                     >
                         <span class="hidden xl:inline">About </span>Platform
-                    </Link> 
+                    </Link>
 
-                    <Link 
+                    <Link
                         href="/faq"
                         class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/70 transition shrink-0"
                         title="Tactical FAQ Guide"
@@ -2449,7 +3263,7 @@ const submitFeedbackForm = async () => {
                         FAQ
                     </Link>
 
-                    <Link 
+                    <Link
                         href="/feedback"
                         class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-sky-300 hover:bg-sky-950/40 transition shrink-0"
                         title="Channel Requests & System Feedback"
@@ -2460,78 +3274,126 @@ const submitFeedbackForm = async () => {
             </div>
 
             <!-- Right Area: In-Page Player & Stream Actions (Desktop / Tablet Toolbar) -->
-            <div class="hidden md:flex items-center space-x-1 sm:space-x-1.5 shrink-0">
-                
+            <div
+                class="hidden md:flex items-center space-x-1 sm:space-x-1.5 shrink-0"
+            >
                 <!-- Label Badge for Actions Group -->
-                <span class="hidden 2xl:inline-block text-[10px] font-mono text-slate-500 uppercase tracking-wider font-semibold mr-1">Player Actions:</span>
+                <span
+                    class="hidden 2xl:inline-block text-[10px] font-mono text-slate-500 uppercase tracking-wider font-semibold mr-1"
+                    >Player Actions:</span
+                >
 
                 <!-- 1. Mode Switcher (Saver vs Play All) -->
-                <div class="flex items-center h-8 bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0">
-                    <button 
-                        @click="enableDataSaver" 
-                        :class="isDataSaverEnabled ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/30' : 'text-slate-400 hover:text-slate-200'"
+                <div
+                    class="flex items-center h-8 bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0"
+                >
+                    <button
+                        @click="enableDataSaver"
+                        :class="
+                            isDataSaverEnabled
+                                ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/30'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="h-full px-2 sm:px-2.5 text-xs rounded transition flex items-center gap-1"
                         title="Mode Saver: Hold video playback to save bandwidth"
                     >
-                        <img :src="iconSaver" class="w-3.5 h-3.5 invert shrink-0" alt="Saver" />
+                        <img
+                            :src="iconSaver"
+                            class="w-3.5 h-3.5 invert shrink-0"
+                            alt="Saver"
+                        />
                         <span class="hidden 2xl:inline">Saver</span>
                     </button>
-                    <button 
-                        @click="disableDataSaverAndPlayAll" 
-                        :class="!isDataSaverEnabled ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30' : 'text-slate-400 hover:text-slate-200'"
+                    <button
+                        @click="disableDataSaverAndPlayAll"
+                        :class="
+                            !isDataSaverEnabled
+                                ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="h-full px-2 sm:px-2.5 text-xs rounded transition flex items-center gap-1"
                         title="Play All: Play all video feeds simultaneously"
                     >
-                        <img :src="iconPlayAll" class="w-3 h-3 invert shrink-0" alt="Play All" />
+                        <img
+                            :src="iconPlayAll"
+                            class="w-3 h-3 invert shrink-0"
+                            alt="Play All"
+                        />
                         <span class="hidden 2xl:inline">Play All</span>
                     </button>
                 </div>
 
                 <!-- 2. Manual Sync Feeds Button -->
-                <button 
-                    @click="triggerManualSync" 
+                <button
+                    @click="triggerManualSync"
                     :disabled="isSyncingFeeds"
                     class="h-8 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700/80 transition flex items-center gap-1.5 disabled:opacity-50 shrink-0"
                     title="Resynchronize live feeds from YouTube"
                 >
-                    <img :src="iconRefresh" class="w-3.5 h-3.5 invert opacity-90 shrink-0" :class="{ 'animate-spin': isSyncingFeeds }" alt="Sync" />
-                    <span class="hidden 2xl:inline">{{ isSyncingFeeds ? 'Syncing...' : 'Sync' }}</span>
+                    <img
+                        :src="iconRefresh"
+                        class="w-3.5 h-3.5 invert opacity-90 shrink-0"
+                        :class="{ 'animate-spin': isSyncingFeeds }"
+                        alt="Sync"
+                    />
+                    <span class="hidden 2xl:inline">{{
+                        isSyncingFeeds ? "Syncing..." : "Sync"
+                    }}</span>
                 </button>
 
                 <!-- 3. Quick Feed Button (In-Page Drawer Action with Emerald Accent) -->
-                <button 
+                <button
                     @click="openRightDrawer('QUICK_ADD')"
                     class="h-8 px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-300 border border-emerald-500/40 transition flex items-center gap-1.5 shadow-sm shadow-emerald-950/50 shrink-0"
                     title="Add External YouTube URL to CCTV Wall (In-Page Modal)"
                 >
-                    <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert opacity-90 shrink-0" alt="Quick Feed" />
+                    <img
+                        :src="iconQuickAdd"
+                        class="w-3.5 h-3.5 invert opacity-90 shrink-0"
+                        alt="Quick Feed"
+                    />
                     <span class="hidden 2xl:inline">Quick Feed</span>
                 </button>
 
                 <!-- 4. Fullscreen Button -->
-                <button 
+                <button
                     @click="toggleBrowserFullscreen"
-                    :class="isFullscreen ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40 border-blue-400' : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-700/80'"
+                    :class="
+                        isFullscreen
+                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40 border-blue-400'
+                            : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-700/80'
+                    "
                     class="h-8 px-2.5 py-1 text-xs font-bold rounded-lg border transition flex items-center gap-1.5 shrink-0"
                     title="Toggle Mode Fullscreen CCTV Wall"
                 >
-                    <img :src="isFullscreen ? iconExitFullscreen : iconFullscreen" class="w-3.5 h-3.5 invert opacity-90 shrink-0" alt="Fullscreen" />
-                    <span class="hidden 2xl:inline">{{ isFullscreen ? 'Exit' : 'Fullscreen' }}</span>
+                    <img
+                        :src="
+                            isFullscreen ? iconExitFullscreen : iconFullscreen
+                        "
+                        class="w-3.5 h-3.5 invert opacity-90 shrink-0"
+                        alt="Fullscreen"
+                    />
+                    <span class="hidden 2xl:inline">{{
+                        isFullscreen ? "Exit" : "Fullscreen"
+                    }}</span>
                 </button>
 
                 <!-- 5. User Account Sign In / Profile / Logout (YouTube-Style Dropdown) -->
                 <UserAccountMenu />
-
             </div>
 
             <!-- Right Area Mobile Quick Action (< md) -->
             <div class="flex md:hidden items-center space-x-2 shrink-0">
-                <button 
+                <button
                     @click="openRightDrawer('QUICK_ADD')"
                     class="p-2 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 transition flex items-center justify-center shadow-md"
                     title="Quick Add Feed"
                 >
-                    <img :src="iconQuickAdd" class="w-4 h-4 invert opacity-95" alt="Quick Add" />
+                    <img
+                        :src="iconQuickAdd"
+                        class="w-4 h-4 invert opacity-95"
+                        alt="Quick Add"
+                    />
                 </button>
 
                 <UserAccountMenu />
@@ -2539,50 +3401,81 @@ const submitFeedbackForm = async () => {
         </header>
 
         <!-- Department Filter Toolbar & Search / Grid Controls -->
-        <div class="bg-[#090f1a] border-b border-slate-800/80 px-3 sm:px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-2.5">
-            
+        <div
+            class="bg-[#090f1a] border-b border-slate-800/80 px-3 sm:px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-2.5"
+        >
             <!-- Department Tabs (Horizontal Scrollable Bar on Left + Fixed More TAC Dropdown) -->
-            <div class="flex items-center space-x-1.5 flex-1 min-w-0 relative z-30">
+            <div
+                class="flex items-center space-x-1.5 flex-1 min-w-0 relative z-30"
+            >
                 <!-- Scrollable Department Tabs -->
-                <div class="flex items-center space-x-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-1 flex-1 min-w-0">
-                    <button 
-                        v-for="dept in departments" 
+                <div
+                    class="flex items-center space-x-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-1 flex-1 min-w-0"
+                >
+                    <button
+                        v-for="dept in departments"
                         :key="dept.id"
                         @click="selectedDepartment = dept.id"
                         :class="[
                             'px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap shrink-0',
-                            selectedDepartment === dept.id 
-                                ? (dept.id === 'PERSONAL' 
-                                    ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400' 
-                                    : (dept.isTac 
-                                        ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400 ring-1 ring-amber-400' 
-                                        : 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400'))
-                                : (dept.id === 'PERSONAL' 
-                                    ? 'bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 border-purple-500/40' 
-                                    : (dept.isTac 
-                                        ? (getTacUnitCount(dept.id) > 0 
-                                            ? 'bg-amber-950/50 text-amber-300 hover:bg-amber-900/60 border-amber-500/50 shadow-sm shadow-amber-500/10 font-semibold' 
-                                            : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 border-slate-800 opacity-70 hover:opacity-100')
-                                        : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'))
+                            selectedDepartment === dept.id
+                                ? dept.id === 'PERSONAL'
+                                    ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30 border-purple-400'
+                                    : dept.isTac
+                                      ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400 ring-1 ring-amber-400'
+                                      : 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400'
+                                : dept.id === 'PERSONAL'
+                                  ? 'bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 border-purple-500/40'
+                                  : dept.isTac
+                                    ? getTacUnitCount(dept.id) > 0
+                                        ? 'bg-amber-950/50 text-amber-300 hover:bg-amber-900/60 border-amber-500/50 shadow-sm shadow-amber-500/10 font-semibold'
+                                        : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 border-slate-800 opacity-70 hover:opacity-100'
+                                    : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800',
                         ]"
                     >
-                        <img v-if="dept.isSvg" :src="dept.icon" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90 shrink-0" alt="" />
+                        <img
+                            v-if="dept.isSvg"
+                            :src="dept.icon"
+                            class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90 shrink-0"
+                            alt=""
+                        />
                         <span v-else class="shrink-0">{{ dept.icon }}</span>
                         <span class="shrink-0">{{ dept.name }}</span>
-                        
+
                         <!-- Personal count badge -->
-                        <span v-if="dept.id === 'PERSONAL'" class="text-[10px] px-1.5 py-0.2 bg-black/50 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30 shrink-0">
+                        <span
+                            v-if="dept.id === 'PERSONAL'"
+                            class="text-[10px] px-1.5 py-0.2 bg-black/50 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30 shrink-0"
+                        >
                             {{ totalPersonalCount }}/6
                         </span>
                         <!-- TAC count badge -->
-                        <span v-else-if="dept.isTac" class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold shrink-0"
-                            :class="getTacUnitCount(dept.id) > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-black/40 text-slate-500'"
+                        <span
+                            v-else-if="dept.isTac"
+                            class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold shrink-0"
+                            :class="
+                                getTacUnitCount(dept.id) > 0
+                                    ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                                    : 'bg-black/40 text-slate-500'
+                            "
                         >
                             {{ getTacUnitCount(dept.id) }}
                         </span>
                         <!-- Standard dept count -->
-                        <span v-else-if="dept.id !== 'ALL'" class="text-[10px] px-1.5 py-0.2 bg-black/40 rounded-full font-mono shrink-0">
-                            {{ allActiveStreams.filter(s => s.officer?.department === dept.id || (dept.id === 'SAPR' && (s.officer?.department === 'SAPR' || s.officer?.department === 'PARK RANGER'))).length }}
+                        <span
+                            v-else-if="dept.id !== 'ALL'"
+                            class="text-[10px] px-1.5 py-0.2 bg-black/40 rounded-full font-mono shrink-0"
+                        >
+                            {{
+                                allActiveStreams.filter(
+                                    (s) =>
+                                        s.officer?.department === dept.id ||
+                                        (dept.id === "SAPR" &&
+                                            (s.officer?.department === "SAPR" ||
+                                                s.officer?.department ===
+                                                    "PARK RANGER")),
+                                ).length
+                            }}
                         </span>
                     </button>
 
@@ -2592,14 +3485,32 @@ const submitFeedbackForm = async () => {
                             @click.stop="toggleMoreTac($event)"
                             :class="[
                                 'px-3 py-1.5 text-xs rounded-full border transition flex items-center space-x-1.5 whitespace-nowrap font-medium',
-                                dropdownTacDepartments.some(d => d.id === selectedDepartment)
+                                dropdownTacDepartments.some(
+                                    (d) => d.id === selectedDepartment,
+                                )
                                     ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400 ring-1 ring-amber-400'
-                                    : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
+                                    : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800',
                             ]"
-                            :title="dropdownTacDepartments.some(d => d.id === selectedDepartment) ? `Kanal Terpilih: ${selectedDepartment.replace('_', ' ')}` : 'Kanal TAC Tambahan (TAC 4 - 10)'"
+                            :title="
+                                dropdownTacDepartments.some(
+                                    (d) => d.id === selectedDepartment,
+                                )
+                                    ? `Kanal Terpilih: ${selectedDepartment.replace('_', ' ')}`
+                                    : 'Kanal TAC Tambahan (TAC 4 - 10)'
+                            "
                         >
-                            <img :src="iconRadio" class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90" alt="" />
-                            <span>{{ dropdownTacDepartments.some(d => d.id === selectedDepartment) ? selectedDepartment.replace('_', ' ') : 'More TAC' }}</span>
+                            <img
+                                :src="iconRadio"
+                                class="w-4 h-4 inline-block object-contain brightness-0 invert opacity-90"
+                                alt=""
+                            />
+                            <span>{{
+                                dropdownTacDepartments.some(
+                                    (d) => d.id === selectedDepartment,
+                                )
+                                    ? selectedDepartment.replace("_", " ")
+                                    : "More TAC"
+                            }}</span>
                             <span class="text-[10px] text-amber-400/80">▾</span>
                         </button>
 
@@ -2607,34 +3518,57 @@ const submitFeedbackForm = async () => {
                         <div
                             v-if="isMoreTacOpen"
                             class="fixed z-50 bg-slate-950/95 border border-amber-500/50 rounded-xl p-2 shadow-2xl backdrop-blur-xl text-xs w-48 animate-in fade-in zoom-in-95 font-sans"
-                            :style="{ top: tacDropdownPos.top + 'px', left: tacDropdownPos.left + 'px' }"
+                            :style="{
+                                top: tacDropdownPos.top + 'px',
+                                left: tacDropdownPos.left + 'px',
+                            }"
                             @click.stop
                         >
-                            <div class="px-2 py-1 mb-1 border-b border-slate-800/80 flex items-center justify-between text-[11px] font-mono font-bold text-amber-400">
+                            <div
+                                class="px-2 py-1 mb-1 border-b border-slate-800/80 flex items-center justify-between text-[11px] font-mono font-bold text-amber-400"
+                            >
                                 <span>RADIO TAC (4 – 10)</span>
-                                <button @click="isMoreTacOpen = false" class="text-slate-400 hover:text-white text-[10px]">✕</button>
+                                <button
+                                    @click="isMoreTacOpen = false"
+                                    class="text-slate-400 hover:text-white text-[10px]"
+                                >
+                                    ✕
+                                </button>
                             </div>
                             <div class="space-y-1 max-h-60 overflow-y-auto">
                                 <button
                                     v-for="tac in dropdownTacDepartments"
                                     :key="tac.id"
-                                    @click="selectedDepartment = tac.id; isMoreTacOpen = false"
+                                    @click="
+                                        selectedDepartment = tac.id;
+                                        isMoreTacOpen = false;
+                                    "
                                     :class="[
                                         'w-full px-2.5 py-1.5 rounded-lg flex items-center justify-between transition text-xs font-mono font-bold',
                                         selectedDepartment === tac.id
                                             ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30 border border-amber-400'
-                                            : (getTacUnitCount(tac.id) > 0
-                                                ? 'bg-amber-950/40 text-amber-300 hover:bg-amber-900/60 border border-amber-500/30'
-                                                : 'bg-slate-900/80 text-slate-300 hover:bg-slate-800 border border-slate-800/80')
+                                            : getTacUnitCount(tac.id) > 0
+                                              ? 'bg-amber-950/40 text-amber-300 hover:bg-amber-900/60 border border-amber-500/30'
+                                              : 'bg-slate-900/80 text-slate-300 hover:bg-slate-800 border border-slate-800/80',
                                     ]"
                                 >
                                     <div class="flex items-center space-x-2">
-                                        <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
+                                        <img
+                                            :src="iconRadio"
+                                            class="w-3.5 h-3.5 brightness-0 invert opacity-90"
+                                            alt=""
+                                        />
                                         <span>{{ tac.name }}</span>
                                     </div>
-                                    <span 
+                                    <span
                                         class="text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold"
-                                        :class="selectedDepartment === tac.id ? 'bg-black/40 text-white' : (getTacUnitCount(tac.id) > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30' : 'bg-black/40 text-slate-500')"
+                                        :class="
+                                            selectedDepartment === tac.id
+                                                ? 'bg-black/40 text-white'
+                                                : getTacUnitCount(tac.id) > 0
+                                                  ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                                                  : 'bg-black/40 text-slate-500'
+                                        "
                                     >
                                         {{ getTacUnitCount(tac.id) }}
                                     </span>
@@ -2646,18 +3580,24 @@ const submitFeedbackForm = async () => {
             </div>
 
             <!-- Search & Grid Layout Switcher (Side-by-side on right side of categories on desktop/tablet) -->
-            <div class="flex items-center space-x-2 w-full md:w-auto shrink-0 z-30 justify-between md:justify-end">
+            <div
+                class="flex items-center space-x-2 w-full md:w-auto shrink-0 z-30 justify-between md:justify-end"
+            >
                 <!-- Search Input -->
                 <div class="relative flex-1 sm:w-60 flex items-center">
-                    <input 
-                        v-model="searchFilter" 
-                        type="text" 
+                    <input
+                        v-model="searchFilter"
+                        type="text"
                         placeholder="Search callsign, badge, officer..."
                         class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
                     />
-                    <img :src="iconSearch" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-50 invert pointer-events-none" alt="Search" />
-                    <button 
-                        v-if="searchFilter" 
+                    <img
+                        :src="iconSearch"
+                        class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-50 invert pointer-events-none"
+                        alt="Search"
+                    />
+                    <button
+                        v-if="searchFilter"
                         @click="searchFilter = ''"
                         class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold leading-none p-0.5 rounded hover:bg-slate-800 transition"
                         title="Bersihkan pencarian"
@@ -2667,35 +3607,58 @@ const submitFeedbackForm = async () => {
                 </div>
 
                 <!-- Mobile Layout Selector (< md: visible on mobile smartphones) -->
-                <div v-if="selectedDepartment !== 'ALL'" class="flex md:hidden items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0">
-                    <button 
-                        @click="selectedLayout = 'focus'" 
-                        :class="selectedLayout === 'focus' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                <div
+                    v-if="selectedDepartment !== 'ALL'"
+                    class="flex md:hidden items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0"
+                >
+                    <button
+                        @click="selectedLayout = 'focus'"
+                        :class="
+                            selectedLayout === 'focus'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2 py-1 text-xs rounded transition flex items-center gap-1"
                         title="Focus Priority Lead"
                     >
-                        <img :src="iconFocus" class="w-3 h-3 invert opacity-90" alt="Focus" />
+                        <img
+                            :src="iconFocus"
+                            class="w-3 h-3 invert opacity-90"
+                            alt="Focus"
+                        />
                         <span>Focus</span>
                     </button>
-                    <button 
-                        @click="selectedLayout = 'grid-1x2'" 
-                        :class="selectedLayout === 'grid-1x2' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                    <button
+                        @click="selectedLayout = 'grid-1x2'"
+                        :class="
+                            selectedLayout === 'grid-1x2'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2 py-1 text-xs rounded transition"
                         title="Mobile 1x2 Layout"
                     >
                         1x2
                     </button>
-                    <button 
-                        @click="selectedLayout = 'grid-1x3'" 
-                        :class="selectedLayout === 'grid-1x3' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                    <button
+                        @click="selectedLayout = 'grid-1x3'"
+                        :class="
+                            selectedLayout === 'grid-1x3'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2 py-1 text-xs rounded transition"
                         title="Mobile 1x3 Layout"
                     >
                         1x3
                     </button>
-                    <button 
-                        @click="selectedLayout = 'auto'" 
-                        :class="selectedLayout === 'auto' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                    <button
+                        @click="selectedLayout = 'auto'"
+                        :class="
+                            selectedLayout === 'auto'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2 py-1 text-xs rounded transition"
                         title="Auto Layout"
                     >
@@ -2704,105 +3667,160 @@ const submitFeedbackForm = async () => {
                 </div>
 
                 <!-- Desktop / Tablet Layout Selector (hidden on mobile) -->
-                <div v-if="selectedDepartment !== 'ALL'" class="hidden md:flex items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0">
-                    <button 
-                        @click="selectedLayout = 'auto'" 
-                        :class="selectedLayout === 'auto' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                <div
+                    v-if="selectedDepartment !== 'ALL'"
+                    class="hidden md:flex items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0"
+                >
+                    <button
+                        @click="selectedLayout = 'auto'"
+                        :class="
+                            selectedLayout === 'auto'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2.5 py-1 text-xs rounded transition"
                         title="Tata Letak Otomatis (Auto-Fit Grid)"
                     >
                         Auto
                     </button>
-                    <button 
-                        @click="selectedLayout = 'grid-1x2'" 
-                        :class="selectedLayout === 'grid-1x2' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                    <button
+                        @click="selectedLayout = 'grid-1x2'"
+                        :class="
+                            selectedLayout === 'grid-1x2'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2.5 py-1 text-xs rounded transition"
                         title="1x2 Vertical Stack Layout"
                     >
                         1x2
                     </button>
-                    <button 
-                        @click="selectedLayout = 'grid-1x3'" 
-                        :class="selectedLayout === 'grid-1x3' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                    <button
+                        @click="selectedLayout = 'grid-1x3'"
+                        :class="
+                            selectedLayout === 'grid-1x3'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2.5 py-1 text-xs rounded transition"
                         title="1x3 Tactical Layout"
                     >
                         1x3
                     </button>
-                    <button 
-                        @click="selectedLayout = 'grid-2x2'" 
-                        :class="selectedLayout === 'grid-2x2' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                    <button
+                        @click="selectedLayout = 'grid-2x2'"
+                        :class="
+                            selectedLayout === 'grid-2x2'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2.5 py-1 text-xs rounded transition"
                         title="2x2 Quad Patrol Layout"
                     >
                         2x2
                     </button>
-                    <button 
-                        @click="selectedLayout = 'grid-3x3'" 
-                        :class="selectedLayout === 'grid-3x3' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                    <button
+                        @click="selectedLayout = 'grid-3x3'"
+                        :class="
+                            selectedLayout === 'grid-3x3'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2.5 py-1 text-xs rounded transition"
                         title="3x3 Sector Command Layout"
                     >
                         3x3
                     </button>
-                    <button 
-                        @click="selectedLayout = 'grid-4x4'" 
-                        :class="selectedLayout === 'grid-4x4' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                    <button
+                        @click="selectedLayout = 'grid-4x4'"
+                        :class="
+                            selectedLayout === 'grid-4x4'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2.5 py-1 text-xs rounded transition hidden lg:inline-block"
                         title="4x4 Tactical Wall Layout"
                     >
                         4x4
                     </button>
-                    <button 
-                        @click="selectedLayout = 'focus'" 
-                        :class="selectedLayout === 'focus' ? 'bg-blue-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'"
+                    <button
+                        @click="selectedLayout = 'focus'"
+                        :class="
+                            selectedLayout === 'focus'
+                                ? 'bg-blue-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-slate-200'
+                        "
                         class="px-2.5 py-1 text-xs rounded transition flex items-center gap-1.5"
                         title="Focus Priority Lead + Right Sidebar Units"
                     >
-                        <img :src="iconFocus" class="w-3.5 h-3.5 invert opacity-90" alt="Focus" />
+                        <img
+                            :src="iconFocus"
+                            class="w-3.5 h-3.5 invert opacity-90"
+                            alt="Focus"
+                        />
                         <span>Focus</span>
                     </button>
                 </div>
             </div>
-
         </div>
 
         <!-- Main Content Area -->
         <main class="flex-1 p-3.5 md:p-4 overflow-y-auto">
-            
             <!-- GLOBAL PROMO / ANNOUNCEMENT BANNERS (REFACTORED COMPONENT) -->
-            <AnnouncementBanner 
-                v-if="activeTab === '10-8' && selectedDepartment === 'ALL'" 
-                :announcements="activeAnnouncements" 
+            <AnnouncementBanner
+                v-if="activeTab === '10-8' && selectedDepartment === 'ALL'"
+                :announcements="activeAnnouncements"
             />
 
             <!-- TAB 1: 10-8 ACTIVE LIVE BODYCAM FEEDS -->
             <div v-if="activeTab === '10-8'">
-                
                 <!-- ========================================================================= -->
                 <!-- MODE A: ALL UNITS -> NETFLIX-STYLE POLICE CINEMA & DISCOVERY HUB         -->
                 <!-- ========================================================================= -->
-                <div v-if="selectedDepartment === 'ALL'" class="space-y-8 pb-12 animate-in fade-in duration-300">
-
+                <div
+                    v-if="selectedDepartment === 'ALL'"
+                    class="space-y-8 pb-12 animate-in fade-in duration-300"
+                >
                     <!-- Standby Banner (Only when all streams are off-duty / empty) -->
-                    <div v-if="allActiveStreams.length === 0" class="relative rounded-2xl overflow-hidden border border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-8 text-center flex flex-col items-center justify-center gap-3">
-                        <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-1">
-                            <img :src="iconAllUnits" class="w-7 h-7 invert opacity-80" alt="" />
+                    <div
+                        v-if="allActiveStreams.length === 0"
+                        class="relative rounded-2xl overflow-hidden border border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-8 text-center flex flex-col items-center justify-center gap-3"
+                    >
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-1"
+                        >
+                            <img
+                                :src="iconAllUnits"
+                                class="w-7 h-7 invert opacity-80"
+                                alt=""
+                            />
                         </div>
-                        <h3 class="text-lg font-bold text-slate-100">SELURUH KESATUAN SEDANG 10-7 (OFF-DUTY)</h3>
+                        <h3 class="text-lg font-bold text-slate-100">
+                            SELURUH KESATUAN SEDANG 10-7 (OFF-DUTY)
+                        </h3>
                         <p class="text-xs text-slate-400 max-w-md">
-                            Belum ada siaran langsung patroli atau video rekaman yang termuat. Anda dapat menyinkronkan feed terbaru atau melihat daftar nama petugas di tab 10-7 Roster.
+                            Belum ada siaran langsung patroli atau video rekaman
+                            yang termuat. Anda dapat menyinkronkan feed terbaru
+                            atau melihat daftar nama petugas di tab 10-7 Roster.
                         </p>
                         <div class="flex items-center gap-2 mt-2">
-                            <button 
+                            <button
                                 @click="triggerManualSync"
                                 :disabled="isSyncingFeeds"
                                 class="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition flex items-center gap-2"
                             >
-                                <img :src="iconRefresh" class="w-3.5 h-3.5 invert" :class="{ 'animate-spin': isSyncingFeeds }" />
-                                <span>{{ isSyncingFeeds ? 'Menyinkronkan...' : 'Cek Live Sekarang' }}</span>
+                                <img
+                                    :src="iconRefresh"
+                                    class="w-3.5 h-3.5 invert"
+                                    :class="{ 'animate-spin': isSyncingFeeds }"
+                                />
+                                <span>{{
+                                    isSyncingFeeds
+                                        ? "Menyinkronkan..."
+                                        : "Cek Live Sekarang"
+                                }}</span>
                             </button>
-                            <button 
+                            <button
                                 @click="activeTab = '10-7'"
                                 class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
                             >
@@ -2812,64 +3830,208 @@ const submitFeedbackForm = async () => {
                     </div>
 
                     <!-- 2. SEARCH RESULTS SWIMLANE (Only displayed when actively searching) -->
-                    <section v-if="searchFilter.trim() !== ''" class="space-y-3">
+                    <section
+                        v-if="searchFilter.trim() !== ''"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 Hasil Pencarian: "{{ searchFilter }}"
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-search', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-search', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-search', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-search', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-search" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in allCatalogStreams" 
+                        <div
+                            id="row-search"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in allCatalogStreams"
                                 :key="`search-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span v-if="stream.status === 'LIVE'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            v-if="stream.status === 'LIVE'"
+                                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>LIVE</span>
-                                            <span v-if="stream.viewers_count">({{ stream.viewers_count }})</span>
+                                            <span v-if="stream.viewers_count"
+                                                >({{
+                                                    stream.viewers_count
+                                                }})</span
+                                            >
                                         </span>
-                                        <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80">
-                                            <span>{{ stream.streamed_at || 'REPLAY' }}</span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
+                                        >
+                                            <span>{{
+                                                stream.streamed_at || "REPLAY"
+                                            }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
-                                            <span v-if="getStreamTac(stream.video_id)" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow">{{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department || 'UNIT' }}</span>
+                                            <span
+                                                v-if="
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow"
+                                                >{{
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    ).replace("_", " ")
+                                                }}</span
+                                            >
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                                >{{
+                                                    stream.officer
+                                                        ?.department || "UNIT"
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Officer' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Officer"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition"
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-400 bg-purple-950/70'
+                                                        : 'text-slate-400 hover:text-white'
+                                                "
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus'
+                                                        : 'Pin'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-2 px-1">
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+                                    <div
+                                        v-if="stream.officer?.rank"
+                                        class="text-[11px] text-slate-500 mt-1 font-mono truncate"
+                                    >
                                         {{ stream.officer.rank }}
                                     </div>
                                 </div>
@@ -2878,61 +4040,199 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 3. TRENDING PATROLS SWIMLANE (Active Live streams only) -->
-                    <section v-if="trendingStreams.length > 0" class="space-y-3">
+                    <section
+                        v-if="trendingStreams.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 Trending Patrols
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-trending', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-trending', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-trending', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-trending', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-trending" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in trendingStreams" 
+                        <div
+                            id="row-trending"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in trendingStreams"
                                 :key="`trend-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>LIVE</span>
-                                            <span v-if="stream.viewers_count">({{ stream.viewers_count }})</span>
+                                            <span v-if="stream.viewers_count"
+                                                >({{
+                                                    stream.viewers_count
+                                                }})</span
+                                            >
                                         </span>
                                         <div class="flex items-center gap-1">
-                                            <span v-if="getStreamTac(stream.video_id)" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow">{{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department || 'UNIT' }}</span>
+                                            <span
+                                                v-if="
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow"
+                                                >{{
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    ).replace("_", " ")
+                                                }}</span
+                                            >
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                                >{{
+                                                    stream.officer
+                                                        ?.department || "UNIT"
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Officer' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Officer"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition"
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-400 bg-purple-950/70'
+                                                        : 'text-slate-400 hover:text-white'
+                                                "
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus'
+                                                        : 'Pin'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-2 px-1">
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+                                    <div
+                                        v-if="stream.officer?.rank"
+                                        class="text-[11px] text-slate-500 mt-1 font-mono truncate"
+                                    >
                                         {{ stream.officer.rank }}
                                     </div>
                                 </div>
@@ -2941,97 +4241,298 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 3.5. SUPPORT 1K SUBS SWIMLANE (Road to 1,000 Subscribers Community Milestone) -->
-                    <section v-if="support1kStreams.length > 0" class="space-y-3">
+                    <section
+                        v-if="support1kStreams.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 Support 1K Subs
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-support1k', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-support1k', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-support1k', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-support1k', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-support1k" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in support1kStreams" 
+                        <div
+                            id="row-support1k"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in support1kStreams"
                                 :key="`sub1k-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+
                                     <!-- Top Badges -->
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span v-if="stream.status === 'LIVE'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            v-if="stream.status === 'LIVE'"
+                                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>LIVE</span>
-                                            <span v-if="stream.viewers_count">({{ stream.viewers_count }})</span>
+                                            <span v-if="stream.viewers_count"
+                                                >({{
+                                                    stream.viewers_count
+                                                }})</span
+                                            >
                                         </span>
-                                        <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80">
-                                            <span>{{ stream.streamed_at || 'REPLAY' }}</span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
+                                        >
+                                            <span>{{
+                                                stream.streamed_at || "REPLAY"
+                                            }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
-                                            <span v-if="getStreamTac(stream.video_id)" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow">{{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department || 'UNIT' }}</span>
+                                            <span
+                                                v-if="
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow"
+                                                >{{
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    ).replace("_", " ")
+                                                }}</span
+                                            >
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                                >{{
+                                                    stream.officer
+                                                        ?.department || "UNIT"
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
 
                                     <!-- Bottom Info: Officer Name & Action Buttons -->
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Officer' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Officer"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition"
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-400 bg-purple-950/70'
+                                                        : 'text-slate-400 hover:text-white'
+                                                "
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus'
+                                                        : 'Pin'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Card Meta & 1K Milestone Progress -->
                                 <div class="mt-2 px-1">
-                                    <div class="flex items-center justify-between text-[11px] font-mono mb-1">
-                                        <span class="text-slate-200 font-bold flex items-center gap-1.5">
-                                            <img :src="iconTarget" class="w-3 h-3 invert opacity-85" alt="" />
-                                            <span>{{ (stream.officer?.subscriber_count || 0).toLocaleString('id-ID') }} / 1.000 Subs</span>
+                                    <div
+                                        class="flex items-center justify-between text-[11px] font-mono mb-1"
+                                    >
+                                        <span
+                                            class="text-slate-200 font-bold flex items-center gap-1.5"
+                                        >
+                                            <img
+                                                :src="iconTarget"
+                                                class="w-3 h-3 invert opacity-85"
+                                                alt=""
+                                            />
+                                            <span
+                                                >{{
+                                                    (
+                                                        stream.officer
+                                                            ?.subscriber_count ||
+                                                        0
+                                                    ).toLocaleString("id-ID")
+                                                }}
+                                                / 1.000 Subs</span
+                                            >
                                         </span>
-                                        <span class="text-slate-400 text-[10px]">{{ Math.round(((stream.officer?.subscriber_count || 0) / 1000) * 100) }}%</span>
+                                        <span class="text-slate-400 text-[10px]"
+                                            >{{
+                                                Math.round(
+                                                    ((stream.officer
+                                                        ?.subscriber_count ||
+                                                        0) /
+                                                        1000) *
+                                                        100,
+                                                )
+                                            }}%</span
+                                        >
                                     </div>
-                                    
+
                                     <!-- Solid Red Progress Bar -->
-                                    <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden border border-slate-800/80 mb-2">
-                                        <div 
-                                            class="bg-red-600 h-full rounded-full transition-all duration-500 shadow-sm shadow-red-600/30" 
-                                            :style="{ width: Math.min(100, Math.max(5, ((stream.officer?.subscriber_count || 0) / 1000) * 100)) + '%' }"
+                                    <div
+                                        class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden border border-slate-800/80 mb-2"
+                                    >
+                                        <div
+                                            class="bg-red-600 h-full rounded-full transition-all duration-500 shadow-sm shadow-red-600/30"
+                                            :style="{
+                                                width:
+                                                    Math.min(
+                                                        100,
+                                                        Math.max(
+                                                            5,
+                                                            ((stream.officer
+                                                                ?.subscriber_count ||
+                                                                0) /
+                                                                1000) *
+                                                                100,
+                                                        ),
+                                                    ) + '%',
+                                            }"
                                         ></div>
                                     </div>
 
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    
-                                    <div class="flex items-center justify-between mt-1.5">
-                                        <span v-if="stream.officer?.rank" class="text-[11px] text-slate-500 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+
+                                    <div
+                                        class="flex items-center justify-between mt-1.5"
+                                    >
+                                        <span
+                                            v-if="stream.officer?.rank"
+                                            class="text-[11px] text-slate-500 font-mono truncate"
+                                        >
                                             {{ stream.officer.rank }}
                                         </span>
-                                        <button 
-                                            v-if="stream.officer?.channel_id || stream.officer?.handle"
-                                            @click.stop="openSubscribePopup(stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
+                                        <button
+                                            v-if="
+                                                stream.officer?.channel_id ||
+                                                stream.officer?.handle
+                                            "
+                                            @click.stop="
+                                                openSubscribePopup(
+                                                    stream.officer
+                                                        ?.channel_id ||
+                                                        stream.officer?.handle,
+                                                    stream.officer
+                                                        ?.officer_name,
+                                                )
+                                            "
                                             class="px-2 py-0.5 bg-red-600/90 hover:bg-red-600 active:scale-95 text-white text-[10px] font-bold rounded shadow transition flex items-center gap-1 shrink-0 cursor-pointer"
                                             title="Subscribe Channel Petugas"
                                         >
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>Sub</span>
                                         </button>
                                     </div>
@@ -3041,58 +4542,180 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 4. RECENT PATROL REPLAYS & VODs SWIMLANE (Offline Latest Officer Videos) -->
-                    <section v-if="recentReplayStreams.length > 0" class="space-y-3">
+                    <section
+                        v-if="recentReplayStreams.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 Rekaman Patroli
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-replays', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-replays', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-replays', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-replays', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-replays" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in recentReplayStreams" 
+                        <div
+                            id="row-replays"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in recentReplayStreams"
                                 :key="`replay-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80">
-                                            <span>{{ stream.streamed_at || 'REPLAY' }}</span>
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
+                                        >
+                                            <span>{{
+                                                stream.streamed_at || "REPLAY"
+                                            }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department || 'POLICE' }}</span>
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                                >{{
+                                                    stream.officer
+                                                        ?.department || "POLICE"
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Officer' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Officer"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition"
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-400 bg-purple-950/70'
+                                                        : 'text-slate-400 hover:text-white'
+                                                "
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus'
+                                                        : 'Pin'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-2 px-1">
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+                                    <div
+                                        v-if="stream.officer?.rank"
+                                        class="text-[11px] text-slate-500 mt-1 font-mono truncate"
+                                    >
                                         {{ stream.officer.rank }}
                                     </div>
                                 </div>
@@ -3101,64 +4724,189 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 5. PERSONAL WATCHLIST SWIMLANE -->
-                    <section v-if="activePersonalStreams.length > 0" class="space-y-3">
+                    <section
+                        v-if="activePersonalStreams.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 Personal Watchlist
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-personal', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-personal', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-personal', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-personal', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-personal" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in activePersonalStreams" 
+                        <div
+                            id="row-personal"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in activePersonalStreams"
                                 :key="`personal-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span v-if="stream.status === 'LIVE'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            v-if="stream.status === 'LIVE'"
+                                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>LIVE</span>
-                                            <span v-if="stream.viewers_count">({{ stream.viewers_count }})</span>
+                                            <span v-if="stream.viewers_count"
+                                                >({{
+                                                    stream.viewers_count
+                                                }})</span
+                                            >
                                         </span>
-                                        <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80">
-                                            <span>{{ stream.streamed_at || 'REPLAY' }}</span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
+                                        >
+                                            <span>{{
+                                                stream.streamed_at || "REPLAY"
+                                            }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
-                                            <span v-if="getStreamTac(stream.video_id)" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow">{{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department || 'UNIT' }}</span>
+                                            <span
+                                                v-if="
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow"
+                                                >{{
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    ).replace("_", " ")
+                                                }}</span
+                                            >
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                                >{{
+                                                    stream.officer
+                                                        ?.department || "UNIT"
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Officer' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition text-purple-400 bg-purple-950/70" title="Hapus dari Personal"><img :src="iconPinMinus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Officer"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition text-purple-400 bg-purple-950/70"
+                                                title="Hapus dari Personal"
+                                            >
+                                                <img
+                                                    :src="iconPinMinus"
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-2 px-1">
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+                                    <div
+                                        v-if="stream.officer?.rank"
+                                        class="text-[11px] text-slate-500 mt-1 font-mono truncate"
+                                    >
                                         {{ stream.officer.rank }}
                                     </div>
                                 </div>
@@ -3167,64 +4915,208 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 6. LSPD PATROLS SWIMLANE (Live + Replay VODs) -->
-                    <section v-if="lspdCatalogStreams.length > 0" class="space-y-3">
+                    <section
+                        v-if="lspdCatalogStreams.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 Los Santos Police Department
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-lspd', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-lspd', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-lspd', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-lspd', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-lspd" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in lspdCatalogStreams" 
+                        <div
+                            id="row-lspd"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in lspdCatalogStreams"
                                 :key="`lspd-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span v-if="stream.status === 'LIVE'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            v-if="stream.status === 'LIVE'"
+                                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>LIVE</span>
-                                            <span v-if="stream.viewers_count">({{ stream.viewers_count }})</span>
+                                            <span v-if="stream.viewers_count"
+                                                >({{
+                                                    stream.viewers_count
+                                                }})</span
+                                            >
                                         </span>
-                                        <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80">
-                                            <span>{{ stream.streamed_at || 'REPLAY' }}</span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
+                                        >
+                                            <span>{{
+                                                stream.streamed_at || "REPLAY"
+                                            }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
-                                            <span v-if="getStreamTac(stream.video_id)" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow">{{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department || 'LSPD' }}</span>
+                                            <span
+                                                v-if="
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow"
+                                                >{{
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    ).replace("_", " ")
+                                                }}</span
+                                            >
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                                >{{
+                                                    stream.officer
+                                                        ?.department || "LSPD"
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Officer' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Officer"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition"
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-400 bg-purple-950/70'
+                                                        : 'text-slate-400 hover:text-white'
+                                                "
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus'
+                                                        : 'Pin'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-2 px-1">
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+                                    <div
+                                        v-if="stream.officer?.rank"
+                                        class="text-[11px] text-slate-500 mt-1 font-mono truncate"
+                                    >
                                         {{ stream.officer.rank }}
                                     </div>
                                 </div>
@@ -3233,64 +5125,208 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 7. BCSO SHERIFFS SWIMLANE (Live + Replay VODs) -->
-                    <section v-if="bcsoCatalogStreams.length > 0" class="space-y-3">
+                    <section
+                        v-if="bcsoCatalogStreams.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 Blaine County Sheriff's Office
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-bcso', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-bcso', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-bcso', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-bcso', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-bcso" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in bcsoCatalogStreams" 
+                        <div
+                            id="row-bcso"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in bcsoCatalogStreams"
                                 :key="`bcso-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span v-if="stream.status === 'LIVE'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            v-if="stream.status === 'LIVE'"
+                                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>LIVE</span>
-                                            <span v-if="stream.viewers_count">({{ stream.viewers_count }})</span>
+                                            <span v-if="stream.viewers_count"
+                                                >({{
+                                                    stream.viewers_count
+                                                }})</span
+                                            >
                                         </span>
-                                        <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80">
-                                            <span>{{ stream.streamed_at || 'REPLAY' }}</span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
+                                        >
+                                            <span>{{
+                                                stream.streamed_at || "REPLAY"
+                                            }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
-                                            <span v-if="getStreamTac(stream.video_id)" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow">{{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department || 'BCSO' }}</span>
+                                            <span
+                                                v-if="
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow"
+                                                >{{
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    ).replace("_", " ")
+                                                }}</span
+                                            >
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                                >{{
+                                                    stream.officer
+                                                        ?.department || "BCSO"
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Deputy' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Deputy"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition"
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-400 bg-purple-950/70'
+                                                        : 'text-slate-400 hover:text-white'
+                                                "
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus'
+                                                        : 'Pin'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-2 px-1">
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+                                    <div
+                                        v-if="stream.officer?.rank"
+                                        class="text-[11px] text-slate-500 mt-1 font-mono truncate"
+                                    >
                                         {{ stream.officer.rank }}
                                     </div>
                                 </div>
@@ -3299,64 +5335,208 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 8. SASP STATE TROOPERS SWIMLANE (Live + Replay VODs) -->
-                    <section v-if="saspCatalogStreams.length > 0" class="space-y-3">
+                    <section
+                        v-if="saspCatalogStreams.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 San Andreas State Police
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-sasp', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-sasp', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-sasp', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-sasp', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-sasp" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in saspCatalogStreams" 
+                        <div
+                            id="row-sasp"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in saspCatalogStreams"
                                 :key="`sasp-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span v-if="stream.status === 'LIVE'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            v-if="stream.status === 'LIVE'"
+                                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>LIVE</span>
-                                            <span v-if="stream.viewers_count">({{ stream.viewers_count }})</span>
+                                            <span v-if="stream.viewers_count"
+                                                >({{
+                                                    stream.viewers_count
+                                                }})</span
+                                            >
                                         </span>
-                                        <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80">
-                                            <span>{{ stream.streamed_at || 'REPLAY' }}</span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
+                                        >
+                                            <span>{{
+                                                stream.streamed_at || "REPLAY"
+                                            }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
-                                            <span v-if="getStreamTac(stream.video_id)" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow">{{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department || 'SASP' }}</span>
+                                            <span
+                                                v-if="
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow"
+                                                >{{
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    ).replace("_", " ")
+                                                }}</span
+                                            >
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                                >{{
+                                                    stream.officer
+                                                        ?.department || "SASP"
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Trooper' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Trooper"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition"
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-400 bg-purple-950/70'
+                                                        : 'text-slate-400 hover:text-white'
+                                                "
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus'
+                                                        : 'Pin'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-2 px-1">
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+                                    <div
+                                        v-if="stream.officer?.rank"
+                                        class="text-[11px] text-slate-500 mt-1 font-mono truncate"
+                                    >
                                         {{ stream.officer.rank }}
                                     </div>
                                 </div>
@@ -3365,64 +5545,208 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 8.5. SAPR PARK RANGERS SWIMLANE (Live + Replay VODs) -->
-                    <section v-if="saprCatalogStreams.length > 0" class="space-y-3">
+                    <section
+                        v-if="saprCatalogStreams.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 San Andreas Park Rangers
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-sapr', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-sapr', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-sapr', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-sapr', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-sapr" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in saprCatalogStreams" 
+                        <div
+                            id="row-sapr"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in saprCatalogStreams"
                                 :key="`sapr-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span v-if="stream.status === 'LIVE'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            v-if="stream.status === 'LIVE'"
+                                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>LIVE</span>
-                                            <span v-if="stream.viewers_count">({{ stream.viewers_count }})</span>
+                                            <span v-if="stream.viewers_count"
+                                                >({{
+                                                    stream.viewers_count
+                                                }})</span
+                                            >
                                         </span>
-                                        <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80">
-                                            <span>{{ stream.streamed_at || 'REPLAY' }}</span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
+                                        >
+                                            <span>{{
+                                                stream.streamed_at || "REPLAY"
+                                            }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
-                                            <span v-if="getStreamTac(stream.video_id)" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow">{{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department || 'SAPR' }}</span>
+                                            <span
+                                                v-if="
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow"
+                                                >{{
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    ).replace("_", " ")
+                                                }}</span
+                                            >
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                                >{{
+                                                    stream.officer
+                                                        ?.department || "SAPR"
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Ranger' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Ranger"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition"
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-400 bg-purple-950/70'
+                                                        : 'text-slate-400 hover:text-white'
+                                                "
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus'
+                                                        : 'Pin'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-2 px-1">
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+                                    <div
+                                        v-if="stream.officer?.rank"
+                                        class="text-[11px] text-slate-500 mt-1 font-mono truncate"
+                                    >
                                         {{ stream.officer.rank }}
                                     </div>
                                 </div>
@@ -3431,64 +5755,207 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 9. SPECIAL OPERATIONS SWIMLANE (Live + Replay VODs) -->
-                    <section v-if="specialOpsCatalogStreams.length > 0" class="space-y-3">
+                    <section
+                        v-if="specialOpsCatalogStreams.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 Operasi Khusus
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-specops', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-specops', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-specops', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-specops', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-specops" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in specialOpsCatalogStreams" 
+                        <div
+                            id="row-specops"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in specialOpsCatalogStreams"
                                 :key="`spec-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span v-if="stream.status === 'LIVE'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            v-if="stream.status === 'LIVE'"
+                                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>LIVE</span>
-                                            <span v-if="stream.viewers_count">({{ stream.viewers_count }})</span>
+                                            <span v-if="stream.viewers_count"
+                                                >({{
+                                                    stream.viewers_count
+                                                }})</span
+                                            >
                                         </span>
-                                        <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80">
-                                            <span>{{ stream.streamed_at || 'REPLAY' }}</span>
+                                        <span
+                                            v-else
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
+                                        >
+                                            <span>{{
+                                                stream.streamed_at || "REPLAY"
+                                            }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
-                                            <span v-if="getStreamTac(stream.video_id)" class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow">{{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department }}</span>
+                                            <span
+                                                v-if="
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-black border border-amber-300 shadow"
+                                                >{{
+                                                    getStreamTac(
+                                                        stream.video_id,
+                                                    ).replace("_", " ")
+                                                }}</span
+                                            >
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                                >{{
+                                                    stream.officer?.department
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Unit' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Unit"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition"
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-400 bg-purple-950/70'
+                                                        : 'text-slate-400 hover:text-white'
+                                                "
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus'
+                                                        : 'Pin'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-2 px-1">
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+                                    <div
+                                        v-if="stream.officer?.rank"
+                                        class="text-[11px] text-slate-500 mt-1 font-mono truncate"
+                                    >
                                         {{ stream.officer.rank }}
                                     </div>
                                 </div>
@@ -3497,57 +5964,177 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 10. TAC SITUATIONAL RADIO SWIMLANE -->
-                    <section v-if="tacSituationalStreams.length > 0" class="space-y-3">
+                    <section
+                        v-if="tacSituationalStreams.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 Situasi Radio Taktis
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-tac', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-tac', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-tac', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-tac', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-tac" class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="stream in tacSituationalStreams" 
+                        <div
+                            id="row-tac"
+                            class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="stream in tacSituationalStreams"
                                 :key="`tac-${stream.video_id}`"
                                 class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
                                 @click="playStreamInFocus(stream)"
                             >
-                                <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5">
-                                    <img :src="stream.thumbnail || `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" loading="lazy" />
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"></div>
-                                    <div class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto">
-                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                <div
+                                    class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative border border-slate-800/80 group-hover:border-slate-600 group-hover:shadow-2xl group-hover:shadow-black/60 transition-all duration-300 transform group-hover:scale-[1.02] flex flex-col justify-between p-2.5"
+                                >
+                                    <img
+                                        :src="
+                                            stream.thumbnail ||
+                                            `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
+                                        "
+                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                                        loading="lazy"
+                                    />
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/60 pointer-events-none"
+                                    ></div>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-black tracking-wider shadow"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"
+                                            ></span>
                                             <span>LIVE</span>
                                         </span>
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border" :class="getDeptBadgeClass(stream.officer?.department)">{{ stream.officer?.department }}</span>
+                                        <span
+                                            class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border"
+                                            :class="
+                                                getDeptBadgeClass(
+                                                    stream.officer?.department,
+                                                )
+                                            "
+                                            >{{
+                                                stream.officer?.department
+                                            }}</span
+                                        >
                                     </div>
-                                    <div class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto">
-                                        <span class="text-xs font-bold text-white truncate drop-shadow">{{ stream.officer?.officer_name || 'Unit' }}</span>
-                                        <div class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10" @click.stop>
-                                            <button @click.stop="togglePersonalStream(stream.video_id)" class="p-1 rounded transition" :class="isPersonalStream(stream.video_id) ? 'text-purple-400 bg-purple-950/70' : 'text-slate-400 hover:text-white'" :title="isPersonalStream(stream.video_id) ? 'Hapus' : 'Pin'"><img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" /></button>
-                                            <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" class="p-1 text-slate-400 hover:text-white transition" title="Buka di YouTube" @click.stop><img :src="iconExternal" class="w-3 h-3 invert opacity-80" /></a>
+                                    <div
+                                        class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate drop-shadow"
+                                            >{{
+                                                stream.officer?.officer_name ||
+                                                "Unit"
+                                            }}</span
+                                        >
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0 bg-black/50 backdrop-blur-sm p-1 rounded-lg border border-white/10"
+                                            @click.stop
+                                        >
+                                            <button
+                                                @click.stop="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="p-1 rounded transition"
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-400 bg-purple-950/70'
+                                                        : 'text-slate-400 hover:text-white'
+                                                "
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus'
+                                                        : 'Pin'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert"
+                                                />
+                                            </button>
+                                            <a
+                                                :href="
+                                                    getStreamYoutubeUrl(stream)
+                                                "
+                                                target="_blank"
+                                                class="p-1 text-slate-400 hover:text-white transition"
+                                                title="Buka di YouTube"
+                                                @click.stop
+                                                ><img
+                                                    :src="iconExternal"
+                                                    class="w-3 h-3 invert opacity-80"
+                                            /></a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-2 px-1">
-                                    <h4 class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug">{{ stream.title }}</h4>
-                                    <div v-if="stream.officer?.rank" class="text-[11px] text-slate-500 mt-1 font-mono truncate">
+                                    <h4
+                                        class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors line-clamp-2 leading-snug"
+                                    >
+                                        {{ stream.title }}
+                                    </h4>
+                                    <div
+                                        v-if="stream.officer?.rank"
+                                        class="text-[11px] text-slate-500 mt-1 font-mono truncate"
+                                    >
                                         {{ stream.officer.rank }}
                                     </div>
                                 </div>
@@ -3556,83 +6143,184 @@ const submitFeedbackForm = async () => {
                     </section>
 
                     <!-- 10. 10-7 OFFLINE ROSTER SWIMLANE -->
-                    <section v-if="filteredOfflineOfficers.length > 0" class="space-y-3">
+                    <section
+                        v-if="filteredOfflineOfficers.length > 0"
+                        class="space-y-3"
+                    >
                         <div class="flex items-center justify-between px-1">
-                            <h3 class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide">
+                            <h3
+                                class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
+                            >
                                 10-7 Officer Roster
                             </h3>
                             <div class="flex items-center space-x-1.5 shrink-0">
-                                <button 
-                                    @click="scrollRow('row-offline', 'left')" 
-                                    class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-offline', 'left')"
+                                    class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kiri"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M15 19l-7-7 7-7"
+                                        />
+                                    </svg>
                                 </button>
-                                <button 
-                                    @click="scrollRow('row-offline', 'right')" 
-                                    class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group" 
+                                <button
+                                    @click="scrollRow('row-offline', 'right')"
+                                    class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
                                     title="Geser Kanan"
                                 >
-                                    <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                                    <svg
+                                        class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2.5"
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div id="row-offline" class="flex gap-3.5 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none">
-                            <div 
-                                v-for="officer in filteredOfflineOfficers" 
+                        <div
+                            id="row-offline"
+                            class="flex gap-3.5 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
+                        >
+                            <div
+                                v-for="officer in filteredOfflineOfficers"
                                 :key="`off-${officer.channel_id}`"
                                 class="w-[200px] sm:w-[220px] shrink-0 snap-start bg-[#0b121e]/90 hover:bg-[#0f1828] border border-slate-800/80 hover:border-slate-700 rounded-xl p-3 transition flex flex-col justify-between"
                             >
                                 <div class="flex flex-col min-w-0">
-                                    <div class="flex items-center justify-between gap-1 mb-1.5">
-                                        <span class="px-1.5 py-0.5 text-[9px] font-black rounded border" :class="getDeptBadgeClass(officer.department)">
+                                    <div
+                                        class="flex items-center justify-between gap-1 mb-1.5"
+                                    >
+                                        <span
+                                            class="px-1.5 py-0.5 text-[9px] font-black rounded border"
+                                            :class="
+                                                getDeptBadgeClass(
+                                                    officer.department,
+                                                )
+                                            "
+                                        >
                                             {{ officer.department }}
                                         </span>
-                                        <span class="text-[10px] text-slate-500 font-mono">10-7 OFFLINE</span>
+                                        <span
+                                            class="text-[10px] text-slate-500 font-mono"
+                                            >10-7 OFFLINE</span
+                                        >
                                     </div>
-                                    <h5 class="text-xs font-bold text-slate-100 truncate">{{ officer.officer_name }}</h5>
-                                    <div v-if="officer.rank" class="text-[11px] text-slate-400 font-mono truncate mt-0.5">{{ officer.rank }}</div>
+                                    <h5
+                                        class="text-xs font-bold text-slate-100 truncate"
+                                    >
+                                        {{ officer.officer_name }}
+                                    </h5>
+                                    <div
+                                        v-if="officer.rank"
+                                        class="text-[11px] text-slate-400 font-mono truncate mt-0.5"
+                                    >
+                                        {{ officer.rank }}
+                                    </div>
                                 </div>
 
-                                <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
-                                    <span class="text-slate-500 font-mono text-[9px]">OFF-DUTY</span>
+                                <div
+                                    class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]"
+                                >
+                                    <span
+                                        class="text-slate-500 font-mono text-[9px]"
+                                        >OFF-DUTY</span
+                                    >
                                     <div class="flex items-center space-x-1">
-                                        <button 
-                                            @click="togglePersonalStream(officer.channel_id || officer.handle)"
+                                        <button
+                                            @click="
+                                                togglePersonalStream(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                )
+                                            "
                                             class="p-1 rounded transition"
-                                            :class="isPersonalStream(officer.channel_id || officer.handle) ? 'text-purple-300 bg-purple-950/70 border border-purple-500/50' : 'text-slate-400 hover:text-purple-300 hover:bg-slate-800'"
-                                            :title="isPersonalStream(officer.channel_id || officer.handle) ? 'Hapus' : 'Pin ke Personal'"
+                                            :class="
+                                                isPersonalStream(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                )
+                                                    ? 'text-purple-300 bg-purple-950/70 border border-purple-500/50'
+                                                    : 'text-slate-400 hover:text-purple-300 hover:bg-slate-800'
+                                            "
+                                            :title="
+                                                isPersonalStream(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                )
+                                                    ? 'Hapus'
+                                                    : 'Pin ke Personal'
+                                            "
                                         >
-                                            <img :src="isPersonalStream(officer.channel_id || officer.handle) ? iconPinMinus : iconPinPlus" class="w-2.5 h-2.5 invert" />
+                                            <img
+                                                :src="
+                                                    isPersonalStream(
+                                                        officer.channel_id ||
+                                                            officer.handle,
+                                                    )
+                                                        ? iconPinMinus
+                                                        : iconPinPlus
+                                                "
+                                                class="w-2.5 h-2.5 invert"
+                                            />
                                         </button>
-                                        <button 
-                                            @click="openSubscribePopup(officer.channel_id || officer.handle, officer.officer_name)"
+                                        <button
+                                            @click="
+                                                openSubscribePopup(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                    officer.officer_name,
+                                                )
+                                            "
                                             class="bg-red-600/90 hover:bg-red-600 text-white font-bold px-1.5 py-0.5 rounded text-[9px] transition"
                                         >
                                             Sub
                                         </button>
-                                        <a :href="`https://www.youtube.com/${officer.handle}`" target="_blank" class="text-blue-400 hover:underline flex items-center gap-0.5">
-                                            <img :src="iconExternal" class="w-2.5 h-2.5 invert opacity-70" />
+                                        <a
+                                            :href="`https://www.youtube.com/${officer.handle}`"
+                                            target="_blank"
+                                            class="text-blue-400 hover:underline flex items-center gap-0.5"
+                                        >
+                                            <img
+                                                :src="iconExternal"
+                                                class="w-2.5 h-2.5 invert opacity-70"
+                                            />
                                         </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </section>
-
                 </div>
 
                 <!-- ========================================================================= -->
                 <!-- MODE B: SPECIFIC DEPARTMENTS / TAC / PERSONAL -> TACTICAL CCTV GRID       -->
                 <!-- ========================================================================= -->
                 <template v-else>
-                    <TacChannelToolbar 
+                    <TacChannelToolbar
                         v-if="isTacDepartment(selectedDepartment)"
                         :selectedDepartment="selectedDepartment"
                         :visibleStreamsCount="visibleStreams.length"
-                        :remainingSeconds="getTacRemainingSeconds(selectedDepartment)"
+                        :remainingSeconds="
+                            getTacRemainingSeconds(selectedDepartment)
+                        "
                         :iconRadio="iconRadio"
                         :iconClock="iconClock"
                         @extendTimer="extendTacTimer"
@@ -3640,32 +6328,57 @@ const submitFeedbackForm = async () => {
                     />
 
                     <!-- Department Standby Banner when visibleStreams.length === 0 -->
-                    <div v-if="visibleStreams.length === 0" class="relative rounded-2xl overflow-hidden border border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-8 text-center flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
-                        <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-1">
-                            <img :src="getDeptIcon(selectedDepartment)" class="w-7 h-7 invert opacity-80" alt="" />
+                    <div
+                        v-if="visibleStreams.length === 0"
+                        class="relative rounded-2xl overflow-hidden border border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-8 text-center flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200"
+                    >
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-1"
+                        >
+                            <img
+                                :src="getDeptIcon(selectedDepartment)"
+                                class="w-7 h-7 invert opacity-80"
+                                alt=""
+                            />
                         </div>
-                        <h3 class="text-lg font-bold text-slate-100 uppercase tracking-wider">
-                            TIDAK ADA SIARAN AKTIF (10-8) DI KATEGORI {{ selectedDepartment.replace('_', ' ') }}
+                        <h3
+                            class="text-lg font-bold text-slate-100 uppercase tracking-wider"
+                        >
+                            TIDAK ADA SIARAN AKTIF (10-8) DI KATEGORI
+                            {{ selectedDepartment.replace("_", " ") }}
                         </h3>
                         <p class="text-xs text-slate-400 max-w-md">
-                            Saat ini belum ada siaran langsung untuk kesatuan {{ selectedDepartment.replace('_', ' ') }}. Anda dapat menyinkronkan data terbaru atau melihat daftar anggota di 10-7 Roster.
+                            Saat ini belum ada siaran langsung untuk kesatuan
+                            {{ selectedDepartment.replace("_", " ") }}. Anda
+                            dapat menyinkronkan data terbaru atau melihat daftar
+                            anggota di 10-7 Roster.
                         </p>
-                        <div class="flex items-center gap-2 mt-2 flex-wrap justify-center">
-                            <button 
+                        <div
+                            class="flex items-center gap-2 mt-2 flex-wrap justify-center"
+                        >
+                            <button
                                 @click="triggerManualSync"
                                 :disabled="isSyncingFeeds"
                                 class="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition flex items-center gap-2"
                             >
-                                <img :src="iconRefresh" class="w-3.5 h-3.5 invert" :class="{ 'animate-spin': isSyncingFeeds }" />
-                                <span>{{ isSyncingFeeds ? 'Menyinkronkan...' : 'Cek Live Sekarang' }}</span>
+                                <img
+                                    :src="iconRefresh"
+                                    class="w-3.5 h-3.5 invert"
+                                    :class="{ 'animate-spin': isSyncingFeeds }"
+                                />
+                                <span>{{
+                                    isSyncingFeeds
+                                        ? "Menyinkronkan..."
+                                        : "Cek Live Sekarang"
+                                }}</span>
                             </button>
-                            <button 
+                            <button
                                 @click="activeTab = '10-7'"
                                 class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
                             >
                                 Lihat 10-7 Roster
                             </button>
-                            <button 
+                            <button
                                 @click="selectedDepartment = 'ALL'"
                                 class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
                             >
@@ -3674,832 +6387,1935 @@ const submitFeedbackForm = async () => {
                         </div>
 
                         <!-- Offline Roster Officers of this Department -->
-                        <div v-if="filteredOfflineOfficers.length > 0" class="w-full mt-6 pt-6 border-t border-slate-800/80 text-left">
-                            <h4 class="text-xs font-bold text-slate-300 font-mono mb-3 uppercase tracking-wider">
-                                Petugas 10-7 (Offline) Kesatuan {{ selectedDepartment.replace('_', ' ') }}:
+                        <div
+                            v-if="filteredOfflineOfficers.length > 0"
+                            class="w-full mt-6 pt-6 border-t border-slate-800/80 text-left"
+                        >
+                            <h4
+                                class="text-xs font-bold text-slate-300 font-mono mb-3 uppercase tracking-wider"
+                            >
+                                Petugas 10-7 (Offline) Kesatuan
+                                {{ selectedDepartment.replace("_", " ") }}:
                             </h4>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                                <div 
-                                    v-for="officer in filteredOfflineOfficers" 
+                            <div
+                                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"
+                            >
+                                <div
+                                    v-for="officer in filteredOfflineOfficers"
                                     :key="`dept-off-${officer.channel_id}`"
                                     class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex flex-col justify-between"
                                 >
                                     <div>
-                                        <span class="px-1.5 py-0.2 text-[9px] font-black rounded border inline-block mb-1" :class="getDeptBadgeClass(officer.department)">
+                                        <span
+                                            class="px-1.5 py-0.2 text-[9px] font-black rounded border inline-block mb-1"
+                                            :class="
+                                                getDeptBadgeClass(
+                                                    officer.department,
+                                                )
+                                            "
+                                        >
                                             {{ officer.department }}
                                         </span>
-                                        <div class="text-xs font-bold text-slate-200 truncate">{{ officer.officer_name }}</div>
-                                        <div class="text-[10px] text-slate-400 font-mono truncate">{{ officer.callsign }}</div>
+                                        <div
+                                            class="text-xs font-bold text-slate-200 truncate"
+                                        >
+                                            {{ officer.officer_name }}
+                                        </div>
+                                        <div
+                                            class="text-[10px] text-slate-400 font-mono truncate"
+                                        >
+                                            {{ officer.callsign }}
+                                        </div>
                                     </div>
-                                    <div class="mt-2 text-[10px] text-slate-500 font-mono">10-7 OFFLINE</div>
+                                    <div
+                                        class="mt-2 text-[10px] text-slate-500 font-mono"
+                                    >
+                                        10-7 OFFLINE
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- FOCUS MODE VIEW (Primary Large Video on Left + Right Support Column with Collapsible Live Chat) -->
-                    <div v-else-if="selectedLayout === 'focus'" class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-                        
+                    <div
+                        v-else-if="selectedLayout === 'focus'"
+                        class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start"
+                    >
                         <!-- LEFT COLUMN: PRIMARY LARGE FEATURED FEED (Takes 8/12 or 9/12 cols) -->
-                        <div v-if="primaryFocusedStream" class="lg:col-span-8 xl:col-span-9 flex flex-col gap-2">
-                            <div 
+                        <div
+                            v-if="primaryFocusedStream"
+                            class="lg:col-span-8 xl:col-span-9 flex flex-col gap-2"
+                        >
+                            <div
                                 class="bg-slate-950 rounded-xl overflow-hidden border border-slate-800/90 shadow-2xl relative"
                             >
-                            
-                            <!-- Large Stream HUD Top Bar -->
-                            <div class="bg-slate-900/95 px-3 sm:px-4 py-2 flex flex-wrap sm:flex-nowrap items-center justify-between border-b border-slate-800 gap-1.5">
-                                <div class="flex items-center space-x-2 min-w-0 flex-1 truncate">
-                                    <span class="px-2 py-0.5 text-[10px] sm:text-xs font-black rounded border tracking-wider shrink-0" :class="getDeptBadgeClass(primaryFocusedStream.officer?.department)">
-                                        [{{ primaryFocusedStream.officer?.department }}] {{ primaryFocusedStream.officer?.callsign }}
-                                    </span>
-                                    <div class="truncate min-w-0">
-                                        <span class="text-xs sm:text-sm font-bold text-slate-100 truncate">{{ primaryFocusedStream.officer?.officer_name }}</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
-                                    <!-- Pin / Personal Toggle Button -->
-                                    <button 
-                                        @click="togglePersonalStream(primaryFocusedStream.video_id)" 
-                                        :class="isPersonalStream(primaryFocusedStream.video_id) ? 'bg-purple-950/60 text-purple-300 border-purple-500/40 shadow-sm shadow-purple-500/20' : 'bg-slate-900/60 text-slate-400 hover:text-purple-300 hover:bg-slate-800 border-slate-800'"
-                                        class="px-2 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1 font-mono border shrink-0"
-                                        :title="isPersonalStream(primaryFocusedStream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
+                                <!-- Large Stream HUD Top Bar -->
+                                <div
+                                    class="bg-slate-900/95 px-3 sm:px-4 py-2 flex flex-wrap sm:flex-nowrap items-center justify-between border-b border-slate-800 gap-1.5"
+                                >
+                                    <div
+                                        class="flex items-center space-x-2 min-w-0 flex-1 truncate"
                                     >
-                                        <img :src="isPersonalStream(primaryFocusedStream.video_id) ? iconPinMinus : iconPinPlus" class="w-3.5 h-3.5 invert shrink-0 opacity-80" alt="" />
-                                        <span class="hidden sm:inline">Personal</span>
-                                    </button>
-
-                                    <!-- 1-Click TAC Radio Selector -->
-                                    <div class="relative">
-                                        <button 
-                                            @click.stop="activeTacPopoverVideoId = activeTacPopoverVideoId === primaryFocusedStream.video_id ? null : primaryFocusedStream.video_id" 
-                                            class="px-2.5 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1.5 font-mono border"
-                                            :class="getStreamTac(primaryFocusedStream.video_id) ? 'text-amber-300 bg-amber-950/60 border-amber-500/50 shadow-sm shadow-amber-500/20' : 'text-slate-400 hover:text-amber-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'"
-                                            :title="getStreamTac(primaryFocusedStream.video_id) ? `Terhubung ke ${getStreamTac(primaryFocusedStream.video_id).replace('_', ' ')}` : 'Hubungkan ke Tactical Radio TAC 1–5'"
+                                        <span
+                                            class="px-2 py-0.5 text-[10px] sm:text-xs font-black rounded border tracking-wider shrink-0"
+                                            :class="
+                                                getDeptBadgeClass(
+                                                    primaryFocusedStream.officer
+                                                        ?.department,
+                                                )
+                                            "
                                         >
-                                            <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-80" alt="" />
-                                            <span>{{ getStreamTac(primaryFocusedStream.video_id) ? getStreamTac(primaryFocusedStream.video_id).replace('_', ' ') : 'TAC' }}</span>
-                                        </button>
-
-                                        <!-- TAC Popover Menu (Opens downwards) -->
-                                        <div 
-                                            v-if="activeTacPopoverVideoId === primaryFocusedStream.video_id"
-                                            class="absolute right-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl p-2.5 shadow-2xl backdrop-blur-xl text-xs w-52 animate-in fade-in zoom-in-95 font-sans"
-                                            @click.stop
-                                        >
-                                            <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800">
-                                                <span class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400">
-                                                    <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
-                                                    PILIH RADIO TAC:
-                                                </span>
-                                                <button 
-                                                    @click.stop="activeTacPopoverVideoId = null" 
-                                                    class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 text-[10px]"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
-                                            
-                                            <div class="grid grid-cols-5 gap-1.5 mb-2">
-                                                <button 
-                                                    v-for="t in [1,2,3,4,5,6,7,8,9,10]" 
-                                                    :key="t"
-                                                    @click.stop="assignStreamToTac(`TAC_${t}`, primaryFocusedStream.video_id); activeTacPopoverVideoId = null"
-                                                    class="py-1.5 rounded-lg font-mono text-center font-bold text-xs transition border flex flex-col items-center justify-center gap-0.5"
-                                                    :class="getStreamTac(primaryFocusedStream.video_id) === `TAC_${t}` 
-                                                        ? 'bg-amber-500 text-black border-amber-300 shadow-lg shadow-amber-500/30' 
-                                                        : 'bg-slate-900 text-slate-200 hover:bg-amber-950/60 hover:text-amber-300 hover:border-amber-500/50 border-slate-800'"
-                                                    :title="`Pindah ke TAC ${t}`"
-                                                >
-                                                    <span class="text-[8px] text-slate-400 leading-none">TAC</span>
-                                                    <span class="leading-none">{{ t }}</span>
-                                                </button>
-                                            </div>
-                                            
-                                            <div v-if="getStreamTac(primaryFocusedStream.video_id)" class="pt-1.5 border-t border-slate-800/80">
-                                                <button 
-                                                    @click.stop="removeStreamFromTac(primaryFocusedStream.video_id); activeTacPopoverVideoId = null"
-                                                    class="w-full py-1.5 px-2 text-[10px] rounded-lg bg-red-950/60 text-red-300 hover:bg-red-900/80 border border-red-500/40 text-center transition flex items-center justify-center gap-1 font-mono"
-                                                >
-                                                    <span>✕ Lepas dari {{ getStreamTac(primaryFocusedStream.video_id).replace('_', ' ') }}</span>
-                                                </button>
-                                            </div>
+                                            [{{
+                                                primaryFocusedStream.officer
+                                                    ?.department
+                                            }}]
+                                            {{
+                                                primaryFocusedStream.officer
+                                                    ?.callsign
+                                            }}
+                                        </span>
+                                        <div class="truncate min-w-0">
+                                            <span
+                                                class="text-xs sm:text-sm font-bold text-slate-100 truncate"
+                                                >{{
+                                                    primaryFocusedStream.officer
+                                                        ?.officer_name
+                                                }}</span
+                                            >
                                         </div>
                                     </div>
 
-                                    <!-- Live Audio Toggle Button -->
-                                    <button 
-                                        @click="toggleAudio(primaryFocusedStream.video_id)" 
-                                        :class="activeAudioVideoId === primaryFocusedStream.video_id ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-950/30 font-bold' : 'bg-slate-900/60 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border-slate-800'"
-                                        class="px-2.5 py-1 text-xs rounded-lg transition border flex items-center gap-1.5"
+                                    <div
+                                        class="flex items-center space-x-1 sm:space-x-2 shrink-0"
                                     >
-                                        <img :src="activeAudioVideoId === primaryFocusedStream.video_id ? iconUnmute : iconMute" class="w-3.5 h-3.5 invert opacity-90" alt="" />
-                                        <span>{{ activeAudioVideoId === primaryFocusedStream.video_id ? 'LIVE AUDIO' : 'MUTED' }}</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Big Video Player Container with Floating Hover Overlay Bar -->
-                            <div class="relative w-full aspect-video bg-black group/thumb">
-                                <iframe
-                                    :key="`primary-player-${primaryFocusedStream.video_id}`"
-                                    :id="`yt-bodycam-${primaryFocusedStream.video_id}`"
-                                    class="w-full h-full border-0 pointer-events-auto"
-                                    :src="`https://www.youtube.com/embed/${primaryFocusedStream.video_id}?enablejsapi=1&autoplay=1&mute=1&controls=1&rel=0&playsinline=1&vq=hd1080&origin=${originUrl}`"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    allowfullscreen
-                                ></iframe>
-
-                                <!-- Stream HUD Floating Bottom Overlay (Visible on hover) -->
-                                <div class="absolute bottom-3 left-3 right-3 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 bg-slate-950/90 backdrop-blur-md px-3 sm:px-4 py-2 rounded-xl border border-slate-700/70 shadow-2xl flex flex-wrap sm:flex-nowrap items-center justify-between text-xs text-slate-300 gap-1.5 z-20 pointer-events-auto">
-                                    <div class="flex items-center space-x-2 min-w-0 flex-1 truncate">
-                                        <span class="font-mono text-blue-400 font-semibold truncate text-[11px] sm:text-xs flex items-center gap-1">
-                                            <img :src="iconShield" class="w-3.5 h-3.5 invert opacity-80 shrink-0" alt="" />
-                                            <span>{{ primaryFocusedStream.officer?.patrol_zone || 'Mission Row Sector' }}</span>
-                                        </span>
-                                        <span class="text-slate-600 hidden sm:inline">|</span>
-                                        <span class="font-mono text-slate-300 truncate hidden sm:inline">Badge: {{ primaryFocusedStream.officer?.badge_number || '#000' }}</span>
-                                        <span class="text-slate-600 hidden sm:inline">|</span>
-                                        <span class="font-mono text-slate-400 truncate hidden sm:inline">Streamer: {{ primaryFocusedStream.officer?.streamer_name }}</span>
-                                    </div>
-                                    <div class="flex items-center space-x-1.5 shrink-0">
-                                        <!-- 1-Click YouTube Subscribe Popup Button -->
-                                        <button 
-                                            v-if="primaryFocusedStream.officer?.channel_id || primaryFocusedStream.officer?.handle"
-                                            @click="openSubscribePopup(primaryFocusedStream.officer?.channel_id || primaryFocusedStream.officer?.handle, primaryFocusedStream.officer?.officer_name)"
-                                            class="bg-red-600/90 hover:bg-red-500 text-white font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-xs shadow-md shadow-red-600/30 flex items-center gap-1 transition shrink-0"
-                                            title="Subscribe to this officer's channel without leaving page"
+                                        <!-- Pin / Personal Toggle Button -->
+                                        <button
+                                            @click="
+                                                togglePersonalStream(
+                                                    primaryFocusedStream.video_id,
+                                                )
+                                            "
+                                            :class="
+                                                isPersonalStream(
+                                                    primaryFocusedStream.video_id,
+                                                )
+                                                    ? 'bg-purple-950/60 text-purple-300 border-purple-500/40 shadow-sm shadow-purple-500/20'
+                                                    : 'bg-slate-900/60 text-slate-400 hover:text-purple-300 hover:bg-slate-800 border-slate-800'
+                                            "
+                                            class="px-2 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1 font-mono border shrink-0"
+                                            :title="
+                                                isPersonalStream(
+                                                    primaryFocusedStream.video_id,
+                                                )
+                                                    ? 'Hapus dari Personal'
+                                                    : 'Tambah ke Personal Watchlist (Maks 6)'
+                                            "
                                         >
-                                            <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
-                                                <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-                                            </svg>
-                                            <span class="hidden sm:inline">Subscribe</span>
-                                            <span class="sm:hidden font-bold">Sub</span>
-                                        </button>
-
-                                        <!-- Toggle Live Chat in Right Column -->
-                                        <button 
-                                            @click="isRightChatOpen = !isRightChatOpen" 
-                                            :class="isRightChatOpen ? 'text-amber-400 font-bold bg-amber-950/40 border border-amber-500/30' : 'text-slate-300 hover:text-amber-300'"
-                                            class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded flex items-center gap-1 transition shrink-0"
-                                            title="Toggle Live Chat in Support Column"
-                                        >
-                                            <img :src="isRightChatOpen ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-80 shrink-0" alt="" />
-                                            <span>{{ isRightChatOpen ? 'Chat' : 'Chat' }}</span>
-                                        </button>
-                                        
-                                        <a 
-                                            :href="`https://www.youtube.com/watch?v=${primaryFocusedStream.video_id}`" 
-                                            target="_blank" 
-                                            class="p-1.5 hover:text-white text-slate-300 rounded hover:bg-slate-800 transition flex items-center justify-center"
-                                            title="Open on YouTube"
-                                        >
-                                            <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Open on YouTube" />
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Stream Lore & Description Section -->
-                            <div class="bg-[#080d16] px-4 py-2 border-t border-slate-800/80 flex flex-col gap-1">
-                                <div class="flex items-center justify-between gap-2">
-                                    <div class="text-xs font-bold text-slate-200 truncate flex items-center gap-1.5 min-w-0">
-                                        <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-70 shrink-0" alt="" />
-                                        <span class="truncate" :title="primaryFocusedStream.title">{{ primaryFocusedStream.title }}</span>
-                                    </div>
-                                    <button 
-                                        @click="toggleStreamInfo(primaryFocusedStream.video_id)" 
-                                        class="text-[10px] text-slate-300 hover:text-white font-mono bg-slate-900 hover:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700 flex items-center gap-1 shrink-0 transition"
-                                    >
-                                        <span>{{ isStreamInfoOpen(primaryFocusedStream.video_id) ? '▲ Tutup Deskripsi' : '▼ Lihat Deskripsi' }}</span>
-                                    </button>
-                                </div>
-                                <div v-if="isStreamInfoOpen(primaryFocusedStream.video_id)" class="bg-slate-950/90 p-3 rounded-xl border border-slate-800 mt-1.5 animate-in fade-in duration-150 shadow-inner">
-                                    <div v-if="primaryFocusedStream.description" class="text-[11px] text-slate-300 font-mono whitespace-pre-wrap break-words leading-relaxed max-h-56 overflow-y-auto scrollbar-thin selection:bg-purple-600" v-html="formatDescriptionWithLinks(primaryFocusedStream.description)"></div>
-                                    <div v-else class="text-[11px] text-slate-500 font-mono italic">
-                                        {{ isFetchingStreamDetail[primaryFocusedStream.video_id] ? 'Memuat deskripsi lengkap...' : 'Tidak ada deskripsi tambahan dari streamer.' }}
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                        </div>
-
-                    <!-- RIGHT COLUMN: COLLAPSIBLE LIVE CHAT AT TOP + SUPPORT UNITS BELOW -->
-                    <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-3">
-
-                        <!-- 1. COLLAPSIBLE LIVE CHAT CONTAINER (With user preferred 520px height) -->
-                        <div v-if="isRightChatOpen && primaryFocusedStream" class="bg-slate-950 rounded-xl overflow-hidden border border-amber-500/50 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200">
-                            <div class="bg-slate-900/95 px-3 py-1.5 flex items-center justify-between border-b border-slate-800 text-xs">
-                                <div class="flex items-center space-x-1.5 text-amber-300 font-bold truncate">
-                                    <img :src="iconChat" class="w-3.5 h-3.5 invert opacity-90" alt="" />
-                                    <span class="truncate">Live Chat: {{ primaryFocusedStream.officer?.officer_name }}</span>
-                                </div>
-                                <button 
-                                    @click="isRightChatOpen = false" 
-                                    class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-1.5 py-0.2 rounded"
-                                    title="Close Live Chat"
-                                >
-                                    ✕ Close
-                                </button>
-                            </div>
-                            <div class="w-full h-[520px] bg-slate-900 relative">
-                                <iframe 
-                                    :key="`chat-lead-${primaryFocusedStream.video_id}`"
-                                    :src="`https://www.youtube.com/live_chat?v=${primaryFocusedStream.video_id}&embed_domain=${chatEmbedDomain}`" 
-                                    class="w-full h-full border-0"
-                                    allow="autoplay"
-                                ></iframe>
-                            </div>
-                        </div>
-
-                        <!-- 2. SUPPORTING UNITS CONTAINER (Positioned Below Chat - YouTube Style Natural Page Flow) -->
-                        <div class="space-y-3">
-                            
-                            <div 
-                                v-for="stream in secondaryStreams" 
-                                :key="`support-card-${stream.video_id}`"
-                                :class="getCustomOrderRank(stream.video_id) > 0 ? 'border-amber-500/40 shadow-md shadow-amber-950/20' : 'border-slate-800/80 hover:border-slate-700'"
-                                class="bg-slate-950 rounded-xl overflow-hidden border transition-all duration-300 shadow-lg relative group flex flex-col"
-                            >
-                                <!-- Secondary Stream Header -->
-                                <div class="bg-slate-900/95 px-2.5 py-1.5 flex items-center justify-between border-b border-slate-800/80 text-xs gap-1">
-                                    <div class="flex items-center space-x-1.5 min-w-0 flex-1 truncate">
-                                        <span class="px-1.5 py-0.2 text-[10px] font-black rounded border shrink-0" :class="getDeptBadgeClass(stream.officer?.department)">
-                                            {{ stream.officer?.department }}
-                                        </span>
-                                        <span class="font-mono text-[11px] font-bold text-slate-200 truncate">
-                                            {{ stream.officer?.callsign }} | {{ stream.officer?.officer_name }}
-                                        </span>
-                                    </div>
-                                    
-                                    <!-- Action Buttons -->
-                                    <div class="flex items-center space-x-1 shrink-0">
-                                        <!-- Order Rank Badge Button -->
-                                        <button 
-                                            @click="toggleCustomOrderPin(stream.video_id)" 
-                                            class="px-1.5 py-0.5 text-[10px] rounded-md transition font-mono font-bold border"
-                                            :class="getCustomOrderRank(stream.video_id) > 0 ? 'text-amber-300 bg-amber-950/60 border-amber-500/50 shadow-sm' : 'text-slate-500 hover:text-amber-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'"
-                                            :title="getCustomOrderRank(stream.video_id) > 0 ? `Urutan #${getCustomOrderRank(stream.video_id)} (Klik untuk lepas)` : 'Klik untuk jadikan urutan prioritas grid berikutnya'"
-                                        >
-                                            <span>{{ getCustomOrderRank(stream.video_id) > 0 ? `#${getCustomOrderRank(stream.video_id)}` : '#' }}</span>
-                                        </button>
-
-                                        <!-- TAC Radio Button -->
-                                        <div class="relative">
-                                            <button 
-                                                @click.stop="activeTacPopoverVideoId = activeTacPopoverVideoId === stream.video_id ? null : stream.video_id" 
-                                                class="p-1 rounded-md transition font-mono border"
-                                                :class="getStreamTac(stream.video_id) ? 'text-amber-300 bg-amber-950/60 border-amber-500/50' : 'text-slate-500 hover:text-amber-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'"
-                                                :title="getStreamTac(stream.video_id) ? `Terhubung ke ${getStreamTac(stream.video_id).replace('_', ' ')}` : 'Hubungkan ke TAC Radio 1–5'"
+                                            <img
+                                                :src="
+                                                    isPersonalStream(
+                                                        primaryFocusedStream.video_id,
+                                                    )
+                                                        ? iconPinMinus
+                                                        : iconPinPlus
+                                                "
+                                                class="w-3.5 h-3.5 invert shrink-0 opacity-80"
+                                                alt=""
+                                            />
+                                            <span class="hidden sm:inline"
+                                                >Personal</span
                                             >
-                                                <img :src="iconRadio" class="w-3 h-3 brightness-0 invert opacity-90" alt="" />
+                                        </button>
+
+                                        <!-- 1-Click TAC Radio Selector -->
+                                        <div class="relative">
+                                            <button
+                                                @click.stop="
+                                                    activeTacPopoverVideoId =
+                                                        activeTacPopoverVideoId ===
+                                                        primaryFocusedStream.video_id
+                                                            ? null
+                                                            : primaryFocusedStream.video_id
+                                                "
+                                                class="px-2.5 py-1 text-xs font-bold rounded-lg transition flex items-center gap-1.5 font-mono border"
+                                                :class="
+                                                    getStreamTac(
+                                                        primaryFocusedStream.video_id,
+                                                    )
+                                                        ? 'text-amber-300 bg-amber-950/60 border-amber-500/50 shadow-sm shadow-amber-500/20'
+                                                        : 'text-slate-400 hover:text-amber-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'
+                                                "
+                                                :title="
+                                                    getStreamTac(
+                                                        primaryFocusedStream.video_id,
+                                                    )
+                                                        ? `Terhubung ke ${getStreamTac(primaryFocusedStream.video_id).replace('_', ' ')}`
+                                                        : 'Hubungkan ke Tactical Radio TAC 1–5'
+                                                "
+                                            >
+                                                <img
+                                                    :src="iconRadio"
+                                                    class="w-3.5 h-3.5 brightness-0 invert opacity-80"
+                                                    alt=""
+                                                />
+                                                <span>{{
+                                                    getStreamTac(
+                                                        primaryFocusedStream.video_id,
+                                                    )
+                                                        ? getStreamTac(
+                                                              primaryFocusedStream.video_id,
+                                                          ).replace("_", " ")
+                                                        : "TAC"
+                                                }}</span>
                                             </button>
 
-                                            <!-- TAC Popover Menu -->
-                                            <div 
-                                                v-if="activeTacPopoverVideoId === stream.video_id"
-                                                class="absolute right-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl p-2.5 shadow-2xl backdrop-blur-xl text-xs w-48 animate-in fade-in zoom-in-95 font-sans"
+                                            <!-- TAC Popover Menu (Opens downwards) -->
+                                            <div
+                                                v-if="
+                                                    activeTacPopoverVideoId ===
+                                                    primaryFocusedStream.video_id
+                                                "
+                                                class="absolute right-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl p-2.5 shadow-2xl backdrop-blur-xl text-xs w-52 animate-in fade-in zoom-in-95 font-sans"
                                                 @click.stop
                                             >
-                                                <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800">
-                                                    <span class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400">
-                                                        <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
-                                                        RADIO TAC:
+                                                <div
+                                                    class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800"
+                                                >
+                                                    <span
+                                                        class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400"
+                                                    >
+                                                        <img
+                                                            :src="iconRadio"
+                                                            class="w-3.5 h-3.5 brightness-0 invert opacity-90"
+                                                            alt=""
+                                                        />
+                                                        PILIH RADIO TAC:
                                                     </span>
-                                                    <button 
-                                                        @click.stop="activeTacPopoverVideoId = null" 
+                                                    <button
+                                                        @click.stop="
+                                                            activeTacPopoverVideoId =
+                                                                null
+                                                        "
                                                         class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 text-[10px]"
                                                     >
                                                         ✕
                                                     </button>
                                                 </div>
-                                                
-                                                <div class="grid grid-cols-5 gap-1 mb-2">
-                                                    <button 
-                                                        v-for="t in [1,2,3,4,5]" 
+
+                                                <div
+                                                    class="grid grid-cols-5 gap-1.5 mb-2"
+                                                >
+                                                    <button
+                                                        v-for="t in [
+                                                            1, 2, 3, 4, 5, 6, 7,
+                                                            8, 9, 10,
+                                                        ]"
                                                         :key="t"
-                                                        @click.stop="assignStreamToTac(`TAC_${t}`, stream.video_id); activeTacPopoverVideoId = null"
-                                                        class="py-1 rounded font-mono text-center font-bold text-xs transition border"
-                                                        :class="getStreamTac(stream.video_id) === `TAC_${t}` 
-                                                            ? 'bg-amber-500 text-black border-amber-300 shadow-md' 
-                                                            : 'bg-slate-900 text-slate-200 hover:bg-amber-950/60 hover:text-amber-300 border-slate-800'"
+                                                        @click.stop="
+                                                            assignStreamToTac(
+                                                                `TAC_${t}`,
+                                                                primaryFocusedStream.video_id,
+                                                            );
+                                                            activeTacPopoverVideoId =
+                                                                null;
+                                                        "
+                                                        class="py-1.5 rounded-lg font-mono text-center font-bold text-xs transition border flex flex-col items-center justify-center gap-0.5"
+                                                        :class="
+                                                            getStreamTac(
+                                                                primaryFocusedStream.video_id,
+                                                            ) === `TAC_${t}`
+                                                                ? 'bg-amber-500 text-black border-amber-300 shadow-lg shadow-amber-500/30'
+                                                                : 'bg-slate-900 text-slate-200 hover:bg-amber-950/60 hover:text-amber-300 hover:border-amber-500/50 border-slate-800'
+                                                        "
                                                         :title="`Pindah ke TAC ${t}`"
                                                     >
-                                                        {{ t }}
+                                                        <span
+                                                            class="text-[8px] text-slate-400 leading-none"
+                                                            >TAC</span
+                                                        >
+                                                        <span
+                                                            class="leading-none"
+                                                            >{{ t }}</span
+                                                        >
                                                     </button>
                                                 </div>
-                                                
-                                                <div v-if="getStreamTac(stream.video_id)" class="pt-1.5 border-t border-slate-800/80">
-                                                    <button 
-                                                        @click.stop="removeStreamFromTac(stream.video_id); activeTacPopoverVideoId = null"
-                                                        class="w-full py-1 px-1.5 text-[10px] rounded bg-red-950/60 text-red-300 hover:bg-red-900/80 border border-red-500/40 text-center transition font-mono"
+
+                                                <div
+                                                    v-if="
+                                                        getStreamTac(
+                                                            primaryFocusedStream.video_id,
+                                                        )
+                                                    "
+                                                    class="pt-1.5 border-t border-slate-800/80"
+                                                >
+                                                    <button
+                                                        @click.stop="
+                                                            removeStreamFromTac(
+                                                                primaryFocusedStream.video_id,
+                                                            );
+                                                            activeTacPopoverVideoId =
+                                                                null;
+                                                        "
+                                                        class="w-full py-1.5 px-2 text-[10px] rounded-lg bg-red-950/60 text-red-300 hover:bg-red-900/80 border border-red-500/40 text-center transition flex items-center justify-center gap-1 font-mono"
                                                     >
-                                                        ✕ Lepas TAC
+                                                        <span
+                                                            >✕ Lepas dari
+                                                            {{
+                                                                getStreamTac(
+                                                                    primaryFocusedStream.video_id,
+                                                                ).replace(
+                                                                    "_",
+                                                                    " ",
+                                                                )
+                                                            }}</span
+                                                        >
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <!-- Personal Pin Toggle -->
-                                        <button 
-                                            @click="togglePersonalStream(stream.video_id)" 
-                                            :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/60 border border-purple-500/40' : 'text-slate-500 hover:text-purple-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'"
-                                            class="p-1 rounded-md transition font-mono border"
-                                            :title="isPersonalStream(stream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
+                                        <!-- Live Audio Toggle Button -->
+                                        <button
+                                            @click="
+                                                toggleAudio(
+                                                    primaryFocusedStream.video_id,
+                                                )
+                                            "
+                                            :class="
+                                                activeAudioVideoId ===
+                                                primaryFocusedStream.video_id
+                                                    ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-950/30 font-bold'
+                                                    : 'bg-slate-900/60 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border-slate-800'
+                                            "
+                                            class="px-2.5 py-1 text-xs rounded-lg transition border flex items-center gap-1.5"
                                         >
-                                            <img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert opacity-80" alt="" />
-                                        </button>
-
-                                        <!-- Audio Switch Toggle -->
-                                        <button 
-                                            v-if="activePreviewVideoIds.includes(stream.video_id) || !isDataSaverEnabled"
-                                            @click="toggleAudio(stream.video_id)" 
-                                            :class="activeAudioVideoId === stream.video_id ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 font-bold' : 'text-slate-500 hover:text-slate-200 bg-slate-900/60 hover:bg-slate-800 border-slate-800'"
-                                            class="p-1 rounded-md transition font-mono border"
-                                            title="Audio Switch"
-                                        >
-                                            <img :src="activeAudioVideoId === stream.video_id ? iconUnmute : iconMute" class="w-3 h-3 invert opacity-80" alt="" />
-                                        </button>
-
-                                        <!-- Set as Main Focus Button -->
-                                        <button 
-                                            @click="setFocusStream(stream.video_id)" 
-                                            class="bg-blue-950/60 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 hover:border-blue-400 px-2 py-0.5 rounded-md text-[10px] font-bold shadow transition flex items-center gap-1"
-                                            title="Jadikan Siaran Utama (Fokus)"
-                                        >
-                                            <img :src="iconFocus" class="w-2.5 h-2.5 invert opacity-80" alt="" />
-                                            <span>Fokus</span>
+                                            <img
+                                                :src="
+                                                    activeAudioVideoId ===
+                                                    primaryFocusedStream.video_id
+                                                        ? iconUnmute
+                                                        : iconMute
+                                                "
+                                                class="w-3.5 h-3.5 invert opacity-90"
+                                                alt=""
+                                            />
+                                            <span>{{
+                                                activeAudioVideoId ===
+                                                primaryFocusedStream.video_id
+                                                    ? "LIVE AUDIO"
+                                                    : "MUTED"
+                                            }}</span>
                                         </button>
                                     </div>
                                 </div>
 
-                                <!-- VIDEO DISPLAY: Live IFrame OR Lightweight Poster Thumbnail -->
-                                <div class="relative w-full aspect-video bg-black overflow-hidden group/thumb">
-                                    
-                                    <!-- ACTIVE IFRAME -->
-                                    <template v-if="activePreviewVideoIds.includes(stream.video_id) || !isDataSaverEnabled">
-                                        <iframe
-                                            :key="`support-iframe-${stream.video_id}`"
-                                            :id="`yt-bodycam-${stream.video_id}`"
-                                            class="w-full h-full border-0 pointer-events-auto"
-                                            :src="`https://www.youtube.com/embed/${stream.video_id}?enablejsapi=1&autoplay=1&mute=1&controls=1&rel=0&playsinline=1&vq=small&origin=${originUrl}`"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                            allowfullscreen
-                                        ></iframe>
+                                <!-- Big Video Player Container with Floating Hover Overlay Bar -->
+                                <div
+                                    class="relative w-full aspect-video bg-black group/thumb"
+                                >
+                                    <iframe
+                                        :key="`primary-player-${primaryFocusedStream.video_id}`"
+                                        :id="`yt-bodycam-${primaryFocusedStream.video_id}`"
+                                        class="w-full h-full border-0 pointer-events-auto"
+                                        :src="`https://www.youtube.com/embed/${primaryFocusedStream.video_id}?enablejsapi=1&autoplay=1&mute=1&controls=1&rel=0&playsinline=1&vq=hd1080&origin=${originUrl}`"
+                                        allow="
+                                            accelerometer;
+                                            autoplay;
+                                            clipboard-write;
+                                            encrypted-media;
+                                            gyroscope;
+                                            picture-in-picture;
+                                            web-share;
+                                        "
+                                        allowfullscreen
+                                    ></iframe>
 
-                                        <!-- Close Preview Button -->
-                                        <button 
-                                            v-if="isDataSaverEnabled"
-                                            @click="toggleSidebarPreview(stream.video_id)"
-                                            class="absolute top-2 right-2 bg-black/80 hover:bg-red-900/80 text-white text-[10px] px-1.5 py-0.5 rounded border border-white/20 z-20"
-                                            title="Stop live video and return to thumbnail to save bandwidth"
+                                    <!-- Stream HUD Floating Bottom Overlay (Visible on hover) -->
+                                    <div
+                                        class="absolute bottom-3 left-3 right-3 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 bg-slate-950/90 backdrop-blur-md px-3 sm:px-4 py-2 rounded-xl border border-slate-700/70 shadow-2xl flex flex-wrap sm:flex-nowrap items-center justify-between text-xs text-slate-300 gap-1.5 z-20 pointer-events-auto"
+                                    >
+                                        <div
+                                            class="flex items-center space-x-2 min-w-0 flex-1 truncate"
                                         >
-                                            ✕ Close Preview
-                                        </button>
-                                    </template>
-
-                                    <!-- LIGHTWEIGHT POSTER THUMBNAIL (Minimalist Clean Idle State) -->
-                                    <template v-else>
-                                        <img 
-                                            :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" 
-                                            :alt="stream.title"
-                                            class="w-full h-full object-cover opacity-90 group-hover/thumb:opacity-100 transition duration-300"
-                                            loading="lazy"
-                                        />
-
-                                        <!-- Minimalist Standby Live Badge (Always subtle, non-intrusive) -->
-                                        <div class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-red-500/30 z-10 pointer-events-none">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
-                                            <span>10-8 LIVE</span>
+                                            <span
+                                                class="font-mono text-blue-400 font-semibold truncate text-[11px] sm:text-xs flex items-center gap-1"
+                                            >
+                                                <img
+                                                    :src="iconShield"
+                                                    class="w-3.5 h-3.5 invert opacity-80 shrink-0"
+                                                    alt=""
+                                                />
+                                                <span>{{
+                                                    primaryFocusedStream.officer
+                                                        ?.patrol_zone ||
+                                                    "Mission Row Sector"
+                                                }}</span>
+                                            </span>
+                                            <span
+                                                class="text-slate-600 hidden sm:inline"
+                                                >|</span
+                                            >
+                                            <span
+                                                class="font-mono text-slate-300 truncate hidden sm:inline"
+                                                >Badge:
+                                                {{
+                                                    primaryFocusedStream.officer
+                                                        ?.badge_number || "#000"
+                                                }}</span
+                                            >
+                                            <span
+                                                class="text-slate-600 hidden sm:inline"
+                                                >|</span
+                                            >
+                                            <span
+                                                class="font-mono text-slate-400 truncate hidden sm:inline"
+                                                >Streamer:
+                                                {{
+                                                    primaryFocusedStream.officer
+                                                        ?.streamer_name
+                                                }}</span
+                                            >
                                         </div>
+                                        <div
+                                            class="flex items-center space-x-1.5 shrink-0"
+                                        >
+                                            <!-- 1-Click YouTube Subscribe Popup Button -->
+                                            <button
+                                                v-if="
+                                                    primaryFocusedStream.officer
+                                                        ?.channel_id ||
+                                                    primaryFocusedStream.officer
+                                                        ?.handle
+                                                "
+                                                @click="
+                                                    openSubscribePopup(
+                                                        primaryFocusedStream
+                                                            .officer
+                                                            ?.channel_id ||
+                                                            primaryFocusedStream
+                                                                .officer
+                                                                ?.handle,
+                                                        primaryFocusedStream
+                                                            .officer
+                                                            ?.officer_name,
+                                                    )
+                                                "
+                                                class="bg-red-600/90 hover:bg-red-500 text-white font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-xs shadow-md shadow-red-600/30 flex items-center gap-1 transition shrink-0"
+                                                title="Subscribe to this officer's channel without leaving page"
+                                            >
+                                                <svg
+                                                    class="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current shrink-0"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
+                                                    />
+                                                </svg>
+                                                <span class="hidden sm:inline"
+                                                    >Subscribe</span
+                                                >
+                                                <span
+                                                    class="sm:hidden font-bold"
+                                                    >Sub</span
+                                                >
+                                            </button>
 
-                                        <!-- Hover-to-Reveal Center Action Controls -->
-                                        <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px] opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 flex items-center justify-center gap-2 p-3 z-10">
-                                            <button 
-                                                @click="toggleSidebarPreview(stream.video_id)"
-                                                class="bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg shadow-emerald-950/40 transition flex items-center gap-1.5 transform hover:scale-105"
-                                                title="Putar Siaran Video"
+                                            <!-- Toggle Live Chat in Right Column -->
+                                            <button
+                                                @click="
+                                                    isRightChatOpen =
+                                                        !isRightChatOpen
+                                                "
+                                                :class="
+                                                    isRightChatOpen
+                                                        ? 'text-amber-400 font-bold bg-amber-950/40 border border-amber-500/30'
+                                                        : 'text-slate-300 hover:text-amber-300'
+                                                "
+                                                class="font-mono text-[10px] sm:text-xs px-2 py-0.5 rounded flex items-center gap-1 transition shrink-0"
+                                                title="Toggle Live Chat in Support Column"
                                             >
-                                                <img :src="iconPlayAll" class="w-3.5 h-3.5 invert" alt="" />
-                                                <span>Play</span>
+                                                <img
+                                                    :src="
+                                                        isRightChatOpen
+                                                            ? iconChatRemove
+                                                            : iconChat
+                                                    "
+                                                    class="w-3.5 h-3.5 invert opacity-80 shrink-0"
+                                                    alt=""
+                                                />
+                                                <span>{{
+                                                    isRightChatOpen
+                                                        ? "Chat"
+                                                        : "Chat"
+                                                }}</span>
                                             </button>
-                                            
-                                            <button 
-                                                @click="setFocusStream(stream.video_id)"
-                                                class="bg-blue-600/90 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg shadow-blue-950/40 transition flex items-center gap-1.5 transform hover:scale-105"
-                                                title="Jadikan Siaran Utama (Fokus)"
-                                            >
-                                                <img :src="iconFocus" class="w-3.5 h-3.5 invert" alt="" />
-                                                <span>Fokus</span>
-                                            </button>
-                                        </div>
-                                    </template>
 
-                                    <!-- Floating Hover Overlay Bar -->
-                                    <div class="absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 bg-slate-950/90 backdrop-blur-md px-2 py-1 rounded-xl border border-slate-700/70 shadow-2xl flex items-center justify-between text-[10px] text-slate-300 gap-1 z-20 pointer-events-auto">
-                                        <span class="truncate text-blue-400 font-mono flex items-center gap-1">
-                                            <img :src="iconShield" class="w-3 h-3 invert opacity-80 shrink-0" alt="" />
-                                            <span>{{ stream.officer?.patrol_zone || 'Patrol' }}</span>
-                                        </span>
-                                        <div class="flex items-center space-x-1.5 shrink-0">
-                                            <button 
-                                                v-if="stream.officer?.channel_id || stream.officer?.handle"
-                                                @click="openSubscribePopup(stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
-                                                class="text-red-400 hover:text-red-300 hover:bg-red-950/60 px-1.5 py-0.5 rounded transition flex items-center gap-0.5 font-bold shrink-0 text-[10px]"
-                                                title="Subscribe to channel without leaving page"
-                                            >
-                                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-0.5 shrink-0"></span>
-                                                <span>Sub</span>
-                                            </button>
-                                            <a 
-                                                :href="`https://www.youtube.com/watch?v=${stream.video_id}`" 
-                                                target="_blank" 
-                                                class="p-1 hover:text-white text-slate-400 hover:bg-slate-800 rounded transition flex items-center justify-center"
+                                            <a
+                                                :href="`https://www.youtube.com/watch?v=${primaryFocusedStream.video_id}`"
+                                                target="_blank"
+                                                class="p-1.5 hover:text-white text-slate-300 rounded hover:bg-slate-800 transition flex items-center justify-center"
                                                 title="Open on YouTube"
                                             >
-                                                <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Open on YouTube" />
+                                                <img
+                                                    :src="iconExternal"
+                                                    class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100"
+                                                    alt="Open on YouTube"
+                                                />
                                             </a>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- STANDARD GRID VIEWS (Auto, 2x2, 3x3, 4x4) -->
-                <div v-else class="space-y-3">
-                    
-                    <!-- DATA SAVER HELPER BAR (When in Saver Mode) -->
-                    <div v-if="isDataSaverEnabled" class="bg-slate-900/90 border border-slate-800/90 px-3.5 py-2.5 rounded-xl flex items-center justify-between flex-wrap gap-2.5 shadow-lg">
-                        <div class="flex items-center space-x-2 text-xs font-mono">
-                            <span class="text-emerald-400 font-bold flex items-center gap-1.5">
-                                <img :src="iconSaver" class="w-3.5 h-3.5 invert" alt="" />
-                                <span>SAVER MODE ACTIVE:</span>
-                            </span>
-                            <span class="text-slate-300">Feeds are in standby. Click Play to view any feed, or switch to Play All.</span>
-                        </div>
-                        <div class="flex items-center space-x-2 shrink-0">
-                            <button 
-                                @click="disableDataSaverAndPlayAll" 
-                                class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow"
-                            >
-                                <img :src="iconPlayAll" class="w-3 h-3 invert" alt="" />
-                                <span>Play All Videos</span>
-                            </button>
-                            <button 
-                                v-if="activeGridVideoIds.length > 0" 
-                                @click="enableDataSaver" 
-                                class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-mono transition flex items-center gap-1"
-                            >
-                                <img :src="iconReset" class="w-3 h-3 invert opacity-70" alt="" />
-                                <span>Reset to Saver</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- GRID CONTAINER (With Right Sidebar Live Chat) -->
-                    <div :class="activeGridChatStream ? 'grid grid-cols-1 lg:grid-cols-12 gap-4 items-start' : ''">
-                        
-                        <!-- LEFT MAIN GRID (Takes 8/12 or 9/12 cols when Chat is open) -->
-                        <div :class="activeGridChatStream ? 'lg:col-span-8 xl:col-span-9' : 'w-full'">
-                            <div :class="layoutGridClass">
-                                <div 
-                                    v-for="stream in displayedGridStreams" 
-                                    :key="`grid-card-${stream.video_id}`"
-                                    :class="[
-                                        getCustomOrderRank(stream.video_id) > 0 ? 'border-amber-500/40 shadow-md shadow-amber-950/20' : 'border-slate-800/80 hover:border-slate-700',
-                                        activeChatVideoId === stream.video_id ? 'border-amber-500/60 shadow-md shadow-amber-950/30' : ''
-                                    ]"
-                                    class="bg-slate-950 rounded-xl overflow-hidden border transition flex flex-col relative group"
+                                <!-- Stream Lore & Description Section -->
+                                <div
+                                    class="bg-[#080d16] px-4 py-2 border-t border-slate-800/80 flex flex-col gap-1"
                                 >
-                            <!-- BODYCAM HEADER HUD OVERLAY -->
-                            <div class="bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 flex items-center justify-between border-b border-slate-800/80 z-10">
-                                <!-- Officer Badge & Callsign -->
-                                <div class="flex items-center space-x-2 min-w-0">
-                                    <span class="px-1.5 py-0.5 text-[11px] font-black rounded border tracking-wider shrink-0 opacity-90" :class="getDeptBadgeClass(stream.officer?.department)">
-                                        {{ stream.officer?.department }} {{ stream.officer?.callsign }}
-                                    </span>
-                                    <div class="truncate">
-                                        <span class="text-xs font-semibold text-slate-200 block truncate opacity-90">{{ stream.officer?.officer_name }}</span>
-                                    </div>
-                                </div>
-
-                                <!-- Bodycam Actions: Order Rank Badge, Audio, TAC, Personal -->
-                                <div class="flex items-center space-x-1 shrink-0">
-                                    <!-- Order Rank Badge Button -->
-                                    <button 
-                                        @click="toggleCustomOrderPin(stream.video_id)" 
-                                        class="px-1.5 py-0.5 text-[10px] rounded-md transition flex items-center font-mono font-bold border"
-                                        :class="getCustomOrderRank(stream.video_id) > 0 ? 'text-amber-300 bg-amber-500/15 border-amber-500/40' : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800'"
-                                        :title="getCustomOrderRank(stream.video_id) > 0 ? `Urutan #${getCustomOrderRank(stream.video_id)} (Klik untuk lepas)` : 'Klik untuk jadikan urutan prioritas grid berikutnya'"
+                                    <div
+                                        class="flex items-center justify-between gap-2"
                                     >
-                                        <span>{{ getCustomOrderRank(stream.video_id) > 0 ? `#${getCustomOrderRank(stream.video_id)}` : '#' }}</span>
-                                    </button>
-
-                                    <!-- Audio Button (In Live / Active Mode) -->
-                                    <button 
-                                        v-if="!isDataSaverEnabled || activeGridVideoIds.includes(stream.video_id) || activeAudioVideoId === stream.video_id"
-                                        @click="toggleAudio(stream.video_id)" 
-                                        :class="activeAudioVideoId === stream.video_id ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 font-bold' : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800'"
-                                        class="px-1.5 py-0.5 text-[10px] rounded-md transition flex items-center gap-1 font-mono border"
-                                        :title="activeAudioVideoId === stream.video_id ? 'Mute audio' : 'Unmute audio'"
-                                    >
-                                        <img :src="activeAudioVideoId === stream.video_id ? iconUnmute : iconMute" class="w-3 h-3 invert opacity-80" alt="" />
-                                        <span class="text-[9px]">{{ activeAudioVideoId === stream.video_id ? 'ON' : 'MUTED' }}</span>
-                                    </button>
-
-                                    <!-- 1-Click TAC Radio Selector -->
-                                    <div class="relative">
-                                        <button 
-                                            @click.stop="activeTacPopoverVideoId = activeTacPopoverVideoId === stream.video_id ? null : stream.video_id" 
-                                            class="p-1 rounded-md transition font-mono border"
-                                            :class="getStreamTac(stream.video_id) ? 'text-amber-300 bg-amber-950/60 border-amber-500/40 font-bold' : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800/80'"
-                                            :title="getStreamTac(stream.video_id) ? `Terhubung ke ${getStreamTac(stream.video_id).replace('_', ' ')}` : 'Hubungkan ke TAC Radio 1–5'"
+                                        <div
+                                            class="text-xs font-bold text-slate-200 truncate flex items-center gap-1.5 min-w-0"
                                         >
-                                            <img :src="iconRadio" class="w-3 h-3 brightness-0 invert opacity-75" alt="" />
-                                        </button>
-
-                                        <!-- TAC Popover Menu -->
-                                        <div 
-                                            v-if="activeTacPopoverVideoId === stream.video_id"
-                                            class="absolute right-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl p-2.5 shadow-2xl backdrop-blur-xl text-xs w-52 animate-in fade-in zoom-in-95 font-sans"
-                                            @click.stop
-                                        >
-                                            <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800">
-                                                <span class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400">
-                                                    <img :src="iconRadio" class="w-3.5 h-3.5 brightness-0 invert opacity-90" alt="" />
-                                                    PILIH RADIO TAC:
-                                                </span>
-                                                <button 
-                                                    @click.stop="activeTacPopoverVideoId = null" 
-                                                    class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 text-[10px]"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </div>
-                                            
-                                            <div class="grid grid-cols-5 gap-1.5 mb-2">
-                                                <button 
-                                                    v-for="t in [1,2,3,4,5,6,7,8,9,10]" 
-                                                    :key="t"
-                                                    @click.stop="assignStreamToTac(`TAC_${t}`, stream.video_id); activeTacPopoverVideoId = null"
-                                                    class="py-1.5 rounded-lg font-mono text-center font-bold text-xs transition border flex flex-col items-center justify-center gap-0.5"
-                                                    :class="getStreamTac(stream.video_id) === `TAC_${t}` 
-                                                        ? 'bg-amber-500 text-black border-amber-300 shadow-lg shadow-amber-500/30' 
-                                                        : 'bg-slate-900 text-slate-200 hover:bg-amber-950/60 hover:text-amber-300 hover:border-amber-500/50 border-slate-800'"
-                                                    :title="`Pindah ke TAC ${t}`"
-                                                >
-                                                    <span class="text-[8px] text-slate-400 leading-none">TAC</span>
-                                                    <span class="leading-none">{{ t }}</span>
-                                                </button>
-                                            </div>
-                                            
-                                            <div v-if="getStreamTac(stream.video_id)" class="pt-1.5 border-t border-slate-800/80">
-                                                <button 
-                                                    @click.stop="removeStreamFromTac(stream.video_id); activeTacPopoverVideoId = null"
-                                                    class="w-full py-1.5 px-2 text-[10px] rounded-lg bg-red-950/60 text-red-300 hover:bg-red-900/80 border border-red-500/40 text-center transition flex items-center justify-center gap-1 font-mono"
-                                                >
-                                                    <span>✕ Lepas dari {{ getStreamTac(stream.video_id).replace('_', ' ') }}</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Top Personal Pin Button (Ghost Icon) -->
-                                    <button 
-                                        @click="togglePersonalStream(stream.video_id)" 
-                                        class="p-1 rounded-md transition border"
-                                        :class="isPersonalStream(stream.video_id) ? 'text-purple-300 bg-purple-950/60 border-purple-500/40' : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800/80'"
-                                        :title="isPersonalStream(stream.video_id) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
-                                    >
-                                        <img :src="isPersonalStream(stream.video_id) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert opacity-80" alt="" />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- VIDEO DISPLAY: Live IFrame OR Lightweight Poster Thumbnail -->
-                            <div class="relative w-full aspect-video bg-black overflow-hidden flex-1 group/thumb">
-                                <template v-if="!isDataSaverEnabled || activeGridVideoIds.includes(stream.video_id) || activeAudioVideoId === stream.video_id">
-                                    <iframe
-                                        :key="`grid-iframe-${stream.video_id}`"
-                                        :id="`yt-bodycam-${stream.video_id}`"
-                                        class="w-full h-full border-0 pointer-events-auto"
-                                        :src="`https://www.youtube.com/embed/${stream.video_id}?enablejsapi=1&autoplay=1&mute=1&controls=1&rel=0&playsinline=1&vq=small&origin=${originUrl}`"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                        allowfullscreen
-                                    ></iframe>
-
-                                    <!-- Close / Stop Feed Button when in Data Saver Mode -->
-                                    <button 
-                                        v-if="isDataSaverEnabled"
-                                        @click="toggleGridStreamPlay(stream.video_id)"
-                                        class="absolute top-2 left-2 bg-black/80 hover:bg-red-900/80 text-white text-[10px] px-2 py-0.5 rounded border border-white/20 z-20 font-mono"
-                                        title="Close video to save bandwidth"
-                                    >
-                                        ✕ Stop Feed
-                                    </button>
-                                </template>
-
-                                <template v-else>
-                                    <img 
-                                        :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`" 
-                                        :alt="stream.title"
-                                        class="w-full h-full object-cover opacity-85 group-hover/thumb:opacity-100 transition duration-300"
-                                        loading="lazy"
-                                    />
-
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40 flex flex-col items-center justify-center p-3">
-                                        <div class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded border border-red-500/30">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
-                                            <span>10-8 LIVE</span>
-                                        </div>
-
-                                        <!-- Hover-to-Reveal Minimalist Action Controls -->
-                                        <div class="flex items-center space-x-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 transform scale-95 group-hover/thumb:scale-100">
-                                            <button 
-                                                @click="selectedLayout = 'focus'; setFocusStream(stream.video_id)"
-                                                class="bg-blue-600/90 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5 transform hover:scale-105 backdrop-blur-sm"
-                                                title="Focus as Main Screen"
+                                            <img
+                                                :src="iconRadio"
+                                                class="w-3.5 h-3.5 invert opacity-70 shrink-0"
+                                                alt=""
+                                            />
+                                            <span
+                                                class="truncate"
+                                                :title="
+                                                    primaryFocusedStream.title
+                                                "
+                                                >{{
+                                                    primaryFocusedStream.title
+                                                }}</span
                                             >
-                                                <img :src="iconFocus" class="w-3.5 h-3.5 invert opacity-90" alt="" />
-                                                <span>Focus</span>
-                                            </button>
-                                            
-                                            <button 
-                                                @click="toggleGridStreamPlay(stream.video_id)"
-                                                class="bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5 transform hover:scale-105 backdrop-blur-sm"
-                                                title="Play this stream"
-                                            >
-                                                <img :src="iconPlayAll" class="w-3.5 h-3.5 invert opacity-90" alt="" />
-                                                <span>Play</span>
-                                            </button>
                                         </div>
+                                        <button
+                                            @click="
+                                                toggleStreamInfo(
+                                                    primaryFocusedStream.video_id,
+                                                )
+                                            "
+                                            class="text-[10px] text-slate-300 hover:text-white font-mono bg-slate-900 hover:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700 flex items-center gap-1 shrink-0 transition"
+                                        >
+                                            <span>{{
+                                                isStreamInfoOpen(
+                                                    primaryFocusedStream.video_id,
+                                                )
+                                                    ? "▲ Tutup Deskripsi"
+                                                    : "▼ Lihat Deskripsi"
+                                            }}</span>
+                                        </button>
                                     </div>
-                                </template>
-
-                                <!-- Floating Hover Overlay Bar -->
-                                <div class="absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-200 bg-slate-950/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/70 shadow-2xl flex items-center justify-between z-20 pointer-events-auto text-[11px] text-slate-300">
-                                    <!-- Patrol Sector / Badge -->
-                                    <div class="flex items-center space-x-2 truncate">
-                                        <span class="font-mono text-blue-400 truncate flex items-center gap-1">
-                                            <img :src="iconShield" class="w-3 h-3 invert opacity-80 shrink-0" alt="" />
-                                            <span>{{ stream.officer?.patrol_zone || 'Los Santos Sector' }}</span>
-                                        </span>
-                                        <span class="text-slate-600">|</span>
-                                        <span class="font-mono text-slate-400 truncate">{{ stream.officer?.badge_number || '#000' }}</span>
-                                    </div>
-
-                                    <!-- Action Icons (Subscribe, Focus, Chat, YT Link) -->
-                                    <div class="flex items-center space-x-1.5 shrink-0">
-                                        <button 
-                                            v-if="stream.officer?.channel_id || stream.officer?.handle"
-                                            @click="openSubscribePopup(stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
-                                            class="p-1 hover:text-red-400 text-slate-300 hover:bg-red-950/40 rounded transition flex items-center gap-0.5 text-[10px] font-bold"
-                                            title="Subscribe without leaving page"
+                                    <div
+                                        v-if="
+                                            isStreamInfoOpen(
+                                                primaryFocusedStream.video_id,
+                                            )
+                                        "
+                                        class="bg-slate-950/90 p-3 rounded-xl border border-slate-800 mt-1.5 animate-in fade-in duration-150 shadow-inner"
+                                    >
+                                        <div
+                                            v-if="
+                                                primaryFocusedStream.description
+                                            "
+                                            class="text-[11px] text-slate-300 font-mono whitespace-pre-wrap break-words leading-relaxed max-h-56 overflow-y-auto scrollbar-thin selection:bg-purple-600"
+                                            v-html="
+                                                formatDescriptionWithLinks(
+                                                    primaryFocusedStream.description,
+                                                )
+                                            "
+                                        ></div>
+                                        <div
+                                            v-else
+                                            class="text-[11px] text-slate-500 font-mono italic"
                                         >
-                                            <span class="w-2 h-2 rounded-full bg-red-500 mr-0.5"></span>
-                                            <span class="hidden sm:inline">Sub</span>
-                                        </button>
-                                        <button 
-                                            @click="selectedLayout = 'focus'; setFocusStream(stream.video_id)"
-                                            class="p-1.5 hover:text-blue-400 text-slate-300 rounded hover:bg-slate-800 transition"
-                                            title="Focus This Stream as Tactical Lead"
-                                        >
-                                            <img :src="iconFocus" class="w-3.5 h-3.5 invert opacity-80 hover:opacity-100" alt="Focus" />
-                                        </button>
-                                        <button 
-                                            @click="activeChatVideoId = activeChatVideoId === stream.video_id ? null : stream.video_id"
-                                            :class="activeChatVideoId === stream.video_id ? 'bg-amber-600 text-white shadow-md shadow-amber-500/40' : 'text-slate-300 hover:text-amber-400 hover:bg-slate-800'"
-                                            class="p-1.5 rounded transition flex items-center justify-center"
-                                            title="Toggle YouTube Live Chat Drawer"
-                                        >
-                                            <img :src="activeChatVideoId === stream.video_id ? iconChatRemove : iconChat" class="w-3.5 h-3.5 invert opacity-90" alt="Chat" />
-                                        </button>
-                                        <a 
-                                            :href="`https://www.youtube.com/watch?v=${stream.video_id}`" 
-                                            target="_blank" 
-                                            class="p-1.5 hover:text-white text-slate-300 rounded hover:bg-slate-800 transition"
-                                            title="Open on YouTube"
-                                        >
-                                            <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-80 hover:opacity-100" alt="External" />
-                                        </a>
+                                            {{
+                                                isFetchingStreamDetail[
+                                                    primaryFocusedStream
+                                                        .video_id
+                                                ]
+                                                    ? "Memuat deskripsi lengkap..."
+                                                    : "Tidak ada deskripsi tambahan dari streamer."
+                                            }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- RIGHT SIDEBAR LIVE CHAT (Positioned to the right of the video grid) -->
-                        <div v-if="activeGridChatStream" class="lg:col-span-4 xl:col-span-3 space-y-3 animate-in fade-in zoom-in-95 duration-200">
-                            <div class="bg-slate-950 rounded-xl overflow-hidden border border-amber-500/50 shadow-2xl flex flex-col">
-                                <div class="bg-slate-900/95 px-3.5 py-2 flex items-center justify-between border-b border-slate-800 text-xs">
-                                    <div class="flex items-center space-x-2 text-amber-300 font-bold truncate">
-                                        <img :src="iconChat" class="w-3.5 h-3.5 invert opacity-90" alt="" />
-                                        <span class="truncate">Live Chat: {{ activeGridChatStream.officer?.officer_name || activeGridChatStream.title }}</span>
+                        <!-- RIGHT COLUMN: COLLAPSIBLE LIVE CHAT AT TOP + SUPPORT UNITS BELOW -->
+                        <div
+                            class="lg:col-span-4 xl:col-span-3 flex flex-col gap-3"
+                        >
+                            <!-- 1. COLLAPSIBLE LIVE CHAT CONTAINER (With user preferred 520px height) -->
+                            <div
+                                v-if="isRightChatOpen && primaryFocusedStream"
+                                class="bg-slate-950 rounded-xl overflow-hidden border border-amber-500/50 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200"
+                            >
+                                <div
+                                    class="bg-slate-900/95 px-3 py-1.5 flex items-center justify-between border-b border-slate-800 text-xs"
+                                >
+                                    <div
+                                        class="flex items-center space-x-1.5 text-amber-300 font-bold truncate"
+                                    >
+                                        <img
+                                            :src="iconChat"
+                                            class="w-3.5 h-3.5 invert opacity-90"
+                                            alt=""
+                                        />
+                                        <span class="truncate"
+                                            >Live Chat:
+                                            {{
+                                                primaryFocusedStream.officer
+                                                    ?.officer_name
+                                            }}</span
+                                        >
                                     </div>
-                                    <button 
-                                        @click="activeChatVideoId = null" 
-                                        class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded transition"
+                                    <button
+                                        @click="isRightChatOpen = false"
+                                        class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-1.5 py-0.2 rounded"
                                         title="Close Live Chat"
                                     >
                                         ✕ Close
                                     </button>
                                 </div>
-                                <div class="w-full h-[580px] bg-slate-900 relative">
-                                    <iframe 
-                                        :key="`chat-grid-${activeGridChatStream.video_id}`"
-                                        :src="`https://www.youtube.com/live_chat?v=${activeGridChatStream.video_id}&embed_domain=${chatEmbedDomain}`" 
+                                <div
+                                    class="w-full h-[520px] bg-slate-900 relative"
+                                >
+                                    <iframe
+                                        :key="`chat-lead-${primaryFocusedStream.video_id}`"
+                                        :src="`https://www.youtube.com/live_chat?v=${primaryFocusedStream.video_id}&embed_domain=${chatEmbedDomain}`"
                                         class="w-full h-full border-0"
                                         allow="autoplay"
                                     ></iframe>
                                 </div>
                             </div>
-                        </div>
 
+                            <!-- 2. SUPPORTING UNITS CONTAINER (Positioned Below Chat - YouTube Style Natural Page Flow) -->
+                            <div class="space-y-3">
+                                <div
+                                    v-for="stream in secondaryStreams"
+                                    :key="`support-card-${stream.video_id}`"
+                                    :class="
+                                        getCustomOrderRank(stream.video_id) > 0
+                                            ? 'border-amber-500/40 shadow-md shadow-amber-950/20'
+                                            : 'border-slate-800/80 hover:border-slate-700'
+                                    "
+                                    class="bg-slate-950 rounded-xl overflow-hidden border transition-all duration-300 shadow-lg relative group flex flex-col"
+                                >
+                                    <!-- Secondary Stream Header -->
+                                    <div
+                                        class="bg-slate-900/95 px-2.5 py-1.5 flex items-center justify-between border-b border-slate-800/80 text-xs gap-1"
+                                    >
+                                        <div
+                                            class="flex items-center space-x-1.5 min-w-0 flex-1 truncate"
+                                        >
+                                            <span
+                                                class="px-1.5 py-0.2 text-[10px] font-black rounded border shrink-0"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        stream.officer
+                                                            ?.department,
+                                                    )
+                                                "
+                                            >
+                                                {{ stream.officer?.department }}
+                                            </span>
+                                            <span
+                                                class="font-mono text-[11px] font-bold text-slate-200 truncate"
+                                            >
+                                                {{ stream.officer?.callsign }} |
+                                                {{
+                                                    stream.officer?.officer_name
+                                                }}
+                                            </span>
+                                        </div>
+
+                                        <!-- Action Buttons -->
+                                        <div
+                                            class="flex items-center space-x-1 shrink-0"
+                                        >
+                                            <!-- Order Rank Badge Button -->
+                                            <button
+                                                @click="
+                                                    toggleCustomOrderPin(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="px-1.5 py-0.5 text-[10px] rounded-md transition font-mono font-bold border"
+                                                :class="
+                                                    getCustomOrderRank(
+                                                        stream.video_id,
+                                                    ) > 0
+                                                        ? 'text-amber-300 bg-amber-950/60 border-amber-500/50 shadow-sm'
+                                                        : 'text-slate-500 hover:text-amber-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'
+                                                "
+                                                :title="
+                                                    getCustomOrderRank(
+                                                        stream.video_id,
+                                                    ) > 0
+                                                        ? `Urutan #${getCustomOrderRank(stream.video_id)} (Klik untuk lepas)`
+                                                        : 'Klik untuk jadikan urutan prioritas grid berikutnya'
+                                                "
+                                            >
+                                                <span>{{
+                                                    getCustomOrderRank(
+                                                        stream.video_id,
+                                                    ) > 0
+                                                        ? `#${getCustomOrderRank(stream.video_id)}`
+                                                        : "#"
+                                                }}</span>
+                                            </button>
+
+                                            <!-- TAC Radio Button -->
+                                            <div class="relative">
+                                                <button
+                                                    @click.stop="
+                                                        activeTacPopoverVideoId =
+                                                            activeTacPopoverVideoId ===
+                                                            stream.video_id
+                                                                ? null
+                                                                : stream.video_id
+                                                    "
+                                                    class="p-1 rounded-md transition font-mono border"
+                                                    :class="
+                                                        getStreamTac(
+                                                            stream.video_id,
+                                                        )
+                                                            ? 'text-amber-300 bg-amber-950/60 border-amber-500/50'
+                                                            : 'text-slate-500 hover:text-amber-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'
+                                                    "
+                                                    :title="
+                                                        getStreamTac(
+                                                            stream.video_id,
+                                                        )
+                                                            ? `Terhubung ke ${getStreamTac(stream.video_id).replace('_', ' ')}`
+                                                            : 'Hubungkan ke TAC Radio 1–5'
+                                                    "
+                                                >
+                                                    <img
+                                                        :src="iconRadio"
+                                                        class="w-3 h-3 brightness-0 invert opacity-90"
+                                                        alt=""
+                                                    />
+                                                </button>
+
+                                                <!-- TAC Popover Menu -->
+                                                <div
+                                                    v-if="
+                                                        activeTacPopoverVideoId ===
+                                                        stream.video_id
+                                                    "
+                                                    class="absolute right-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl p-2.5 shadow-2xl backdrop-blur-xl text-xs w-48 animate-in fade-in zoom-in-95 font-sans"
+                                                    @click.stop
+                                                >
+                                                    <div
+                                                        class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800"
+                                                    >
+                                                        <span
+                                                            class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400"
+                                                        >
+                                                            <img
+                                                                :src="iconRadio"
+                                                                class="w-3.5 h-3.5 brightness-0 invert opacity-90"
+                                                                alt=""
+                                                            />
+                                                            RADIO TAC:
+                                                        </span>
+                                                        <button
+                                                            @click.stop="
+                                                                activeTacPopoverVideoId =
+                                                                    null
+                                                            "
+                                                            class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 text-[10px]"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+
+                                                    <div
+                                                        class="grid grid-cols-5 gap-1 mb-2"
+                                                    >
+                                                        <button
+                                                            v-for="t in [
+                                                                1, 2, 3, 4, 5,
+                                                            ]"
+                                                            :key="t"
+                                                            @click.stop="
+                                                                assignStreamToTac(
+                                                                    `TAC_${t}`,
+                                                                    stream.video_id,
+                                                                );
+                                                                activeTacPopoverVideoId =
+                                                                    null;
+                                                            "
+                                                            class="py-1 rounded font-mono text-center font-bold text-xs transition border"
+                                                            :class="
+                                                                getStreamTac(
+                                                                    stream.video_id,
+                                                                ) === `TAC_${t}`
+                                                                    ? 'bg-amber-500 text-black border-amber-300 shadow-md'
+                                                                    : 'bg-slate-900 text-slate-200 hover:bg-amber-950/60 hover:text-amber-300 border-slate-800'
+                                                            "
+                                                            :title="`Pindah ke TAC ${t}`"
+                                                        >
+                                                            {{ t }}
+                                                        </button>
+                                                    </div>
+
+                                                    <div
+                                                        v-if="
+                                                            getStreamTac(
+                                                                stream.video_id,
+                                                            )
+                                                        "
+                                                        class="pt-1.5 border-t border-slate-800/80"
+                                                    >
+                                                        <button
+                                                            @click.stop="
+                                                                removeStreamFromTac(
+                                                                    stream.video_id,
+                                                                );
+                                                                activeTacPopoverVideoId =
+                                                                    null;
+                                                            "
+                                                            class="w-full py-1 px-1.5 text-[10px] rounded bg-red-950/60 text-red-300 hover:bg-red-900/80 border border-red-500/40 text-center transition font-mono"
+                                                        >
+                                                            ✕ Lepas TAC
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Personal Pin Toggle -->
+                                            <button
+                                                @click="
+                                                    togglePersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                :class="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'text-purple-300 bg-purple-950/60 border border-purple-500/40'
+                                                        : 'text-slate-500 hover:text-purple-300 bg-slate-900/60 hover:bg-slate-800 border-slate-800'
+                                                "
+                                                class="p-1 rounded-md transition font-mono border"
+                                                :title="
+                                                    isPersonalStream(
+                                                        stream.video_id,
+                                                    )
+                                                        ? 'Hapus dari Personal'
+                                                        : 'Tambah ke Personal Watchlist (Maks 6)'
+                                                "
+                                            >
+                                                <img
+                                                    :src="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? iconPinMinus
+                                                            : iconPinPlus
+                                                    "
+                                                    class="w-3 h-3 invert opacity-80"
+                                                    alt=""
+                                                />
+                                            </button>
+
+                                            <!-- Audio Switch Toggle -->
+                                            <button
+                                                v-if="
+                                                    activePreviewVideoIds.includes(
+                                                        stream.video_id,
+                                                    ) || !isDataSaverEnabled
+                                                "
+                                                @click="
+                                                    toggleAudio(stream.video_id)
+                                                "
+                                                :class="
+                                                    activeAudioVideoId ===
+                                                    stream.video_id
+                                                        ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 font-bold'
+                                                        : 'text-slate-500 hover:text-slate-200 bg-slate-900/60 hover:bg-slate-800 border-slate-800'
+                                                "
+                                                class="p-1 rounded-md transition font-mono border"
+                                                title="Audio Switch"
+                                            >
+                                                <img
+                                                    :src="
+                                                        activeAudioVideoId ===
+                                                        stream.video_id
+                                                            ? iconUnmute
+                                                            : iconMute
+                                                    "
+                                                    class="w-3 h-3 invert opacity-80"
+                                                    alt=""
+                                                />
+                                            </button>
+
+                                            <!-- Set as Main Focus Button -->
+                                            <button
+                                                @click="
+                                                    setFocusStream(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="bg-blue-950/60 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 hover:border-blue-400 px-2 py-0.5 rounded-md text-[10px] font-bold shadow transition flex items-center gap-1"
+                                                title="Jadikan Siaran Utama (Fokus)"
+                                            >
+                                                <img
+                                                    :src="iconFocus"
+                                                    class="w-2.5 h-2.5 invert opacity-80"
+                                                    alt=""
+                                                />
+                                                <span>Fokus</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- VIDEO DISPLAY: Live IFrame OR Lightweight Poster Thumbnail -->
+                                    <div
+                                        class="relative w-full aspect-video bg-black overflow-hidden group/thumb"
+                                    >
+                                        <!-- ACTIVE IFRAME -->
+                                        <template
+                                            v-if="
+                                                activePreviewVideoIds.includes(
+                                                    stream.video_id,
+                                                ) || !isDataSaverEnabled
+                                            "
+                                        >
+                                            <iframe
+                                                :key="`support-iframe-${stream.video_id}`"
+                                                :id="`yt-bodycam-${stream.video_id}`"
+                                                class="w-full h-full border-0 pointer-events-auto"
+                                                :src="`https://www.youtube.com/embed/${stream.video_id}?enablejsapi=1&autoplay=1&mute=1&controls=1&rel=0&playsinline=1&vq=small&origin=${originUrl}`"
+                                                allow="
+                                                    accelerometer;
+                                                    autoplay;
+                                                    clipboard-write;
+                                                    encrypted-media;
+                                                    gyroscope;
+                                                    picture-in-picture;
+                                                    web-share;
+                                                "
+                                                allowfullscreen
+                                            ></iframe>
+
+                                            <!-- Close Preview Button -->
+                                            <button
+                                                v-if="isDataSaverEnabled"
+                                                @click="
+                                                    toggleSidebarPreview(
+                                                        stream.video_id,
+                                                    )
+                                                "
+                                                class="absolute top-2 right-2 bg-black/80 hover:bg-red-900/80 text-white text-[10px] px-1.5 py-0.5 rounded border border-white/20 z-20"
+                                                title="Stop live video and return to thumbnail to save bandwidth"
+                                            >
+                                                ✕ Close Preview
+                                            </button>
+                                        </template>
+
+                                        <!-- LIGHTWEIGHT POSTER THUMBNAIL (Minimalist Clean Idle State) -->
+                                        <template v-else>
+                                            <img
+                                                :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`"
+                                                :alt="stream.title"
+                                                class="w-full h-full object-cover opacity-90 group-hover/thumb:opacity-100 transition duration-300"
+                                                loading="lazy"
+                                            />
+
+                                            <!-- Minimalist Standby Live Badge (Always subtle, non-intrusive) -->
+                                            <div
+                                                class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-red-500/30 z-10 pointer-events-none"
+                                            >
+                                                <span
+                                                    class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"
+                                                ></span>
+                                                <span>10-8 LIVE</span>
+                                            </div>
+
+                                            <!-- Hover-to-Reveal Center Action Controls -->
+                                            <div
+                                                class="absolute inset-0 bg-black/50 backdrop-blur-[2px] opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 flex items-center justify-center gap-2 p-3 z-10"
+                                            >
+                                                <button
+                                                    @click="
+                                                        toggleSidebarPreview(
+                                                            stream.video_id,
+                                                        )
+                                                    "
+                                                    class="bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg shadow-emerald-950/40 transition flex items-center gap-1.5 transform hover:scale-105"
+                                                    title="Putar Siaran Video"
+                                                >
+                                                    <img
+                                                        :src="iconPlayAll"
+                                                        class="w-3.5 h-3.5 invert"
+                                                        alt=""
+                                                    />
+                                                    <span>Play</span>
+                                                </button>
+
+                                                <button
+                                                    @click="
+                                                        setFocusStream(
+                                                            stream.video_id,
+                                                        )
+                                                    "
+                                                    class="bg-blue-600/90 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg shadow-blue-950/40 transition flex items-center gap-1.5 transform hover:scale-105"
+                                                    title="Jadikan Siaran Utama (Fokus)"
+                                                >
+                                                    <img
+                                                        :src="iconFocus"
+                                                        class="w-3.5 h-3.5 invert"
+                                                        alt=""
+                                                    />
+                                                    <span>Fokus</span>
+                                                </button>
+                                            </div>
+                                        </template>
+
+                                        <!-- Floating Hover Overlay Bar -->
+                                        <div
+                                            class="absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 bg-slate-950/90 backdrop-blur-md px-2 py-1 rounded-xl border border-slate-700/70 shadow-2xl flex items-center justify-between text-[10px] text-slate-300 gap-1 z-20 pointer-events-auto"
+                                        >
+                                            <span
+                                                class="truncate text-blue-400 font-mono flex items-center gap-1"
+                                            >
+                                                <img
+                                                    :src="iconShield"
+                                                    class="w-3 h-3 invert opacity-80 shrink-0"
+                                                    alt=""
+                                                />
+                                                <span>{{
+                                                    stream.officer
+                                                        ?.patrol_zone ||
+                                                    "Patrol"
+                                                }}</span>
+                                            </span>
+                                            <div
+                                                class="flex items-center space-x-1.5 shrink-0"
+                                            >
+                                                <button
+                                                    v-if="
+                                                        stream.officer
+                                                            ?.channel_id ||
+                                                        stream.officer?.handle
+                                                    "
+                                                    @click="
+                                                        openSubscribePopup(
+                                                            stream.officer
+                                                                ?.channel_id ||
+                                                                stream.officer
+                                                                    ?.handle,
+                                                            stream.officer
+                                                                ?.officer_name,
+                                                        )
+                                                    "
+                                                    class="text-red-400 hover:text-red-300 hover:bg-red-950/60 px-1.5 py-0.5 rounded transition flex items-center gap-0.5 font-bold shrink-0 text-[10px]"
+                                                    title="Subscribe to channel without leaving page"
+                                                >
+                                                    <span
+                                                        class="w-1.5 h-1.5 rounded-full bg-red-500 mr-0.5 shrink-0"
+                                                    ></span>
+                                                    <span>Sub</span>
+                                                </button>
+                                                <a
+                                                    :href="`https://www.youtube.com/watch?v=${stream.video_id}`"
+                                                    target="_blank"
+                                                    class="p-1 hover:text-white text-slate-400 hover:bg-slate-800 rounded transition flex items-center justify-center"
+                                                    title="Open on YouTube"
+                                                >
+                                                    <img
+                                                        :src="iconExternal"
+                                                        class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100"
+                                                        alt="Open on YouTube"
+                                                    />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                </div>
+                    <!-- STANDARD GRID VIEWS (Auto, 2x2, 3x3, 4x4) -->
+                    <div v-else class="space-y-3">
+                        <!-- DATA SAVER HELPER BAR (When in Saver Mode) -->
+                        <div
+                            v-if="isDataSaverEnabled"
+                            class="bg-slate-900/90 border border-slate-800/90 px-3.5 py-2.5 rounded-xl flex items-center justify-between flex-wrap gap-2.5 shadow-lg"
+                        >
+                            <div
+                                class="flex items-center space-x-2 text-xs font-mono"
+                            >
+                                <span
+                                    class="text-emerald-400 font-bold flex items-center gap-1.5"
+                                >
+                                    <img
+                                        :src="iconSaver"
+                                        class="w-3.5 h-3.5 invert"
+                                        alt=""
+                                    />
+                                    <span>SAVER MODE ACTIVE:</span>
+                                </span>
+                                <span class="text-slate-300"
+                                    >Feeds are in standby. Click Play to view
+                                    any feed, or switch to Play All.</span
+                                >
+                            </div>
+                            <div class="flex items-center space-x-2 shrink-0">
+                                <button
+                                    @click="disableDataSaverAndPlayAll"
+                                    class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow"
+                                >
+                                    <img
+                                        :src="iconPlayAll"
+                                        class="w-3 h-3 invert"
+                                        alt=""
+                                    />
+                                    <span>Play All Videos</span>
+                                </button>
+                                <button
+                                    v-if="activeGridVideoIds.length > 0"
+                                    @click="enableDataSaver"
+                                    class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-mono transition flex items-center gap-1"
+                                >
+                                    <img
+                                        :src="iconReset"
+                                        class="w-3 h-3 invert opacity-70"
+                                        alt=""
+                                    />
+                                    <span>Reset to Saver</span>
+                                </button>
+                            </div>
+                        </div>
 
-            </template>
+                        <!-- GRID CONTAINER (With Right Sidebar Live Chat) -->
+                        <div
+                            :class="
+                                activeGridChatStream
+                                    ? 'grid grid-cols-1 lg:grid-cols-12 gap-4 items-start'
+                                    : ''
+                            "
+                        >
+                            <!-- LEFT MAIN GRID (Takes 8/12 or 9/12 cols when Chat is open) -->
+                            <div
+                                :class="
+                                    activeGridChatStream
+                                        ? 'lg:col-span-8 xl:col-span-9'
+                                        : 'w-full'
+                                "
+                            >
+                                <div :class="layoutGridClass">
+                                    <div
+                                        v-for="stream in displayedGridStreams"
+                                        :key="`grid-card-${stream.video_id}`"
+                                        :class="[
+                                            getCustomOrderRank(
+                                                stream.video_id,
+                                            ) > 0
+                                                ? 'border-amber-500/40 shadow-md shadow-amber-950/20'
+                                                : 'border-slate-800/80 hover:border-slate-700',
+                                            activeChatVideoId ===
+                                            stream.video_id
+                                                ? 'border-amber-500/60 shadow-md shadow-amber-950/30'
+                                                : '',
+                                        ]"
+                                        class="bg-slate-950 rounded-xl overflow-hidden border transition flex flex-col relative group"
+                                    >
+                                        <!-- BODYCAM HEADER HUD OVERLAY -->
+                                        <div
+                                            class="bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 flex items-center justify-between border-b border-slate-800/80 z-10"
+                                        >
+                                            <!-- Officer Badge & Callsign -->
+                                            <div
+                                                class="flex items-center space-x-2 min-w-0"
+                                            >
+                                                <span
+                                                    class="px-1.5 py-0.5 text-[11px] font-black rounded border tracking-wider shrink-0 opacity-90"
+                                                    :class="
+                                                        getDeptBadgeClass(
+                                                            stream.officer
+                                                                ?.department,
+                                                        )
+                                                    "
+                                                >
+                                                    {{
+                                                        stream.officer
+                                                            ?.department
+                                                    }}
+                                                    {{
+                                                        stream.officer?.callsign
+                                                    }}
+                                                </span>
+                                                <div class="truncate">
+                                                    <span
+                                                        class="text-xs font-semibold text-slate-200 block truncate opacity-90"
+                                                        >{{
+                                                            stream.officer
+                                                                ?.officer_name
+                                                        }}</span
+                                                    >
+                                                </div>
+                                            </div>
 
-        </div>
+                                            <!-- Bodycam Actions: Order Rank Badge, Audio, TAC, Personal -->
+                                            <div
+                                                class="flex items-center space-x-1 shrink-0"
+                                            >
+                                                <!-- Order Rank Badge Button -->
+                                                <button
+                                                    @click="
+                                                        toggleCustomOrderPin(
+                                                            stream.video_id,
+                                                        )
+                                                    "
+                                                    class="px-1.5 py-0.5 text-[10px] rounded-md transition flex items-center font-mono font-bold border"
+                                                    :class="
+                                                        getCustomOrderRank(
+                                                            stream.video_id,
+                                                        ) > 0
+                                                            ? 'text-amber-300 bg-amber-500/15 border-amber-500/40'
+                                                            : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800'
+                                                    "
+                                                    :title="
+                                                        getCustomOrderRank(
+                                                            stream.video_id,
+                                                        ) > 0
+                                                            ? `Urutan #${getCustomOrderRank(stream.video_id)} (Klik untuk lepas)`
+                                                            : 'Klik untuk jadikan urutan prioritas grid berikutnya'
+                                                    "
+                                                >
+                                                    <span>{{
+                                                        getCustomOrderRank(
+                                                            stream.video_id,
+                                                        ) > 0
+                                                            ? `#${getCustomOrderRank(stream.video_id)}`
+                                                            : "#"
+                                                    }}</span>
+                                                </button>
+
+                                                <!-- Audio Button (In Live / Active Mode) -->
+                                                <button
+                                                    v-if="
+                                                        !isDataSaverEnabled ||
+                                                        activeGridVideoIds.includes(
+                                                            stream.video_id,
+                                                        ) ||
+                                                        activeAudioVideoId ===
+                                                            stream.video_id
+                                                    "
+                                                    @click="
+                                                        toggleAudio(
+                                                            stream.video_id,
+                                                        )
+                                                    "
+                                                    :class="
+                                                        activeAudioVideoId ===
+                                                        stream.video_id
+                                                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 font-bold'
+                                                            : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800'
+                                                    "
+                                                    class="px-1.5 py-0.5 text-[10px] rounded-md transition flex items-center gap-1 font-mono border"
+                                                    :title="
+                                                        activeAudioVideoId ===
+                                                        stream.video_id
+                                                            ? 'Mute audio'
+                                                            : 'Unmute audio'
+                                                    "
+                                                >
+                                                    <img
+                                                        :src="
+                                                            activeAudioVideoId ===
+                                                            stream.video_id
+                                                                ? iconUnmute
+                                                                : iconMute
+                                                        "
+                                                        class="w-3 h-3 invert opacity-80"
+                                                        alt=""
+                                                    />
+                                                    <span class="text-[9px]">{{
+                                                        activeAudioVideoId ===
+                                                        stream.video_id
+                                                            ? "ON"
+                                                            : "MUTED"
+                                                    }}</span>
+                                                </button>
+
+                                                <!-- 1-Click TAC Radio Selector -->
+                                                <div class="relative">
+                                                    <button
+                                                        @click.stop="
+                                                            activeTacPopoverVideoId =
+                                                                activeTacPopoverVideoId ===
+                                                                stream.video_id
+                                                                    ? null
+                                                                    : stream.video_id
+                                                        "
+                                                        class="p-1 rounded-md transition font-mono border"
+                                                        :class="
+                                                            getStreamTac(
+                                                                stream.video_id,
+                                                            )
+                                                                ? 'text-amber-300 bg-amber-950/60 border-amber-500/40 font-bold'
+                                                                : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800/80'
+                                                        "
+                                                        :title="
+                                                            getStreamTac(
+                                                                stream.video_id,
+                                                            )
+                                                                ? `Terhubung ke ${getStreamTac(stream.video_id).replace('_', ' ')}`
+                                                                : 'Hubungkan ke TAC Radio 1–5'
+                                                        "
+                                                    >
+                                                        <img
+                                                            :src="iconRadio"
+                                                            class="w-3 h-3 brightness-0 invert opacity-75"
+                                                            alt=""
+                                                        />
+                                                    </button>
+
+                                                    <!-- TAC Popover Menu -->
+                                                    <div
+                                                        v-if="
+                                                            activeTacPopoverVideoId ===
+                                                            stream.video_id
+                                                        "
+                                                        class="absolute right-0 top-full mt-1.5 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl p-2.5 shadow-2xl backdrop-blur-xl text-xs w-52 animate-in fade-in zoom-in-95 font-sans"
+                                                        @click.stop
+                                                    >
+                                                        <div
+                                                            class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800"
+                                                        >
+                                                            <span
+                                                                class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400"
+                                                            >
+                                                                <img
+                                                                    :src="
+                                                                        iconRadio
+                                                                    "
+                                                                    class="w-3.5 h-3.5 brightness-0 invert opacity-90"
+                                                                    alt=""
+                                                                />
+                                                                PILIH RADIO TAC:
+                                                            </span>
+                                                            <button
+                                                                @click.stop="
+                                                                    activeTacPopoverVideoId =
+                                                                        null
+                                                                "
+                                                                class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 text-[10px]"
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        </div>
+
+                                                        <div
+                                                            class="grid grid-cols-5 gap-1.5 mb-2"
+                                                        >
+                                                            <button
+                                                                v-for="t in [
+                                                                    1, 2, 3, 4,
+                                                                    5, 6, 7, 8,
+                                                                    9, 10,
+                                                                ]"
+                                                                :key="t"
+                                                                @click.stop="
+                                                                    assignStreamToTac(
+                                                                        `TAC_${t}`,
+                                                                        stream.video_id,
+                                                                    );
+                                                                    activeTacPopoverVideoId =
+                                                                        null;
+                                                                "
+                                                                class="py-1.5 rounded-lg font-mono text-center font-bold text-xs transition border flex flex-col items-center justify-center gap-0.5"
+                                                                :class="
+                                                                    getStreamTac(
+                                                                        stream.video_id,
+                                                                    ) ===
+                                                                    `TAC_${t}`
+                                                                        ? 'bg-amber-500 text-black border-amber-300 shadow-lg shadow-amber-500/30'
+                                                                        : 'bg-slate-900 text-slate-200 hover:bg-amber-950/60 hover:text-amber-300 hover:border-amber-500/50 border-slate-800'
+                                                                "
+                                                                :title="`Pindah ke TAC ${t}`"
+                                                            >
+                                                                <span
+                                                                    class="text-[8px] text-slate-400 leading-none"
+                                                                    >TAC</span
+                                                                >
+                                                                <span
+                                                                    class="leading-none"
+                                                                    >{{
+                                                                        t
+                                                                    }}</span
+                                                                >
+                                                            </button>
+                                                        </div>
+
+                                                        <div
+                                                            v-if="
+                                                                getStreamTac(
+                                                                    stream.video_id,
+                                                                )
+                                                            "
+                                                            class="pt-1.5 border-t border-slate-800/80"
+                                                        >
+                                                            <button
+                                                                @click.stop="
+                                                                    removeStreamFromTac(
+                                                                        stream.video_id,
+                                                                    );
+                                                                    activeTacPopoverVideoId =
+                                                                        null;
+                                                                "
+                                                                class="w-full py-1.5 px-2 text-[10px] rounded-lg bg-red-950/60 text-red-300 hover:bg-red-900/80 border border-red-500/40 text-center transition flex items-center justify-center gap-1 font-mono"
+                                                            >
+                                                                <span
+                                                                    >✕ Lepas
+                                                                    dari
+                                                                    {{
+                                                                        getStreamTac(
+                                                                            stream.video_id,
+                                                                        ).replace(
+                                                                            "_",
+                                                                            " ",
+                                                                        )
+                                                                    }}</span
+                                                                >
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Top Personal Pin Button (Ghost Icon, Live Only) -->
+                                                <button
+                                                    v-if="
+                                                        stream.status === 'LIVE'
+                                                    "
+                                                    @click="
+                                                        togglePersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                    "
+                                                    class="p-1 rounded-md transition border"
+                                                    :class="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? 'text-purple-300 bg-purple-950/60 border-purple-500/40'
+                                                            : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800/80'
+                                                    "
+                                                    :title="
+                                                        isPersonalStream(
+                                                            stream.video_id,
+                                                        )
+                                                            ? 'Hapus dari Personal'
+                                                            : 'Tambah ke Personal Watchlist (Maks 6)'
+                                                    "
+                                                >
+                                                    <img
+                                                        :src="
+                                                            isPersonalStream(
+                                                                stream.video_id,
+                                                            )
+                                                                ? iconPinMinus
+                                                                : iconPinPlus
+                                                        "
+                                                        class="w-3 h-3 invert opacity-80"
+                                                        alt=""
+                                                    />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- VIDEO DISPLAY: Live IFrame OR Lightweight Poster Thumbnail -->
+                                        <div
+                                            class="relative w-full aspect-video bg-black overflow-hidden flex-1 group/thumb"
+                                        >
+                                            <template
+                                                v-if="
+                                                    !isDataSaverEnabled ||
+                                                    activeGridVideoIds.includes(
+                                                        stream.video_id,
+                                                    ) ||
+                                                    activeAudioVideoId ===
+                                                        stream.video_id
+                                                "
+                                            >
+                                                <iframe
+                                                    :key="`grid-iframe-${stream.video_id}`"
+                                                    :id="`yt-bodycam-${stream.video_id}`"
+                                                    class="w-full h-full border-0 pointer-events-auto"
+                                                    :src="`https://www.youtube.com/embed/${stream.video_id}?enablejsapi=1&autoplay=1&mute=1&controls=1&rel=0&playsinline=1&vq=small&origin=${originUrl}`"
+                                                    allow="
+                                                        accelerometer;
+                                                        autoplay;
+                                                        clipboard-write;
+                                                        encrypted-media;
+                                                        gyroscope;
+                                                        picture-in-picture;
+                                                        web-share;
+                                                    "
+                                                    allowfullscreen
+                                                ></iframe>
+
+                                                <!-- Close / Stop Feed Button when in Data Saver Mode -->
+                                                <button
+                                                    v-if="isDataSaverEnabled"
+                                                    @click="
+                                                        toggleGridStreamPlay(
+                                                            stream.video_id,
+                                                        )
+                                                    "
+                                                    class="absolute top-2 left-2 bg-black/80 hover:bg-red-900/80 text-white text-[10px] px-2 py-0.5 rounded border border-white/20 z-20 font-mono"
+                                                    title="Close video to save bandwidth"
+                                                >
+                                                    ✕ Stop Feed
+                                                </button>
+                                            </template>
+
+                                            <template v-else>
+                                                <img
+                                                    :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`"
+                                                    :alt="stream.title"
+                                                    class="w-full h-full object-cover opacity-85 group-hover/thumb:opacity-100 transition duration-300"
+                                                    loading="lazy"
+                                                />
+
+                                                <div
+                                                    class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40 flex flex-col items-center justify-center p-3"
+                                                >
+                                                    <div
+                                                        class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded border border-red-500/30"
+                                                    >
+                                                        <span
+                                                            class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"
+                                                        ></span>
+                                                        <span>10-8 LIVE</span>
+                                                    </div>
+
+                                                    <!-- Hover-to-Reveal Minimalist Action Controls -->
+                                                    <div
+                                                        class="flex items-center space-x-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 transform scale-95 group-hover/thumb:scale-100"
+                                                    >
+                                                        <button
+                                                            @click="
+                                                                selectedLayout =
+                                                                    'focus';
+                                                                setFocusStream(
+                                                                    stream.video_id,
+                                                                );
+                                                            "
+                                                            class="bg-blue-600/90 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5 transform hover:scale-105 backdrop-blur-sm"
+                                                            title="Focus as Main Screen"
+                                                        >
+                                                            <img
+                                                                :src="iconFocus"
+                                                                class="w-3.5 h-3.5 invert opacity-90"
+                                                                alt=""
+                                                            />
+                                                            <span>Focus</span>
+                                                        </button>
+
+                                                        <button
+                                                            @click="
+                                                                toggleGridStreamPlay(
+                                                                    stream.video_id,
+                                                                )
+                                                            "
+                                                            class="bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5 transform hover:scale-105 backdrop-blur-sm"
+                                                            title="Play this stream"
+                                                        >
+                                                            <img
+                                                                :src="
+                                                                    iconPlayAll
+                                                                "
+                                                                class="w-3.5 h-3.5 invert opacity-90"
+                                                                alt=""
+                                                            />
+                                                            <span>Play</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            <!-- Floating Hover Overlay Bar -->
+                                            <div
+                                                class="absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-200 bg-slate-950/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/70 shadow-2xl flex items-center justify-between z-20 pointer-events-auto text-[11px] text-slate-300"
+                                            >
+                                                <!-- Patrol Sector / Badge -->
+                                                <div
+                                                    class="flex items-center space-x-2 truncate"
+                                                >
+                                                    <span
+                                                        class="font-mono text-blue-400 truncate flex items-center gap-1"
+                                                    >
+                                                        <img
+                                                            :src="iconShield"
+                                                            class="w-3 h-3 invert opacity-80 shrink-0"
+                                                            alt=""
+                                                        />
+                                                        <span>{{
+                                                            stream.officer
+                                                                ?.patrol_zone ||
+                                                            "Los Santos Sector"
+                                                        }}</span>
+                                                    </span>
+                                                    <span class="text-slate-600"
+                                                        >|</span
+                                                    >
+                                                    <span
+                                                        class="font-mono text-slate-400 truncate"
+                                                        >{{
+                                                            stream.officer
+                                                                ?.badge_number ||
+                                                            "#000"
+                                                        }}</span
+                                                    >
+                                                </div>
+
+                                                <!-- Action Icons (Subscribe, Focus, Chat, YT Link) -->
+                                                <div
+                                                    class="flex items-center space-x-1.5 shrink-0"
+                                                >
+                                                    <button
+                                                        v-if="
+                                                            stream.officer
+                                                                ?.channel_id ||
+                                                            stream.officer
+                                                                ?.handle
+                                                        "
+                                                        @click="
+                                                            openSubscribePopup(
+                                                                stream.officer
+                                                                    ?.channel_id ||
+                                                                    stream
+                                                                        .officer
+                                                                        ?.handle,
+                                                                stream.officer
+                                                                    ?.officer_name,
+                                                            )
+                                                        "
+                                                        class="p-1 hover:text-red-400 text-slate-300 hover:bg-red-950/40 rounded transition flex items-center gap-0.5 text-[10px] font-bold"
+                                                        title="Subscribe without leaving page"
+                                                    >
+                                                        <span
+                                                            class="w-2 h-2 rounded-full bg-red-500 mr-0.5"
+                                                        ></span>
+                                                        <span
+                                                            class="hidden sm:inline"
+                                                            >Sub</span
+                                                        >
+                                                    </button>
+                                                    <button
+                                                        @click="
+                                                            selectedLayout =
+                                                                'focus';
+                                                            setFocusStream(
+                                                                stream.video_id,
+                                                            );
+                                                        "
+                                                        class="p-1.5 hover:text-blue-400 text-slate-300 rounded hover:bg-slate-800 transition"
+                                                        title="Focus This Stream as Tactical Lead"
+                                                    >
+                                                        <img
+                                                            :src="iconFocus"
+                                                            class="w-3.5 h-3.5 invert opacity-80 hover:opacity-100"
+                                                            alt="Focus"
+                                                        />
+                                                    </button>
+                                                    <button
+                                                        @click="
+                                                            activeChatVideoId =
+                                                                activeChatVideoId ===
+                                                                stream.video_id
+                                                                    ? null
+                                                                    : stream.video_id
+                                                        "
+                                                        :class="
+                                                            activeChatVideoId ===
+                                                            stream.video_id
+                                                                ? 'bg-amber-600 text-white shadow-md shadow-amber-500/40'
+                                                                : 'text-slate-300 hover:text-amber-400 hover:bg-slate-800'
+                                                        "
+                                                        class="p-1.5 rounded transition flex items-center justify-center"
+                                                        title="Toggle YouTube Live Chat Drawer"
+                                                    >
+                                                        <img
+                                                            :src="
+                                                                activeChatVideoId ===
+                                                                stream.video_id
+                                                                    ? iconChatRemove
+                                                                    : iconChat
+                                                            "
+                                                            class="w-3.5 h-3.5 invert opacity-90"
+                                                            alt="Chat"
+                                                        />
+                                                    </button>
+                                                    <a
+                                                        :href="`https://www.youtube.com/watch?v=${stream.video_id}`"
+                                                        target="_blank"
+                                                        class="p-1.5 hover:text-white text-slate-300 rounded hover:bg-slate-800 transition"
+                                                        title="Open on YouTube"
+                                                    >
+                                                        <img
+                                                            :src="iconExternal"
+                                                            class="w-3.5 h-3.5 invert opacity-80 hover:opacity-100"
+                                                            alt="External"
+                                                        />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RIGHT SIDEBAR LIVE CHAT (Positioned to the right of the video grid) -->
+                            <div
+                                v-if="activeGridChatStream"
+                                class="lg:col-span-4 xl:col-span-3 space-y-3 animate-in fade-in zoom-in-95 duration-200"
+                            >
+                                <div
+                                    class="bg-slate-950 rounded-xl overflow-hidden border border-amber-500/50 shadow-2xl flex flex-col"
+                                >
+                                    <div
+                                        class="bg-slate-900/95 px-3.5 py-2 flex items-center justify-between border-b border-slate-800 text-xs"
+                                    >
+                                        <div
+                                            class="flex items-center space-x-2 text-amber-300 font-bold truncate"
+                                        >
+                                            <img
+                                                :src="iconChat"
+                                                class="w-3.5 h-3.5 invert opacity-90"
+                                                alt=""
+                                            />
+                                            <span class="truncate"
+                                                >Live Chat:
+                                                {{
+                                                    activeGridChatStream.officer
+                                                        ?.officer_name ||
+                                                    activeGridChatStream.title
+                                                }}</span
+                                            >
+                                        </div>
+                                        <button
+                                            @click="activeChatVideoId = null"
+                                            class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded transition"
+                                            title="Close Live Chat"
+                                        >
+                                            ✕ Close
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="w-full h-[580px] bg-slate-900 relative"
+                                    >
+                                        <iframe
+                                            :key="`chat-grid-${activeGridChatStream.video_id}`"
+                                            :src="`https://www.youtube.com/live_chat?v=${activeGridChatStream.video_id}&embed_domain=${chatEmbedDomain}`"
+                                            class="w-full h-full border-0"
+                                            allow="autoplay"
+                                        ></iframe>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
 
             <!-- TAB 2: 10-7 OFFLINE POLICE ROSTER -->
             <div v-else-if="activeTab === '10-7'">
-                
-                <div class="max-w-6xl mx-auto bg-slate-950 rounded-2xl border border-slate-800/80 p-5 shadow-2xl">
-                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4 mb-4">
+                <div
+                    class="max-w-6xl mx-auto bg-slate-950 rounded-2xl border border-slate-800/80 p-5 shadow-2xl"
+                >
+                    <div
+                        class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4 mb-4"
+                    >
                         <div>
-                            <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                                <img :src="iconRoster" class="w-4 h-4 invert opacity-90" alt="" />
-                                <span>IME ROLEPLAY POLICE DEPARTMENT ROSTER (10-7 OFFLINE)</span>
+                            <h2
+                                class="text-base font-bold text-slate-100 flex items-center gap-2"
+                            >
+                                <img
+                                    :src="iconRoster"
+                                    class="w-4 h-4 invert opacity-90"
+                                    alt=""
+                                />
+                                <span
+                                    >IME ROLEPLAY POLICE DEPARTMENT ROSTER (10-7
+                                    OFFLINE)</span
+                                >
                             </h2>
                             <p class="text-xs text-slate-400 mt-0.5">
-                                Showing registered law enforcement officers currently off-duty or not broadcasting.
+                                Showing registered law enforcement officers
+                                currently off-duty or not broadcasting.
                             </p>
                         </div>
-                        <div class="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
-                            Total Registered: {{ offlineOfficers.length + allActiveStreams.length }} Units
+                        <div
+                            class="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800"
+                        >
+                            Total Registered:
+                            {{
+                                offlineOfficers.length + allActiveStreams.length
+                            }}
+                            Units
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                        <div 
-                            v-for="officer in filteredOfflineOfficers" 
+                    <div
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5"
+                    >
+                        <div
+                            v-for="officer in filteredOfflineOfficers"
                             :key="officer.channel_id"
                             class="bg-[#0b121e] rounded-xl p-3.5 border border-slate-800 hover:border-slate-700 transition flex items-start space-x-3"
                         >
                             <!-- Avatar / Badge -->
-                            <div class="w-11 h-11 rounded-lg bg-slate-900 border border-slate-800 overflow-hidden shrink-0 flex items-center justify-center p-1.5">
-                                <img v-if="officer.avatar_url" :src="officer.avatar_url" class="w-full h-full object-cover rounded" />
-                                <img v-else :src="getDeptIcon(officer.department)" class="w-full h-full object-contain" alt="" />
+                            <div
+                                class="w-11 h-11 rounded-lg bg-slate-900 border border-slate-800 overflow-hidden shrink-0 flex items-center justify-center p-1.5"
+                            >
+                                <img
+                                    v-if="officer.avatar_url"
+                                    :src="officer.avatar_url"
+                                    class="w-full h-full object-cover rounded"
+                                />
+                                <img
+                                    v-else
+                                    :src="getDeptIcon(officer.department)"
+                                    class="w-full h-full object-contain"
+                                    alt=""
+                                />
                             </div>
 
                             <!-- Officer Info -->
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center space-x-1.5">
-                                    <span class="px-1.5 py-0.2 text-[10px] font-black rounded border" :class="getDeptBadgeClass(officer.department)">
+                                    <span
+                                        class="px-1.5 py-0.2 text-[10px] font-black rounded border"
+                                        :class="
+                                            getDeptBadgeClass(
+                                                officer.department,
+                                            )
+                                        "
+                                    >
                                         {{ officer.department }}
                                     </span>
-                                    <span class="font-mono text-xs font-bold text-slate-300">{{ officer.callsign }}</span>
+                                    <span
+                                        class="font-mono text-xs font-bold text-slate-300"
+                                        >{{ officer.callsign }}</span
+                                    >
                                 </div>
-                                <h3 class="text-sm font-bold text-slate-100 truncate mt-0.5">{{ officer.officer_name }}</h3>
-                                <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                                <h3
+                                    class="text-sm font-bold text-slate-100 truncate mt-0.5"
+                                >
+                                    {{ officer.officer_name }}
+                                </h3>
+                                <div
+                                    class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5"
+                                >
                                     <span>{{ officer.rank }}</span>
                                     <span>•</span>
-                                    <span class="font-mono">{{ officer.badge_number }}</span>
+                                    <span class="font-mono">{{
+                                        officer.badge_number
+                                    }}</span>
                                 </div>
-                                <div class="text-[11px] font-mono text-blue-400/80 truncate mt-1 flex items-center gap-1">
-                                    <img :src="iconShield" class="w-3 h-3 invert opacity-80 shrink-0" alt="" />
-                                    <span>{{ officer.patrol_zone || 'Los Santos' }}</span>
+                                <div
+                                    class="text-[11px] font-mono text-blue-400/80 truncate mt-1 flex items-center gap-1"
+                                >
+                                    <img
+                                        :src="iconShield"
+                                        class="w-3 h-3 invert opacity-80 shrink-0"
+                                        alt=""
+                                    />
+                                    <span>{{
+                                        officer.patrol_zone || "Los Santos"
+                                    }}</span>
                                 </div>
-                                <div class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500">
-                                    <div class="truncate mr-2">Streamer: <span class="text-slate-300 font-semibold">{{ officer.streamer_name }}</span></div>
-                                    <div class="flex items-center space-x-1.5 shrink-0">
-                                        <button 
-                                            @click="togglePersonalStream(officer.channel_id || officer.handle)"
-                                            class="p-1 rounded transition flex items-center gap-0.5 text-[10px]"
-                                            :class="isPersonalStream(officer.channel_id || officer.handle) ? 'text-purple-300 bg-purple-950/70 border border-purple-500/50' : 'text-slate-400 hover:text-purple-300 hover:bg-slate-800'"
-                                            :title="isPersonalStream(officer.channel_id || officer.handle) ? 'Hapus dari Personal' : 'Tambah ke Personal Watchlist (Maks 6)'"
+                                <div
+                                    class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500"
+                                >
+                                    <div class="truncate mr-2">
+                                        Streamer:
+                                        <span
+                                            class="text-slate-300 font-semibold"
+                                            >{{ officer.streamer_name }}</span
                                         >
-                                            <img :src="isPersonalStream(officer.channel_id || officer.handle) ? iconPinMinus : iconPinPlus" class="w-3 h-3 invert" alt="" />
+                                    </div>
+                                    <div
+                                        class="flex items-center space-x-1.5 shrink-0"
+                                    >
+                                        <button
+                                            @click="
+                                                togglePersonalStream(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                )
+                                            "
+                                            class="p-1 rounded transition flex items-center gap-0.5 text-[10px]"
+                                            :class="
+                                                isPersonalStream(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                )
+                                                    ? 'text-purple-300 bg-purple-950/70 border border-purple-500/50'
+                                                    : 'text-slate-400 hover:text-purple-300 hover:bg-slate-800'
+                                            "
+                                            :title="
+                                                isPersonalStream(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                )
+                                                    ? 'Hapus dari Personal'
+                                                    : 'Tambah ke Personal Watchlist (Maks 6)'
+                                            "
+                                        >
+                                            <img
+                                                :src="
+                                                    isPersonalStream(
+                                                        officer.channel_id ||
+                                                            officer.handle,
+                                                    )
+                                                        ? iconPinMinus
+                                                        : iconPinPlus
+                                                "
+                                                class="w-3 h-3 invert"
+                                                alt=""
+                                            />
                                         </button>
-                                        <button 
-                                            @click="openSubscribePopup(officer.channel_id || officer.handle, officer.officer_name)"
+                                        <button
+                                            @click="
+                                                openSubscribePopup(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                    officer.officer_name,
+                                                )
+                                            "
                                             class="bg-red-600/90 hover:bg-red-600 text-white font-bold px-2 py-0.5 rounded text-[10px] transition flex items-center gap-1 shadow-sm shadow-red-600/30"
                                             title="Subscribe to channel without leaving page"
                                         >
-                                            <span class="w-2 h-2 rounded-full bg-white mr-0.5"></span>
+                                            <span
+                                                class="w-2 h-2 rounded-full bg-white mr-0.5"
+                                            ></span>
                                             <span>Sub</span>
                                         </button>
-                                        <a :href="`https://www.youtube.com/${officer.handle}`" target="_blank" class="text-blue-400 hover:underline flex items-center gap-0.5">
+                                        <a
+                                            :href="`https://www.youtube.com/${officer.handle}`"
+                                            target="_blank"
+                                            class="text-blue-400 hover:underline flex items-center gap-0.5"
+                                        >
                                             <span>{{ officer.handle }}</span>
-                                            <img :src="iconExternal" class="w-2.5 h-2.5 invert opacity-70" alt="" />
+                                            <img
+                                                :src="iconExternal"
+                                                class="w-2.5 h-2.5 invert opacity-70"
+                                                alt=""
+                                            />
                                         </a>
                                     </div>
                                 </div>
@@ -4509,27 +8325,55 @@ const submitFeedbackForm = async () => {
                 </div>
 
                 <!-- TACTICAL COMMAND CENTER FOOTER (4 COLUMNS) -->
-                <footer class="mt-16 bg-[#080d18]/95 border-t border-blue-900/40 text-slate-400 text-xs backdrop-blur-md">
+                <footer
+                    class="mt-16 bg-[#080d18]/95 border-t border-blue-900/40 text-slate-400 text-xs backdrop-blur-md"
+                >
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            
+                        <div
+                            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+                        >
                             <!-- Column 1: Branding & Live Status -->
                             <div class="space-y-3">
                                 <div class="flex items-center space-x-3">
-                                    <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-950/70 via-slate-900 to-slate-950 border border-blue-500/40 p-1 shadow-inner overflow-hidden shrink-0">
-                                        <img :src="logoSaspColor" class="w-full h-full object-contain rounded" alt="SASP Badge" />
+                                    <div
+                                        class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-950/70 via-slate-900 to-slate-950 border border-blue-500/40 p-1 shadow-inner overflow-hidden shrink-0"
+                                    >
+                                        <img
+                                            :src="logoSaspColor"
+                                            class="w-full h-full object-contain rounded"
+                                            alt="SASP Badge"
+                                        />
                                     </div>
                                     <div>
-                                        <h3 class="text-sm font-black tracking-wider text-blue-400 uppercase font-mono leading-tight">IME ROLEPLAY</h3>
-                                        <p class="text-[11px] font-bold text-slate-300 tracking-wide uppercase leading-tight">POLICE COMMAND CENTER</p>
+                                        <h3
+                                            class="text-sm font-black tracking-wider text-blue-400 uppercase font-mono leading-tight"
+                                        >
+                                            IME ROLEPLAY
+                                        </h3>
+                                        <p
+                                            class="text-[11px] font-bold text-slate-300 tracking-wide uppercase leading-tight"
+                                        >
+                                            POLICE COMMAND CENTER
+                                        </p>
                                     </div>
                                 </div>
-                                <p class="text-[11px] text-slate-400 leading-relaxed">
-                                    Dashboard pemantauan multiview taktis siaran langsung seluruh petugas kepolisian (LSPD, BCSO, SASP) terdaftar di server GTA V IME Roleplay.
+                                <p
+                                    class="text-[11px] text-slate-400 leading-relaxed"
+                                >
+                                    Dashboard pemantauan multiview taktis siaran
+                                    langsung seluruh petugas kepolisian (LSPD,
+                                    BCSO, SASP) terdaftar di server GTA V IME
+                                    Roleplay.
                                 </p>
-                                <div class="flex items-center space-x-2 pt-1 font-mono text-[11px]">
-                                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <div
+                                    class="flex items-center space-x-2 pt-1 font-mono text-[11px]"
+                                >
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30"
+                                    >
+                                        <span
+                                            class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
+                                        ></span>
                                         <span>Multi-Sync Live</span>
                                     </span>
                                     <span class="text-slate-500">v2.4 Pro</span>
@@ -4538,54 +8382,82 @@ const submitFeedbackForm = async () => {
 
                             <!-- Column 2: Quick Tactical Navigation -->
                             <div class="space-y-3">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-blue-400 font-mono flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                <h4
+                                    class="text-xs font-bold uppercase tracking-wider text-blue-400 font-mono flex items-center gap-1.5"
+                                >
+                                    <span
+                                        class="w-1.5 h-1.5 rounded-full bg-blue-500"
+                                    ></span>
                                     <span>Navigasi Taktis</span>
                                 </h4>
                                 <ul class="space-y-2 text-[11px]">
                                     <li>
-                                        <button 
-                                            @click="selectedDepartment = 'ALL'; window.scrollTo({ top: 0, behavior: 'smooth' })" 
+                                        <button
+                                            @click="
+                                                selectedDepartment = 'ALL';
+                                                window.scrollTo({
+                                                    top: 0,
+                                                    behavior: 'smooth',
+                                                });
+                                            "
                                             class="hover:text-blue-300 transition flex items-center gap-1.5 text-slate-300"
                                         >
                                             <span>›</span>
-                                            <span>CCTV Multiview & Cinema Hub</span>
+                                            <span
+                                                >CCTV Multiview & Cinema
+                                                Hub</span
+                                            >
                                         </button>
                                     </li>
                                     <li>
-                                        <Link 
-                                            href="/officers" 
+                                        <Link
+                                            href="/officers"
                                             class="hover:text-blue-300 transition flex items-center gap-1.5 text-slate-300"
                                         >
                                             <span>›</span>
-                                            <span>Direktori Petugas ({{ allDirectoryOfficers.length }} Personil)</span>
+                                            <span
+                                                >Direktori Petugas ({{
+                                                    allDirectoryOfficers.length
+                                                }}
+                                                Personil)</span
+                                            >
                                         </Link>
                                     </li>
                                     <li>
-                                        <Link 
-                                            href="/qna" 
+                                        <Link
+                                            href="/qna"
                                             class="hover:text-blue-300 transition flex items-center gap-1.5 text-slate-300"
                                         >
                                             <span>›</span>
-                                            <span>Tanya Jawab & Panduan QnA</span>
+                                            <span
+                                                >Tanya Jawab & Panduan QnA</span
+                                            >
                                         </Link>
                                     </li>
                                     <li>
-                                        <button 
-                                            @click="openRightDrawer('QUICK_ADD')" 
+                                        <button
+                                            @click="
+                                                openRightDrawer('QUICK_ADD')
+                                            "
                                             class="hover:text-emerald-300 transition flex items-center gap-1.5 text-slate-300"
                                         >
                                             <span>›</span>
-                                            <span>Quick Add External YouTube Live Feed</span>
+                                            <span
+                                                >Quick Add External YouTube Live
+                                                Feed</span
+                                            >
                                         </button>
                                     </li>
                                     <li>
-                                        <Link 
-                                            href="/about" 
+                                        <Link
+                                            href="/about"
                                             class="hover:text-indigo-300 transition flex items-center gap-1.5 text-slate-300"
                                         >
                                             <span>›</span>
-                                            <span>Tentang Command Center Platform</span>
+                                            <span
+                                                >Tentang Command Center
+                                                Platform</span
+                                            >
                                         </Link>
                                     </li>
                                 </ul>
@@ -4593,55 +8465,137 @@ const submitFeedbackForm = async () => {
 
                             <!-- Column 3: Police Departments & Milestone -->
                             <div class="space-y-3">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-blue-400 font-mono flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                <h4
+                                    class="text-xs font-bold uppercase tracking-wider text-blue-400 font-mono flex items-center gap-1.5"
+                                >
+                                    <span
+                                        class="w-1.5 h-1.5 rounded-full bg-blue-500"
+                                    ></span>
                                     <span>Kesatuan Wilayah</span>
                                 </h4>
                                 <ul class="space-y-2 text-[11px]">
                                     <li>
-                                        <button 
-                                            @click="selectedDepartment = 'LSPD'; window.scrollTo({ top: 0, behavior: 'smooth' })" 
+                                        <button
+                                            @click="
+                                                selectedDepartment = 'LSPD';
+                                                window.scrollTo({
+                                                    top: 0,
+                                                    behavior: 'smooth',
+                                                });
+                                            "
                                             class="hover:text-blue-300 transition flex items-center justify-between w-full text-slate-300"
                                         >
-                                            <span class="flex items-center gap-1.5">
-                                                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                                                <span>LSPD - Mission Row HQ</span>
+                                            <span
+                                                class="flex items-center gap-1.5"
+                                            >
+                                                <span
+                                                    class="w-2 h-2 rounded-full bg-blue-500"
+                                                ></span>
+                                                <span
+                                                    >LSPD - Mission Row HQ</span
+                                                >
                                             </span>
-                                            <span class="text-[10px] font-mono text-slate-500">{{ allActiveStreams.filter(s => s.officer?.department === 'LSPD').length }} Live</span>
+                                            <span
+                                                class="text-[10px] font-mono text-slate-500"
+                                                >{{
+                                                    allActiveStreams.filter(
+                                                        (s) =>
+                                                            s.officer
+                                                                ?.department ===
+                                                            "LSPD",
+                                                    ).length
+                                                }}
+                                                Live</span
+                                            >
                                         </button>
                                     </li>
                                     <li>
-                                        <button 
-                                            @click="selectedDepartment = 'BCSO'; window.scrollTo({ top: 0, behavior: 'smooth' })" 
+                                        <button
+                                            @click="
+                                                selectedDepartment = 'BCSO';
+                                                window.scrollTo({
+                                                    top: 0,
+                                                    behavior: 'smooth',
+                                                });
+                                            "
                                             class="hover:text-amber-300 transition flex items-center justify-between w-full text-slate-300"
                                         >
-                                            <span class="flex items-center gap-1.5">
-                                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                                                <span>BCSO - Paleto & Sandy Shores</span>
+                                            <span
+                                                class="flex items-center gap-1.5"
+                                            >
+                                                <span
+                                                    class="w-2 h-2 rounded-full bg-amber-500"
+                                                ></span>
+                                                <span
+                                                    >BCSO - Paleto & Sandy
+                                                    Shores</span
+                                                >
                                             </span>
-                                            <span class="text-[10px] font-mono text-slate-500">{{ allActiveStreams.filter(s => s.officer?.department === 'BCSO').length }} Live</span>
+                                            <span
+                                                class="text-[10px] font-mono text-slate-500"
+                                                >{{
+                                                    allActiveStreams.filter(
+                                                        (s) =>
+                                                            s.officer
+                                                                ?.department ===
+                                                            "BCSO",
+                                                    ).length
+                                                }}
+                                                Live</span
+                                            >
                                         </button>
                                     </li>
                                     <li>
-                                        <button 
-                                            @click="selectedDepartment = 'SASP'; window.scrollTo({ top: 0, behavior: 'smooth' })" 
+                                        <button
+                                            @click="
+                                                selectedDepartment = 'SASP';
+                                                window.scrollTo({
+                                                    top: 0,
+                                                    behavior: 'smooth',
+                                                });
+                                            "
                                             class="hover:text-teal-300 transition flex items-center justify-between w-full text-slate-300"
                                         >
-                                            <span class="flex items-center gap-1.5">
-                                                <span class="w-2 h-2 rounded-full bg-teal-500"></span>
-                                                <span>SASP - State Troopers</span>
+                                            <span
+                                                class="flex items-center gap-1.5"
+                                            >
+                                                <span
+                                                    class="w-2 h-2 rounded-full bg-teal-500"
+                                                ></span>
+                                                <span
+                                                    >SASP - State Troopers</span
+                                                >
                                             </span>
-                                            <span class="text-[10px] font-mono text-slate-500">{{ allActiveStreams.filter(s => s.officer?.department === 'SASP').length }} Live</span>
+                                            <span
+                                                class="text-[10px] font-mono text-slate-500"
+                                                >{{
+                                                    allActiveStreams.filter(
+                                                        (s) =>
+                                                            s.officer
+                                                                ?.department ===
+                                                            "SASP",
+                                                    ).length
+                                                }}
+                                                Live</span
+                                            >
                                         </button>
                                     </li>
                                     <li class="pt-1">
-                                        <div class="bg-red-950/40 border border-red-500/30 rounded-lg p-2 flex items-center justify-between">
-                                            <div class="flex items-center gap-1.5 text-red-300 font-semibold text-[10px]">
-                                                <img :src="iconTarget" class="w-3.5 h-3.5 invert" alt="" />
+                                        <div
+                                            class="bg-red-950/40 border border-red-500/30 rounded-lg p-2 flex items-center justify-between"
+                                        >
+                                            <div
+                                                class="flex items-center gap-1.5 text-red-300 font-semibold text-[10px]"
+                                            >
+                                                <img
+                                                    :src="iconTarget"
+                                                    class="w-3.5 h-3.5 invert"
+                                                    alt=""
+                                                />
                                                 <span>Support 1K Subs</span>
                                             </div>
-                                            <Link 
-                                                href="/officers" 
+                                            <Link
+                                                href="/officers"
                                                 class="text-[10px] bg-red-600 hover:bg-red-500 text-white font-bold px-2 py-0.5 rounded transition"
                                             >
                                                 Dukung Petugas
@@ -4653,133 +8607,258 @@ const submitFeedbackForm = async () => {
 
                             <!-- Column 4: Community & Dispatcher Support -->
                             <div class="space-y-3">
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-blue-400 font-mono flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                <h4
+                                    class="text-xs font-bold uppercase tracking-wider text-blue-400 font-mono flex items-center gap-1.5"
+                                >
+                                    <span
+                                        class="w-1.5 h-1.5 rounded-full bg-blue-500"
+                                    ></span>
                                     <span>Dispatcher & Bantuan</span>
                                 </h4>
-                                <p class="text-[11px] text-slate-400 leading-relaxed">
-                                    Punya streamer polisi baru atau ingin update callsign dan pangkat dinas? Laporkan langsung ke tim dispatcher.
+                                <p
+                                    class="text-[11px] text-slate-400 leading-relaxed"
+                                >
+                                    Punya streamer polisi baru atau ingin update
+                                    callsign dan pangkat dinas? Laporkan
+                                    langsung ke tim dispatcher.
                                 </p>
                                 <div class="flex flex-col gap-2 pt-1">
-                                    <Link 
-                                        href="/feedback" 
+                                    <Link
+                                        href="/feedback"
                                         class="w-full py-2 px-3 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-sky-600/30 transition flex items-center justify-center gap-2"
                                     >
-                                        <img :src="iconFeedback" class="w-3.5 h-3.5 invert" alt="" />
+                                        <img
+                                            :src="iconFeedback"
+                                            class="w-3.5 h-3.5 invert"
+                                            alt=""
+                                        />
                                         <span>Kirim Laporan Dispatcher</span>
                                     </Link>
-                                    <a 
-                                        href="https://discord.gg/imeroleplay" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
+                                    <a
+                                        href="https://discord.gg/imeroleplay"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         class="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs rounded-xl border border-slate-800 transition flex items-center justify-center gap-2"
                                     >
                                         <span>Discord IME Roleplay</span>
-                                        <img :src="iconExternal" class="w-3 h-3 invert opacity-70" alt="" />
+                                        <img
+                                            :src="iconExternal"
+                                            class="w-3 h-3 invert opacity-70"
+                                            alt=""
+                                        />
                                     </a>
                                 </div>
                             </div>
-
                         </div>
 
                         <!-- Bottom Copyright & Fair Use Disclaimer -->
-                        <div class="mt-10 pt-6 border-t border-slate-800/80 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 font-mono">
-                            <div class="flex items-center gap-2 text-center md:text-left">
-                                <span>© 2026 IME Roleplay Police Command Center.</span>
+                        <div
+                            class="mt-10 pt-6 border-t border-slate-800/80 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 font-mono"
+                        >
+                            <div
+                                class="flex items-center gap-2 text-center md:text-left"
+                            >
+                                <span
+                                    >© 2026 IME Roleplay Police Command
+                                    Center.</span
+                                >
                                 <span class="hidden sm:inline">•</span>
-                                <span class="hidden sm:inline text-slate-400">Tactical Multiview System</span>
+                                <span class="hidden sm:inline text-slate-400"
+                                    >Tactical Multiview System</span
+                                >
                             </div>
-                            <div class="text-center md:text-right text-[10px] text-slate-500">
-                                GTA V / FiveM community fan project. All video feeds and streams belong to their respective YouTube creators.
+                            <div
+                                class="text-center md:text-right text-[10px] text-slate-500"
+                            >
+                                GTA V / FiveM community fan project. All video
+                                feeds and streams belong to their respective
+                                YouTube creators.
                             </div>
                         </div>
                     </div>
                 </footer>
-
             </div>
-
         </main>
 
         <!-- UNIFIED RIGHT SLIDE-OVER SIDEBAR / DRAWER -->
         <!-- 1. Backdrop Overlay -->
-        <div 
-            v-if="activeRightDrawer" 
+        <div
+            v-if="activeRightDrawer"
             @click="closeRightDrawer"
             class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300"
         ></div>
 
         <!-- 2. Sliding Drawer Panel -->
-        <aside 
+        <aside
             class="fixed inset-y-0 right-0 z-50 bg-[#080d17]/98 border-l border-slate-800/90 shadow-2xl backdrop-blur-2xl flex flex-col transition-all duration-300 ease-in-out"
             :class="[
-                activeRightDrawer ? 'translate-x-0' : 'translate-x-full pointer-events-none',
-                activeRightDrawer === 'DIRECTORY' ? 'w-full sm:w-[580px] md:w-[740px] lg:w-[860px]' : (activeRightDrawer === 'RADIO_CODES' ? 'w-full sm:w-[540px] md:w-[680px] lg:w-[780px]' : 'w-full sm:w-[440px] md:w-[480px]')
+                activeRightDrawer
+                    ? 'translate-x-0'
+                    : 'translate-x-full pointer-events-none',
+                activeRightDrawer === 'DIRECTORY'
+                    ? 'w-full sm:w-[580px] md:w-[740px] lg:w-[860px]'
+                    : activeRightDrawer === 'RADIO_CODES'
+                      ? 'w-full sm:w-[540px] md:w-[680px] lg:w-[780px]'
+                      : 'w-full sm:w-[440px] md:w-[480px]',
             ]"
         >
             <!-- Drawer Top Header Bar -->
-            <div class="bg-slate-900/95 px-4 py-3.5 border-b border-slate-800 flex items-center justify-between shrink-0">
+            <div
+                class="bg-slate-900/95 px-4 py-3.5 border-b border-slate-800 flex items-center justify-between shrink-0"
+            >
                 <div class="flex items-center space-x-2.5 min-w-0">
-                    <div 
+                    <div
                         class="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 border"
                         :class="{
-                            'bg-blue-950/80 border-blue-500/60 text-blue-400': activeRightDrawer === 'DIRECTORY',
-                            'bg-amber-950/80 border-amber-500/60 text-amber-400': activeRightDrawer === 'RADIO_CODES',
-                            'bg-emerald-950/80 border-emerald-500/60 text-emerald-400': activeRightDrawer === 'QUICK_ADD',
-                            'bg-sky-950/80 border-sky-500/60 text-sky-400': activeRightDrawer === 'FEEDBACK',
-                            'bg-indigo-950/80 border-indigo-500/60 text-indigo-400': activeRightDrawer === 'ABOUT',
+                            'bg-blue-950/80 border-blue-500/60 text-blue-400':
+                                activeRightDrawer === 'DIRECTORY',
+                            'bg-amber-950/80 border-amber-500/60 text-amber-400':
+                                activeRightDrawer === 'RADIO_CODES',
+                            'bg-emerald-950/80 border-emerald-500/60 text-emerald-400':
+                                activeRightDrawer === 'QUICK_ADD',
+                            'bg-sky-950/80 border-sky-500/60 text-sky-400':
+                                activeRightDrawer === 'FEEDBACK',
+                            'bg-indigo-950/80 border-indigo-500/60 text-indigo-400':
+                                activeRightDrawer === 'ABOUT',
                         }"
                     >
-                        <img v-if="activeRightDrawer === 'DIRECTORY'" :src="iconUser" class="w-4 h-4 invert" alt="" />
-                        <img v-else-if="activeRightDrawer === 'RADIO_CODES'" :src="iconRadio" class="w-4 h-4 invert" alt="" />
-                        <img v-else-if="activeRightDrawer === 'QUICK_ADD'" :src="iconQuickAdd" class="w-4 h-4 invert" alt="" />
-                        <img v-else-if="activeRightDrawer === 'FEEDBACK'" :src="iconFeedback" class="w-4 h-4 invert" alt="" />
-                        <svg v-else-if="activeRightDrawer === 'ABOUT'" class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-width="2" stroke-linecap="round" d="M12 16v-4m0-4h.01"/></svg>
+                        <img
+                            v-if="activeRightDrawer === 'DIRECTORY'"
+                            :src="iconUser"
+                            class="w-4 h-4 invert"
+                            alt=""
+                        />
+                        <img
+                            v-else-if="activeRightDrawer === 'RADIO_CODES'"
+                            :src="iconRadio"
+                            class="w-4 h-4 invert"
+                            alt=""
+                        />
+                        <img
+                            v-else-if="activeRightDrawer === 'QUICK_ADD'"
+                            :src="iconQuickAdd"
+                            class="w-4 h-4 invert"
+                            alt=""
+                        />
+                        <img
+                            v-else-if="activeRightDrawer === 'FEEDBACK'"
+                            :src="iconFeedback"
+                            class="w-4 h-4 invert"
+                            alt=""
+                        />
+                        <svg
+                            v-else-if="activeRightDrawer === 'ABOUT'"
+                            class="w-4 h-4 text-indigo-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle cx="12" cy="12" r="10" stroke-width="2" />
+                            <path
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                d="M12 16v-4m0-4h.01"
+                            />
+                        </svg>
                     </div>
                     <div class="truncate">
                         <div class="flex items-center space-x-2">
-                            <h2 
+                            <h2
                                 class="text-xs font-black tracking-wider uppercase font-mono truncate"
                                 :class="{
-                                    'text-blue-300': activeRightDrawer === 'DIRECTORY',
-                                    'text-amber-300': activeRightDrawer === 'RADIO_CODES',
-                                    'text-emerald-300': activeRightDrawer === 'QUICK_ADD',
-                                    'text-sky-300': activeRightDrawer === 'FEEDBACK',
-                                    'text-indigo-300': activeRightDrawer === 'ABOUT',
+                                    'text-blue-300':
+                                        activeRightDrawer === 'DIRECTORY',
+                                    'text-amber-300':
+                                        activeRightDrawer === 'RADIO_CODES',
+                                    'text-emerald-300':
+                                        activeRightDrawer === 'QUICK_ADD',
+                                    'text-sky-300':
+                                        activeRightDrawer === 'FEEDBACK',
+                                    'text-indigo-300':
+                                        activeRightDrawer === 'ABOUT',
                                 }"
                             >
-                                <span v-if="activeRightDrawer === 'DIRECTORY'">DIREKTORI PETUGAS & STREAMER</span>
-                                <span v-else-if="activeRightDrawer === 'RADIO_CODES'">PANDUAN KODE 10 & PROTOKOL RADIO</span>
-                                <span v-else-if="activeRightDrawer === 'QUICK_ADD'">QUICK ADD LIVE FEED</span>
-                                <span v-else-if="activeRightDrawer === 'FEEDBACK'">LAPOR & USULAN STREAMER</span>
-                                <span v-else-if="activeRightDrawer === 'ABOUT'">ABOUT COMMAND CENTER</span>
+                                <span v-if="activeRightDrawer === 'DIRECTORY'"
+                                    >DIREKTORI PETUGAS & STREAMER</span
+                                >
+                                <span
+                                    v-else-if="
+                                        activeRightDrawer === 'RADIO_CODES'
+                                    "
+                                    >PANDUAN KODE 10 & PROTOKOL RADIO</span
+                                >
+                                <span
+                                    v-else-if="
+                                        activeRightDrawer === 'QUICK_ADD'
+                                    "
+                                    >QUICK ADD LIVE FEED</span
+                                >
+                                <span
+                                    v-else-if="activeRightDrawer === 'FEEDBACK'"
+                                    >LAPOR & USULAN STREAMER</span
+                                >
+                                <span v-else-if="activeRightDrawer === 'ABOUT'"
+                                    >ABOUT COMMAND CENTER</span
+                                >
                             </h2>
-                            <span 
+                            <span
                                 class="text-[9px] px-1.5 py-0.2 rounded-full border font-mono uppercase"
                                 :class="{
-                                    'bg-blue-500/20 text-blue-300 border-blue-500/40': activeRightDrawer === 'DIRECTORY',
-                                    'bg-amber-500/20 text-amber-300 border-amber-500/40': activeRightDrawer === 'RADIO_CODES',
-                                    'bg-emerald-500/20 text-emerald-300 border-emerald-500/40': activeRightDrawer === 'QUICK_ADD',
-                                    'bg-sky-500/20 text-sky-300 border-sky-500/40': activeRightDrawer === 'FEEDBACK',
-                                    'bg-indigo-500/20 text-indigo-300 border-indigo-500/40': activeRightDrawer === 'ABOUT',
+                                    'bg-blue-500/20 text-blue-300 border-blue-500/40':
+                                        activeRightDrawer === 'DIRECTORY',
+                                    'bg-amber-500/20 text-amber-300 border-amber-500/40':
+                                        activeRightDrawer === 'RADIO_CODES',
+                                    'bg-emerald-500/20 text-emerald-300 border-emerald-500/40':
+                                        activeRightDrawer === 'QUICK_ADD',
+                                    'bg-sky-500/20 text-sky-300 border-sky-500/40':
+                                        activeRightDrawer === 'FEEDBACK',
+                                    'bg-indigo-500/20 text-indigo-300 border-indigo-500/40':
+                                        activeRightDrawer === 'ABOUT',
                                 }"
                             >
-                                {{ activeRightDrawer === 'DIRECTORY' ? 'Roster' : (activeRightDrawer === 'RADIO_CODES' ? 'Guide' : (activeRightDrawer === 'FEEDBACK' ? 'Discord' : (activeRightDrawer === 'ABOUT' ? 'Overview' : 'Temporary'))) }}
+                                {{
+                                    activeRightDrawer === "DIRECTORY"
+                                        ? "Roster"
+                                        : activeRightDrawer === "RADIO_CODES"
+                                          ? "Guide"
+                                          : activeRightDrawer === "FEEDBACK"
+                                            ? "Discord"
+                                            : activeRightDrawer === "ABOUT"
+                                              ? "Overview"
+                                              : "Temporary"
+                                }}
                             </span>
                         </div>
                         <p class="text-[11px] text-slate-400 truncate">
-                            <span v-if="activeRightDrawer === 'DIRECTORY'">Daftar seluruh personil terdaftar LSPD, BCSO, SASP & status siaran</span>
-                            <span v-else-if="activeRightDrawer === 'RADIO_CODES'">Referensi cepat kode radio 10-Codes & penugasan kanal TAC 1–5</span>
-                            <span v-else-if="activeRightDrawer === 'QUICK_ADD'">Inject external YouTube live patrol feed into multifeed</span>
-                            <span v-else-if="activeRightDrawer === 'FEEDBACK'">Kirim usul streamer atau perbaikan data ke Discord tim</span>
-                            <span v-else-if="activeRightDrawer === 'ABOUT'">IME Roleplay Police Command Center & Tactical Multiview</span>
+                            <span v-if="activeRightDrawer === 'DIRECTORY'"
+                                >Daftar seluruh personil terdaftar LSPD, BCSO,
+                                SASP & status siaran</span
+                            >
+                            <span
+                                v-else-if="activeRightDrawer === 'RADIO_CODES'"
+                                >Referensi cepat kode radio 10-Codes & penugasan
+                                kanal TAC 1–5</span
+                            >
+                            <span v-else-if="activeRightDrawer === 'QUICK_ADD'"
+                                >Inject external YouTube live patrol feed into
+                                multifeed</span
+                            >
+                            <span v-else-if="activeRightDrawer === 'FEEDBACK'"
+                                >Kirim usul streamer atau perbaikan data ke
+                                Discord tim</span
+                            >
+                            <span v-else-if="activeRightDrawer === 'ABOUT'"
+                                >IME Roleplay Police Command Center & Tactical
+                                Multiview</span
+                            >
                         </p>
                     </div>
                 </div>
 
                 <!-- Header Actions: Close Button -->
                 <div class="flex items-center space-x-1.5 shrink-0 ml-2">
-                    <button 
-                        @click="closeRightDrawer" 
+                    <button
+                        @click="closeRightDrawer"
                         class="p-1.5 text-slate-400 hover:text-white rounded-lg bg-slate-800/80 hover:bg-slate-700 transition text-xs font-bold"
                         title="Tutup Panel (Esc)"
                     >
@@ -4789,89 +8868,150 @@ const submitFeedbackForm = async () => {
             </div>
 
             <!-- DRAWER CONTENT BODY -->
-            <div class="flex-1 overflow-y-auto scrollbar-thin flex flex-col min-h-0 bg-[#060a12]">
-                
+            <div
+                class="flex-1 overflow-y-auto scrollbar-thin flex flex-col min-h-0 bg-[#060a12]"
+            >
                 <!-- 1. QUICK ADD STREAM PANEL (Hashtag Search + Manual URL Input) -->
-                <div v-if="activeRightDrawer === 'QUICK_ADD'" class="p-4 flex flex-col gap-3.5">
-                    
+                <div
+                    v-if="activeRightDrawer === 'QUICK_ADD'"
+                    class="p-4 flex flex-col gap-3.5"
+                >
                     <!-- Notification Toast -->
-                    <div v-if="liveSearchSuccessNotice" class="bg-emerald-950/90 border border-emerald-500/60 rounded-xl px-3.5 py-2 text-xs text-emerald-300 font-mono flex items-center gap-2 shadow-lg animate-in fade-in duration-200">
+                    <div
+                        v-if="liveSearchSuccessNotice"
+                        class="bg-emerald-950/90 border border-emerald-500/60 rounded-xl px-3.5 py-2 text-xs text-emerald-300 font-mono flex items-center gap-2 shadow-lg animate-in fade-in duration-200"
+                    >
                         <span>✓</span>
                         <span>{{ liveSearchSuccessNotice }}</span>
                     </div>
 
                     <!-- Personal Info Banner -->
-                    <div class="bg-purple-950/30 border border-purple-500/40 rounded-xl p-3 text-xs text-purple-200/90 leading-relaxed">
-                        <div class="font-bold flex items-center justify-between mb-1 text-purple-300">
+                    <div
+                        class="bg-purple-950/30 border border-purple-500/40 rounded-xl p-3 text-xs text-purple-200/90 leading-relaxed"
+                    >
+                        <div
+                            class="font-bold flex items-center justify-between mb-1 text-purple-300"
+                        >
                             <span class="flex items-center gap-1.5">
-                                <img :src="iconPersonal" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                                <img
+                                    :src="iconPersonal"
+                                    class="w-3.5 h-3.5 invert opacity-90"
+                                    alt=""
+                                />
                                 <span>Quick Watchlist & Personal</span>
                             </span>
-                            <span class="text-[10px] bg-purple-900/60 px-2 py-0.5 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30">
+                            <span
+                                class="text-[10px] bg-purple-900/60 px-2 py-0.5 rounded-full font-mono font-bold text-purple-200 border border-purple-400/30"
+                            >
                                 {{ totalPersonalCount }}/6 Video
                             </span>
                         </div>
-                        Cari lawan/gang atau masukkan live stream YouTube. Stream yang dipilih akan langsung masuk ke tab <strong>PERSONAL</strong> browser lokal Anda.
+                        Cari lawan/gang atau masukkan live stream YouTube.
+                        Stream yang dipilih akan langsung masuk ke tab
+                        <strong>PERSONAL</strong> browser lokal Anda.
                     </div>
 
                     <!-- Mode Toggle: Cari Live Hashtag vs Input Manual -->
-                    <div class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1">
-                        <button 
-                            type="button" 
+                    <div
+                        class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800 gap-1"
+                    >
+                        <button
+                            type="button"
                             @click="quickAddMode = 'SEARCH'"
-                            :class="quickAddMode === 'SEARCH' ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30' : 'text-slate-400 hover:text-slate-200'"
+                            :class="
+                                quickAddMode === 'SEARCH'
+                                    ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30'
+                                    : 'text-slate-400 hover:text-slate-200'
+                            "
                             class="py-1.5 px-3 text-xs rounded-lg transition flex items-center justify-center gap-1.5"
                         >
-                            <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-80" alt="" />
+                            <img
+                                :src="iconSearch"
+                                class="w-3.5 h-3.5 invert opacity-80"
+                                alt=""
+                            />
                             <span>Cari Live Hashtag</span>
                         </button>
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             @click="quickAddMode = 'MANUAL'"
-                            :class="quickAddMode === 'MANUAL' ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30' : 'text-slate-400 hover:text-slate-200'"
+                            :class="
+                                quickAddMode === 'MANUAL'
+                                    ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30'
+                                    : 'text-slate-400 hover:text-slate-200'
+                            "
                             class="py-1.5 px-3 text-xs rounded-lg transition flex items-center justify-center gap-1.5"
                         >
-                            <img :src="iconUrl" class="w-3.5 h-3.5 invert opacity-80" alt="" />
+                            <img
+                                :src="iconUrl"
+                                class="w-3.5 h-3.5 invert opacity-80"
+                                alt=""
+                            />
                             <span>Input Manual</span>
                         </button>
                     </div>
 
                     <!-- TAB 1: HASHTAG / KEYWORD LIVE SEARCH -->
-                    <div v-if="quickAddMode === 'SEARCH'" class="flex flex-col gap-3">
-                        
+                    <div
+                        v-if="quickAddMode === 'SEARCH'"
+                        class="flex flex-col gap-3"
+                    >
                         <!-- Search Form -->
-                        <form @submit.prevent="handleSearchLiveStreams()" class="flex flex-col gap-2">
+                        <form
+                            @submit.prevent="handleSearchLiveStreams()"
+                            class="flex flex-col gap-2"
+                        >
                             <div class="relative">
-                                <input 
-                                    v-model="liveSearchQuery" 
-                                    type="text" 
+                                <input
+                                    v-model="liveSearchQuery"
+                                    type="text"
                                     required
                                     placeholder="Ketik hashtag misal #imeroleplay #burgenk..."
                                     class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-20 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 font-mono placeholder-slate-500"
                                 />
-                                <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" alt="" />
-                                <button 
-                                    type="submit" 
+                                <img
+                                    :src="iconSearch"
+                                    class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                                    alt=""
+                                />
+                                <button
+                                    type="submit"
                                     :disabled="isLiveSearching"
                                     class="absolute right-1.5 top-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-1"
                                 >
-                                    <img v-if="isLiveSearching" :src="iconRefresh" class="w-3 h-3 animate-spin invert" alt="" />
-                                    <span>{{ isLiveSearching ? 'Mencari...' : 'Cari' }}</span>
+                                    <img
+                                        v-if="isLiveSearching"
+                                        :src="iconRefresh"
+                                        class="w-3 h-3 animate-spin invert"
+                                        alt=""
+                                    />
+                                    <span>{{
+                                        isLiveSearching ? "Mencari..." : "Cari"
+                                    }}</span>
                                 </button>
                             </div>
                         </form>
 
                         <!-- Quick Hashtag Preset Chips -->
                         <div class="flex flex-col gap-1.5">
-                            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Hashtag / Gang Populer:</span>
+                            <span
+                                class="text-[10px] font-mono text-slate-400 uppercase tracking-wider"
+                                >Hashtag / Gang Populer:</span
+                            >
                             <div class="flex flex-wrap gap-1.5">
-                                <button 
-                                    v-for="preset in popularHashtagPresets" 
+                                <button
+                                    v-for="preset in popularHashtagPresets"
                                     :key="preset.label"
-                                    type="button" 
-                                    @click="handleSearchLiveStreams(preset.query)"
+                                    type="button"
+                                    @click="
+                                        handleSearchLiveStreams(preset.query)
+                                    "
                                     class="text-[11px] px-2.5 py-1 rounded-lg border font-mono transition"
-                                    :class="liveSearchQuery === preset.query ? 'bg-purple-600 text-white font-bold border-purple-400' : 'bg-slate-900 text-purple-300 hover:bg-purple-950/60 border-purple-500/30 hover:border-purple-400/50'"
+                                    :class="
+                                        liveSearchQuery === preset.query
+                                            ? 'bg-purple-600 text-white font-bold border-purple-400'
+                                            : 'bg-slate-900 text-purple-300 hover:bg-purple-950/60 border-purple-500/30 hover:border-purple-400/50'
+                                    "
                                 >
                                     {{ preset.label }}
                                 </button>
@@ -4879,85 +9019,164 @@ const submitFeedbackForm = async () => {
                         </div>
 
                         <!-- Search Error / Empty State -->
-                        <div v-if="liveSearchError" class="p-3 bg-red-950/30 border border-red-500/40 rounded-xl text-xs text-red-300">
+                        <div
+                            v-if="liveSearchError"
+                            class="p-3 bg-red-950/30 border border-red-500/40 rounded-xl text-xs text-red-300"
+                        >
                             {{ liveSearchError }}
                         </div>
 
                         <!-- Live Searching Loading Spinner -->
-                        <div v-if="isLiveSearching" class="py-8 flex flex-col items-center justify-center text-slate-400 gap-2">
-                            <div class="w-7 h-7 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                            <span class="text-xs font-mono">Sedang mencari stream YouTube live aktif...</span>
+                        <div
+                            v-if="isLiveSearching"
+                            class="py-8 flex flex-col items-center justify-center text-slate-400 gap-2"
+                        >
+                            <div
+                                class="w-7 h-7 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"
+                            ></div>
+                            <span class="text-xs font-mono"
+                                >Sedang mencari stream YouTube live
+                                aktif...</span
+                            >
                         </div>
 
                         <!-- Live Search Results List -->
-                        <div v-else-if="liveSearchResults.length > 0" class="flex flex-col gap-2.5">
-                            <div class="flex items-center justify-between text-xs text-slate-400 font-mono px-0.5">
-                                <span>Ditemukan: <strong class="text-slate-200">{{ liveSearchResults.length }}</strong> Live Stream</span>
-                                <span class="text-[10px] text-emerald-400 font-bold">● 10-8 LIVE</span>
+                        <div
+                            v-else-if="liveSearchResults.length > 0"
+                            class="flex flex-col gap-2.5"
+                        >
+                            <div
+                                class="flex items-center justify-between text-xs text-slate-400 font-mono px-0.5"
+                            >
+                                <span
+                                    >Ditemukan:
+                                    <strong class="text-slate-200">{{
+                                        liveSearchResults.length
+                                    }}</strong>
+                                    Live Stream</span
+                                >
+                                <span
+                                    class="text-[10px] text-emerald-400 font-bold"
+                                    >● 10-8 LIVE</span
+                                >
                             </div>
 
                             <div class="space-y-2.5">
-                                <div 
-                                    v-for="item in liveSearchResults" 
+                                <div
+                                    v-for="item in liveSearchResults"
                                     :key="item.video_id"
                                     class="bg-slate-900/90 border border-slate-800 hover:border-purple-500/60 rounded-xl p-2.5 transition flex gap-3 items-start"
                                 >
                                     <!-- Thumbnail -->
-                                    <div class="w-28 aspect-video bg-black rounded-lg overflow-hidden shrink-0 relative">
-                                        <img :src="item.thumbnail_url" class="w-full h-full object-cover" loading="lazy" />
-                                        <div class="absolute bottom-1 right-1 bg-black/80 px-1 py-0.2 rounded text-[9px] font-mono text-red-400 font-bold">
+                                    <div
+                                        class="w-28 aspect-video bg-black rounded-lg overflow-hidden shrink-0 relative"
+                                    >
+                                        <img
+                                            :src="item.thumbnail_url"
+                                            class="w-full h-full object-cover"
+                                            loading="lazy"
+                                        />
+                                        <div
+                                            class="absolute bottom-1 right-1 bg-black/80 px-1 py-0.2 rounded text-[9px] font-mono text-red-400 font-bold"
+                                        >
                                             LIVE
                                         </div>
                                     </div>
 
                                     <!-- Stream Info -->
-                                    <div class="flex-1 min-w-0 flex flex-col justify-between h-full">
+                                    <div
+                                        class="flex-1 min-w-0 flex flex-col justify-between h-full"
+                                    >
                                         <div>
-                                            <div class="flex items-start justify-between gap-2">
-                                                <h4 class="text-xs font-bold text-slate-100 line-clamp-2 leading-snug flex-1" :title="item.title">
+                                            <div
+                                                class="flex items-start justify-between gap-2"
+                                            >
+                                                <h4
+                                                    class="text-xs font-bold text-slate-100 line-clamp-2 leading-snug flex-1"
+                                                    :title="item.title"
+                                                >
                                                     {{ item.title }}
                                                 </h4>
                                             </div>
-                                            <div class="text-[11px] text-slate-400 truncate mt-1 flex items-center gap-1.5">
-                                                <img :src="iconUser" class="w-3 h-3 invert opacity-60" alt="" />
-                                                <span class="text-purple-300 font-semibold truncate">{{ item.channel_name }}</span>
+                                            <div
+                                                class="text-[11px] text-slate-400 truncate mt-1 flex items-center gap-1.5"
+                                            >
+                                                <img
+                                                    :src="iconUser"
+                                                    class="w-3 h-3 invert opacity-60"
+                                                    alt=""
+                                                />
+                                                <span
+                                                    class="text-purple-300 font-semibold truncate"
+                                                    >{{
+                                                        item.channel_name
+                                                    }}</span
+                                                >
                                             </div>
                                         </div>
 
-                                        <div class="mt-2 flex items-center justify-between gap-2">
-                                            <button 
-                                                type="button" 
-                                                @click="handleAddLiveStreamToPersonal(item)"
-                                                :class="isPersonalStream(item.video_id) ? 'bg-purple-950 text-purple-300 border-purple-500/50' : 'bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/30'"
+                                        <div
+                                            class="mt-2 flex items-center justify-between gap-2"
+                                        >
+                                            <button
+                                                type="button"
+                                                @click="
+                                                    handleAddLiveStreamToPersonal(
+                                                        item,
+                                                    )
+                                                "
+                                                :class="
+                                                    isPersonalStream(
+                                                        item.video_id,
+                                                    )
+                                                        ? 'bg-purple-950 text-purple-300 border-purple-500/50'
+                                                        : 'bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/30'
+                                                "
                                                 class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition flex items-center justify-center font-mono border border-transparent"
                                             >
-                                                <span>{{ isPersonalStream(item.video_id) ? '✓ Pinned' : 'Pin ke Personal' }}</span>
+                                                <span>{{
+                                                    isPersonalStream(
+                                                        item.video_id,
+                                                    )
+                                                        ? "✓ Pinned"
+                                                        : "Pin ke Personal"
+                                                }}</span>
                                             </button>
 
-                                            <a 
-                                                :href="`https://www.youtube.com/watch?v=${item.video_id}`" 
-                                                target="_blank" 
+                                            <a
+                                                :href="`https://www.youtube.com/watch?v=${item.video_id}`"
+                                                target="_blank"
                                                 class="p-1 hover:text-white text-slate-400 hover:bg-slate-800 rounded transition flex items-center justify-center"
                                                 title="Open on YouTube"
                                             >
-                                                <img :src="iconExternal" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="Open on YouTube" />
+                                                <img
+                                                    :src="iconExternal"
+                                                    class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100"
+                                                    alt="Open on YouTube"
+                                                />
                                             </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
 
                     <!-- TAB 2: MANUAL URL / VIDEO ID INJECTION -->
                     <div v-else-if="quickAddMode === 'MANUAL'">
-                        <form @submit.prevent="handleQuickAddStream" class="flex flex-col gap-3.5">
+                        <form
+                            @submit.prevent="handleQuickAddStream"
+                            class="flex flex-col gap-3.5"
+                        >
                             <div>
-                                <label class="text-xs font-semibold text-slate-300 block mb-1">YouTube Live URL or 11-char Video ID *</label>
-                                <input 
-                                    v-model="quickAddInput.urlOrId" 
-                                    type="text" 
+                                <label
+                                    class="text-xs font-semibold text-slate-300 block mb-1"
+                                    >YouTube Live URL or 11-char Video ID
+                                    *</label
+                                >
+                                <input
+                                    v-model="quickAddInput.urlOrId"
+                                    type="text"
                                     required
                                     placeholder="https://youtube.com/watch?v=xxxxxxxxxxx or dQw4w9WgXcQ"
                                     class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono placeholder-slate-600"
@@ -4966,19 +9185,25 @@ const submitFeedbackForm = async () => {
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="text-xs font-semibold text-slate-300 block mb-1">Officer / Unit Name</label>
-                                    <input 
-                                        v-model="quickAddInput.officerName" 
-                                        type="text" 
+                                    <label
+                                        class="text-xs font-semibold text-slate-300 block mb-1"
+                                        >Officer / Unit Name</label
+                                    >
+                                    <input
+                                        v-model="quickAddInput.officerName"
+                                        type="text"
                                         placeholder="Ofc. Raymond"
                                         class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600"
                                     />
                                 </div>
                                 <div>
-                                    <label class="text-xs font-semibold text-slate-300 block mb-1">Callsign</label>
-                                    <input 
-                                        v-model="quickAddInput.callsign" 
-                                        type="text" 
+                                    <label
+                                        class="text-xs font-semibold text-slate-300 block mb-1"
+                                        >Callsign</label
+                                    >
+                                    <input
+                                        v-model="quickAddInput.callsign"
+                                        type="text"
                                         placeholder="1-ADAM-99"
                                         class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono placeholder-slate-600"
                                     />
@@ -4987,40 +9212,58 @@ const submitFeedbackForm = async () => {
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="text-xs font-semibold text-slate-300 block mb-1">Department</label>
-                                    <select 
-                                        v-model="quickAddInput.department" 
+                                    <label
+                                        class="text-xs font-semibold text-slate-300 block mb-1"
+                                        >Department</label
+                                    >
+                                    <select
+                                        v-model="quickAddInput.department"
                                         class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
                                     >
-                                        <option value="LSPD">LSPD (Police)</option>
-                                        <option value="BCSO">BCSO (Sheriff)</option>
-                                        <option value="SASP">SASP (State Police)</option>
+                                        <option value="LSPD">
+                                            LSPD (Police)
+                                        </option>
+                                        <option value="BCSO">
+                                            BCSO (Sheriff)
+                                        </option>
+                                        <option value="SASP">
+                                            SASP (State Police)
+                                        </option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-xs font-semibold text-slate-300 block mb-1">Patrol Zone</label>
-                                    <input 
-                                        v-model="quickAddInput.patrolZone" 
-                                        type="text" 
+                                    <label
+                                        class="text-xs font-semibold text-slate-300 block mb-1"
+                                        >Patrol Zone</label
+                                    >
+                                    <input
+                                        v-model="quickAddInput.patrolZone"
+                                        type="text"
                                         placeholder="Mission Row"
                                         class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600"
                                     />
                                 </div>
                             </div>
 
-                            <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-end space-x-2">
-                                <button 
-                                    type="button" 
-                                    @click="closeRightDrawer" 
+                            <div
+                                class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-end space-x-2"
+                            >
+                                <button
+                                    type="button"
+                                    @click="closeRightDrawer"
                                     class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg transition"
                                 >
                                     Batal
                                 </button>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5"
                                 >
-                                    <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert" alt="" />
+                                    <img
+                                        :src="iconQuickAdd"
+                                        class="w-3.5 h-3.5 invert"
+                                        alt=""
+                                    />
                                     <span>Inject Live Feed</span>
                                 </button>
                             </div>
@@ -5028,137 +9271,244 @@ const submitFeedbackForm = async () => {
                     </div>
 
                     <!-- TAB 3 / SECTION: SAVED PERSONAL WATCHLIST MANAGER -->
-                    <div class="mt-2 pt-3 border-t border-slate-800/80 flex flex-col gap-2.5">
+                    <div
+                        class="mt-2 pt-3 border-t border-slate-800/80 flex flex-col gap-2.5"
+                    >
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2">
-                                <img :src="iconPersonal" class="w-3.5 h-3.5 invert opacity-80" alt="" />
-                                <span class="text-xs font-bold text-slate-200 uppercase font-mono tracking-wide">
+                                <img
+                                    :src="iconPersonal"
+                                    class="w-3.5 h-3.5 invert opacity-80"
+                                    alt=""
+                                />
+                                <span
+                                    class="text-xs font-bold text-slate-200 uppercase font-mono tracking-wide"
+                                >
                                     Watchlist Tersimpan
                                 </span>
-                                <span class="text-[10px] bg-purple-950/80 px-2 py-0.5 rounded-full font-mono text-purple-300 border border-purple-500/40 font-bold">
-                                    {{ totalPersonalCount }}/6 Online ({{ totalSavedPersonalCount }} Total)
+                                <span
+                                    class="text-[10px] bg-purple-950/80 px-2 py-0.5 rounded-full font-mono text-purple-300 border border-purple-500/40 font-bold"
+                                >
+                                    {{ totalPersonalCount }}/6 Online ({{
+                                        totalSavedPersonalCount
+                                    }}
+                                    Total)
                                 </span>
                             </div>
-                            <button 
+                            <button
                                 v-if="totalSavedPersonalCount > 0"
-                                type="button" 
+                                type="button"
                                 @click="clearAllPersonalStreams"
                                 class="text-[11px] text-red-400 hover:text-red-300 font-mono flex items-center gap-1 hover:underline"
                                 title="Kosongkan seluruh pin personal"
                             >
-                                <img :src="iconReset" class="w-3 h-3 invert opacity-80" alt="" />
+                                <img
+                                    :src="iconReset"
+                                    class="w-3 h-3 invert opacity-80"
+                                    alt=""
+                                />
                                 <span>Reset Semua</span>
                             </button>
                         </div>
 
                         <!-- Empty saved list -->
-                        <div v-if="totalSavedPersonalCount === 0" class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-center text-xs text-slate-500 font-mono">
-                            Belum ada video atau channel yang disimpan di Personal.
+                        <div
+                            v-if="totalSavedPersonalCount === 0"
+                            class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-center text-xs text-slate-500 font-mono"
+                        >
+                            Belum ada video atau channel yang disimpan di
+                            Personal.
                         </div>
 
                         <!-- Saved List items -->
-                        <div v-else class="space-y-2 max-h-60 overflow-y-auto scrollbar-thin pr-0.5">
-                            <div 
-                                v-for="savedItem in savedPersonalList" 
+                        <div
+                            v-else
+                            class="space-y-2 max-h-60 overflow-y-auto scrollbar-thin pr-0.5"
+                        >
+                            <div
+                                v-for="savedItem in savedPersonalList"
                                 :key="savedItem.id"
                                 class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-2.5 transition hover:border-slate-700"
                             >
-                                <div class="flex items-center space-x-2.5 min-w-0">
-                                    <img 
-                                        v-if="savedItem.thumbnail" 
-                                        :src="savedItem.thumbnail" 
+                                <div
+                                    class="flex items-center space-x-2.5 min-w-0"
+                                >
+                                    <img
+                                        v-if="savedItem.thumbnail"
+                                        :src="savedItem.thumbnail"
                                         class="w-12 h-8 rounded object-cover bg-black shrink-0 border border-slate-800"
                                     />
-                                    <div v-else class="w-12 h-8 rounded bg-slate-950 border border-slate-800 flex items-center justify-center text-xs text-slate-500 shrink-0">
-                                        <img :src="iconPersonal" class="w-4 h-4 invert opacity-40" alt="" />
+                                    <div
+                                        v-else
+                                        class="w-12 h-8 rounded bg-slate-950 border border-slate-800 flex items-center justify-center text-xs text-slate-500 shrink-0"
+                                    >
+                                        <img
+                                            :src="iconPersonal"
+                                            class="w-4 h-4 invert opacity-40"
+                                            alt=""
+                                        />
                                     </div>
                                     <div class="min-w-0">
                                         <div class="flex items-center gap-1.5">
-                                            <span 
+                                            <span
                                                 class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold shrink-0"
-                                                :class="savedItem.isOnline ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40' : 'bg-slate-950 text-slate-500 border border-slate-800'"
+                                                :class="
+                                                    savedItem.isOnline
+                                                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
+                                                        : 'bg-slate-950 text-slate-500 border border-slate-800'
+                                                "
                                             >
-                                                {{ savedItem.isOnline ? '● 10-8 LIVE' : '○ 10-7 OFFLINE' }}
+                                                {{
+                                                    savedItem.isOnline
+                                                        ? "● 10-8 LIVE"
+                                                        : "○ 10-7 OFFLINE"
+                                                }}
                                             </span>
-                                            <span class="text-[11px] font-bold text-slate-200 truncate" :title="savedItem.name">{{ savedItem.name }}</span>
+                                            <span
+                                                class="text-[11px] font-bold text-slate-200 truncate"
+                                                :title="savedItem.name"
+                                                >{{ savedItem.name }}</span
+                                            >
                                         </div>
-                                        <div class="text-[10px] text-slate-400 font-mono truncate mt-0.5">
+                                        <div
+                                            class="text-[10px] text-slate-400 font-mono truncate mt-0.5"
+                                        >
                                             {{ savedItem.subtext }}
                                         </div>
                                     </div>
                                 </div>
 
-                                <button 
-                                    type="button" 
-                                    @click="removePersonalStream(savedItem.rawId)"
+                                <button
+                                    type="button"
+                                    @click="
+                                        removePersonalStream(savedItem.rawId)
+                                    "
                                     class="p-1.5 text-slate-400 hover:text-red-400 bg-slate-950 hover:bg-red-950/50 border border-slate-800 hover:border-red-500/40 rounded-lg text-xs transition shrink-0 flex items-center justify-center"
                                     title="Hapus dari daftar personal"
                                 >
-                                    <img :src="iconDelete" class="w-3.5 h-3.5 invert opacity-80 group-hover:opacity-100" alt="Delete" />
+                                    <img
+                                        :src="iconDelete"
+                                        class="w-3.5 h-3.5 invert opacity-80 group-hover:opacity-100"
+                                        alt="Delete"
+                                    />
                                 </button>
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 <!-- 2. VISITOR FEEDBACK & CHANNEL REQUEST PANEL (DISCORD WEBHOOK) -->
-                <div v-if="activeRightDrawer === 'FEEDBACK'" class="p-4 flex flex-col gap-4">
-                    
+                <div
+                    v-if="activeRightDrawer === 'FEEDBACK'"
+                    class="p-4 flex flex-col gap-4"
+                >
                     <!-- Success Notification Toast -->
-                    <div v-if="feedbackSuccessToast" class="bg-emerald-950/90 border border-emerald-500/50 rounded-xl px-4 py-2.5 text-xs text-emerald-300 font-mono flex items-center gap-2 shadow-lg">
+                    <div
+                        v-if="feedbackSuccessToast"
+                        class="bg-emerald-950/90 border border-emerald-500/50 rounded-xl px-4 py-2.5 text-xs text-emerald-300 font-mono flex items-center gap-2 shadow-lg"
+                    >
                         <span class="text-base">✓</span>
                         <span>{{ feedbackSuccessToast }}</span>
                     </div>
 
-                    <div class="bg-sky-950/20 border border-sky-500/30 rounded-xl p-3 text-xs text-sky-200/90 leading-relaxed">
-                        <div class="font-bold flex items-center gap-1.5 mb-1 text-sky-300">
-                            <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                    <div
+                        class="bg-sky-950/20 border border-sky-500/30 rounded-xl p-3 text-xs text-sky-200/90 leading-relaxed"
+                    >
+                        <div
+                            class="font-bold flex items-center gap-1.5 mb-1 text-sky-300"
+                        >
+                            <img
+                                :src="iconRadio"
+                                class="w-3.5 h-3.5 invert opacity-90"
+                                alt=""
+                            />
                             <span>Direct Dispatcher Line</span>
                         </div>
-                        Formulir ini akan otomatis mengirim pesan langsung ke channel Discord Dispatcher IME Roleplay.
+                        Formulir ini akan otomatis mengirim pesan langsung ke
+                        channel Discord Dispatcher IME Roleplay.
                     </div>
 
-                    <form @submit.prevent="submitFeedbackForm" class="flex flex-col gap-3.5">
-                        
+                    <form
+                        @submit.prevent="submitFeedbackForm"
+                        class="flex flex-col gap-3.5"
+                    >
                         <!-- Feedback Type Selector -->
                         <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1.5 font-mono">Kategori Masukan *</label>
+                            <label
+                                class="text-xs font-semibold text-slate-300 block mb-1.5 font-mono"
+                                >Kategori Masukan *</label
+                            >
                             <div class="grid grid-cols-2 gap-2">
-                                <button 
-                                    type="button" 
-                                    @click="feedbackForm.type = 'CHANNEL_REQUEST'"
-                                    :class="feedbackForm.type === 'CHANNEL_REQUEST' ? 'bg-sky-600 text-white font-bold border-sky-400 shadow-md shadow-sky-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                <button
+                                    type="button"
+                                    @click="
+                                        feedbackForm.type = 'CHANNEL_REQUEST'
+                                    "
+                                    :class="
+                                        feedbackForm.type === 'CHANNEL_REQUEST'
+                                            ? 'bg-sky-600 text-white font-bold border-sky-400 shadow-md shadow-sky-600/30'
+                                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
+                                    "
                                     class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
                                 >
-                                    <img :src="iconQuickAdd" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                                    <img
+                                        :src="iconQuickAdd"
+                                        class="w-3.5 h-3.5 invert opacity-90"
+                                        alt=""
+                                    />
                                     <span class="truncate">Usul Streamer</span>
                                 </button>
-                                <button 
-                                    type="button" 
-                                    @click="feedbackForm.type = 'DATA_CORRECTION'"
-                                    :class="feedbackForm.type === 'DATA_CORRECTION' ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-md shadow-amber-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                <button
+                                    type="button"
+                                    @click="
+                                        feedbackForm.type = 'DATA_CORRECTION'
+                                    "
+                                    :class="
+                                        feedbackForm.type === 'DATA_CORRECTION'
+                                            ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-md shadow-amber-600/30'
+                                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
+                                    "
                                     class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
                                 >
-                                    <img :src="iconEdit" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                                    <img
+                                        :src="iconEdit"
+                                        class="w-3.5 h-3.5 invert opacity-90"
+                                        alt=""
+                                    />
                                     <span class="truncate">Koreksi Data</span>
                                 </button>
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     @click="feedbackForm.type = 'BUG_REPORT'"
-                                    :class="feedbackForm.type === 'BUG_REPORT' ? 'bg-red-600 text-white font-bold border-red-400 shadow-md shadow-red-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                    :class="
+                                        feedbackForm.type === 'BUG_REPORT'
+                                            ? 'bg-red-600 text-white font-bold border-red-400 shadow-md shadow-red-600/30'
+                                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
+                                    "
                                     class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
                                 >
-                                    <img :src="iconBug" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                                    <img
+                                        :src="iconBug"
+                                        class="w-3.5 h-3.5 invert opacity-90"
+                                        alt=""
+                                    />
                                     <span class="truncate">Lapor Bug</span>
                                 </button>
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     @click="feedbackForm.type = 'OTHER'"
-                                    :class="feedbackForm.type === 'OTHER' ? 'bg-purple-600 text-white font-bold border-purple-400 shadow-md shadow-purple-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                    :class="
+                                        feedbackForm.type === 'OTHER'
+                                            ? 'bg-purple-600 text-white font-bold border-purple-400 shadow-md shadow-purple-600/30'
+                                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
+                                    "
                                     class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
                                 >
-                                    <img :src="iconFeedback" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                                    <img
+                                        :src="iconFeedback"
+                                        class="w-3.5 h-3.5 invert opacity-90"
+                                        alt=""
+                                    />
                                     <span class="truncate">Lainnya</span>
                                 </button>
                             </div>
@@ -5166,164 +9516,320 @@ const submitFeedbackForm = async () => {
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <label class="text-xs font-semibold text-slate-300 block mb-1">Nama Pengirim (Opsional)</label>
-                                <input 
-                                    v-model="feedbackForm.sender_name" 
-                                    type="text" 
+                                <label
+                                    class="text-xs font-semibold text-slate-300 block mb-1"
+                                    >Nama Pengirim (Opsional)</label
+                                >
+                                <input
+                                    v-model="feedbackForm.sender_name"
+                                    type="text"
                                     placeholder="Warga / Nama Anda"
                                     class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600"
                                 />
                             </div>
                             <div>
-                                <label class="text-xs font-semibold text-slate-300 block mb-1">Handle / Link YouTube</label>
-                                <input 
-                                    v-model="feedbackForm.handle_or_url" 
-                                    type="text" 
+                                <label
+                                    class="text-xs font-semibold text-slate-300 block mb-1"
+                                    >Handle / Link YouTube</label
+                                >
+                                <input
+                                    v-model="feedbackForm.handle_or_url"
+                                    type="text"
                                     placeholder="@NamaStreamer atau URL"
                                     class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 font-mono placeholder-slate-600"
                                 />
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" v-if="feedbackForm.type === 'CHANNEL_REQUEST' || feedbackForm.type === 'DATA_CORRECTION'">
+                        <div
+                            class="grid grid-cols-1 sm:grid-cols-3 gap-2"
+                            v-if="
+                                feedbackForm.type === 'CHANNEL_REQUEST' ||
+                                feedbackForm.type === 'DATA_CORRECTION'
+                            "
+                        >
                             <div class="sm:col-span-2">
-                                <label class="text-xs font-semibold text-slate-300 block mb-1">Nama Karakter / Callsign</label>
-                                <input 
-                                    v-model="feedbackForm.officer_name" 
-                                    type="text" 
+                                <label
+                                    class="text-xs font-semibold text-slate-300 block mb-1"
+                                    >Nama Karakter / Callsign</label
+                                >
+                                <input
+                                    v-model="feedbackForm.officer_name"
+                                    type="text"
                                     placeholder="Ofc. Budi / 1-ADAM-12"
                                     class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600"
                                 />
                             </div>
                             <div>
-                                <label class="text-xs font-semibold text-slate-300 block mb-1">Departemen</label>
-                                <select 
-                                    v-model="feedbackForm.department" 
+                                <label
+                                    class="text-xs font-semibold text-slate-300 block mb-1"
+                                    >Departemen</label
+                                >
+                                <select
+                                    v-model="feedbackForm.department"
                                     class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
                                 >
                                     <option value="LSPD">LSPD (Police)</option>
                                     <option value="BCSO">BCSO (Sheriff)</option>
-                                    <option value="SASP">SASP (State Police)</option>
+                                    <option value="SASP">
+                                        SASP (State Police)
+                                    </option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label class="text-xs font-semibold text-slate-300 block mb-1">Pesan / Catatan Detail *</label>
-                            <textarea 
-                                v-model="feedbackForm.message" 
-                                required 
-                                rows="4" 
-                                :placeholder="feedbackForm.type === 'CHANNEL_REQUEST' ? 'Jelaskan jadwal live rutin streamer atau link channel YouTube resminya...' : (feedbackForm.type === 'DATA_CORRECTION' ? 'Jelaskan data apa yang perlu dikoreksi (misal pangkat naik jadi Sergeant, ganti callsign)...' : 'Tuliskan detail masukan atau kendala Anda...')"
+                            <label
+                                class="text-xs font-semibold text-slate-300 block mb-1"
+                                >Pesan / Catatan Detail *</label
+                            >
+                            <textarea
+                                v-model="feedbackForm.message"
+                                required
+                                rows="4"
+                                :placeholder="
+                                    feedbackForm.type === 'CHANNEL_REQUEST'
+                                        ? 'Jelaskan jadwal live rutin streamer atau link channel YouTube resminya...'
+                                        : feedbackForm.type ===
+                                            'DATA_CORRECTION'
+                                          ? 'Jelaskan data apa yang perlu dikoreksi (misal pangkat naik jadi Sergeant, ganti callsign)...'
+                                          : 'Tuliskan detail masukan atau kendala Anda...'
+                                "
                                 class="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600"
                             ></textarea>
                         </div>
 
-                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-end space-x-2">
-                            <button 
-                                type="button" 
-                                @click="closeRightDrawer" 
+                        <div
+                            class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-end space-x-2"
+                        >
+                            <button
+                                type="button"
+                                @click="closeRightDrawer"
                                 class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold rounded-lg transition"
                             >
                                 Batal
                             </button>
-                            <button 
-                                type="submit" 
-                                :disabled="isSubmittingFeedback" 
+                            <button
+                                type="submit"
+                                :disabled="isSubmittingFeedback"
                                 class="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-lg shadow-sky-600/30 flex items-center gap-1.5 transition"
                             >
-                                <img v-if="isSubmittingFeedback" :src="iconRefresh" class="w-3.5 h-3.5 animate-spin invert" alt="" />
-                                <img v-else :src="iconSend" class="w-3.5 h-3.5 invert" alt="" />
-                                <span>{{ isSubmittingFeedback ? 'Mengirim...' : 'Kirim ke Discord' }}</span>
+                                <img
+                                    v-if="isSubmittingFeedback"
+                                    :src="iconRefresh"
+                                    class="w-3.5 h-3.5 animate-spin invert"
+                                    alt=""
+                                />
+                                <img
+                                    v-else
+                                    :src="iconSend"
+                                    class="w-3.5 h-3.5 invert"
+                                    alt=""
+                                />
+                                <span>{{
+                                    isSubmittingFeedback
+                                        ? "Mengirim..."
+                                        : "Kirim ke Discord"
+                                }}</span>
                             </button>
                         </div>
                     </form>
                 </div>
 
                 <!-- 2.5 ABOUT COMMAND CENTER PANEL -->
-                <div v-if="activeRightDrawer === 'ABOUT'" class="p-4 sm:p-5 flex flex-col gap-4 text-xs">
-                    
+                <div
+                    v-if="activeRightDrawer === 'ABOUT'"
+                    class="p-4 sm:p-5 flex flex-col gap-4 text-xs"
+                >
                     <!-- Branding Hero Card -->
-                    <div class="bg-gradient-to-br from-blue-950/60 via-slate-900 to-slate-950 border border-blue-500/30 rounded-2xl p-4 shadow-xl flex items-center gap-3.5">
-                        <div class="w-14 h-14 rounded-xl bg-slate-900/90 border border-blue-400/40 p-1 shrink-0 flex items-center justify-center shadow-inner">
-                            <img :src="logoSaspColor" class="w-full h-full object-contain rounded" alt="SASP" />
+                    <div
+                        class="bg-gradient-to-br from-blue-950/60 via-slate-900 to-slate-950 border border-blue-500/30 rounded-2xl p-4 shadow-xl flex items-center gap-3.5"
+                    >
+                        <div
+                            class="w-14 h-14 rounded-xl bg-slate-900/90 border border-blue-400/40 p-1 shrink-0 flex items-center justify-center shadow-inner"
+                        >
+                            <img
+                                :src="logoSaspColor"
+                                class="w-full h-full object-contain rounded"
+                                alt="SASP"
+                            />
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-1.5 mb-0.5">
-                                <span class="text-xs font-black tracking-wider text-blue-400 uppercase font-mono">IME ROLEPLAY</span>
-                                <span class="text-[9px] bg-blue-500/20 text-blue-300 px-1.5 py-0.2 rounded font-mono font-bold border border-blue-500/40">v2.4</span>
+                                <span
+                                    class="text-xs font-black tracking-wider text-blue-400 uppercase font-mono"
+                                    >IME ROLEPLAY</span
+                                >
+                                <span
+                                    class="text-[9px] bg-blue-500/20 text-blue-300 px-1.5 py-0.2 rounded font-mono font-bold border border-blue-500/40"
+                                    >v2.4</span
+                                >
                             </div>
-                            <h3 class="text-sm font-bold text-slate-100 leading-snug">Police Command Center & Tactical Multiview</h3>
-                            <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                                Sistem pengawasan dan monitoring siaran langsung terpadu bagi seluruh unit penegak hukum (LSPD, BCSO, SASP) di server GTA V IME Roleplay.
+                            <h3
+                                class="text-sm font-bold text-slate-100 leading-snug"
+                            >
+                                Police Command Center & Tactical Multiview
+                            </h3>
+                            <p
+                                class="text-[11px] text-slate-400 mt-1 leading-relaxed"
+                            >
+                                Sistem pengawasan dan monitoring siaran langsung
+                                terpadu bagi seluruh unit penegak hukum (LSPD,
+                                BCSO, SASP) di server GTA V IME Roleplay.
                             </p>
                         </div>
                     </div>
 
                     <!-- Core Features Section -->
                     <div class="space-y-2.5">
-                        <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <h4
+                            class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-1.5"
+                        >
+                            <span
+                                class="w-2 h-2 rounded-full bg-blue-500"
+                            ></span>
                             <span>Fitur Utama Platform</span>
                         </h4>
 
                         <div class="grid grid-cols-1 gap-2">
-                            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex gap-3 items-start">
-                                <div class="p-2 rounded-lg bg-blue-950/70 border border-blue-500/30 text-blue-400 shrink-0">
-                                    <img :src="iconFocus" class="w-4 h-4 invert" alt="" />
+                            <div
+                                class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex gap-3 items-start"
+                            >
+                                <div
+                                    class="p-2 rounded-lg bg-blue-950/70 border border-blue-500/30 text-blue-400 shrink-0"
+                                >
+                                    <img
+                                        :src="iconFocus"
+                                        class="w-4 h-4 invert"
+                                        alt=""
+                                    />
                                 </div>
                                 <div>
-                                    <h5 class="text-xs font-bold text-slate-200">Tactical CCTV Grid & Focus Mode</h5>
-                                    <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                                        Pantau kamera bodycam banyak petugas secara simultan dengan tata letak adaptif (Auto, 2x2, 3x3, 4x4) atau Focus Mode berukuran besar.
+                                    <h5
+                                        class="text-xs font-bold text-slate-200"
+                                    >
+                                        Tactical CCTV Grid & Focus Mode
+                                    </h5>
+                                    <p
+                                        class="text-[11px] text-slate-400 mt-0.5 leading-relaxed"
+                                    >
+                                        Pantau kamera bodycam banyak petugas
+                                        secara simultan dengan tata letak
+                                        adaptif (Auto, 2x2, 3x3, 4x4) atau Focus
+                                        Mode berukuran besar.
                                     </p>
                                 </div>
                             </div>
 
-                            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex gap-3 items-start">
-                                <div class="p-2 rounded-lg bg-indigo-950/70 border border-indigo-500/30 text-indigo-400 shrink-0">
-                                    <img :src="iconAllUnits" class="w-4 h-4 invert" alt="" />
+                            <div
+                                class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex gap-3 items-start"
+                            >
+                                <div
+                                    class="p-2 rounded-lg bg-indigo-950/70 border border-indigo-500/30 text-indigo-400 shrink-0"
+                                >
+                                    <img
+                                        :src="iconAllUnits"
+                                        class="w-4 h-4 invert"
+                                        alt=""
+                                    />
                                 </div>
                                 <div>
-                                    <h5 class="text-xs font-bold text-slate-200">Cinema Hub & Swimlanes</h5>
-                                    <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                                        Katalog visual ala Netflix dengan Top Spotlight dan swimlane per kesatuan untuk siaran langsung dan rekaman patroli VOD terkini.
+                                    <h5
+                                        class="text-xs font-bold text-slate-200"
+                                    >
+                                        Cinema Hub & Swimlanes
+                                    </h5>
+                                    <p
+                                        class="text-[11px] text-slate-400 mt-0.5 leading-relaxed"
+                                    >
+                                        Katalog visual ala Netflix dengan Top
+                                        Spotlight dan swimlane per kesatuan
+                                        untuk siaran langsung dan rekaman
+                                        patroli VOD terkini.
                                     </p>
                                 </div>
                             </div>
 
-                            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex gap-3 items-start">
-                                <div class="p-2 rounded-lg bg-amber-950/70 border border-amber-500/30 text-amber-400 shrink-0">
-                                    <img :src="iconRadio" class="w-4 h-4 invert" alt="" />
+                            <div
+                                class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex gap-3 items-start"
+                            >
+                                <div
+                                    class="p-2 rounded-lg bg-amber-950/70 border border-amber-500/30 text-amber-400 shrink-0"
+                                >
+                                    <img
+                                        :src="iconRadio"
+                                        class="w-4 h-4 invert"
+                                        alt=""
+                                    />
                                 </div>
                                 <div>
-                                    <h5 class="text-xs font-bold text-slate-200">Radio Taktis TAC 1–5</h5>
-                                    <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                                        Kelompokkan petugas ke dalam kanal radio darurat (TAC 1 s.d. TAC 5) dengan timer situasi otomatis dan popover 1-klik.
+                                    <h5
+                                        class="text-xs font-bold text-slate-200"
+                                    >
+                                        Radio Taktis TAC 1–5
+                                    </h5>
+                                    <p
+                                        class="text-[11px] text-slate-400 mt-0.5 leading-relaxed"
+                                    >
+                                        Kelompokkan petugas ke dalam kanal radio
+                                        darurat (TAC 1 s.d. TAC 5) dengan timer
+                                        situasi otomatis dan popover 1-klik.
                                     </p>
                                 </div>
                             </div>
 
-                            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex gap-3 items-start">
-                                <div class="p-2 rounded-lg bg-red-950/70 border border-red-500/30 text-red-400 shrink-0">
-                                    <img :src="iconTarget" class="w-4 h-4 invert" alt="" />
+                            <div
+                                class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex gap-3 items-start"
+                            >
+                                <div
+                                    class="p-2 rounded-lg bg-red-950/70 border border-red-500/30 text-red-400 shrink-0"
+                                >
+                                    <img
+                                        :src="iconTarget"
+                                        class="w-4 h-4 invert"
+                                        alt=""
+                                    />
                                 </div>
                                 <div>
-                                    <h5 class="text-xs font-bold text-slate-200">Support 1K Subs Community Milestone</h5>
-                                    <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                                        Apresiasi komunitas untuk mendukung petugas patroli mencapai target 1.000 subscriber YouTube pertama mereka.
+                                    <h5
+                                        class="text-xs font-bold text-slate-200"
+                                    >
+                                        Support 1K Subs Community Milestone
+                                    </h5>
+                                    <p
+                                        class="text-[11px] text-slate-400 mt-0.5 leading-relaxed"
+                                    >
+                                        Apresiasi komunitas untuk mendukung
+                                        petugas patroli mencapai target 1.000
+                                        subscriber YouTube pertama mereka.
                                     </p>
                                 </div>
                             </div>
 
-                            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex gap-3 items-start">
-                                <div class="p-2 rounded-lg bg-emerald-950/70 border border-emerald-500/30 text-emerald-400 shrink-0">
-                                    <img :src="iconSaver" class="w-4 h-4 invert" alt="" />
+                            <div
+                                class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex gap-3 items-start"
+                            >
+                                <div
+                                    class="p-2 rounded-lg bg-emerald-950/70 border border-emerald-500/30 text-emerald-400 shrink-0"
+                                >
+                                    <img
+                                        :src="iconSaver"
+                                        class="w-4 h-4 invert"
+                                        alt=""
+                                    />
                                 </div>
                                 <div>
-                                    <h5 class="text-xs font-bold text-slate-200">Data Saver & Smart Bandwidth</h5>
-                                    <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                                        Hemat bandwidth dan cegah lag dengan mode standby ringan sebelum memutar stream YouTube.
+                                    <h5
+                                        class="text-xs font-bold text-slate-200"
+                                    >
+                                        Data Saver & Smart Bandwidth
+                                    </h5>
+                                    <p
+                                        class="text-[11px] text-slate-400 mt-0.5 leading-relaxed"
+                                    >
+                                        Hemat bandwidth dan cegah lag dengan
+                                        mode standby ringan sebelum memutar
+                                        stream YouTube.
                                     </p>
                                 </div>
                             </div>
@@ -5332,129 +9838,216 @@ const submitFeedbackForm = async () => {
 
                     <!-- Supported Agencies -->
                     <div class="space-y-2">
-                        <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <h4
+                            class="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-1.5"
+                        >
+                            <span
+                                class="w-2 h-2 rounded-full bg-blue-500"
+                            ></span>
                             <span>Kesatuan Kepolisian</span>
                         </h4>
                         <div class="grid grid-cols-3 gap-2">
-                            <div class="bg-slate-900/80 border border-blue-500/30 rounded-xl p-2.5 text-center flex flex-col items-center">
-                                <span class="px-2 py-0.5 text-[10px] font-black rounded bg-blue-600 text-white mb-1">LSPD</span>
-                                <span class="text-[10px] text-slate-300 font-bold">Los Santos Police</span>
+                            <div
+                                class="bg-slate-900/80 border border-blue-500/30 rounded-xl p-2.5 text-center flex flex-col items-center"
+                            >
+                                <span
+                                    class="px-2 py-0.5 text-[10px] font-black rounded bg-blue-600 text-white mb-1"
+                                    >LSPD</span
+                                >
+                                <span
+                                    class="text-[10px] text-slate-300 font-bold"
+                                    >Los Santos Police</span
+                                >
                             </div>
-                            <div class="bg-slate-900/80 border border-amber-500/30 rounded-xl p-2.5 text-center flex flex-col items-center">
-                                <span class="px-2 py-0.5 text-[10px] font-black rounded bg-amber-600 text-white mb-1">BCSO</span>
-                                <span class="text-[10px] text-slate-300 font-bold">Sheriff's Office</span>
+                            <div
+                                class="bg-slate-900/80 border border-amber-500/30 rounded-xl p-2.5 text-center flex flex-col items-center"
+                            >
+                                <span
+                                    class="px-2 py-0.5 text-[10px] font-black rounded bg-amber-600 text-white mb-1"
+                                    >BCSO</span
+                                >
+                                <span
+                                    class="text-[10px] text-slate-300 font-bold"
+                                    >Sheriff's Office</span
+                                >
                             </div>
-                            <div class="bg-slate-900/80 border border-indigo-500/30 rounded-xl p-2.5 text-center flex flex-col items-center">
-                                <span class="px-2 py-0.5 text-[10px] font-black rounded bg-indigo-600 text-white mb-1">SASP</span>
-                                <span class="text-[10px] text-slate-300 font-bold">State Police</span>
+                            <div
+                                class="bg-slate-900/80 border border-indigo-500/30 rounded-xl p-2.5 text-center flex flex-col items-center"
+                            >
+                                <span
+                                    class="px-2 py-0.5 text-[10px] font-black rounded bg-indigo-600 text-white mb-1"
+                                    >SASP</span
+                                >
+                                <span
+                                    class="text-[10px] text-slate-300 font-bold"
+                                    >State Police</span
+                                >
                             </div>
                         </div>
                     </div>
 
                     <!-- Attribution & Credits -->
-                    <div class="mt-2 pt-3 border-t border-slate-800/80 space-y-2 text-[11px] text-slate-400 leading-relaxed font-mono">
+                    <div
+                        class="mt-2 pt-3 border-t border-slate-800/80 space-y-2 text-[11px] text-slate-400 leading-relaxed font-mono"
+                    >
                         <div class="flex items-center justify-between">
-                            <span class="text-slate-500">Server Komunitas:</span>
-                            <span class="text-blue-400 font-bold">IME Roleplay Indonesia</span>
+                            <span class="text-slate-500"
+                                >Server Komunitas:</span
+                            >
+                            <span class="text-blue-400 font-bold"
+                                >IME Roleplay Indonesia</span
+                            >
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-slate-500">API Provider:</span>
-                            <span class="text-slate-300">YouTube Data API & Scraper</span>
+                            <span class="text-slate-300"
+                                >YouTube Data API & Scraper</span
+                            >
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-slate-500">Engine:</span>
-                            <span class="text-slate-300">Laravel + Inertia Vue 3</span>
+                            <span class="text-slate-300"
+                                >Laravel + Inertia Vue 3</span
+                            >
                         </div>
                     </div>
 
                     <!-- Close Action Button -->
                     <div class="mt-2 pt-2 border-t border-slate-800">
-                        <button 
-                            type="button" 
-                            @click="closeRightDrawer" 
+                        <button
+                            type="button"
+                            @click="closeRightDrawer"
                             class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-bold rounded-xl border border-slate-800 transition"
                         >
                             Tutup Informasi
                         </button>
                     </div>
-
                 </div>
 
                 <!-- 2.6 OFFICER DIRECTORY & STREAMER ROSTER PANEL -->
-                <div v-if="activeRightDrawer === 'DIRECTORY'" class="flex-1 flex flex-col min-h-0">
-                    
+                <div
+                    v-if="activeRightDrawer === 'DIRECTORY'"
+                    class="flex-1 flex flex-col min-h-0"
+                >
                     <!-- Search & Filters Toolbar -->
-                    <div class="bg-slate-950/95 px-4 py-3 border-b border-slate-800 flex flex-col gap-2.5 shrink-0">
-                        
+                    <div
+                        class="bg-slate-950/95 px-4 py-3 border-b border-slate-800 flex flex-col gap-2.5 shrink-0"
+                    >
                         <!-- Search & Sort Row -->
-                        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        <div
+                            class="flex items-center gap-2 flex-wrap sm:flex-nowrap"
+                        >
                             <div class="relative flex-1 min-w-[200px]">
-                                <input 
-                                    v-model="directorySearch" 
-                                    type="text" 
+                                <input
+                                    v-model="directorySearch"
+                                    type="text"
                                     placeholder="Cari nama polisi, callsign, handle, badge, sektor..."
                                     class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
                                 />
-                                <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" alt="" />
+                                <img
+                                    :src="iconSearch"
+                                    class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                                    alt=""
+                                />
                             </div>
 
                             <div class="flex items-center gap-1.5 shrink-0">
-                                <span class="text-[10px] font-mono text-slate-500 hidden sm:inline">Urutkan:</span>
-                                <select 
-                                    v-model="directorySortBy" 
+                                <span
+                                    class="text-[10px] font-mono text-slate-500 hidden sm:inline"
+                                    >Urutkan:</span
+                                >
+                                <select
+                                    v-model="directorySortBy"
                                     class="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-slate-300 focus:outline-none focus:border-blue-500 font-mono"
                                 >
-                                    <option value="status">10-8 Live Teratas</option>
-                                    <option value="subs_desc">Subscribers Terbanyak</option>
-                                    <option value="subs_asc">Target 1K Milestone</option>
-                                    <option value="name">Nama Petugas (A-Z)</option>
+                                    <option value="status">
+                                        10-8 Live Teratas
+                                    </option>
+                                    <option value="subs_desc">
+                                        Subscribers Terbanyak
+                                    </option>
+                                    <option value="subs_asc">
+                                        Target 1K Milestone
+                                    </option>
+                                    <option value="name">
+                                        Nama Petugas (A-Z)
+                                    </option>
                                 </select>
                             </div>
                         </div>
 
                         <!-- Department Filter Pills -->
-                        <div class="flex items-center justify-between gap-2 overflow-x-auto scrollbar-none pt-0.5">
+                        <div
+                            class="flex items-center justify-between gap-2 overflow-x-auto scrollbar-none pt-0.5"
+                        >
                             <div class="flex items-center space-x-1.5">
-                                <button 
+                                <button
                                     @click="directoryDeptFilter = 'ALL'"
-                                    :class="directoryDeptFilter === 'ALL' ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                    :class="
+                                        directoryDeptFilter === 'ALL'
+                                            ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400'
+                                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
+                                    "
                                     class="px-2.5 py-1 text-xs rounded-full border transition whitespace-nowrap"
                                 >
-                                    Semua ({{ offlineOfficers.length + streams.length }})
+                                    Semua ({{
+                                        offlineOfficers.length + streams.length
+                                    }})
                                 </button>
-                                <button 
+                                <button
                                     @click="directoryDeptFilter = 'LIVE_ONLY'"
-                                    :class="directoryDeptFilter === 'LIVE_ONLY' ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/30 border-emerald-400' : 'bg-slate-900 text-emerald-400 hover:bg-slate-800 border-slate-800'"
+                                    :class="
+                                        directoryDeptFilter === 'LIVE_ONLY'
+                                            ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/30 border-emerald-400'
+                                            : 'bg-slate-900 text-emerald-400 hover:bg-slate-800 border-slate-800'
+                                    "
                                     class="px-2.5 py-1 text-xs rounded-full border transition flex items-center gap-1.5 whitespace-nowrap"
                                 >
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                    <span>10-8 Live ({{ streams.length }})</span>
+                                    <span
+                                        class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
+                                    ></span>
+                                    <span
+                                        >10-8 Live ({{ streams.length }})</span
+                                    >
                                 </button>
-                                <button 
+                                <button
                                     @click="directoryDeptFilter = 'LSPD'"
-                                    :class="directoryDeptFilter === 'LSPD' ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400' : 'bg-slate-900 text-blue-300 hover:bg-slate-800 border-slate-800'"
+                                    :class="
+                                        directoryDeptFilter === 'LSPD'
+                                            ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400'
+                                            : 'bg-slate-900 text-blue-300 hover:bg-slate-800 border-slate-800'
+                                    "
                                     class="px-2.5 py-1 text-xs rounded-full border transition whitespace-nowrap"
                                 >
                                     LSPD
                                 </button>
-                                <button 
+                                <button
                                     @click="directoryDeptFilter = 'BCSO'"
-                                    :class="directoryDeptFilter === 'BCSO' ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400' : 'bg-slate-900 text-amber-300 hover:bg-slate-800 border-slate-800'"
+                                    :class="
+                                        directoryDeptFilter === 'BCSO'
+                                            ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400'
+                                            : 'bg-slate-900 text-amber-300 hover:bg-slate-800 border-slate-800'
+                                    "
                                     class="px-2.5 py-1 text-xs rounded-full border transition whitespace-nowrap"
                                 >
                                     BCSO
                                 </button>
-                                <button 
+                                <button
                                     @click="directoryDeptFilter = 'SASP'"
-                                    :class="directoryDeptFilter === 'SASP' ? 'bg-teal-600 text-white font-bold shadow-md shadow-teal-600/30 border-teal-400' : 'bg-slate-900 text-teal-300 hover:bg-slate-800 border-slate-800'"
+                                    :class="
+                                        directoryDeptFilter === 'SASP'
+                                            ? 'bg-teal-600 text-white font-bold shadow-md shadow-teal-600/30 border-teal-400'
+                                            : 'bg-slate-900 text-teal-300 hover:bg-slate-800 border-slate-800'
+                                    "
                                     class="px-2.5 py-1 text-xs rounded-full border transition whitespace-nowrap"
                                 >
                                     SASP
                                 </button>
                             </div>
 
-                            <span class="text-[11px] font-mono text-slate-500 whitespace-nowrap hidden sm:inline">
+                            <span
+                                class="text-[11px] font-mono text-slate-500 whitespace-nowrap hidden sm:inline"
+                            >
                                 {{ allDirectoryOfficers.length }} Personil
                             </span>
                         </div>
@@ -5462,49 +10055,87 @@ const submitFeedbackForm = async () => {
 
                     <!-- Officers List Grid -->
                     <div class="flex-1 overflow-y-auto p-4 scrollbar-thin">
-                        <div v-if="allDirectoryOfficers.length === 0" class="py-12 text-center text-slate-500 flex flex-col items-center">
-                            <img :src="iconSearch" class="w-8 h-8 invert opacity-30 mb-2" alt="" />
-                            <p class="text-xs">Tidak ada petugas yang cocok dengan filter pencarian.</p>
-                            <button 
-                                @click="directorySearch = ''; directoryDeptFilter = 'ALL'"
+                        <div
+                            v-if="allDirectoryOfficers.length === 0"
+                            class="py-12 text-center text-slate-500 flex flex-col items-center"
+                        >
+                            <img
+                                :src="iconSearch"
+                                class="w-8 h-8 invert opacity-30 mb-2"
+                                alt=""
+                            />
+                            <p class="text-xs">
+                                Tidak ada petugas yang cocok dengan filter
+                                pencarian.
+                            </p>
+                            <button
+                                @click="
+                                    directorySearch = '';
+                                    directoryDeptFilter = 'ALL';
+                                "
                                 class="mt-2 text-xs text-blue-400 hover:underline font-mono"
                             >
                                 Reset Filter
                             </button>
                         </div>
 
-                        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div 
-                                v-for="officer in allDirectoryOfficers" 
+                        <div
+                            v-else
+                            class="grid grid-cols-1 md:grid-cols-2 gap-3"
+                        >
+                            <div
+                                v-for="officer in allDirectoryOfficers"
                                 :key="officer.id"
                                 class="bg-slate-900/90 border rounded-xl p-3.5 flex flex-col justify-between transition-all duration-200 hover:border-slate-700"
-                                :class="officer.is_online ? 'border-emerald-500/40 shadow-sm shadow-emerald-500/5' : 'border-slate-800'"
+                                :class="
+                                    officer.is_online
+                                        ? 'border-emerald-500/40 shadow-sm shadow-emerald-500/5'
+                                        : 'border-slate-800'
+                                "
                             >
                                 <div>
                                     <!-- Top Row: Department Badge, Callsign, Status -->
-                                    <div class="flex items-center justify-between gap-2 mb-2">
-                                        <div class="flex items-center space-x-1.5 min-w-0">
-                                            <span 
+                                    <div
+                                        class="flex items-center justify-between gap-2 mb-2"
+                                    >
+                                        <div
+                                            class="flex items-center space-x-1.5 min-w-0"
+                                        >
+                                            <span
                                                 class="px-1.5 py-0.5 text-[9px] font-black rounded border font-mono"
-                                                :class="getDeptBadgeClass(officer.department)"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        officer.department,
+                                                    )
+                                                "
                                             >
                                                 {{ officer.department }}
                                             </span>
-                                            <span class="font-mono text-xs font-bold text-slate-300 truncate">{{ officer.callsign }}</span>
-                                            <span class="text-[10px] text-slate-500 font-mono">{{ officer.badge_number }}</span>
+                                            <span
+                                                class="font-mono text-xs font-bold text-slate-300 truncate"
+                                                >{{ officer.callsign }}</span
+                                            >
+                                            <span
+                                                class="text-[10px] text-slate-500 font-mono"
+                                                >{{
+                                                    officer.badge_number
+                                                }}</span
+                                            >
                                         </div>
 
                                         <!-- Online / Offline Badge -->
                                         <div class="shrink-0">
-                                            <span 
-                                                v-if="officer.is_online" 
+                                            <span
+                                                v-if="officer.is_online"
                                                 class="inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold"
                                             >
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                                <span
+                                                    class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
+                                                ></span>
                                                 <span>10-8 ON DUTY</span>
                                             </span>
-                                            <span 
-                                                v-else 
+                                            <span
+                                                v-else
                                                 class="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-950 text-slate-500 border border-slate-800 font-mono"
                                             >
                                                 10-7 OFF DUTY
@@ -5513,160 +10144,319 @@ const submitFeedbackForm = async () => {
                                     </div>
 
                                     <!-- Officer Info -->
-                                    <h4 class="text-sm font-bold text-slate-100 truncate" :title="officer.officer_name">
+                                    <h4
+                                        class="text-sm font-bold text-slate-100 truncate"
+                                        :title="officer.officer_name"
+                                    >
                                         {{ officer.officer_name }}
                                     </h4>
-                                    
-                                    <div class="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
+
+                                    <div
+                                        class="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5 truncate"
+                                    >
                                         <span>{{ officer.rank }}</span>
                                         <span>•</span>
-                                        <span class="text-blue-400 font-mono">{{ officer.handle }}</span>
-                                        <span v-if="officer.streamer_name" class="text-slate-500 truncate">({{ officer.streamer_name }})</span>
+                                        <span class="text-blue-400 font-mono">{{
+                                            officer.handle
+                                        }}</span>
+                                        <span
+                                            v-if="officer.streamer_name"
+                                            class="text-slate-500 truncate"
+                                            >({{ officer.streamer_name }})</span
+                                        >
                                     </div>
 
-                                    <div class="text-[10px] font-mono text-slate-500 truncate mt-1 flex items-center gap-1">
-                                        <img :src="iconShield" class="w-3 h-3 invert opacity-80 shrink-0" alt="" />
-                                        <span>{{ officer.patrol_zone || 'Los Santos Sector' }}</span>
+                                    <div
+                                        class="text-[10px] font-mono text-slate-500 truncate mt-1 flex items-center gap-1"
+                                    >
+                                        <img
+                                            :src="iconShield"
+                                            class="w-3 h-3 invert opacity-80 shrink-0"
+                                            alt=""
+                                        />
+                                        <span>{{
+                                            officer.patrol_zone ||
+                                            "Los Santos Sector"
+                                        }}</span>
                                     </div>
 
                                     <!-- Milestone Progress (Towards 1K Subs) -->
-                                    <div class="mt-2.5 bg-slate-950/80 border border-slate-800/80 rounded-lg p-2">
-                                        <div class="flex items-center justify-between text-[10px] font-mono mb-1">
-                                            <span class="text-slate-400 flex items-center gap-1">
-                                                <img :src="iconTarget" class="w-3 h-3 invert opacity-80" alt="" />
-                                                <span>{{ (officer.subscriber_count || 0) < 1000 ? 'Road to 1K' : 'Subscriber Count' }}:</span>
+                                    <div
+                                        class="mt-2.5 bg-slate-950/80 border border-slate-800/80 rounded-lg p-2"
+                                    >
+                                        <div
+                                            class="flex items-center justify-between text-[10px] font-mono mb-1"
+                                        >
+                                            <span
+                                                class="text-slate-400 flex items-center gap-1"
+                                            >
+                                                <img
+                                                    :src="iconTarget"
+                                                    class="w-3 h-3 invert opacity-80"
+                                                    alt=""
+                                                />
+                                                <span
+                                                    >{{
+                                                        (officer.subscriber_count ||
+                                                            0) < 1000
+                                                            ? "Road to 1K"
+                                                            : "Subscriber Count"
+                                                    }}:</span
+                                                >
                                             </span>
-                                            <span class="font-bold text-slate-200">
-                                                {{ officer.subscriber_count ? Number(officer.subscriber_count).toLocaleString('id-ID') : '0' }} / 1.000
+                                            <span
+                                                class="font-bold text-slate-200"
+                                            >
+                                                {{
+                                                    officer.subscriber_count
+                                                        ? Number(
+                                                              officer.subscriber_count,
+                                                          ).toLocaleString(
+                                                              "id-ID",
+                                                          )
+                                                        : "0"
+                                                }}
+                                                / 1.000
                                             </span>
                                         </div>
-                                        <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                            <div 
+                                        <div
+                                            class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden"
+                                        >
+                                            <div
                                                 class="h-full rounded-full transition-all duration-500"
-                                                :class="(officer.subscriber_count || 0) >= 1000 ? 'bg-emerald-500' : 'bg-red-500'"
-                                                :style="{ width: `${Math.min(100, Math.round(((officer.subscriber_count || 0) / 1000) * 100))}%` }"
+                                                :class="
+                                                    (officer.subscriber_count ||
+                                                        0) >= 1000
+                                                        ? 'bg-emerald-500'
+                                                        : 'bg-red-500'
+                                                "
+                                                :style="{
+                                                    width: `${Math.min(100, Math.round(((officer.subscriber_count || 0) / 1000) * 100))}%`,
+                                                }"
                                             ></div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Card Footer: Actions -->
-                                <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-1.5">
+                                <div
+                                    class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-1.5"
+                                >
                                     <div class="flex items-center space-x-1.5">
                                         <!-- Pin to Personal Watchlist -->
-                                        <button 
-                                            @click="togglePersonalStream(officer.channel_id || officer.handle)"
+                                        <button
+                                            @click="
+                                                togglePersonalStream(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                )
+                                            "
                                             class="p-1.5 rounded-lg border transition text-xs flex items-center gap-1"
-                                            :class="isPersonalStream(officer.channel_id || officer.handle) ? 'text-purple-300 bg-purple-950/80 border-purple-500/50' : 'text-slate-400 hover:text-purple-300 bg-slate-950 hover:bg-slate-800 border-slate-800'"
-                                            :title="isPersonalStream(officer.channel_id || officer.handle) ? 'Hapus dari Personal' : 'Pin ke Personal Tab'"
+                                            :class="
+                                                isPersonalStream(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                )
+                                                    ? 'text-purple-300 bg-purple-950/80 border-purple-500/50'
+                                                    : 'text-slate-400 hover:text-purple-300 bg-slate-950 hover:bg-slate-800 border-slate-800'
+                                            "
+                                            :title="
+                                                isPersonalStream(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                )
+                                                    ? 'Hapus dari Personal'
+                                                    : 'Pin ke Personal Tab'
+                                            "
                                         >
-                                            <img :src="isPersonalStream(officer.channel_id || officer.handle) ? iconPinMinus : iconPinPlus" class="w-3.5 h-3.5 invert" alt="" />
+                                            <img
+                                                :src="
+                                                    isPersonalStream(
+                                                        officer.channel_id ||
+                                                            officer.handle,
+                                                    )
+                                                        ? iconPinMinus
+                                                        : iconPinPlus
+                                                "
+                                                class="w-3.5 h-3.5 invert"
+                                                alt=""
+                                            />
                                         </button>
 
                                         <!-- 1-Click YouTube Subscribe Modal -->
-                                        <button 
-                                            @click="openSubscribePopup(officer.channel_id || officer.handle, officer.officer_name)"
+                                        <button
+                                            @click="
+                                                openSubscribePopup(
+                                                    officer.channel_id ||
+                                                        officer.handle,
+                                                    officer.officer_name,
+                                                )
+                                            "
                                             class="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-[10px] shadow-sm shadow-red-600/30 transition flex items-center gap-1"
                                             title="Subscribe ke YouTube channel"
                                         >
-                                            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-white"
+                                            ></span>
                                             <span>Subscribe</span>
                                         </button>
                                     </div>
 
                                     <!-- Live Watch Action or Channel Link -->
                                     <div>
-                                        <button 
-                                            v-if="officer.is_online && officer.live_stream"
-                                            @click="setFocusStream(officer.live_stream.video_id); closeRightDrawer(); selectedDepartment = 'ALL';"
+                                        <button
+                                            v-if="
+                                                officer.is_online &&
+                                                officer.live_stream
+                                            "
+                                            @click="
+                                                setFocusStream(
+                                                    officer.live_stream
+                                                        .video_id,
+                                                );
+                                                closeRightDrawer();
+                                                selectedDepartment = 'ALL';
+                                            "
                                             class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] shadow transition flex items-center gap-1"
                                             title="Buka siaran live di CCTV Multiview"
                                         >
-                                            <img :src="iconFocus" class="w-3 h-3 invert" alt="" />
+                                            <img
+                                                :src="iconFocus"
+                                                class="w-3 h-3 invert"
+                                                alt=""
+                                            />
                                             <span>Tonton Live</span>
                                         </button>
-                                        <a 
+                                        <a
                                             v-else
-                                            :href="`https://www.youtube.com/${officer.handle}`" 
-                                            target="_blank" 
+                                            :href="`https://www.youtube.com/${officer.handle}`"
+                                            target="_blank"
                                             class="text-[10px] text-blue-400 hover:underline flex items-center gap-1 font-mono px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:border-blue-500/40"
                                         >
                                             <span>Channel</span>
-                                            <img :src="iconExternal" class="w-2.5 h-2.5 invert opacity-70" alt="" />
+                                            <img
+                                                :src="iconExternal"
+                                                class="w-2.5 h-2.5 invert opacity-70"
+                                                alt=""
+                                            />
                                         </a>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
 
                     <!-- Directory Panel Footer -->
-                    <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between font-mono shrink-0">
-                        <span>Total: {{ allDirectoryOfficers.length }} Personil</span>
-                        <span class="text-emerald-400 font-bold">{{ streams.length }} Unit 10-8 Live</span>
+                    <div
+                        class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between font-mono shrink-0"
+                    >
+                        <span
+                            >Total:
+                            {{ allDirectoryOfficers.length }} Personil</span
+                        >
+                        <span class="text-emerald-400 font-bold"
+                            >{{ streams.length }} Unit 10-8 Live</span
+                        >
                     </div>
-
                 </div>
 
                 <!-- 2.7 10-CODES & TAC RADIO GUIDE PANEL -->
-                <div v-if="activeRightDrawer === 'RADIO_CODES'" class="flex-1 flex flex-col min-h-0">
-                    
+                <div
+                    v-if="activeRightDrawer === 'RADIO_CODES'"
+                    class="flex-1 flex flex-col min-h-0"
+                >
                     <!-- Sub-tabs: Kode 10 vs TAC Protocols -->
-                    <div class="bg-slate-950/95 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+                    <div
+                        class="bg-slate-950/95 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0"
+                    >
                         <div class="flex items-center space-x-1.5">
-                            <button 
+                            <button
                                 @click="radioCodesActiveTab = 'CODES'"
-                                :class="radioCodesActiveTab === 'CODES' ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-md shadow-amber-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                :class="
+                                    radioCodesActiveTab === 'CODES'
+                                        ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-md shadow-amber-600/30'
+                                        : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
+                                "
                                 class="px-3 py-1.5 text-xs rounded-lg border transition font-mono"
                             >
                                 Kode 10 Kepolisian
                             </button>
-                            <button 
+                            <button
                                 @click="radioCodesActiveTab = 'TAC'"
-                                :class="radioCodesActiveTab === 'TAC' ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-md shadow-amber-600/30' : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'"
+                                :class="
+                                    radioCodesActiveTab === 'TAC'
+                                        ? 'bg-amber-600 text-white font-bold border-amber-400 shadow-md shadow-amber-600/30'
+                                        : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
+                                "
                                 class="px-3 py-1.5 text-xs rounded-lg border transition font-mono flex items-center gap-1.5"
                             >
-                                <img :src="iconRadio" class="w-3.5 h-3.5 invert" alt="" />
+                                <img
+                                    :src="iconRadio"
+                                    class="w-3.5 h-3.5 invert"
+                                    alt=""
+                                />
                                 <span>Kanal Radio TAC 1–5</span>
                             </button>
                         </div>
                     </div>
 
                     <!-- TAB 1: 10-CODES CHEATSHEET -->
-                    <div v-if="radioCodesActiveTab === 'CODES'" class="flex-1 flex flex-col min-h-0">
+                    <div
+                        v-if="radioCodesActiveTab === 'CODES'"
+                        class="flex-1 flex flex-col min-h-0"
+                    >
                         <!-- Search Box -->
-                        <div class="p-3.5 bg-slate-950 border-b border-slate-800 shrink-0">
+                        <div
+                            class="p-3.5 bg-slate-950 border-b border-slate-800 shrink-0"
+                        >
                             <div class="relative">
-                                <input 
-                                    v-model="radioCodesSearch" 
-                                    type="text" 
+                                <input
+                                    v-model="radioCodesSearch"
+                                    type="text"
                                     placeholder="Cari kode misal 10-80, 10-33, pursuit, darurat..."
                                     class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
                                 />
-                                <img :src="iconSearch" class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" alt="" />
+                                <img
+                                    :src="iconSearch"
+                                    class="w-3.5 h-3.5 invert opacity-40 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                                    alt=""
+                                />
                             </div>
                         </div>
 
                         <!-- Codes Grid -->
-                        <div class="flex-1 overflow-y-auto p-4 scrollbar-thin space-y-2.5">
-                            <div 
-                                v-for="item in filteredPolice10Codes" 
+                        <div
+                            class="flex-1 overflow-y-auto p-4 scrollbar-thin space-y-2.5"
+                        >
+                            <div
+                                v-for="item in filteredPolice10Codes"
                                 :key="item.code"
                                 class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 hover:border-amber-500/40 transition"
                             >
-                                <div class="flex items-center justify-between gap-2 mb-1">
+                                <div
+                                    class="flex items-center justify-between gap-2 mb-1"
+                                >
                                     <div class="flex items-center space-x-2">
-                                        <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-xs">
+                                        <span
+                                            class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-xs"
+                                        >
                                             {{ item.code }}
                                         </span>
-                                        <h4 class="text-xs font-bold text-slate-200">{{ item.title }}</h4>
+                                        <h4
+                                            class="text-xs font-bold text-slate-200"
+                                        >
+                                            {{ item.title }}
+                                        </h4>
                                     </div>
-                                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-800 font-mono">
+                                    <span
+                                        class="text-[10px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-800 font-mono"
+                                    >
                                         {{ item.category }}
                                     </span>
                                 </div>
-                                <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                                <p
+                                    class="text-[11px] text-slate-400 mt-1 leading-relaxed"
+                                >
                                     {{ item.meaning }}
                                 </p>
                             </div>
@@ -5674,45 +10464,99 @@ const submitFeedbackForm = async () => {
                     </div>
 
                     <!-- TAB 2: TAC RADIO GUIDELINES -->
-                    <div v-else-if="radioCodesActiveTab === 'TAC'" class="flex-1 overflow-y-auto p-4 scrollbar-thin space-y-3">
-                        <div class="bg-amber-950/20 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200/90 leading-relaxed">
-                            <div class="font-bold flex items-center gap-1.5 mb-1 text-amber-300 font-mono">
-                                <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" alt="" />
-                                <span>Protokol Komando Tactical Radio TAC 1 s.d TAC 5</span>
+                    <div
+                        v-else-if="radioCodesActiveTab === 'TAC'"
+                        class="flex-1 overflow-y-auto p-4 scrollbar-thin space-y-3"
+                    >
+                        <div
+                            class="bg-amber-950/20 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200/90 leading-relaxed"
+                        >
+                            <div
+                                class="font-bold flex items-center gap-1.5 mb-1 text-amber-300 font-mono"
+                            >
+                                <img
+                                    :src="iconRadio"
+                                    class="w-3.5 h-3.5 invert opacity-90"
+                                    alt=""
+                                />
+                                <span
+                                    >Protokol Komando Tactical Radio TAC 1 s.d
+                                    TAC 5</span
+                                >
                             </div>
-                            Kanal TAC digunakan untuk mengkoordinasikan unit saat merespon kejadian darurat berskala besar agar radio dispatch utama tetap steril.
+                            Kanal TAC digunakan untuk mengkoordinasikan unit
+                            saat merespon kejadian darurat berskala besar agar
+                            radio dispatch utama tetap steril.
                         </div>
 
-                        <div 
-                            v-for="tac in tacChannelGuides" 
+                        <div
+                            v-for="tac in tacChannelGuides"
                             :key="tac.code"
                             class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 hover:border-blue-500/40 transition space-y-2"
                         >
-                            <div class="flex items-center justify-between gap-2">
+                            <div
+                                class="flex items-center justify-between gap-2"
+                            >
                                 <div class="flex items-center space-x-2">
-                                    <span class="px-2 py-1 rounded-lg bg-blue-600 text-white font-mono font-black text-xs shadow-sm">
+                                    <span
+                                        class="px-2 py-1 rounded-lg bg-blue-600 text-white font-mono font-black text-xs shadow-sm"
+                                    >
                                         {{ tac.code }}
                                     </span>
-                                    <h4 class="text-xs font-bold text-slate-100">{{ tac.title }}</h4>
+                                    <h4
+                                        class="text-xs font-bold text-slate-100"
+                                    >
+                                        {{ tac.title }}
+                                    </h4>
                                 </div>
-                                <span class="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold"
-                                    :class="getTacUnitCount(tac.code.replace(' ', '_')) > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-slate-950 text-slate-500 border border-slate-800'"
+                                <span
+                                    class="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold"
+                                    :class="
+                                        getTacUnitCount(
+                                            tac.code.replace(' ', '_'),
+                                        ) > 0
+                                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                                            : 'bg-slate-950 text-slate-500 border border-slate-800'
+                                    "
                                 >
-                                    {{ getTacUnitCount(tac.code.replace(' ', '_')) }} Unit Aktif
+                                    {{
+                                        getTacUnitCount(
+                                            tac.code.replace(" ", "_"),
+                                        )
+                                    }}
+                                    Unit Aktif
                                 </span>
                             </div>
 
-                            <div class="text-[11px] text-slate-300 leading-relaxed">
-                                <span class="text-blue-400 font-semibold font-mono">Ruang Lingkup:</span> {{ tac.scope }}
+                            <div
+                                class="text-[11px] text-slate-300 leading-relaxed"
+                            >
+                                <span
+                                    class="text-blue-400 font-semibold font-mono"
+                                    >Ruang Lingkup:</span
+                                >
+                                {{ tac.scope }}
                             </div>
 
-                            <div class="text-[11px] text-slate-400 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80 leading-relaxed">
-                                <span class="text-amber-400 font-semibold font-mono">SOP & Protokol:</span> {{ tac.protocol }}
+                            <div
+                                class="text-[11px] text-slate-400 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80 leading-relaxed"
+                            >
+                                <span
+                                    class="text-amber-400 font-semibold font-mono"
+                                    >SOP & Protokol:</span
+                                >
+                                {{ tac.protocol }}
                             </div>
 
                             <div class="pt-1 flex items-center justify-end">
-                                <button 
-                                    @click="selectedDepartment = tac.code.replace(' ', '_'); closeRightDrawer();"
+                                <button
+                                    @click="
+                                        selectedDepartment = tac.code.replace(
+                                            ' ',
+                                            '_',
+                                        );
+                                        closeRightDrawer();
+                                    "
                                     class="px-3 py-1.5 rounded-lg bg-slate-850 hover:bg-blue-600 text-slate-200 hover:text-white text-xs font-semibold border border-slate-700 hover:border-blue-500 transition flex items-center gap-1.5 font-mono"
                                 >
                                     <span>Buka Multiview {{ tac.code }}</span>
@@ -5723,45 +10567,58 @@ const submitFeedbackForm = async () => {
                     </div>
 
                     <!-- Radio Codes Panel Footer -->
-                    <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between font-mono shrink-0">
+                    <div
+                        class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between font-mono shrink-0"
+                    >
                         <span>Standar Komunikasi LSPD / BCSO / SASP</span>
                         <span class="text-amber-400">Radio Dispatch SOP</span>
                     </div>
-
                 </div>
-
             </div>
-
         </aside>
 
         <!-- Global Expiring TAC Channel Alert Prompt (When viewing other tabs) -->
-        <div 
-            v-if="expiringTacChannel" 
+        <div
+            v-if="expiringTacChannel"
             class="fixed bottom-4 left-4 z-50 bg-slate-950/95 border-2 border-amber-500/80 rounded-xl p-3 shadow-2xl backdrop-blur-xl flex items-center space-x-3 text-xs animate-in slide-in-from-bottom duration-300 max-w-lg"
         >
-            <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-amber-300 shrink-0 font-mono font-bold text-sm">
+            <div
+                class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-amber-300 shrink-0 font-mono font-bold text-sm"
+            >
                 📻
             </div>
             <div class="flex-1 min-w-0">
-                <div class="font-bold text-amber-300 font-mono text-[11px] truncate">
-                    {{ expiringTacChannel.name }} ({{ expiringTacChannel.video_ids.length }} Units) tersisa {{ formatRemainingTime(expiringTacChannel.remaining_seconds) }}
+                <div
+                    class="font-bold text-amber-300 font-mono text-[11px] truncate"
+                >
+                    {{ expiringTacChannel.name }} ({{
+                        expiringTacChannel.video_ids.length
+                    }}
+                    Units) tersisa
+                    {{
+                        formatRemainingTime(
+                            expiringTacChannel.remaining_seconds,
+                        )
+                    }}
                 </div>
-                <div class="text-[10px] text-slate-400 truncate">Apakah situasi masih berlangsung?</div>
+                <div class="text-[10px] text-slate-400 truncate">
+                    Apakah situasi masih berlangsung?
+                </div>
             </div>
             <div class="flex items-center space-x-1.5 shrink-0">
-                <button 
+                <button
                     @click="extendTacTimer(expiringTacChannel.code, 20)"
                     class="px-2 py-1 bg-amber-600 hover:bg-amber-500 text-black font-bold text-[10px] rounded font-mono shadow"
                 >
                     +20m
                 </button>
-                <button 
+                <button
                     @click="disbandTacChannel(expiringTacChannel.code)"
                     class="px-2 py-1 bg-red-950 hover:bg-red-900 text-red-300 text-[10px] rounded border border-red-500/40 font-mono"
                 >
                     Bubarkan
                 </button>
-                <button 
+                <button
                     @click="selectedDepartment = expiringTacChannel.code"
                     class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] rounded border border-slate-700 font-mono"
                 >
@@ -5771,25 +10628,46 @@ const submitFeedbackForm = async () => {
         </div>
 
         <!-- Floating Tactical Action Toast -->
-        <div 
+        <div
             v-if="tacticalToast"
             class="fixed bottom-16 md:bottom-4 right-4 z-50 bg-slate-950/95 border border-amber-500/60 rounded-xl px-4 py-2.5 shadow-2xl backdrop-blur-xl flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200"
         >
-            <img :src="iconRadio" class="w-4 h-4 brightness-0 invert opacity-90 shrink-0" alt="" />
+            <img
+                :src="iconRadio"
+                class="w-4 h-4 brightness-0 invert opacity-90 shrink-0"
+                alt=""
+            />
             <span>{{ tacticalToast.message }}</span>
         </div>
 
         <!-- YouTube-Style Fixed Bottom Navigation Bar for Mobile (< md) -->
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0b1320]/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 flex justify-around items-center shadow-2xl">
+        <nav
+            class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0b1320]/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 flex justify-around items-center shadow-2xl"
+        >
             <!-- 1. Live Feeds (10-8) -->
-            <button 
-                @click="activeTab = '10-8'; selectedDepartment = 'ALL'; activeMobileNav = null;" 
-                :class="activeTab === '10-8' && selectedDepartment === 'ALL' ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'"
+            <button
+                @click="
+                    activeTab = '10-8';
+                    selectedDepartment = 'ALL';
+                    activeMobileNav = null;
+                "
+                :class="
+                    activeTab === '10-8' && selectedDepartment === 'ALL'
+                        ? 'text-blue-400 font-bold'
+                        : 'text-slate-400 hover:text-slate-200'
+                "
                 class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
             >
                 <div class="relative">
-                    <img :src="iconPlayAll" class="w-5 h-5 invert opacity-90" alt="Feeds" />
-                    <span v-if="allActiveStreams.length > 0" class="absolute -top-1.5 -right-2 bg-red-600 text-white text-[9px] font-bold px-1 rounded-full animate-pulse">
+                    <img
+                        :src="iconPlayAll"
+                        class="w-5 h-5 invert opacity-90"
+                        alt="Feeds"
+                    />
+                    <span
+                        v-if="allActiveStreams.length > 0"
+                        class="absolute -top-1.5 -right-2 bg-red-600 text-white text-[9px] font-bold px-1 rounded-full animate-pulse"
+                    >
                         {{ allActiveStreams.length }}
                     </span>
                 </div>
@@ -5797,42 +10675,87 @@ const submitFeedbackForm = async () => {
             </button>
 
             <!-- 2. TAC & Departments -->
-            <button 
-                @click="activeMobileNav = activeMobileNav === 'TAC' ? null : 'TAC'" 
-                :class="activeMobileNav === 'TAC' || isTacDepartment(selectedDepartment) || ['LSPD','BCSO','SASP','SAPR'].includes(selectedDepartment) ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-slate-200'"
+            <button
+                @click="
+                    activeMobileNav = activeMobileNav === 'TAC' ? null : 'TAC'
+                "
+                :class="
+                    activeMobileNav === 'TAC' ||
+                    isTacDepartment(selectedDepartment) ||
+                    ['LSPD', 'BCSO', 'SASP', 'SAPR'].includes(
+                        selectedDepartment,
+                    )
+                        ? 'text-amber-400 font-bold'
+                        : 'text-slate-400 hover:text-slate-200'
+                "
                 class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
             >
-                <img :src="iconRadio" class="w-5 h-5 invert opacity-90" alt="TAC" />
+                <img
+                    :src="iconRadio"
+                    class="w-5 h-5 invert opacity-90"
+                    alt="TAC"
+                />
                 <span class="text-[10px] tracking-tight">TAC / Dept</span>
             </button>
 
             <!-- 3. Roster (10-7) -->
-            <button 
-                @click="activeTab = '10-7'; selectedDepartment = 'ALL'; activeMobileNav = null;" 
-                :class="activeTab === '10-7' ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'"
+            <button
+                @click="
+                    activeTab = '10-7';
+                    selectedDepartment = 'ALL';
+                    activeMobileNav = null;
+                "
+                :class="
+                    activeTab === '10-7'
+                        ? 'text-blue-400 font-bold'
+                        : 'text-slate-400 hover:text-slate-200'
+                "
                 class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
             >
-                <img :src="iconRoster" class="w-5 h-5 invert opacity-90" alt="Roster" />
+                <img
+                    :src="iconRoster"
+                    class="w-5 h-5 invert opacity-90"
+                    alt="Roster"
+                />
                 <span class="text-[10px] tracking-tight">10-7 Roster</span>
             </button>
 
             <!-- 4. Pinned / Personal -->
-            <button 
-                @click="selectedDepartment = 'PERSONAL'; activeMobileNav = null;" 
-                :class="selectedDepartment === 'PERSONAL' ? 'text-purple-400 font-bold' : 'text-slate-400 hover:text-slate-200'"
+            <button
+                @click="
+                    selectedDepartment = 'PERSONAL';
+                    activeMobileNav = null;
+                "
+                :class="
+                    selectedDepartment === 'PERSONAL'
+                        ? 'text-purple-400 font-bold'
+                        : 'text-slate-400 hover:text-slate-200'
+                "
                 class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
             >
-                <img :src="iconPersonal" class="w-5 h-5 invert opacity-90" alt="Pinned" />
+                <img
+                    :src="iconPersonal"
+                    class="w-5 h-5 invert opacity-90"
+                    alt="Pinned"
+                />
                 <span class="text-[10px] tracking-tight">Pinned</span>
             </button>
 
             <!-- 5. Main Menu / More -->
-            <button 
-                @click="activeMobileNav = activeMobileNav === 'MENU' ? null : 'MENU'" 
-                :class="activeMobileNav === 'MENU' ? 'text-sky-400 font-bold' : 'text-slate-400 hover:text-slate-200'"
+            <button
+                @click="
+                    activeMobileNav = activeMobileNav === 'MENU' ? null : 'MENU'
+                "
+                :class="
+                    activeMobileNav === 'MENU'
+                        ? 'text-sky-400 font-bold'
+                        : 'text-slate-400 hover:text-slate-200'
+                "
                 class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
             >
-                <div class="w-5 h-5 flex flex-col justify-center items-center space-y-1">
+                <div
+                    class="w-5 h-5 flex flex-col justify-center items-center space-y-1"
+                >
                     <span class="w-4 h-0.5 bg-current rounded-full"></span>
                     <span class="w-4 h-0.5 bg-current rounded-full"></span>
                     <span class="w-4 h-0.5 bg-current rounded-full"></span>
@@ -5842,38 +10765,101 @@ const submitFeedbackForm = async () => {
         </nav>
 
         <!-- Mobile TAC & Department Bottom Sheet Modal (< md) -->
-        <div v-if="activeMobileNav === 'TAC'" class="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end justify-center" @click.self="activeMobileNav = null">
-            <div class="w-full bg-[#0b1320] border-t border-amber-500/40 rounded-t-2xl p-4 space-y-3 max-h-[75vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <div
+            v-if="activeMobileNav === 'TAC'"
+            class="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end justify-center"
+            @click.self="activeMobileNav = null"
+        >
+            <div
+                class="w-full bg-[#0b1320] border-t border-amber-500/40 rounded-t-2xl p-4 space-y-3 max-h-[75vh] overflow-y-auto animate-in slide-in-from-bottom duration-200"
+            >
+                <div
+                    class="flex items-center justify-between border-b border-slate-800 pb-2"
+                >
                     <div class="flex items-center space-x-2">
-                        <img :src="iconRadio" class="w-4 h-4 invert opacity-90" alt="" />
-                        <h3 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Pilih Kesatuan & Saluran TAC</h3>
+                        <img
+                            :src="iconRadio"
+                            class="w-4 h-4 invert opacity-90"
+                            alt=""
+                        />
+                        <h3
+                            class="text-xs font-bold text-amber-300 uppercase tracking-wider"
+                        >
+                            Pilih Kesatuan & Saluran TAC
+                        </h3>
                     </div>
-                    <button @click="activeMobileNav = null" class="text-slate-400 hover:text-white text-xs px-2 py-0.5 bg-slate-800 rounded">✕</button>
+                    <button
+                        @click="activeMobileNav = null"
+                        class="text-slate-400 hover:text-white text-xs px-2 py-0.5 bg-slate-800 rounded"
+                    >
+                        ✕
+                    </button>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button 
-                        v-for="dept in departments.filter(d => ['ALL','PERSONAL','LSPD','BCSO','SASP','SAPR'].includes(d.id))" 
+                    <button
+                        v-for="dept in departments.filter((d) =>
+                            [
+                                'ALL',
+                                'PERSONAL',
+                                'LSPD',
+                                'BCSO',
+                                'SASP',
+                                'SAPR',
+                            ].includes(d.id),
+                        )"
                         :key="`mob-${dept.id}`"
-                        @click="selectedDepartment = dept.id; activeMobileNav = null;"
-                        :class="selectedDepartment === dept.id ? 'bg-blue-600 text-white font-bold border-blue-400' : 'bg-slate-900 text-slate-300 border-slate-800'"
+                        @click="
+                            selectedDepartment = dept.id;
+                            activeMobileNav = null;
+                        "
+                        :class="
+                            selectedDepartment === dept.id
+                                ? 'bg-blue-600 text-white font-bold border-blue-400'
+                                : 'bg-slate-900 text-slate-300 border-slate-800'
+                        "
                         class="p-2.5 rounded-xl border text-xs flex items-center space-x-2 transition"
                     >
-                        <img v-if="dept.isSvg" :src="dept.icon" class="w-4 h-4 object-contain brightness-0 invert opacity-90" alt="" />
+                        <img
+                            v-if="dept.isSvg"
+                            :src="dept.icon"
+                            class="w-4 h-4 object-contain brightness-0 invert opacity-90"
+                            alt=""
+                        />
                         <span>{{ dept.name }}</span>
                     </button>
                 </div>
                 <div class="pt-2 border-t border-slate-800/80">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">Saluran Radio Taktis (TAC):</span>
+                    <span
+                        class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 block"
+                        >Saluran Radio Taktis (TAC):</span
+                    >
                     <div class="grid grid-cols-3 gap-2">
-                        <button 
-                            v-for="tacCode in ['TAC_1','TAC_2','TAC_3','TAC_4','TAC_5','TAC_6','TAC_7','TAC_8','TAC_9','TAC_10']"
+                        <button
+                            v-for="tacCode in [
+                                'TAC_1',
+                                'TAC_2',
+                                'TAC_3',
+                                'TAC_4',
+                                'TAC_5',
+                                'TAC_6',
+                                'TAC_7',
+                                'TAC_8',
+                                'TAC_9',
+                                'TAC_10',
+                            ]"
                             :key="`mob-tac-${tacCode}`"
-                            @click="selectedDepartment = tacCode; activeMobileNav = null;"
-                            :class="selectedDepartment === tacCode ? 'bg-amber-600 text-white font-bold border-amber-400' : 'bg-slate-900 text-amber-300 border-amber-900/50'"
+                            @click="
+                                selectedDepartment = tacCode;
+                                activeMobileNav = null;
+                            "
+                            :class="
+                                selectedDepartment === tacCode
+                                    ? 'bg-amber-600 text-white font-bold border-amber-400'
+                                    : 'bg-slate-900 text-amber-300 border-amber-900/50'
+                            "
                             class="p-2 rounded-lg border text-xs text-center font-mono transition"
                         >
-                            {{ tacCode.replace('_', ' ') }}
+                            {{ tacCode.replace("_", " ") }}
                         </button>
                     </div>
                 </div>
@@ -5881,86 +10867,159 @@ const submitFeedbackForm = async () => {
         </div>
 
         <!-- Mobile Main Menu Bottom Sheet Modal (< md) -->
-        <div v-if="activeMobileNav === 'MENU'" class="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end justify-center" @click.self="activeMobileNav = null">
-            <div class="w-full bg-[#0b1320] border-t border-blue-500/40 rounded-t-2xl p-4 space-y-3 max-h-[75vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider">Navigasi Platform & Menu</h3>
-                    <button @click="activeMobileNav = null" class="text-slate-400 hover:text-white text-xs px-2 py-0.5 bg-slate-800 rounded">✕</button>
+        <div
+            v-if="activeMobileNav === 'MENU'"
+            class="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end justify-center"
+            @click.self="activeMobileNav = null"
+        >
+            <div
+                class="w-full bg-[#0b1320] border-t border-blue-500/40 rounded-t-2xl p-4 space-y-3 max-h-[75vh] overflow-y-auto animate-in slide-in-from-bottom duration-200"
+            >
+                <div
+                    class="flex items-center justify-between border-b border-slate-800 pb-2"
+                >
+                    <h3
+                        class="text-xs font-bold text-blue-400 uppercase tracking-wider"
+                    >
+                        Navigasi Platform & Menu
+                    </h3>
+                    <button
+                        @click="activeMobileNav = null"
+                        class="text-slate-400 hover:text-white text-xs px-2 py-0.5 bg-slate-800 rounded"
+                    >
+                        ✕
+                    </button>
                 </div>
                 <div class="space-y-1.5">
-                    <Link 
-                        href="/officers" 
+                    <Link
+                        href="/officers"
                         class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <img :src="iconRoster" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <img
+                                :src="iconRoster"
+                                class="w-4 h-4 invert opacity-90 shrink-0"
+                                alt=""
+                            />
                             <span>Officer Directory (LSPD, BCSO, SASP)</span>
                         </div>
                         <span class="text-slate-500">→</span>
                     </Link>
-                    <Link 
-                        href="/about" 
+                    <Link
+                        href="/about"
                         class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <img :src="iconUrl" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <img
+                                :src="iconUrl"
+                                class="w-4 h-4 invert opacity-90 shrink-0"
+                                alt=""
+                            />
                             <span>About Platform & Credits</span>
                         </div>
                         <span class="text-slate-500">→</span>
                     </Link>
-                    <Link 
-                        href="/qna" 
+                    <Link
+                        href="/qna"
                         class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <img :src="iconRadio" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <img
+                                :src="iconRadio"
+                                class="w-4 h-4 invert opacity-90 shrink-0"
+                                alt=""
+                            />
                             <span>QnA & Tactical FAQ Guide</span>
                         </div>
                         <span class="text-slate-500">→</span>
                     </Link>
-                    <Link 
-                        href="/feedback" 
+                    <Link
+                        href="/feedback"
                         class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <img :src="iconFeedback" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <img
+                                :src="iconFeedback"
+                                class="w-4 h-4 invert opacity-90 shrink-0"
+                                alt=""
+                            />
                             <span>Feedback & Channel Requests</span>
                         </div>
                         <span class="text-slate-500">→</span>
                     </Link>
-                    <button 
-                        @click="if (isDataSaverEnabled) disableDataSaverAndPlayAll(); else enableDataSaver(); activeMobileNav = null;" 
+                    <button
+                        @click="
+                            if (isDataSaverEnabled)
+                                disableDataSaverAndPlayAll();
+                            else enableDataSaver();
+                            activeMobileNav = null;
+                        "
                         class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
                     >
                         <div class="flex items-center space-x-2.5">
-                            <img :src="iconSaver" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                            <img
+                                :src="iconSaver"
+                                class="w-4 h-4 invert opacity-90 shrink-0"
+                                alt=""
+                            />
                             <span>Mode Hemat Bandwidth (Saver)</span>
                         </div>
-                        <span class="text-xs font-bold font-mono" :class="isDataSaverEnabled ? 'text-emerald-400' : 'text-slate-500'">
-                            {{ isDataSaverEnabled ? 'AKTIF' : 'NON-AKTIF' }}
+                        <span
+                            class="text-xs font-bold font-mono"
+                            :class="
+                                isDataSaverEnabled
+                                    ? 'text-emerald-400'
+                                    : 'text-slate-500'
+                            "
+                        >
+                            {{ isDataSaverEnabled ? "AKTIF" : "NON-AKTIF" }}
                         </span>
                     </button>
-                    <Link 
-                        v-if="!$page.props.auth?.user" 
-                        href="/login" 
+                    <Link
+                        v-if="!$page.props.auth?.user"
+                        href="/login"
                         class="w-full p-2.5 rounded-xl bg-blue-950/60 hover:bg-blue-900/70 border border-blue-500/40 text-xs text-blue-300 font-bold flex items-center justify-between transition"
                     >
                         <span>Sign In / Register Account</span>
                         <span class="text-blue-400">→</span>
                     </Link>
-                    <div v-else class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-between">
+                    <div
+                        v-else
+                        class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-between"
+                    >
                         <div class="flex items-center space-x-2.5">
-                            <div class="w-7 h-7 rounded-full bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-xs text-blue-300 font-bold">
-                                {{ $page.props.auth.user.name?.charAt(0).toUpperCase() || 'U' }}
+                            <div
+                                class="w-7 h-7 rounded-full bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-xs text-blue-300 font-bold"
+                            >
+                                {{
+                                    $page.props.auth.user.name
+                                        ?.charAt(0)
+                                        .toUpperCase() || "U"
+                                }}
                             </div>
                             <div>
-                                <span class="text-slate-200 font-bold block leading-tight">{{ $page.props.auth.user.name }}</span>
-                                <span class="text-[10px] text-slate-400 font-mono leading-tight block">{{ $page.props.auth.user.email }}</span>
+                                <span
+                                    class="text-slate-200 font-bold block leading-tight"
+                                    >{{ $page.props.auth.user.name }}</span
+                                >
+                                <span
+                                    class="text-[10px] text-slate-400 font-mono leading-tight block"
+                                    >{{ $page.props.auth.user.email }}</span
+                                >
                             </div>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <Link href="/admin/officers" class="px-2 py-1 bg-cyan-600 text-white rounded text-[11px] font-bold">Admin Hub</Link>
-                            <button @click="handleLogout" class="px-2 py-1 bg-red-950/80 text-red-300 border border-red-800/60 rounded text-[11px] font-semibold">Sign Out</button>
+                            <Link
+                                href="/admin/officers"
+                                class="px-2 py-1 bg-cyan-600 text-white rounded text-[11px] font-bold"
+                                >Admin Hub</Link
+                            >
+                            <button
+                                @click="handleLogout"
+                                class="px-2 py-1 bg-red-950/80 text-red-300 border border-red-800/60 rounded text-[11px] font-semibold"
+                            >
+                                Sign Out
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -5972,7 +11031,6 @@ const submitFeedbackForm = async () => {
 
         <!-- Floating Tactical Community Chat -->
         <TacticalChatDrawer />
-
     </div>
 </template>
 

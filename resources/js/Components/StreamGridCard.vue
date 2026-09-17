@@ -143,8 +143,9 @@ const emit = defineEmits(['focus', 'togglePersonal', 'openSubscribe', 'toggleCha
                         <span>Focus</span>
                     </button>
 
-                    <!-- Personal Watchlist Pin Button -->
+                    <!-- Personal Watchlist Pin Button (Live Streams Only) -->
                     <button 
+                        v-if="stream.status === 'LIVE'"
                         @click.stop="emit('togglePersonal', stream.video_id)"
                         class="p-1 rounded-lg transition text-[10px] border"
                         :class="isPersonal ? 'bg-purple-900/80 text-purple-200 border-purple-500' : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-purple-300'"

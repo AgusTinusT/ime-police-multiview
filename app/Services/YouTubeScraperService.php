@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Normalizer;
 
 class YouTubeScraperService
 {
@@ -377,7 +378,7 @@ class YouTubeScraperService
                 $videoId = $matches[1];
             } elseif (preg_match('/<link rel="canonical" href="[^"]*watch\?v=([A-Za-z0-9_-]{11})">/', $body, $matches)) {
                 $videoId = $matches[1];
-            } elseif (preg_match('/"videoId":"([A-Za-z0-9_-]{11})"/ ', $body, $matches)) {
+            } elseif (preg_match('/"videoId":"([A-Za-z0-9_-]{11})"/', $body, $matches)) {
                 $videoId = $matches[1];
             }
 
@@ -454,7 +455,7 @@ class YouTubeScraperService
                         $videoId = $matches[1];
                     } elseif (preg_match('/<link rel="canonical" href="[^"]*watch\?v=([A-Za-z0-9_-]{11})">/', $body, $matches)) {
                         $videoId = $matches[1];
-                    } elseif (preg_match('/"videoId":"([A-Za-z0-9_-]{11})"/ ', $body, $matches)) {
+                    } elseif (preg_match('/"videoId":"([A-Za-z0-9_-]{11})"/', $body, $matches)) {
                         $videoId = $matches[1];
                     }
 
@@ -794,26 +795,46 @@ class YouTubeScraperService
                 if (str_contains($t, 'bulan') || str_contains($t, 'month') || str_contains($t, 'bln')) {
                     return true;
                 }
-                if (preg_match('/([4-9]|[1-9][0-9])\s*(minggu|week|mgg)/i', $t)) {
+                // Reject VOD replays older than 2 weeks (14 days)
+                if (preg_match('/([2-9]|[1-9][0-9])\s*(minggu|week|mgg)/i', $t)) {
                     return true;
                 }
                 return false;
             };
 
             $calculateRelevanceScore = function (string $title): int {
-                $keywords = [
-                    'ime', 'police', 'polisi', 'patrol', 'lspd', 'bcso', 'sasp', 'sapd',
-                    'gta', 'rp', 'duty', 'k9', 'swat', 'srt', 'cop', 'dinas', 'reserse',
-                    'satlantas', 'kerta', 'gpl', 'takahashi', 'vagabond', 'transcendence',
-                    'day ', 'eps', 'chapter', 's1', 's2', 's3', 's4', 's5', '10-8'
+                if (empty($title)) return 0;
+                $rawText = $title;
+                if (class_exists('Normalizer')) {
+                    $rawText = Normalizer::normalize($rawText, Normalizer::FORM_KD) ?? $rawText;
+                }
+                $t = mb_strtolower(preg_replace('/\p{M}/u', '', $rawText), 'UTF-8');
+
+                $highScoreKeywords = [
+                    '#imeroleplay', '#imepolice', '#imerp', '#imesheriff', '#ime',
+                    'imeroleplay', 'imepolice', 'imerp', 'imesheriff',
+                    'ime roleplay', 'ime police', 'ime rp',
+                    'lspd', 'bcso', 'sasp', 'sapr', '969police', '969garage', '969'
                 ];
-                $score = 0;
-                $t = strtolower($title);
-                foreach ($keywords as $kw) {
+
+                foreach ($highScoreKeywords as $kw) {
                     if (str_contains($t, $kw)) {
-                        $score += 2;
+                        return 10;
                     }
                 }
+
+                $mediumScoreKeywords = [
+                    'police', 'polisi', 'patrol', 'patroli', 'cop', 'dinas', 'reserse',
+                    'satlantas', 'k9', 'swat', 'srt', 'trooper', '10-8', 'officer', 'sheriff'
+                ];
+
+                $score = 0;
+                foreach ($mediumScoreKeywords as $kw) {
+                    if (str_contains($t, $kw)) {
+                        $score += 3;
+                    }
+                }
+
                 return $score;
             };
 
@@ -919,16 +940,19 @@ class YouTubeScraperService
                             }
                         }
 
-                        // Filter candidate streams by freshness (< 30 days)
-                        $validCandidates = array_values(array_filter($candidateStreams, function ($s) use ($isStreamTooOld) {
-                            return !empty($s['video_id']) && !$isStreamTooOld($s['time_text']);
+                        // Filter candidate streams by freshness (< 30 days) AND requiring IME RP / Police content (relevance score >= 3)
+                        $validCandidates = array_values(array_filter($candidateStreams, function ($s) use ($isStreamTooOld, $calculateRelevanceScore) {
+                            if (empty($s['video_id']) || $isStreamTooOld($s['time_text'])) {
+                                return false;
+                            }
+                            return $calculateRelevanceScore($s['title']) >= 3;
                         }));
 
                         if (!empty($validCandidates)) {
-                            // Prioritize recency: pick the latest stream chronologically that matches IME RP content criteria
+                            // Pick the latest stream chronologically that passed relevance checks
                             $best = $validCandidates[0];
                             foreach ($validCandidates as $cand) {
-                                if ($calculateRelevanceScore($cand['title']) >= 2) {
+                                if ($calculateRelevanceScore($cand['title']) >= 10) {
                                     $best = $cand;
                                     break;
                                 }
@@ -1146,24 +1170,25 @@ class YouTubeScraperService
      */
     public function isImeRpContent(string $title, string $description = ''): bool
     {
-        $text = strtolower($title . ' ' . $description);
+        $rawText = $title . ' ' . $description;
+        if (class_exists('Normalizer')) {
+            $rawText = Normalizer::normalize($rawText, Normalizer::FORM_KD) ?? $rawText;
+        }
+        $text = mb_strtolower(preg_replace('/\p{M}/u', '', $rawText), 'UTF-8');
 
-        $keywords = [
-            '#imeroleplay', '#imerp', '#imepolice', '#ime',
-            'imeroleplay', 'imerp', 'imepolice',
-            'ime roleplay', 'ime rp', 'ime police',
-            'lspd', 'bcso', 'sasp', 'sapr', 'park ranger', 'police', 'polisi',
-            'gta rp', 'gta v rp', 'gta 5 rp', 'gta', 'roleplay', 'patrol', '10-8'
+        $policeKeywords = [
+            '#imepolice', 'imepolice', 'ime police',
+            '#imesheriff', 'imesheriff', 'ime sheriff',
+            '#969police', '969police', '969garage', '969',
+            'lspd', 'bcso', 'sasp', 'sapr', 'park ranger', 'parkranger',
+            'police', 'polisi', 'patrol', 'patroli', 'cop', 'dinas', 'reserse',
+            'satlantas', '10-8', 'sheriff', 'trooper', 'officer'
         ];
 
-        foreach ($keywords as $kw) {
+        foreach ($policeKeywords as $kw) {
             if (str_contains($text, $kw)) {
                 return true;
             }
-        }
-
-        if (preg_match('/\bime\b/i', $text)) {
-            return true;
         }
 
         return false;

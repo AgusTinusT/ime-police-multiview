@@ -45,7 +45,7 @@ const faqs = [
         categoryLabel: 'Multiview & Fitur',
         badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
         question: 'Bagaimana cara kerja platform IME Police Multiview ini?',
-        answer: 'Platform ini dirancang khusus sebagai Tactical Command Center untuk jajaran kepolisian IME Roleplay. Sistem menampilkan live bodycam/stream dari perwira aktif (LSPD, BCSO, SASP, SAPR) secara real-time dari platform YouTube sehingga komando dan penonton dapat memantau berbagai sudut operasi secara bersamaan.<br/><br/><strong>Ketentuan Judul Live Stream:</strong> Judul/title streaming perwira harus menambahkan minimal salah satu hashtag wajib <code>#imeroleplay</code> atau <code>#imepolice</code> agar siaran langsung terdeteksi dan tampil otomatis pada sistem.'
+        answer: 'Platform ini dirancang khusus sebagai Tactical Command Center untuk jajaran kepolisian IME Roleplay. Sistem menampilkan live bodycam/stream dari perwira aktif (LSPD, BCSO, SASP, SAPR) secara real-time dari platform YouTube sehingga komando dan penonton dapat memantau berbagai sudut operasi secara bersamaan.<br/><br/><strong>Ketentuan Judul Live Stream:</strong> Judul/title streaming perwira <strong>wajib menyertakan hashtag <code>#imepolice</code></strong> (atau tag/kata kunci dinas kepolisian seperti <code>#imesheriff</code>, <code>#969police</code>, <code>#969</code>, <code>#lspd</code>, <code>#bcso</code>, <code>#sasp</code>, <code>#sapr</code>) agar siaran patroli terdeteksi dan tampil otomatis pada sistem.'
     },
     {
         id: 2,
@@ -97,7 +97,7 @@ const faqs = [
         categoryLabel: 'Streamer & Pendaftaran',
         badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
         question: 'Saya perwira polisi baru di IME Roleplay, bagaimana cara mendaftarkan channel siaran saya?',
-        answer: 'Anda dapat mengajukan pendaftaran channel siaran langsung Anda melalui menu <a href="/feedback" class="text-sky-400 underline font-bold">Feedback & Reports</a>. Cantumkan Nama Perwira, Callsign, Kesatuan (LSPD/BCSO/SASP/SAPR), dan Link Channel YouTube Anda. Pastikan judul streaming Anda selalu menyertakan minimal salah satu hashtag wajib <code>#imeroleplay</code> atau <code>#imepolice</code>.'
+        answer: 'Anda dapat mengajukan pendaftaran channel siaran langsung Anda melalui menu <a href="/feedback" class="text-sky-400 underline font-bold">Feedback & Reports</a>. Cantumkan Nama Perwira, Callsign, Kesatuan (LSPD/BCSO/SASP/SAPR), dan Link Channel YouTube Anda. Pastikan judul streaming Anda selalu menyertakan hashtag wajib <code>#imepolice</code>.'
     },
     {
         id: 8,
