@@ -13,7 +13,10 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['"Plus Jakarta Sans"', 'Inter', ...defaultTheme.fontFamily.sans],
+                mono: ['"JetBrains Mono"', ...defaultTheme.fontFamily.mono],
+                tactical: ['"Rajdhani"', 'sans-serif'],
+                heading: ['"Rajdhani"', 'sans-serif'],
             },
         },
     },
