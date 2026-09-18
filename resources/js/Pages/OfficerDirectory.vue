@@ -80,22 +80,28 @@ const togglePin = (identifier) => {
     }
 };
 
-// 1-Click Subscribe Popup Modal (With Smart Fallback to Video URL)
-const openSubscribePopup = (channelIdOrHandle, officerName = '', videoId = '') => {
+// 1-Click Subscribe Popup Modal (With Smart Fallback to Video URL & Handle Validation)
+const openSubscribePopup = (channelIdOrHandle, officerName = '', videoId = '', handle = '') => {
     let subUrl = '';
-    if (channelIdOrHandle && typeof channelIdOrHandle === 'string' && channelIdOrHandle.trim() !== '') {
-        const cleanStr = channelIdOrHandle.trim();
-        if (cleanStr.startsWith('UC')) {
-            subUrl = `https://www.youtube.com/channel/${cleanStr}?sub_confirmation=1`;
-        } else {
-            const cleanHandle = cleanStr.startsWith('@') ? cleanStr : `@${cleanStr}`;
-            subUrl = `https://www.youtube.com/${cleanHandle}?sub_confirmation=1`;
-        }
-    } else if (videoId && typeof videoId === 'string' && videoId.trim() !== '') {
-        subUrl = `https://www.youtube.com/watch?v=${videoId.trim()}?sub_confirmation=1`;
+    const rawStr = typeof channelIdOrHandle === 'string' ? channelIdOrHandle.trim() : '';
+    const rawHandle = typeof handle === 'string' && handle.trim() ? handle.trim() : (rawStr.includes('@') ? rawStr : '');
+    const rawVideoId = typeof videoId === 'string' ? videoId.trim() : '';
+
+    if (rawHandle) {
+        const cleanHandle = rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`;
+        subUrl = `https://www.youtube.com/${cleanHandle}?sub_confirmation=1`;
+    } else if (rawStr.startsWith('@')) {
+        subUrl = `https://www.youtube.com/${rawStr}?sub_confirmation=1`;
+    } else if (/^UC[A-Za-z0-9_-]{22}$/.test(rawStr)) {
+        subUrl = `https://www.youtube.com/channel/${rawStr}?sub_confirmation=1`;
+    } else if (rawVideoId && !rawVideoId.startsWith('officer-')) {
+        subUrl = `https://www.youtube.com/watch?v=${rawVideoId}?sub_confirmation=1`;
+    } else if (rawStr && !rawStr.startsWith('UC_')) {
+        subUrl = `https://www.youtube.com/@${rawStr}?sub_confirmation=1`;
     } else {
         subUrl = 'https://www.youtube.com/';
     }
+
     const width = 640;
     const height = 660;
     const left = Math.max(0, Math.floor((window.screen.width - width) / 2));
@@ -376,6 +382,7 @@ const toggleFullscreen = () => {
                                 <img 
                                     :src="officer.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(officer.callsign || officer.officer_name || 'officer')}`" 
                                     :alt="officer.officer_name"
+                                    referrerpolicy="no-referrer"
                                     @error="(e) => handleAvatarError(e, officer)"
                                     class="w-11 h-11 rounded-full object-cover border border-slate-700/80 shadow-md transition-transform duration-200 group-hover:scale-105"
                                 />

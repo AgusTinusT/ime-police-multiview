@@ -915,17 +915,48 @@ const pauseAllGridStreams = () => {
 };
 
 // 1-Click In-Place YouTube Subscription Popup (Never navigates away from dashboard)
-const openSubscribePopup = (channelIdOrHandle, officerName = "") => {
-    if (!channelIdOrHandle) return;
-
+const openSubscribePopup = (
+    channelIdOrHandle,
+    officerName = "",
+    videoId = "",
+    handle = "",
+) => {
     let subUrl = "";
-    if (channelIdOrHandle.startsWith("UC")) {
-        subUrl = `https://www.youtube.com/channel/${channelIdOrHandle}?sub_confirmation=1`;
-    } else {
-        const cleanHandle = channelIdOrHandle.startsWith("@")
-            ? channelIdOrHandle
-            : `@${channelIdOrHandle}`;
+
+    const rawStr =
+        typeof channelIdOrHandle === "string" ? channelIdOrHandle.trim() : "";
+    const rawHandle =
+        typeof handle === "string" && handle.trim()
+            ? handle.trim()
+            : rawStr.includes("@")
+              ? rawStr
+              : "";
+    const rawVideoId = typeof videoId === "string" ? videoId.trim() : "";
+
+    // 1. If we have a YouTube handle (e.g. @Slezyfers or Slezyfers)
+    if (rawHandle) {
+        const cleanHandle = rawHandle.startsWith("@")
+            ? rawHandle
+            : `@${rawHandle}`;
         subUrl = `https://www.youtube.com/${cleanHandle}?sub_confirmation=1`;
+    }
+    // 2. If channelIdOrHandle starts with @
+    else if (rawStr.startsWith("@")) {
+        subUrl = `https://www.youtube.com/${rawStr}?sub_confirmation=1`;
+    }
+    // 3. If rawStr is a strictly valid 24-character YouTube Channel ID starting with UC (e.g. UC1234567890123456789012)
+    else if (/^UC[A-Za-z0-9_-]{22}$/.test(rawStr)) {
+        subUrl = `https://www.youtube.com/channel/${rawStr}?sub_confirmation=1`;
+    }
+    // 4. Fallback: If we have an active video_id (and it's not a static officer card placeholder), use watch URL with subscribe confirmation
+    else if (rawVideoId && !rawVideoId.startsWith("officer-")) {
+        subUrl = `https://www.youtube.com/watch?v=${rawVideoId}?sub_confirmation=1`;
+    }
+    // 5. Fallback: If rawStr is a handle string without @ (e.g. "Slezyfers")
+    else if (rawStr && !rawStr.startsWith("UC_")) {
+        subUrl = `https://www.youtube.com/@${rawStr}?sub_confirmation=1`;
+    } else {
+        subUrl = "https://www.youtube.com/";
     }
 
     const width = 640;
@@ -1970,26 +2001,147 @@ const trendingStreams = computed(() => {
         .sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0));
 });
 
+const formatRelativeTimeLabel = (str) => {
+    if (!str) return "REPLAY";
+    const text = String(str).trim();
+    if (!text || text === "REPLAY" || text === "Target 1K Milestone")
+        return text;
+
+    const lower = text.toLowerCase();
+    if (
+        lower.includes("baru saja") ||
+        lower.includes("just now") ||
+        lower.includes("live") ||
+        lower.includes("sedang tayang")
+    ) {
+        return "Baru saja";
+    }
+
+    const numMatch = lower.match(/(\d+)/);
+    if (!numMatch) return text;
+    const num = parseInt(numMatch[1], 10);
+    const isIndonesian = lower.includes("lalu");
+
+    if (
+        lower.includes("tahun") ||
+        lower.includes("year") ||
+        lower.match(/\b\d+\s*(?:y|thn|th)\b/)
+    ) {
+        return `${num} tahun yang lalu`;
+    }
+    if (
+        lower.includes("bulan") ||
+        lower.includes("month") ||
+        lower.match(/\b\d+\s*(?:mo|bln)\b/)
+    ) {
+        return `${num} bulan yang lalu`;
+    }
+    if (
+        lower.includes("minggu") ||
+        lower.includes("week") ||
+        lower.match(/\b\d+\s*w\b/)
+    ) {
+        return `${num} minggu yang lalu`;
+    }
+
+    // Handle "hari" vs "jam": In YouTube Indonesian UI, "2 h lalu" = 2 HARI LALU! In English UI, "2h ago" = 2 HOURS AGO!
+    if (
+        lower.includes("hari") ||
+        lower.includes("day") ||
+        (isIndonesian && lower.match(/\b\d+\s*h\b/)) ||
+        (!isIndonesian && lower.match(/\b\d+\s*d\b/))
+    ) {
+        return `${num} hari yang lalu`;
+    }
+    if (
+        lower.includes("jam") ||
+        lower.includes("hour") ||
+        (isIndonesian && lower.match(/\b\d+\s*j\b/)) ||
+        (!isIndonesian && lower.match(/\b\d+\s*h\b/))
+    ) {
+        return `${num} jam yang lalu`;
+    }
+    if (
+        lower.includes("menit") ||
+        lower.includes("minute") ||
+        lower.includes("min") ||
+        lower.match(/\b\d+\s*m\b/)
+    ) {
+        return `${num} menit yang lalu`;
+    }
+    if (
+        lower.includes("detik") ||
+        lower.includes("second") ||
+        lower.includes("sec") ||
+        lower.match(/\b\d+\s*s\b/)
+    ) {
+        return `${num} detik yang lalu`;
+    }
+
+    return text;
+};
+
 const parseRelativeTimeToSeconds = (str) => {
     if (!str) return 999999999;
     const text = String(str).toLowerCase().trim();
     if (
         text.includes("baru saja") ||
         text.includes("just now") ||
-        text.includes("live")
+        text.includes("live") ||
+        text.includes("sedang tayang")
     )
         return 0;
 
     const numMatch = text.match(/(\d+)/);
     const num = numMatch ? parseInt(numMatch[1], 10) : 1;
+    const isIndonesian = text.includes("lalu");
 
-    if (text.includes("detik") || text.includes("second")) return num;
-    if (text.includes("menit") || text.includes("minute")) return num * 60;
-    if (text.includes("jam") || text.includes("hour")) return num * 3600;
-    if (text.includes("hari") || text.includes("day")) return num * 86400;
-    if (text.includes("minggu") || text.includes("week")) return num * 604800;
-    if (text.includes("bulan") || text.includes("month")) return num * 2592000;
-    if (text.includes("tahun") || text.includes("year")) return num * 31536000;
+    if (
+        text.includes("tahun") ||
+        text.includes("year") ||
+        text.match(/\b\d+\s*(?:y|thn|th)\b/)
+    )
+        return num * 31536000;
+    if (
+        text.includes("bulan") ||
+        text.includes("month") ||
+        text.match(/\b\d+\s*(?:mo|bln)\b/)
+    )
+        return num * 2592000;
+    if (
+        text.includes("minggu") ||
+        text.includes("week") ||
+        text.match(/\b\d+\s*w\b/)
+    )
+        return num * 604800;
+    if (
+        text.includes("hari") ||
+        text.includes("day") ||
+        (isIndonesian && text.match(/\b\d+\s*h\b/)) ||
+        (!isIndonesian && text.match(/\b\d+\s*d\b/))
+    )
+        return num * 86400;
+    if (
+        text.includes("jam") ||
+        text.includes("hour") ||
+        (isIndonesian && text.match(/\b\d+\s*j\b/)) ||
+        (!isIndonesian && text.match(/\b\d+\s*h\b/))
+    )
+        return num * 3600;
+    if (
+        text.includes("menit") ||
+        text.includes("minute") ||
+        text.includes("min") ||
+        text.match(/\b\d+\s*m\b/)
+    )
+        return num * 60;
+    if (
+        text.includes("detik") ||
+        text.includes("second") ||
+        text.includes("sec") ||
+        text.match(/\b\d+\s*s\b/)
+    )
+        return num;
 
     return 999999999;
 };
@@ -3928,7 +4080,9 @@ const submitFeedbackForm = async () => {
                                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
                                         >
                                             <span>{{
-                                                stream.streamed_at || "REPLAY"
+                                                formatRelativeTimeLabel(
+                                                    stream.streamed_at,
+                                                )
                                             }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
@@ -4275,7 +4429,9 @@ const submitFeedbackForm = async () => {
                                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
                                         >
                                             <span>{{
-                                                stream.streamed_at || "REPLAY"
+                                                formatRelativeTimeLabel(
+                                                    stream.streamed_at,
+                                                )
                                             }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
@@ -4526,7 +4682,9 @@ const submitFeedbackForm = async () => {
                                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
                                         >
                                             <span>{{
-                                                stream.streamed_at || "REPLAY"
+                                                formatRelativeTimeLabel(
+                                                    stream.streamed_at,
+                                                )
                                             }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
@@ -4690,7 +4848,9 @@ const submitFeedbackForm = async () => {
                                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
                                         >
                                             <span>{{
-                                                stream.streamed_at || "REPLAY"
+                                                formatRelativeTimeLabel(
+                                                    stream.streamed_at,
+                                                )
                                             }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
@@ -4867,7 +5027,9 @@ const submitFeedbackForm = async () => {
                                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
                                         >
                                             <span>{{
-                                                stream.streamed_at || "REPLAY"
+                                                formatRelativeTimeLabel(
+                                                    stream.streamed_at,
+                                                )
                                             }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
@@ -5044,7 +5206,9 @@ const submitFeedbackForm = async () => {
                                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
                                         >
                                             <span>{{
-                                                stream.streamed_at || "REPLAY"
+                                                formatRelativeTimeLabel(
+                                                    stream.streamed_at,
+                                                )
                                             }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
@@ -5221,7 +5385,9 @@ const submitFeedbackForm = async () => {
                                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
                                         >
                                             <span>{{
-                                                stream.streamed_at || "REPLAY"
+                                                formatRelativeTimeLabel(
+                                                    stream.streamed_at,
+                                                )
                                             }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
@@ -5398,7 +5564,9 @@ const submitFeedbackForm = async () => {
                                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
                                         >
                                             <span>{{
-                                                stream.streamed_at || "REPLAY"
+                                                formatRelativeTimeLabel(
+                                                    stream.streamed_at,
+                                                )
                                             }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
@@ -5575,7 +5743,9 @@ const submitFeedbackForm = async () => {
                                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/90 text-slate-300 font-mono text-[10px] font-medium tracking-wider shadow border border-slate-700/80"
                                         >
                                             <span>{{
-                                                stream.streamed_at || "REPLAY"
+                                                formatRelativeTimeLabel(
+                                                    stream.streamed_at,
+                                                )
                                             }}</span>
                                         </span>
                                         <div class="flex items-center gap-1">
@@ -7840,6 +8010,7 @@ const submitFeedbackForm = async () => {
                                 <img
                                     v-if="officer.avatar_url"
                                     :src="officer.avatar_url"
+                                    referrerpolicy="no-referrer"
                                     class="w-full h-full object-cover rounded"
                                 />
                                 <img

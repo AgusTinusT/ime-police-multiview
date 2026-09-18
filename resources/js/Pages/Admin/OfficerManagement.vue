@@ -1070,6 +1070,7 @@ onMounted(() => {
                                         <div class="flex items-center space-x-3">
                                             <img 
                                                 :src="officer.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${officer.callsign}`" 
+                                                referrerpolicy="no-referrer"
                                                 class="w-10 h-10 rounded-xl bg-slate-800 object-cover border border-slate-700/80 shrink-0" 
                                                 loading="lazy"
                                             />

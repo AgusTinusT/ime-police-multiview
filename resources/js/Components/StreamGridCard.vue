@@ -170,7 +170,7 @@ const emit = defineEmits(['focus', 'togglePersonal', 'openSubscribe', 'toggleCha
 
                     <!-- Subscribe Button -->
                     <button 
-                        @click.stop="emit('openSubscribe', stream.officer?.channel_id || stream.officer?.handle, stream.officer?.officer_name)"
+                        @click.stop="emit('openSubscribe', stream.officer?.handle || stream.officer?.channel_id, stream.officer?.officer_name, stream.video_id, stream.officer?.handle)"
                         class="px-2 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white font-mono text-[10px] font-bold shadow transition"
                         title="Subscribe tanpa meninggalkan halaman"
                     >

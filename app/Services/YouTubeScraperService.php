@@ -840,7 +840,38 @@ class YouTubeScraperService
 
             $cleanTimeText = function (string $rawTime): string {
                 $clean = preg_replace('/^(Streaming|Streamed|Disiarkan)\s+/i', '', trim($rawTime));
-                return $clean ?: 'Baru saja';
+                if (!$clean) return 'Baru saja';
+
+                $lower = strtolower($clean);
+                $isIndonesian = str_contains($lower, 'lalu');
+
+                if (preg_match('/(\d+)/', $lower, $m)) {
+                    $num = (int)$m[1];
+
+                    if (str_contains($lower, 'tahun') || str_contains($lower, 'year') || preg_match('/\b\d+\s*(?:y|thn|th)\b/', $lower)) {
+                        return "{$num} tahun yang lalu";
+                    }
+                    if (str_contains($lower, 'bulan') || str_contains($lower, 'month') || preg_match('/\b\d+\s*(?:mo|bln)\b/', $lower)) {
+                        return "{$num} bulan yang lalu";
+                    }
+                    if (str_contains($lower, 'minggu') || str_contains($lower, 'week') || preg_match('/\b\d+\s*w\b/', $lower)) {
+                        return "{$num} minggu yang lalu";
+                    }
+                    if (str_contains($lower, 'hari') || str_contains($lower, 'day') || ($isIndonesian && preg_match('/\b\d+\s*h\b/', $lower)) || (!$isIndonesian && preg_match('/\b\d+\s*d\b/', $lower))) {
+                        return "{$num} hari yang lalu";
+                    }
+                    if (str_contains($lower, 'jam') || str_contains($lower, 'hour') || ($isIndonesian && preg_match('/\b\d+\s*j\b/', $lower)) || (!$isIndonesian && preg_match('/\b\d+\s*h\b/', $lower))) {
+                        return "{$num} jam yang lalu";
+                    }
+                    if (str_contains($lower, 'menit') || str_contains($lower, 'minute') || str_contains($lower, 'min') || preg_match('/\b\d+\s*m\b/', $lower)) {
+                        return "{$num} menit yang lalu";
+                    }
+                    if (str_contains($lower, 'detik') || str_contains($lower, 'second') || str_contains($lower, 'sec') || preg_match('/\b\d+\s*s\b/', $lower)) {
+                        return "{$num} detik yang lalu";
+                    }
+                }
+
+                return $clean;
             };
 
             foreach ($chunks as $chunk) {
