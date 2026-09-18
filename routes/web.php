@@ -19,6 +19,10 @@ Route::get('/faq', [PoliceCommandController::class, 'faqPage'])->name('faq');
 Route::get('/qna', function () {
     return redirect()->route('faq');
 })->name('qna');
+Route::get('/updates', [PoliceCommandController::class, 'updatesPage'])->name('updates');
+Route::get('/changelog', function () {
+    return redirect()->route('updates');
+})->name('changelog');
 Route::get('/feedback', [PoliceCommandController::class, 'feedbackPage'])->name('feedback');
 
 // Admin direct slash route (hidden access)

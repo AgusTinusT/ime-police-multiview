@@ -75,21 +75,10 @@ onUnmounted(() => {
                     </Link>
 
                     <Link 
-                        href="/faq"
-                        :class="[
-                            'px-3 py-1.5 text-xs transition rounded-lg font-medium',
-                            $page.url.startsWith('/faq') ? 'bg-blue-600/30 text-blue-300 font-bold border border-blue-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
-                        ]"
-                        title="Pusat Bantuan & FAQ Taktis"
-                    >
-                        FAQ
-                    </Link>
-
-                    <Link 
                         href="/about"
                         :class="[
                             'px-3 py-1.5 text-xs transition rounded-lg font-medium',
-                            $page.url.startsWith('/about') ? 'bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+                            $page.url.startsWith('/about') ? 'bg-blue-600/30 text-blue-300 font-bold border border-blue-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
                         ]"
                         title="About Police Command Center"
                     >
@@ -97,14 +86,36 @@ onUnmounted(() => {
                     </Link>
 
                     <Link 
+                        href="/faq"
+                        :class="[
+                            'px-3 py-1.5 text-xs transition rounded-lg font-medium',
+                            $page.url.startsWith('/faq') || $page.url.startsWith('/qna') ? 'bg-blue-600/30 text-blue-300 font-bold border border-blue-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+                        ]"
+                        title="Pusat Bantuan & FAQ Taktis"
+                    >
+                        FAQ
+                    </Link>
+
+                    <Link 
                         href="/feedback"
                         :class="[
                             'px-3 py-1.5 text-xs transition rounded-lg font-medium',
-                            $page.url.startsWith('/feedback') ? 'bg-sky-600/30 text-sky-300 font-bold border border-sky-500/50' : 'text-slate-300 hover:text-sky-300 hover:bg-sky-950/40'
+                            $page.url.startsWith('/feedback') ? 'bg-blue-600/30 text-blue-300 font-bold border border-blue-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
                         ]"
                         title="Channel Requests & System Feedback"
                     >
                         Feedback & Reports
+                    </Link>
+
+                    <Link 
+                        href="/updates"
+                        :class="[
+                            'px-3 py-1.5 text-xs transition rounded-lg font-medium',
+                            $page.url.startsWith('/updates') || $page.url.startsWith('/changelog') ? 'bg-blue-600/30 text-blue-300 font-bold border border-blue-500/50' : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
+                        ]"
+                        title="Catatan Pembaruan & Version Updates"
+                    >
+                        System Updates
                     </Link>
                 </nav>
             </div>
@@ -161,14 +172,6 @@ onUnmounted(() => {
                     <span>Directory</span>
                 </Link>
                 <Link 
-                    href="/faq" 
-                    @click="isMobileMenuOpen = false"
-                    class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 flex items-center gap-2"
-                >
-                    <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" alt="" />
-                    <span>FAQ</span>
-                </Link>
-                <Link 
                     href="/about" 
                     @click="isMobileMenuOpen = false"
                     class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 flex items-center gap-2"
@@ -177,9 +180,25 @@ onUnmounted(() => {
                     <span>About</span>
                 </Link>
                 <Link 
+                    href="/faq" 
+                    @click="isMobileMenuOpen = false"
+                    class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 flex items-center gap-2"
+                >
+                    <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                    <span>FAQ</span>
+                </Link>
+                <Link 
+                    href="/updates" 
+                    @click="isMobileMenuOpen = false"
+                    class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 flex items-center gap-2"
+                >
+                    <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                    <span>Updates</span>
+                </Link>
+                <Link 
                     href="/feedback" 
                     @click="isMobileMenuOpen = false"
-                    class="col-span-2 p-2 rounded-lg bg-sky-950/60 border border-sky-500/40 text-sky-300 flex items-center gap-2 font-bold"
+                    class="col-span-2 p-2 rounded-lg bg-blue-950/60 border border-blue-500/40 text-blue-300 flex items-center gap-2 font-bold"
                 >
                     <img :src="iconFeedback" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                     <span>Feedback & Channel Requests</span>

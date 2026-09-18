@@ -10603,6 +10603,20 @@ const submitFeedbackForm = async () => {
                         </div>
                         <span class="text-slate-500">→</span>
                     </Link>
+                    <Link
+                        href="/updates"
+                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
+                    >
+                        <div class="flex items-center space-x-2.5">
+                            <img
+                                :src="iconRadio"
+                                class="w-4 h-4 invert opacity-90 shrink-0"
+                                alt=""
+                            />
+                            <span>System Updates & Release Notes</span>
+                        </div>
+                        <span class="text-slate-500">→</span>
+                    </Link>
                     <button
                         @click="
                             if (isDataSaverEnabled)

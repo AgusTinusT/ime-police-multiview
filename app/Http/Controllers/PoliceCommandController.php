@@ -495,6 +495,16 @@ class PoliceCommandController extends Controller
     }
 
     /**
+     * Dedicated Page: System Updates & Release Changelog.
+     */
+    public function updatesPage(Request $request)
+    {
+        return Inertia::render('Updates', [
+            'appVersion' => '2.4.0-Pro',
+        ]);
+    }
+
+    /**
      * Sync active stream statuses with a fast 25-second cooldown lock.
      */
     protected function syncStreamsIfNeeded(): void
