@@ -14,3 +14,6 @@ Schedule::job(SyncOfficerStreamsJob::class)->everyMinute();
 
 // Fetch subscriber counts every hour
 Schedule::command('officer:sync-subscribers')->hourly();
+
+// Automated daily database backup at 02:00 AM
+Schedule::command('db:backup')->dailyAt('02:00');

@@ -2839,7 +2839,7 @@ const handleQuickAddStream = () => {
         status: "LIVE",
         incident_code: "10-8 Tactical Add",
         viewers_count: 0,
-        live_chat_url: `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${chatEmbedDomain.value}`,
+        live_chat_url: `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${chatEmbedDomain.value}&dark_theme=1`,
         officer: {
             id: 999,
             channel_id: "custom-" + Date.now(),
@@ -2952,7 +2952,7 @@ const handleAddLiveStreamToPersonal = (streamItem) => {
             description: streamItem.description || "",
             viewers_count: streamItem.viewers_count || 0,
             viewers: streamItem.viewers || "Live",
-            live_chat_url: `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${chatEmbedDomain.value}`,
+            live_chat_url: `https://www.youtube.com/live_chat?v=${videoId}&embed_domain=${chatEmbedDomain.value}&dark_theme=1`,
             officer: {
                 id: 9999,
                 channel_id: "target-" + videoId,
@@ -6813,7 +6813,7 @@ const submitFeedbackForm = async () => {
                                 >
                                     <iframe
                                         :key="`chat-lead-${primaryFocusedStream.video_id}`"
-                                        :src="`https://www.youtube.com/live_chat?v=${primaryFocusedStream.video_id}&embed_domain=${chatEmbedDomain}`"
+                                        :src="`https://www.youtube.com/live_chat?v=${primaryFocusedStream.video_id}&embed_domain=${chatEmbedDomain}&dark_theme=1`"
                                         class="w-full h-full border-0"
                                         allow="autoplay"
                                     ></iframe>
@@ -7945,7 +7945,7 @@ const submitFeedbackForm = async () => {
                                     >
                                         <iframe
                                             :key="`chat-grid-${activeGridChatStream.video_id}`"
-                                            :src="`https://www.youtube.com/live_chat?v=${activeGridChatStream.video_id}&embed_domain=${chatEmbedDomain}`"
+                                            :src="`https://www.youtube.com/live_chat?v=${activeGridChatStream.video_id}&embed_domain=${chatEmbedDomain}&dark_theme=1`"
                                             class="w-full h-full border-0"
                                             allow="autoplay"
                                         ></iframe>

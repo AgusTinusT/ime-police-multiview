@@ -37,7 +37,7 @@ class ActiveStreamController extends Controller
                     'title' => $stream->title,
                     'thumbnail' => $stream->thumbnail_url,
                     'status' => $stream->status,
-                    'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}",
+                    'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}&dark_theme=1",
                 ];
             });
 
@@ -74,7 +74,7 @@ class ActiveStreamController extends Controller
                     'title' => $stream->title,
                     'thumbnail' => $stream->thumbnail_url,
                     'status' => $stream->status,
-                    'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}",
+                    'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}&dark_theme=1",
                 ];
             });
 

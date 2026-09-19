@@ -39,7 +39,7 @@ class PoliceCommandController extends Controller
                     'incident_code' => $stream->incident_code ?? '10-8 Routine Patrol',
                     'description' => $stream->description ?? '',
                     'viewers_count' => $stream->viewers_count ?? 0,
-                    'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}",
+                    'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}&dark_theme=1",
                     'officer' => $officer ? [
                         'id' => $officer->id,
                         'channel_id' => $officer->channel_id,
@@ -172,7 +172,7 @@ class PoliceCommandController extends Controller
                     'incident_code' => $stream->incident_code ?? '10-8 Routine Patrol',
                     'description' => $stream->description ?? '',
                     'viewers_count' => $stream->viewers_count ?? 0,
-                    'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}",
+                    'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}&dark_theme=1",
                     'officer' => $officer ? [
                         'id' => $officer->id,
                         'channel_id' => $officer->channel_id,
