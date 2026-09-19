@@ -67,13 +67,10 @@ class SyncOfficerSubscribersCommand extends Command
                         $realChannelId = $m[1];
                     }
 
+                    $oldChannelId = null;
                     if ($realChannelId && (str_starts_with($officer->channel_id, 'UC_') || $officer->channel_id !== $realChannelId)) {
                         $oldChannelId = $officer->channel_id;
                         $updateData['channel_id'] = $realChannelId;
-                        
-                        if (!empty($oldChannelId)) {
-                            \Illuminate\Support\Facades\DB::table('active_streams')->where('channel_id', $oldChannelId)->update(['channel_id' => $realChannelId]);
-                        }
                     }
 
                     // Extract avatar URL if currently dicebear placeholder or empty
@@ -86,7 +83,17 @@ class SyncOfficerSubscribersCommand extends Command
                     }
 
                     if (!empty($updateData)) {
-                        $officer->update($updateData);
+                        \Illuminate\Support\Facades\DB::transaction(function () use ($officer, $updateData, $oldChannelId, $realChannelId) {
+                            \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+                            $officer->update($updateData);
+                            if ($oldChannelId && !empty($oldChannelId)) {
+                                \Illuminate\Support\Facades\DB::table('active_streams')
+                                    ->where('channel_id', $oldChannelId)
+                                    ->update(['channel_id' => $realChannelId]);
+                            }
+                            \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+                        });
+
                         $totalUpdated++;
                         $this->line("Updated {$officer->officer_name} ({$officer->handle}): " . json_encode($updateData));
                     }
