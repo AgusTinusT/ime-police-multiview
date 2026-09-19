@@ -52,20 +52,18 @@ class ProcessVideoClipJob implements ShouldQueue
                 : (file_exists($binDir . '/yt-dlp') ? $binDir . '/yt-dlp' : 'yt-dlp');
             $ffmpegBin = file_exists($binDir . '/ffmpeg.exe') 
                 ? $binDir . '/ffmpeg.exe' 
-                : (file_exists($binDir . '/ffmpeg') ? $binDir . '/ffmpeg' : null);
+                : (file_exists($binDir . '/ffmpeg') ? $binDir . '/ffmpeg' : 'ffmpeg');
 
             // yt-dlp command using Direct Stream Copy (--download-sections)
             // --force-keyframes-at-cuts ensures accurate segment length without dropping frames
             // --hls-use-mpegts prevents active live streams from hanging in .part files
-            // --extractor-args youtube:player_client=web,mweb,android prioritizes HD formats (1080p/720p) over 360p android fallback
             // --js-runtimes node uses Node.js engine for YouTube JS challenge solving
             $command = [
                 $ytDlpBin,
                 '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-                '--extractor-args', 'youtube:player_client=web,mweb,android',
                 '--js-runtimes', 'node',
                 '--download-sections', $sectionSpec,
-                '-f', 'bv*[height<=1080][ext=mp4]+ba[ext=m4a]/bv*[height<=1080]+ba/b[height<=1080]/best',
+                '-f', 'bv*[height<=1080]+ba/b[height<=1080]/best',
                 '--merge-output-format', 'mp4',
                 '--force-keyframes-at-cuts',
                 '--hls-use-mpegts',
