@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import VideoClipperModal from '../Components/VideoClipperModal.vue';
 
 const props = defineProps({
     initialStreams: {
@@ -22,6 +23,24 @@ const selectedLayout = ref('auto'); // 'auto', 'grid-2x2', 'grid-3x3', 'focus'
 const activeAudioVideoId = ref(null); // ID of stream that is unmuted
 const searchFilter = ref('');
 const originUrl = ref('');
+
+// Inertia Page & Role Auth
+const page = usePage();
+const canTrimVideo = computed(() => {
+    const user = page.props.auth?.user;
+    if (!user) return false;
+    return !!user.can_trim_video || ['admin', 'clipper'].includes(user.role);
+});
+
+// Video Clipper Modal State
+const isClipperModalOpen = ref(false);
+const clipperInitialUrl = ref('');
+
+const openClipper = (url = '') => {
+    clipperInitialUrl.value = url;
+    isClipperModalOpen.value = true;
+    window.dispatchEvent(new CustomEvent('open-clipper-modal', { detail: { url } }));
+};
 
 // Dynamic Clock
 const currentTime = ref('');
@@ -219,6 +238,11 @@ onMounted(() => {
     updateTime();
     setInterval(updateTime, 1000);
 
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('trim') && canTrimVideo.value) {
+        openClipper();
+    }
+
     // Periodically reload Inertia props (online & offline lists)
     setInterval(() => {
         router.reload({ only: ['initialStreams', 'initialOfflineChannels'] });
@@ -332,6 +356,19 @@ onMounted(() => {
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v18" />
                         </svg>
                         <span>{{ isSidebarOpen ? 'Sembunyikan Menu' : 'Tampilkan Menu' }}</span>
+                    </button>
+
+                    <!-- Tactical Video Trimmer Button (Authorized Roles) -->
+                    <button
+                        v-if="canTrimVideo"
+                        @click="openClipper()"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600/20 border border-red-500/40 text-red-400 hover:text-white hover:bg-red-600/30 transition flex items-center gap-1.5 shadow"
+                        title="Tactical Stream Trimmer (Direct Copy)"
+                    >
+                        <svg class="h-4 w-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L5 5m4.121 4.121L5 19" />
+                        </svg>
+                        <span>Potong Stream</span>
                     </button>
                 </div>
 
@@ -515,24 +552,38 @@ onMounted(() => {
                                             </div>
                                         </div>
                                         
-                                        <!-- Audio Control Button -->
-                                        <button
-                                            @click="unmuteStream(stream.video_id)"
-                                            :class="[
-                                                'flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-lg border transition',
-                                                activeAudioVideoId === stream.video_id 
-                                                    ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-500/20' 
-                                                    : 'bg-zinc-800 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
-                                            ]"
-                                            :title="activeAudioVideoId === stream.video_id ? 'Muted (Audio is playing)' : 'Unmute / Listen to stream'"
-                                        >
-                                            <svg v-if="activeAudioVideoId === stream.video_id" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-                                            </svg>
-                                            <svg v-else class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l-2.25-2.25M19.5 12l2.25 2.25m-10.5-6L4.5 9H1.5v6h3l4.5 3.75V5.25z" />
-                                            </svg>
-                                        </button>
+                                        <div class="flex items-center gap-1.5">
+                                            <!-- Tactical Clip Button -->
+                                            <button
+                                                v-if="canTrimVideo"
+                                                @click="openClipper(`https://www.youtube.com/watch?v=${stream.video_id}`)"
+                                                class="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-lg border bg-zinc-800 border-zinc-800 text-zinc-400 hover:text-red-400 hover:bg-zinc-700 transition"
+                                                title="Potong klip dari video stream ini"
+                                            >
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L5 5m4.121 4.121L5 19" />
+                                                </svg>
+                                            </button>
+
+                                            <!-- Audio Control Button -->
+                                            <button
+                                                @click="unmuteStream(stream.video_id)"
+                                                :class="[
+                                                    'flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-lg border transition',
+                                                    activeAudioVideoId === stream.video_id 
+                                                        ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-500/20' 
+                                                        : 'bg-zinc-800 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
+                                                ]"
+                                                :title="activeAudioVideoId === stream.video_id ? 'Muted (Audio is playing)' : 'Unmute / Listen to stream'"
+                                            >
+                                                <svg v-if="activeAudioVideoId === stream.video_id" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                                                </svg>
+                                                <svg v-else class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l-2.25-2.25M19.5 12l2.25 2.25m-10.5-6L4.5 9H1.5v6h3l4.5 3.75V5.25z" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -704,6 +755,13 @@ onMounted(() => {
         <footer class="mt-auto border-t border-zinc-900 py-6 text-center text-xs text-zinc-500">
             <p>&copy; 2026 OPJ Multiview Platform. Premium Control Room Interface.</p>
         </footer>
+
+        <!-- Video Clipper Modal Component -->
+        <VideoClipperModal
+            :show="isClipperModalOpen"
+            :initialUrl="clipperInitialUrl"
+            @close="isClipperModalOpen = false"
+        />
 
     </div>
 </template>

@@ -86,10 +86,20 @@ Route::get('/api/v1/active-announcements', [AnnouncementController::class, 'getA
 
 // Authenticated User Cloud Watchlist API
 use App\Http\Controllers\UserWatchlistController;
+use App\Http\Controllers\VideoClipController;
+
 Route::middleware('auth')->prefix('api/v1/user/watchlist')->group(function () {
     Route::get('/', [UserWatchlistController::class, 'index']);
     Route::post('/toggle', [UserWatchlistController::class, 'toggle']);
 });
+
+// Tactical Video Trimmer API (Direct Stream Copy, max 10 mins, role restricted)
+Route::middleware(['auth', 'can_trim'])->prefix('api/v1/clips')->group(function () {
+    Route::get('/', [VideoClipController::class, 'index']);
+    Route::post('/trim', [VideoClipController::class, 'store']);
+    Route::delete('/{id}', [VideoClipController::class, 'destroy']);
+});
+
 
 // Tactical Community Group Chat API
 use App\Http\Controllers\ChatMessageController;

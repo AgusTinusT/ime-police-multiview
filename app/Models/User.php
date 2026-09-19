@@ -26,6 +26,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user can trim/cut YouTube videos.
+     */
+    public function canTrimVideo(): bool
+    {
+        return in_array($this->role, ['admin', 'clipper']);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -44,6 +52,14 @@ class User extends Authenticatable
     public function watchlists(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(UserWatchlist::class);
+    }
+
+    /**
+     * Get the user's created video clips.
+     */
+    public function videoClips(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(VideoClip::class);
     }
 }
 

@@ -13,8 +13,18 @@ import UserAccountMenu from '@/Components/UserAccountMenu.vue';
 import TacticalFooter from '@/Components/TacticalFooter.vue';
 import TacticalChatDrawer from '@/Components/TacticalChatDrawer.vue';
 
+import VideoClipperModal from '@/Components/VideoClipperModal.vue';
+
 const isFullscreen = ref(false);
 const isMobileMenuOpen = ref(false);
+
+const isClipperOpen = ref(false);
+const clipperInitialUrl = ref('');
+
+const handleOpenClipper = (e) => {
+    clipperInitialUrl.value = e?.detail?.url || '';
+    isClipperOpen.value = true;
+};
 
 const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -32,10 +42,12 @@ const handleFullscreenChange = () => {
 
 onMounted(() => {
     document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('open-clipper-modal', handleOpenClipper);
 });
 
 onUnmounted(() => {
     document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    window.removeEventListener('open-clipper-modal', handleOpenClipper);
 });
 </script>
 
@@ -216,6 +228,13 @@ onUnmounted(() => {
 
         <!-- Floating Tactical Community Chat -->
         <TacticalChatDrawer />
+
+        <!-- Global Video Clipper Modal -->
+        <VideoClipperModal
+            :show="isClipperOpen"
+            :initialUrl="clipperInitialUrl"
+            @close="isClipperOpen = false"
+        />
 
     </div>
 </template>

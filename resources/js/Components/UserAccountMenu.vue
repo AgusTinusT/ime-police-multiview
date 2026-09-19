@@ -21,6 +21,11 @@ const handleLogout = () => {
     router.post('/logout');
 };
 
+const openClipperModal = () => {
+    isOpen.value = false;
+    window.dispatchEvent(new CustomEvent('open-clipper-modal', { detail: { url: '' } }));
+};
+
 onMounted(() => {
     document.addEventListener('click', closeDropdown);
 });
@@ -116,6 +121,19 @@ onUnmounted(() => {
                                 <span class="text-[10px] text-amber-400/70 font-normal">Kelola Perwira & Pengumuman</span>
                             </div>
                         </Link>
+
+                        <!-- Tactical Video Trimmer (Admin / Clipper) -->
+                        <button
+                            v-if="$page.props.auth.user.role === 'admin' || $page.props.auth.user.can_trim_video"
+                            @click="openClipperModal"
+                            class="w-full text-left flex items-center px-4 py-2.5 text-red-300 hover:bg-red-950/40 hover:text-red-200 transition gap-2.5 font-semibold"
+                        >
+                            <span class="text-base">✂️</span>
+                            <div class="flex flex-col">
+                                <span>Tactical Video Trimmer</span>
+                                <span class="text-[10px] text-red-400/70 font-normal">Potong Segmen Video YouTube</span>
+                            </div>
+                        </button>
 
                         <!-- Profile Settings -->
                         <Link
