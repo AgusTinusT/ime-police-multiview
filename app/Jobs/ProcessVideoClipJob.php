@@ -45,23 +45,42 @@ class ProcessVideoClipJob implements ShouldQueue
             $endTimeFormatted = gmdate("H:i:s", $this->videoClip->end_time);
             $sectionSpec = "*{$startTimeFormatted}-{$endTimeFormatted}";
 
-            // Resolve binary paths (check local project storage/app/bin first)
+            // Resolve binary paths
             $binDir = storage_path('app/bin');
             $ytDlpBin = file_exists($binDir . '/yt-dlp.exe') 
                 ? $binDir . '/yt-dlp.exe' 
                 : (file_exists($binDir . '/yt-dlp') ? $binDir . '/yt-dlp' : 'yt-dlp');
-            $ffmpegBin = file_exists($binDir . '/ffmpeg.exe') 
-                ? $binDir . '/ffmpeg.exe' 
-                : (file_exists($binDir . '/ffmpeg') ? $binDir . '/ffmpeg' : 'ffmpeg');
+
+            // Resolve ffmpeg location
+            $ffmpegLocation = null;
+            if (file_exists($binDir . '/ffmpeg.exe')) {
+                $ffmpegLocation = $binDir . '/ffmpeg.exe';
+            } elseif (file_exists($binDir . '/ffmpeg')) {
+                $ffmpegLocation = $binDir . '/ffmpeg';
+            } elseif (file_exists('/usr/bin/ffmpeg')) {
+                $ffmpegLocation = '/usr/bin/ffmpeg';
+            } elseif (file_exists('/usr/local/bin/ffmpeg')) {
+                $ffmpegLocation = '/usr/local/bin/ffmpeg';
+            }
+
+            // Resolve JS runtime (node/deno) path for YouTube JS challenge solving
+            $jsRuntimeSpec = 'node';
+            if (file_exists('/usr/bin/node')) {
+                $jsRuntimeSpec = 'node:/usr/bin/node';
+            } elseif (file_exists('/usr/local/bin/node')) {
+                $jsRuntimeSpec = 'node:/usr/local/bin/node';
+            } elseif (file_exists('/usr/bin/deno')) {
+                $jsRuntimeSpec = 'deno:/usr/bin/deno';
+            }
 
             // yt-dlp command using Direct Stream Copy (--download-sections)
             // --force-keyframes-at-cuts ensures accurate segment length without dropping frames
             // --hls-use-mpegts prevents active live streams from hanging in .part files
-            // --js-runtimes node uses Node.js engine for YouTube JS challenge solving
             $command = [
                 $ytDlpBin,
                 '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-                '--js-runtimes', 'node',
+                '--js-runtimes', $jsRuntimeSpec,
+                '--extractor-args', 'youtube:player_client=mweb,web,android',
                 '--download-sections', $sectionSpec,
                 '-f', 'bv*[height<=1080]+ba/b[height<=1080]/best',
                 '--merge-output-format', 'mp4',
@@ -71,9 +90,9 @@ class ProcessVideoClipJob implements ShouldQueue
                 '--fragment-retries', '10',
             ];
 
-            if ($ffmpegBin) {
+            if ($ffmpegLocation) {
                 $command[] = '--ffmpeg-location';
-                $command[] = $ffmpegBin;
+                $command[] = $ffmpegLocation;
             }
 
             $command[] = '-o';
