@@ -269,57 +269,85 @@ sudo systemctl reload nginx
 
 ---
 
-## Langkah 8: Mengaktifkan Scheduler / Cron Job (PENTING untuk Sync Stream)
+## Langkah 8: Mengaktifkan Scheduler, Queue Worker, & Cron Job
 
-Agar server mengecek status live YouTube streamer/polisi di latar belakang tanpa memberatkan pengunjung web:
-
-1. Buka konfigurasi crontab:
+### 8.1. Konfigurasi Cron Job System & Pembersihan Otomatis
+1. Masukkan perintah otomatis 1-baris ini di terminal SSH VPS Anda:
    ```bash
-   sudo crontab -e
+   (sudo crontab -l 2>/dev/null; echo "* * * * * cd /var/www/ime-police-multiview && php artisan schedule:run >> /dev/null 2>&1"; echo "0 3 * * 0 /usr/local/bin/yt-dlp -U >/dev/null 2>&1"; echo "0 4 * * * find /var/www/ime-police-multiview/storage/app/public/clips -type f -name '*.mp4' -mtime +3 -delete") | sudo crontab -
    ```
-   *(Jika pertama kali, pilih nomor 1 untuk editor nano).*
-
-2. Tambahkan baris ini di bagian paling bawah:
+2. Pastikan terpasang dengan perintah:
    ```bash
-   * * * * * cd /var/www/ime-police-multiview && php artisan schedule:run >> /dev/null 2>&1
+   sudo crontab -l
    ```
-3. Simpan dan keluar (`CTRL + O`, `Enter`, `CTRL + X`).
-
-Sekarang, Laravel Scheduler akan otomatis menjalankan background sync setiap 3–5 menit sesuai pengaturan di `routes/console.php`.
+   * *Penjelasan*: Cron job ini menjalankan Laravel Schedule setiap menit, meng-update `yt-dlp` setiap Minggu jam 03.00, dan menghapus file klip MP4 berusia >3 hari setiap jam 04.00.
 
 ---
 
-## Cheatsheet Perawatan & Update Kode di Masa Depan
+### 8.2. Konfigurasi Supervisor Queue Worker (PENTING untuk Trimmer Video)
+1. Install paket Supervisor:
+   ```bash
+   sudo apt update && sudo apt install -y supervisor
+   sudo systemctl enable supervisor
+   sudo systemctl start supervisor
+   ```
+2. Buat file konfigurasi worker:
+   ```bash
+   sudo nano /etc/supervisor/conf.d/police-clipper-worker.conf
+   ```
+   Isikan:
+   ```ini
+   [program:police-clipper-worker]
+   process_name=%(program_name)s_%(process_num)02d
+   command=php /var/www/ime-police-multiview/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+   autostart=true
+   autorestart=true
+   user=www-data
+   numprocs=2
+   redirect_stderr=true
+   stdout_logfile=/var/www/ime-police-multiview/storage/logs/clipper_worker.log
+   ```
+3. Aktifkan worker:
+   ```bash
+   sudo supervisorctl reread
+   sudo supervisorctl update
+   sudo supervisorctl start police-clipper-worker:*
+   sudo supervisorctl status
+   ```
 
-Jika di kemudian hari Anda melakukan perubahan kode di laptop dan ingin mengupdate server:
+---
 
+## 🚀 Cheatsheet Perawatan & Update Kode di Masa Depan (Permission-Safe)
+
+Jika Anda telah melakukan push kode di laptop dan ingin memperbarui server production VPS tanpa pernah terkena error *Permission Denied*:
+
+### Perintah 1-Baris Update Cepat di VPS:
 ```bash
-cd /var/www/ime-police-multiview
-
-# 1. Tarik kode terbaru dari Git
-git pull origin main
-
-# 2. Update dependensi jika ada perubahan
-composer install --optimize-autoloader --no-dev
-npm install
-npm run build
-
-# 3. Jalankan migrasi jika ada tabel baru
-php artisan migrate --force
-
-# 4. Refresh Cache Laravel
-php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+cd /var/www/ime-police-multiview && \
+git pull origin main && \
+npm install && \
+npm run build && \
+sudo chown -R www-data:www-data storage bootstrap/cache && \
+sudo chmod -R 775 storage bootstrap/cache && \
+sudo -u www-data php artisan migrate --force && \
+sudo -u www-data php artisan optimize:clear && \
+sudo -u www-data php artisan config:cache && \
+sudo -u www-data php artisan route:cache && \
+sudo -u www-data php artisan view:cache
 ```
 
-### Melihat Log Error Jika Ada Masalah:
+### Memeriksa Status Layanan Server:
 ```bash
-# Log Laravel
+# Status Supervisor Worker (Queue Pemotong Video)
+sudo supervisorctl status
+
+# Restart Supervisor Worker Jika Ada Update Kode Backend
+sudo supervisorctl restart police-clipper-worker:*
+
+# Log Error Laravel
 tail -f /var/www/ime-police-multiview/storage/logs/laravel.log
 
-# Log Nginx
+# Log Error Nginx
 tail -f /var/log/nginx/error.log
 ```
 
