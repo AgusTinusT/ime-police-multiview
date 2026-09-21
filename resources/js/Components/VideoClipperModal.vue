@@ -230,7 +230,7 @@
                                 </video>
                                 <div class="flex justify-end">
                                     <a 
-                                        :href="clip.download_url" 
+                                        :href="clip.direct_download_url || clip.download_url" 
                                         download 
                                         target="_blank"
                                         class="py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow"

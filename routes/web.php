@@ -97,6 +97,7 @@ Route::middleware('auth')->prefix('api/v1/user/watchlist')->group(function () {
 Route::middleware(['auth', 'can_trim'])->prefix('api/v1/clips')->group(function () {
     Route::get('/', [VideoClipController::class, 'index']);
     Route::post('/trim', [VideoClipController::class, 'store']);
+    Route::get('/{id}/download', [VideoClipController::class, 'download'])->name('clips.download');
     Route::delete('/{id}', [VideoClipController::class, 'destroy']);
 });
 

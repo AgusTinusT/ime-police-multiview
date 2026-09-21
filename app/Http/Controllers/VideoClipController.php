@@ -29,6 +29,9 @@ class VideoClipController extends Controller
             $clipArray['download_url'] = $clip->file_path && $clip->status === 'completed'
                 ? asset('storage/' . $clip->file_path)
                 : null;
+            $clipArray['direct_download_url'] = $clip->file_path && $clip->status === 'completed'
+                ? url('/api/v1/clips/' . $clip->id . '/download')
+                : null;
             return $clipArray;
         });
 
@@ -84,8 +87,8 @@ class VideoClipController extends Controller
             'status' => 'pending',
         ]);
 
-        // Dispatch processing job (Sync execution for instant clip generation)
-        ProcessVideoClipJob::dispatchSync($clip);
+        // Dispatch processing job asynchronously to Supervisor Queue Worker
+        ProcessVideoClipJob::dispatch($clip);
 
         return response()->json([
             'message' => 'Proses pemotongan video telah dimasukkan ke dalam antrean.',
@@ -111,6 +114,30 @@ class VideoClipController extends Controller
         $clip->delete();
 
         return response()->json(['message' => 'Klip video berhasil dihapus.']);
+    }
+
+    /**
+     * Force download the video clip file.
+     */
+    public function download(Request $request, $id)
+    {
+        $clip = VideoClip::findOrFail($id);
+
+        if (!$request->user()->isAdmin() && $clip->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Tidak memiliki izin untuk mengunduh klip ini.'], 403);
+        }
+
+        if (!$clip->file_path || !Storage::disk('public')->exists($clip->file_path)) {
+            return response()->json(['message' => 'File video tidak ditemukan.'], 404);
+        }
+
+        $absolutePath = Storage::disk('public')->path($clip->file_path);
+        $downloadFileName = \Illuminate\Support\Str::slug($clip->title) . '.mp4';
+
+        return response()->download($absolutePath, $downloadFileName, [
+            'Content-Type' => 'video/mp4',
+            'Accept-Ranges' => 'bytes',
+        ]);
     }
 
     /**
