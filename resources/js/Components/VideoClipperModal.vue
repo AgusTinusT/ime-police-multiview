@@ -218,6 +218,9 @@
                             <div v-if="clip.status === 'failed' && clip.error_message" class="text-[11px] p-2.5 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400 font-mono">
                                 {{ clip.error_message }}
                             </div>
+                            <div v-else-if="clip.status === 'completed' && !clip.download_url" class="text-[11px] p-2.5 rounded-lg bg-amber-950/40 border border-amber-900/50 text-amber-400 font-mono">
+                                File video tidak ditemukan di server. Silakan hapus klip ini dan buat klip baru.
+                            </div>
 
                             <!-- Video Preview & Download -->
                             <div v-if="clip.status === 'completed' && clip.download_url" class="space-y-2 mt-1">

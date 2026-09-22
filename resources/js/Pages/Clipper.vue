@@ -362,12 +362,15 @@
                             </div>
                         </div>
 
-                        <!-- Error Banner if failed -->
+                        <!-- Error Banner if failed or missing -->
                         <div v-if="clip.status === 'failed' && clip.error_message" class="text-[10px] p-2 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400 font-mono break-words">
                             {{ clip.error_message }}
                         </div>
+                        <div v-else-if="clip.status === 'completed' && !clip.download_url" class="text-[10px] p-2 rounded-lg bg-amber-950/40 border border-amber-900/50 text-amber-400 font-mono">
+                            File video tidak ditemukan di server. Silakan hapus item ini dan coba potong ulang.
+                        </div>
 
-                        <!-- HTML5 Video Player Preview (if completed) -->
+                        <!-- HTML5 Video Player Preview (if completed & available) -->
                         <div v-if="clip.status === 'completed' && clip.download_url" class="space-y-2">
                             <video controls class="w-full max-h-48 rounded-lg bg-black border border-slate-800">
                                 <source :src="clip.download_url" type="video/mp4">

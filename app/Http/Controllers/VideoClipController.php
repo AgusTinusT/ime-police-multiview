@@ -37,10 +37,12 @@ class VideoClipController extends Controller
 
         $clips = $query->paginate(15)->through(function ($clip) {
             $clipArray = $clip->toArray();
-            $clipArray['download_url'] = $clip->file_path && $clip->status === 'completed'
+            $fileExists = $clip->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($clip->file_path);
+            $clipArray['file_exists'] = $fileExists;
+            $clipArray['download_url'] = $fileExists && $clip->status === 'completed'
                 ? asset('storage/' . $clip->file_path)
                 : null;
-            $clipArray['direct_download_url'] = $clip->file_path && $clip->status === 'completed'
+            $clipArray['direct_download_url'] = $fileExists && $clip->status === 'completed'
                 ? url('/api/v1/clips/' . $clip->id . '/download')
                 : null;
             return $clipArray;
