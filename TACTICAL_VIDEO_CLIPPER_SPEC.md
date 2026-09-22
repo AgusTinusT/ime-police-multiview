@@ -22,14 +22,14 @@ Fitur ini dirancang khusus untuk penggunaan internal perwira & dispatcher teroto
 
 ### B. Titik Akses UI (Entry Points)
 
-1. **User Account Dropdown Menu** ([`UserAccountMenu.vue`](file:///c:/Development/laragon/www/ime-police-multiview/resources/js/Components/UserAccountMenu.vue)):
-   Menu **`✂️ Tactical Video Trimmer`** di dalam popover avatar profil kanan atas.
-2. **Main Header Navigation Bar** ([`PoliceDashboard.vue`](file:///c:/Development/laragon/www/ime-police-multiview/resources/js/Pages/PoliceDashboard.vue)):
-   Tombol merah **`Potong Stream`** di baris atas header navigasi utama.
-3. **Card Stream Control** ([`Dashboard.vue`](file:///c:/Development/laragon/www/ime-police-multiview/resources/js/Pages/Dashboard.vue)):
-   Ikon gunting pada setiap kartu CCTV stream aktif untuk mengambil URL stream secara instan (1-Click).
-4. **Global Event Bus**:
-   Pemicu custom event JavaScript `window.dispatchEvent(new CustomEvent('open-clipper-modal', { detail: { url } }))`.
+1. **Dedicated Workspace Page (`/clipper`)** ([`Clipper.vue`](file:///c:/Development/laragon/www/ime-police-multiview/resources/js/Pages/Clipper.vue)):
+   Halaman dedicated studio pemotong video taktis lengkap dengan pemutar preview YouTube interaktif, tombol penarik timestamp otomatis (`Set Waktu Mulai` & `Set Waktu Selesai`), kendali seek, serta perpustakaan klip.
+2. **User Account Dropdown Menu** ([`UserAccountMenu.vue`](file:///c:/Development/laragon/www/ime-police-multiview/resources/js/Components/UserAccountMenu.vue)):
+   Tautan **`✂️ Tactical Video Trimmer`** mengarahkan langsung ke halaman `/clipper`.
+3. **Main Header Navigation Bar** ([`TacticalLayout.vue`](file:///c:/Development/laragon/www/ime-police-multiview/resources/js/Layouts/TacticalLayout.vue)):
+   Tautan navigasi atas **`✂️ Tactical Clipper`** yang aktif untuk role admin/clipper.
+4. **Global Modal & Card Stream Control** ([`VideoClipperModal.vue`](file:///c:/Development/laragon/www/ime-police-multiview/resources/js/Components/VideoClipperModal.vue)):
+   Ikon gunting pada kartu CCTV stream untuk pemotongan cepat via modal overlay atau pengalihan rute.
 
 ---
 
@@ -40,13 +40,14 @@ Fitur ini dirancang khusus untuk penggunaan internal perwira & dispatcher teroto
 | **Database Migration**       | [`2026_09_19_000001_create_video_clips_table.php`](file:///c:/Development/laragon/www/ime-police-multiview/database/migrations/2026_09_19_000001_create_video_clips_table.php) | Membuat skema tabel `video_clips` (`youtube_url`, `start_time`, `end_time`, `duration_seconds`, `file_path`, `status`, `error_message`).                                 |
 | **Eloquent Model**           | [`app/Models/VideoClip.php`](file:///c:/Development/laragon/www/ime-police-multiview/app/Models/VideoClip.php)                                                                 | Model data klip dan relasi `belongsTo(User::class)`.                                                                                                                     |
 | **User Model**               | [`app/Models/User.php`](file:///c:/Development/laragon/www/ime-police-multiview/app/Models/User.php)                                                                           | Menambahkan method `canTrimVideo()` dan relasi `hasMany(VideoClip::class)`.                                                                                              |
-| **Middleware Auth**          | [`app/Http/Middleware/CanTrimVideoMiddleware.php`](file:///c:/Development/laragon/www/ime-police-multiview/app/Http/Middleware/CanTrimVideoMiddleware.php)                     | Proteksi endpoint API pemotong video dari user biasa / guest.                                                                                                            |
+| **Middleware Auth**          | [`app/Http/Middleware/CanTrimVideoMiddleware.php`](file:///c:/Development/laragon/www/ime-police-multiview/app/Http/Middleware/CanTrimVideoMiddleware.php)                     | Proteksi endpoint API dan halaman pemotong video dari user biasa / guest.                                                                                                |
 | **Inertia Middleware**       | [`app/Http/Middleware/HandleInertiaRequests.php`](file:///c:/Development/laragon/www/ime-police-multiview/app/Http/Middleware/HandleInertiaRequests.php)                       | Membagikan status `can_trim_video` ke shared props Inertia `$page.props.auth.user`.                                                                                      |
 | **App Bootstrap**            | [`bootstrap/app.php`](file:///c:/Development/laragon/www/ime-police-multiview/bootstrap/app.php)                                                                               | Mendaftarkan alias middleware `'can_trim'`.                                                                                                                              |
-| **Controller API**           | [`app/Http/Controllers/VideoClipController.php`](file:///c:/Development/laragon/www/ime-police-multiview/app/Http/Controllers/VideoClipController.php)                         | Validasi timestamp, pembatasan max 10 menit (600s), pembersihan URL YouTube, pemicuan Job asinkron, dan manajemen hapus/list/download.                                   |
+| **Controller**               | [`app/Http/Controllers/VideoClipController.php`](file:///c:/Development/laragon/www/ime-police-multiview/app/Http/Controllers/VideoClipController.php)                         | Rendering halaman `/clipper`, validasi timestamp, pembatasan max 10 menit (600s), pembersihan URL YouTube, pemicuan Job asinkron, dan manajemen hapus/list/download.    |
 | **Queue Job Engine**         | [`app/Jobs/ProcessVideoClipJob.php`](file:///c:/Development/laragon/www/ime-police-multiview/app/Jobs/ProcessVideoClipJob.php)                                                 | Eksekusi otomatis `yt-dlp` `--download-sections` dengan `--force-keyframes-at-cuts`, `--force-ipv4`, `Deno JS Engine`, `cookies.txt`, dan FFmpeg `--postprocessor-args`. |
-| **Routes**                   | [`routes/web.php`](file:///c:/Development/laragon/www/ime-police-multiview/routes/web.php)                                                                                     | Mendaftarkan endpoint `/api/v1/clips` (GET, POST, DELETE, GET /{id}/download).                                                                                           |
-| **Frontend Modal Component** | [`resources/js/Components/VideoClipperModal.vue`](file:///c:/Development/laragon/www/ime-police-multiview/resources/js/Components/VideoClipperModal.vue)                       | Komponen UI modal pemotong video, penanda durasi, histori klip, HTML5 video preview, auto-polling 5 detik, dan tombol download.                                          |
+| **Routes**                   | [`routes/web.php`](file:///c:/Development/laragon/www/ime-police-multiview/routes/web.php)                                                                                     | Mendaftarkan rute web `/clipper` dan endpoint API `/api/v1/clips` (GET, POST, DELETE, GET /{id}/download).                                                               |
+| **Dedicated Inertia Page**   | [`resources/js/Pages/Clipper.vue`](file:///c:/Development/laragon/www/ime-police-multiview/resources/js/Pages/Clipper.vue)                                                   | Halaman studio pemotong video dengan YouTube iFrame preview player interaktif, penarik timestamp otomatis, indikator durasi visual, dan perpustakaan klip.             |
+| **Frontend Modal Component** | [`resources/js/Components/VideoClipperModal.vue`](file:///c:/Development/laragon/www/ime-police-multiview/resources/js/Components/VideoClipperModal.vue)                       | Komponen UI modal pemotong video alternatif.                                                                                                                             |
 
 ---
 

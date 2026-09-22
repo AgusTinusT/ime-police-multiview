@@ -13,11 +13,8 @@
                     <div>
                         <h3 class="text-lg font-bold tracking-wide text-white flex items-center gap-2">
                             Tactical Stream Trimmer
-                            <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                -c copy (Direct Stream)
-                            </span>
                         </h3>
-                        <p class="text-xs text-slate-400">Potong segmen video YouTube tanpa re-encoding (Maks. 10 Menit)</p>
+                        <p class="text-xs text-slate-400">Potong segmen video YouTube (Maksimal 10 Menit)</p>
                     </div>
                 </div>
                 <button @click="closeModal" class="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition">
@@ -250,8 +247,8 @@
 
             <!-- Modal Footer -->
             <div class="border-t border-slate-800 bg-slate-900/70 px-6 py-3 flex items-center justify-between text-xs text-slate-400">
-                <span class="font-mono">Engine: yt-dlp + FFmpeg (-c copy)</span>
-                <span>Max Clip Duration: 10 Min</span>
+                <span class="font-sans font-medium">Tactical Stream Trimmer</span>
+                <span>Batas Maksimal: 10 Menit</span>
             </div>
         </div>
     </div>

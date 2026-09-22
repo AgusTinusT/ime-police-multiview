@@ -48,7 +48,6 @@ import iconShield from "@/Components/Icons/shield-svgrepo-com.svg";
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
-import VideoClipperModal from "@/Components/VideoClipperModal.vue";
 
 const props = defineProps({
     initialStreams: {
@@ -90,10 +89,8 @@ const searchFilter = ref("");
 const focusedStreamId = ref(null);
 const activeMobileNav = ref(null); // Mobile bottom sheet state ('TAC', 'MENU', or null)
 
-// Video Clipper Modal State
+// Dedicated Clipper Navigation
 const page = usePage();
-const isClipperModalOpen = ref(false);
-const clipperInitialUrl = ref("");
 
 const canTrimVideo = computed(() => {
     const user = page.props.auth?.user;
@@ -102,14 +99,15 @@ const canTrimVideo = computed(() => {
 });
 
 const openClipper = (url = "") => {
-    clipperInitialUrl.value = url;
-    isClipperModalOpen.value = true;
-    window.dispatchEvent(new CustomEvent("open-clipper-modal", { detail: { url } }));
+    if (url) {
+        router.visit(`/clipper?url=${encodeURIComponent(url)}`);
+    } else {
+        router.visit("/clipper");
+    }
 };
 
 const handleOpenClipperEvent = (e) => {
-    clipperInitialUrl.value = e?.detail?.url || "";
-    isClipperModalOpen.value = true;
+    openClipper(e?.detail?.url || "");
 };
 
 // Tactical Radio Channels (TAC 1 to TAC 10) State
@@ -3558,19 +3556,6 @@ const submitFeedbackForm = async () => {
                     <span class="hidden 2xl:inline">{{
                         isFullscreen ? "Exit" : "Fullscreen"
                     }}</span>
-                </button>
-
-                <!-- 4b. Tactical Stream Trimmer Button (Authorized Roles) -->
-                <button
-                    v-if="canTrimVideo"
-                    @click="openClipper()"
-                    class="h-8 px-3 py-1 text-xs font-bold rounded-lg border bg-red-950/80 hover:bg-red-900/90 text-red-300 border-red-500/50 shadow-md transition flex items-center gap-1.5 shrink-0"
-                    title="Tactical Stream Trimmer (Direct Copy)"
-                >
-                    <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L5 5m4.121 4.121L5 19" />
-                    </svg>
-                    <span>Potong Stream</span>
                 </button>
 
                 <!-- 5. User Account Sign In / Profile / Logout (YouTube-Style Dropdown) -->
@@ -10912,13 +10897,6 @@ const submitFeedbackForm = async () => {
 
         <!-- Tactical Footer -->
         <TacticalFooter />
-
-        <!-- Global Video Clipper Modal -->
-        <VideoClipperModal
-            :show="isClipperModalOpen"
-            :initialUrl="clipperInitialUrl"
-            @close="isClipperModalOpen = false"
-        />
 
         <!-- Floating Tactical Community Chat -->
         <TacticalChatDrawer />

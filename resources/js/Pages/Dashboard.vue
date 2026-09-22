@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
-import VideoClipperModal from '../Components/VideoClipperModal.vue';
 
 const props = defineProps({
     initialStreams: {
@@ -32,14 +31,13 @@ const canTrimVideo = computed(() => {
     return !!user.can_trim_video || ['admin', 'clipper'].includes(user.role);
 });
 
-// Video Clipper Modal State
-const isClipperModalOpen = ref(false);
-const clipperInitialUrl = ref('');
-
+// Dedicated Clipper Navigation
 const openClipper = (url = '') => {
-    clipperInitialUrl.value = url;
-    isClipperModalOpen.value = true;
-    window.dispatchEvent(new CustomEvent('open-clipper-modal', { detail: { url } }));
+    if (url) {
+        router.visit(`/clipper?url=${encodeURIComponent(url)}`);
+    } else {
+        router.visit('/clipper');
+    }
 };
 
 // Dynamic Clock
@@ -755,13 +753,6 @@ onMounted(() => {
         <footer class="mt-auto border-t border-zinc-900 py-6 text-center text-xs text-zinc-500">
             <p>&copy; 2026 OPJ Multiview Platform. Premium Control Room Interface.</p>
         </footer>
-
-        <!-- Video Clipper Modal Component -->
-        <VideoClipperModal
-            :show="isClipperModalOpen"
-            :initialUrl="clipperInitialUrl"
-            @close="isClipperModalOpen = false"
-        />
 
     </div>
 </template>

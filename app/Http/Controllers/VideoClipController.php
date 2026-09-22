@@ -7,9 +7,20 @@ use App\Models\VideoClip;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class VideoClipController extends Controller
 {
+    /**
+     * Render the dedicated Tactical Video Clipper workspace page.
+     */
+    public function clipperPage(Request $request)
+    {
+        return Inertia::render('Clipper', [
+            'initialUrl' => $request->query('url', ''),
+        ]);
+    }
+
     /**
      * Get list of video clips.
      */
