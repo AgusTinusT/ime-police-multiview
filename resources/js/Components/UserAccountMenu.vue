@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { usePage, Link, router } from "@inertiajs/vue3";
 import iconLogout from "@/Components/Icons/leave-svgrepo-com.svg";
+import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
 
 const isOpen = ref(false);
 const dropdownRef = ref(null);
@@ -159,8 +160,13 @@ onUnmounted(() => {
                             "
                             href="/clipper"
                             @click="isOpen = false"
-                            class="flex items-center px-4 py-2.5 text-slate-200 hover:bg-slate-800/70 hover:text-white transition gap-2.5 font-semibold"
+                            class="flex items-center px-4 py-2.5 text-slate-200 hover:bg-slate-800/70 hover:text-white transition gap-2.5 font-semibold group"
                         >
+                            <img
+                                :src="iconCut"
+                                class="w-4 h-4 invert opacity-80 group-hover:opacity-100 group-hover:scale-110 transition shrink-0"
+                                alt="Tactical Video Trimmer"
+                            />
                             <div class="flex flex-col">
                                 <span>Tactical Video Trimmer</span>
                                 <span

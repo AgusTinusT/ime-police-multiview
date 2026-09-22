@@ -89,13 +89,12 @@ class ProcessVideoClipJob implements ShouldQueue
                 '--js-runtimes', $jsRuntimeSpec,
                 '--extractor-args', 'youtube:player_client=tv_embedded,android_embedded',
                 '--download-sections', $sectionSpec,
-                '-f', 'bv*[height<=1080]+ba/b[height<=1080]/bv*+ba/best',
+                '-f', 'bv*[vcodec^=avc1][height<=1080]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=1080]+ba/b[height<=1080]/best',
                 '--merge-output-format', 'mp4',
-                '--force-keyframes-at-cuts',
                 '--hls-use-mpegts',
                 '--concurrent-fragments', '8',
                 '--fragment-retries', '10',
-                '--postprocessor-args', 'ffmpeg:-movflags +faststart -avoid_negative_ts make_zero',
+                '--postprocessor-args', 'ffmpeg:-c:v copy -c:a copy -movflags +faststart -avoid_negative_ts make_zero',
             ];
 
             if ($ffmpegLocation) {
