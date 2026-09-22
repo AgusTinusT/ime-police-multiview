@@ -283,7 +283,7 @@
 
             <!-- BOTTOM SECTION: DAFTAR KLIP SAYA (CLIPS LIBRARY) -->
             <div class="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl p-6 space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 gap-3">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30 p-1.5">
                             <img :src="iconCloud" class="w-full h-full object-contain filter invert opacity-90" alt="" />
@@ -299,13 +299,23 @@
                         </div>
                     </div>
 
-                    <button 
-                        @click="fetchClips"
-                        class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1.5"
-                    >
-                        <img :src="iconRefresh" class="w-3.5 h-3.5 invert opacity-80" :class="isLoadingClips ? 'animate-spin' : ''" alt="" />
-                        <span>Refresh List</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button 
+                            @click="fetchClips"
+                            class="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1.5"
+                        >
+                            <img :src="iconRefresh" class="w-3.5 h-3.5 invert opacity-80" :class="isLoadingClips ? 'animate-spin' : ''" alt="" />
+                            <span>Refresh List</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Info Notice: 1-Hour Auto Delete -->
+                <div class="p-3 rounded-xl bg-amber-950/30 border border-amber-900/40 text-xs text-amber-300/90 flex items-center gap-2.5">
+                    <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span><strong>Info Penyimpanan:</strong> File klip video akan <strong>dihapus secara otomatis oleh sistem 1 jam setelah dibuat</strong> untuk menghemat kapasitas server. Silakan langsung unduh file Anda.</span>
                 </div>
 
                 <!-- Loading State -->
@@ -355,10 +365,15 @@
                                 {{ clip.youtube_url }}
                             </p>
 
-                            <div class="flex items-center gap-2 text-[11px] text-slate-400 font-mono pt-1">
-                                <span>Durasi: {{ formatSeconds(clip.duration_seconds) }}</span>
-                                <span>•</span>
-                                <span>{{ new Date(clip.created_at).toLocaleDateString('id-ID') }}</span>
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1">
+                                <div class="flex items-center gap-2">
+                                    <span>Durasi: {{ formatSeconds(clip.duration_seconds) }}</span>
+                                    <span>•</span>
+                                    <span>{{ new Date(clip.created_at).toLocaleDateString('id-ID') }}</span>
+                                </div>
+                                <span v-if="clip.status === 'completed'" class="text-[10px] text-amber-400 font-sans flex items-center gap-1 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20" title="File ini akan dihapus otomatis 1 jam setelah dibuat">
+                                    ⏱️ Hapus dlm 1 jam
+                                </span>
                             </div>
                         </div>
 
@@ -391,9 +406,8 @@
 
                             <a 
                                 v-if="clip.status === 'completed' && clip.download_url"
-                                :href="clip.direct_download_url || clip.download_url" 
+                                :href="clip.download_url" 
                                 download 
-                                target="_blank"
                                 class="py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow"
                             >
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -94,7 +94,7 @@ class ProcessVideoClipJob implements ShouldQueue
                 '--hls-use-mpegts',
                 '--concurrent-fragments', '8',
                 '--fragment-retries', '10',
-                '--postprocessor-args', 'ffmpeg:-c:v copy -c:a copy -movflags +faststart -avoid_negative_ts make_zero',
+                '--postprocessor-args', 'ffmpeg:-c copy -movflags +faststart',
             ];
 
             if ($ffmpegLocation) {

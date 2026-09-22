@@ -228,11 +228,13 @@
                                     <source :src="clip.download_url" type="video/mp4">
                                     Browser Anda tidak mendukung HTML5 Video.
                                 </video>
-                                <div class="flex justify-end">
+                                <div class="flex items-center justify-between pt-1">
+                                    <span class="text-[10px] text-amber-400 font-mono flex items-center gap-1">
+                                        ⏱️ Otomatis dihapus dlm 1 jam
+                                    </span>
                                     <a 
-                                        :href="clip.direct_download_url || clip.download_url" 
+                                        :href="clip.download_url" 
                                         download 
-                                        target="_blank"
                                         class="py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow"
                                     >
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
