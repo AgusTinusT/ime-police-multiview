@@ -97,14 +97,8 @@ class PoliceCommandController extends Controller
                 ];
             });
 
-        // 3. Get Recent Offline Patrol Videos / VODs for Cinema Hub (Cached 5 minutes for instant response)
-        $unmatchedOfficers = Officer::where('is_active', true)
-            ->whereNotIn('channel_id', $liveChannelIds)
-            ->get();
-        $scraper = app(\App\Services\YouTubeScraperService::class);
-        $recentReplays = Cache::remember('cinema_hub_replays_cache', 300, function () use ($unmatchedOfficers, $scraper) {
-            return $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 100);
-        });
+        // 3. Get Recent Offline Patrol Videos / VODs for Cinema Hub (Served instantly from background cache)
+        $recentReplays = Cache::get('cinema_hub_replays_cache', []);
 
         // 4. Department Unit Breakdown Stats
         $deptStats = [
@@ -148,8 +142,6 @@ class PoliceCommandController extends Controller
      */
     public function apiStreams(Request $request)
     {
-        $this->syncStreamsIfNeeded();
-
         $host = $request->getHost();
 
         // 1. Online 10-8 Live Streams with Officer info (Deduplicated strictly by video_id)
@@ -229,12 +221,8 @@ class PoliceCommandController extends Controller
                 ];
             });
 
-        // 3. Offline Officer VODs / Patrol Replays
-        $unmatchedOfficers = Officer::where('is_active', true)
-            ->whereNotIn('channel_id', $liveChannelIds)
-            ->get();
-        $scraper = app(\App\Services\YouTubeScraperService::class);
-        $recentReplays = $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 100);
+        // 3. Offline Officer VODs / Patrol Replays (Served instantly from background cache)
+        $recentReplays = Cache::get('cinema_hub_replays_cache', []);
 
         // 4. Department Unit Breakdown Stats
         $deptStats = [

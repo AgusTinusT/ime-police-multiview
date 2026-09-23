@@ -8,6 +8,9 @@ use App\Models\Officer;
 use App\Models\ActiveStream;
 use App\Services\YouTubeScraperService;
 
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+
 class SyncOfficerStreamsJob implements ShouldQueue
 {
     use Queueable;
@@ -92,5 +95,22 @@ class SyncOfficerStreamsJob implements ShouldQueue
         ActiveStream::where('status', 'ENDED')
             ->where('last_synced_at', '<', now()->subDays(3))
             ->delete();
+
+        // Warm up Cinema Hub replays cache in the background
+        try {
+            $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->toArray();
+            $unmatchedOfficers = Officer::where('is_active', true)
+                ->whereNotIn('channel_id', $liveChannelIds)
+                ->get();
+
+            if ($unmatchedOfficers->isNotEmpty()) {
+                $recentReplays = $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 100);
+                if (!empty($recentReplays)) {
+                    Cache::put('cinema_hub_replays_cache', $recentReplays, 1800);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Cinema Hub background cache warmup failed: ' . $e->getMessage());
+        }
     }
 }
