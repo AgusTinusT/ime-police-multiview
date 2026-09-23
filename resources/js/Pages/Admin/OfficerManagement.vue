@@ -1797,6 +1797,7 @@ onMounted(() => {
                             <a :href="`https://youtube.com/watch?v=${item.video_id}`" target="_blank" class="px-2 py-1 bg-red-950 text-red-300 border border-red-800/40 rounded text-[11px] font-mono hover:bg-red-900 transition">
                                 YouTube ↗
                             </a>
+                        </div>
                     </div>
 
                     <div class="pt-2 text-right border-t border-slate-800">
