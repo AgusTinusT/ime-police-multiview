@@ -787,6 +787,82 @@ const usersList = ref([]);
 const isLoadingUsers = ref(false);
 const userSearchQuery = ref('');
 const selectedUserWatchlistModal = ref(null);
+const showUserModal = ref(false);
+const isEditUser = ref(false);
+const isSavingUser = ref(false);
+
+const userForm = ref({
+    id: null,
+    name: '',
+    email: '',
+    password: '',
+    role: 'member',
+});
+
+const openAddUserModal = () => {
+    isEditUser.value = false;
+    userForm.value = {
+        id: null,
+        name: '',
+        email: '',
+        password: '',
+        role: 'member',
+    };
+    showUserModal.value = true;
+};
+
+const openEditUserModal = (user) => {
+    isEditUser.value = true;
+    userForm.value = {
+        id: user.id,
+        name: user.name || '',
+        email: user.email || '',
+        password: '',
+        role: user.role || 'member',
+    };
+    showUserModal.value = true;
+};
+
+const saveUser = async () => {
+    if (!userForm.value.name.trim() || !userForm.value.email.trim()) {
+        showToast('Nama dan Email wajib diisi!', 'error');
+        return;
+    }
+    if (!isEditUser.value && !userForm.value.password.trim()) {
+        showToast('Password wajib diisi untuk akun baru!', 'error');
+        return;
+    }
+
+    isSavingUser.value = true;
+    const isEdit = isEditUser.value;
+    const url = isEdit ? `/api/v1/admin/users/${userForm.value.id}` : '/api/v1/admin/users';
+    const method = isEdit ? 'PUT' : 'POST';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify(userForm.value),
+        });
+        const json = await res.json();
+        if (res.ok && json.status === 'success') {
+            showToast(json.message, 'success');
+            showUserModal.value = false;
+            fetchUsers();
+        } else {
+            showToast(json.message || 'Gagal menyimpan data akun member.', 'error');
+        }
+    } catch (e) {
+        showToast('Request failed: ' + e.message, 'error');
+    } finally {
+        isSavingUser.value = false;
+    }
+};
 
 const fetchUsers = async () => {
     isLoadingUsers.value = true;
@@ -1334,13 +1410,16 @@ onMounted(() => {
 
             <!-- TAB 5: MEMBER ACCOUNTS -->
             <div v-if="activeTab === 'users'" class="space-y-6 font-mono text-xs">
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex items-center justify-between">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                     <div>
                         <h2 class="text-sm font-bold text-white uppercase">Daftar Akun Member Terdaftar</h2>
-                        <p class="text-slate-400 text-[11px] mt-0.5">Kelola akun pengunjung yang terdaftar di platform IME Police Multiview.</p>
+                        <p class="text-slate-400 text-[11px] mt-0.5">Kelola akun pengunjung & hak akses role di platform IME Police Multiview.</p>
                     </div>
-                    <div class="w-64">
-                        <input v-model="userSearchQuery" type="text" placeholder="Cari nama / email..." class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-1.5 text-xs" />
+                    <div class="flex items-center gap-2">
+                        <input v-model="userSearchQuery" type="text" placeholder="Cari nama / email..." class="w-64 bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-1.5 text-xs" />
+                        <button @click="openAddUserModal" class="px-3.5 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow shrink-0 hover:from-cyan-500 hover:to-blue-500">
+                            + Tambah Member
+                        </button>
                     </div>
                 </div>
 
@@ -1350,7 +1429,7 @@ onMounted(() => {
                             <tr class="bg-slate-950 text-slate-400 text-[11px] uppercase border-b border-slate-800">
                                 <th class="p-3.5">Nama Member</th>
                                 <th class="p-3.5">Email</th>
-                                <th class="p-3.5">Role</th>
+                                <th class="p-3.5">Role Access</th>
                                 <th class="p-3.5">Watchlist</th>
                                 <th class="p-3.5 text-right">Aksi</th>
                             </tr>
@@ -1360,8 +1439,12 @@ onMounted(() => {
                                 <td class="p-3.5 font-bold text-white">{{ u.name }}</td>
                                 <td class="p-3.5 text-slate-300">{{ u.email }}</td>
                                 <td class="p-3.5">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase" :class="u.role === 'admin' ? 'bg-purple-950 text-purple-300 border border-purple-700/60' : 'bg-slate-800 text-slate-300'">
-                                        {{ u.role || 'user' }}
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase" :class="{
+                                        'bg-purple-950 text-purple-300 border border-purple-700/60': u.role === 'admin',
+                                        'bg-cyan-950 text-cyan-300 border border-cyan-700/60': u.role === 'clipper',
+                                        'bg-slate-800 text-slate-300 border border-slate-700': u.role !== 'admin' && u.role !== 'clipper',
+                                    }">
+                                        {{ u.role || 'member' }}
                                     </span>
                                 </td>
                                 <td class="p-3.5">
@@ -1369,11 +1452,14 @@ onMounted(() => {
                                         ⭐ {{ u.watchlists_count || 0 }} Stream
                                     </button>
                                 </td>
-                                <td class="p-3.5 text-right">
+                                <td class="p-3.5 text-right space-x-1.5">
+                                    <button @click="openEditUserModal(u)" class="px-2 py-1 bg-slate-800 text-slate-200 border border-slate-700 rounded hover:bg-slate-700">
+                                        ✏️ Edit
+                                    </button>
                                     <button v-if="u.id !== auth.user?.id" @click="handleDeleteUser(u.id, u.name)" class="px-2 py-1 bg-red-950 text-red-400 border border-red-800/40 rounded hover:bg-red-900">
                                         Hapus
                                     </button>
-                                    <span v-else class="text-slate-500 italic">Aktif</span>
+                                    <span v-else class="text-slate-500 italic text-[11px]">Anda (Admin)</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -1711,12 +1797,53 @@ onMounted(() => {
                             <a :href="`https://youtube.com/watch?v=${item.video_id}`" target="_blank" class="px-2 py-1 bg-red-950 text-red-300 border border-red-800/40 rounded text-[11px] font-mono hover:bg-red-900 transition">
                                 YouTube ↗
                             </a>
-                        </div>
                     </div>
 
                     <div class="pt-2 text-right border-t border-slate-800">
                         <button @click="selectedUserWatchlistModal = null" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl text-slate-200 transition">
                             Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
+        <!-- MODAL: ADD / EDIT USER MEMBER -->
+        <Teleport to="body">
+            <div v-if="showUserModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 font-mono text-xs text-slate-100">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <h3 class="text-sm font-bold text-white uppercase">{{ isEditUser ? 'Edit Akun Member' : 'Tambah Akun Member Baru' }}</h3>
+                        <button @click="showUserModal = false" class="text-slate-400 hover:text-white">✕</button>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Nama Lengkap *</label>
+                            <input v-model="userForm.name" type="text" placeholder="Contoh: John Doe" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500" />
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Email Address *</label>
+                            <input v-model="userForm.email" type="email" placeholder="nama@email.com" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500" />
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">
+                                Password {{ isEditUser ? '(Opsional - Isi jika ingin ubah password)' : '*' }}
+                            </label>
+                            <input v-model="userForm.password" type="password" placeholder="Minimal 6 karakter" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500" />
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Role Akses Pengguna *</label>
+                            <select v-model="userForm.role" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500">
+                                <option value="member">Member (Pengunjung Umum - Watchlist Cloud)</option>
+                                <option value="clipper">Clipper (Editor - Akses Fitur Potong Video Clipper)</option>
+                                <option value="admin">Admin (Akses Penuh Command Center & Dashboard Dispatcher)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2">
+                        <button @click="showUserModal = false" class="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700">Batal</button>
+                        <button @click="saveUser" :disabled="isSavingUser" class="px-4 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow disabled:opacity-50 hover:from-cyan-500 hover:to-blue-500">
+                            {{ isSavingUser ? 'Menyimpan...' : (isEditUser ? 'Update Akun' : 'Simpan Akun Baru') }}
                         </button>
                     </div>
                 </div>

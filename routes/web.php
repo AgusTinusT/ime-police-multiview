@@ -154,6 +154,8 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/certifications')->group(fun
 use App\Http\Controllers\UserManagementController;
 Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/users')->group(function () {
     Route::get('/', [UserManagementController::class, 'index']);
+    Route::post('/', [UserManagementController::class, 'store']);
+    Route::put('/{id}', [UserManagementController::class, 'update']);
     Route::delete('/{id}', [UserManagementController::class, 'destroy']);
 });
 
