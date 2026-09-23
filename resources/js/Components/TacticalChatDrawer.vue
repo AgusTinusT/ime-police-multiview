@@ -238,7 +238,7 @@ onUnmounted(() => {
                 <span class="text-xs shrink-0">💡</span>
                 <div class="flex-1 min-w-0 leading-snug">
                     <span>Ruang chat terbuka untuk <strong>seluruh member & perwira</strong>. Untuk pengaduan/masukan resmi ke Dispatcher, silakan gunakan menu </span>
-                    <Link href="/feedback" class="text-sky-300 font-bold underline hover:text-white">Feedback & Reports</Link>.
+                    <Link href="/feedback" class="text-blue-300 font-bold underline hover:text-white">Feedback & Reports</Link>.
                 </div>
             </div>
 

@@ -33,6 +33,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user() ? array_merge($request->user()->toArray(), [
+                    'is_admin' => $request->user()->isAdmin(),
                     'can_trim_video' => $request->user()->canTrimVideo(),
                 ]) : null,
             ],

@@ -9,27 +9,33 @@ use Illuminate\Support\Facades\Log;
 class FeedbackController extends Controller
 {
     /**
-     * Submit visitor feedback / channel addition / data correction to Discord Webhook.
+     * Submit visitor feedback / channel addition / data correction / bug report to Discord Webhook.
      */
     public function submit(Request $request)
     {
         $validated = $request->validate([
             'type' => 'required|string|in:CHANNEL_REQUEST,DATA_CORRECTION,BUG_REPORT,OTHER',
+            'title' => 'nullable|string|max:200',
             'sender_name' => 'nullable|string|max:100',
+            'email' => 'nullable|string|max:100',
             'handle_or_url' => 'nullable|string|max:255',
+            'related_url' => 'nullable|string|max:255',
             'officer_name' => 'nullable|string|max:150',
             'callsign' => 'nullable|string|max:50',
             'department' => 'nullable|string|max:50',
-            'message' => 'required|string|max:1500',
+            'typo_wrong' => 'nullable|string|max:255',
+            'typo_correct' => 'nullable|string|max:255',
+            'image_url' => 'nullable|string|max:500',
+            'message' => 'required|string|max:2000',
         ]);
 
         $webhookUrl = config('services.discord.webhook_url');
 
         $typeLabels = [
-            'CHANNEL_REQUEST' => '➕ Usulan Channel / Streamer Baru',
-            'DATA_CORRECTION' => '✏️ Koreksi Data / Pangkat / Callsign',
-            'BUG_REPORT' => '🐞 Laporan Bug / Kendala Website',
-            'OTHER' => '💬 Masukan / Pertanyaan Lainnya',
+            'CHANNEL_REQUEST' => '💡 Usulan Fitur / Streamer Baru',
+            'DATA_CORRECTION' => '✏️ Typo / Koreksi Data Dokumen',
+            'BUG_REPORT' => '🐞 Laporan Bug / Error Sistem',
+            'OTHER' => '💬 Masukan / Pesan Umum',
         ];
 
         $typeColors = [
@@ -42,70 +48,90 @@ class FeedbackController extends Controller
         $typeLabel = $typeLabels[$validated['type']] ?? '💬 Masukan Pengunjung';
         $color = $typeColors[$validated['type']] ?? 3900150;
 
-        $sender = !empty($validated['sender_name']) ? $validated['sender_name'] : 'Warga / Pengunjung Anonim';
-        $handle = !empty($validated['handle_or_url']) ? $validated['handle_or_url'] : '-';
+        $sender = !empty($validated['sender_name']) ? $validated['sender_name'] : (!empty($validated['email']) ? $validated['email'] : 'Pengunjung Anonim');
+        $title = !empty($validated['title']) ? $validated['title'] : '-';
+        $handle = !empty($validated['handle_or_url']) ? $validated['handle_or_url'] : (!empty($validated['related_url']) ? $validated['related_url'] : '-');
         $officer = !empty($validated['officer_name']) ? $validated['officer_name'] : '-';
-        $callsign = !empty($validated['callsign']) ? $validated['callsign'] : '-';
         $department = !empty($validated['department']) ? $validated['department'] : 'LSPD';
 
         $fields = [
             [
-                'name' => '📂 Kategori',
+                'name' => '📂 Jenis Masukan',
                 'value' => $typeLabel,
                 'inline' => true,
             ],
             [
-                'name' => '👤 Pengirim',
-                'value' => $sender,
-                'inline' => true,
-            ],
-            [
-                'name' => '🛡️ Departemen',
-                'value' => $department,
+                'name' => '👤 Pengirim / Contact',
+                'value' => $sender . (!empty($validated['email']) && $sender !== $validated['email'] ? " ({$validated['email']})" : ''),
                 'inline' => true,
             ],
         ];
 
+        if ($title !== '-') {
+            $fields[] = [
+                'name' => '📌 Judul Laporan',
+                'value' => $title,
+                'inline' => false,
+            ];
+        }
+
+        if (!empty($validated['typo_wrong']) || !empty($validated['typo_correct'])) {
+            $wrong = $validated['typo_wrong'] ?? '-';
+            $correct = $validated['typo_correct'] ?? '-';
+            $fields[] = [
+                'name' => '🔍 Koreksi Teks',
+                'value' => "**Saat ini:** {$wrong}\n**Usulan:** {$correct}",
+                'inline' => false,
+            ];
+        }
+
         if ($handle !== '-') {
             $fields[] = [
-                'name' => '📺 Handle / Link YouTube',
+                'name' => '🔗 URL / Handle Terkait',
                 'value' => $handle,
                 'inline' => true,
             ];
         }
 
-        if ($officer !== '-' || $callsign !== '-') {
+        if ($officer !== '-') {
             $fields[] = [
-                'name' => '👮 Nama Karakter & Callsign',
-                'value' => "{$officer} ({$callsign})",
+                'name' => '👮 Officer / Department',
+                'value' => "{$officer} [{$department}]",
                 'inline' => true,
             ];
         }
 
         $fields[] = [
-            'name' => '📝 Pesan / Catatan Detail',
+            'name' => '📝 Deskripsi / Detail',
             'value' => $validated['message'],
             'inline' => false,
         ];
 
+        $embedData = [
+            'title' => "🚨 MASUKAN BARU: {$typeLabel}",
+            'description' => $title !== '-' ? "**{$title}**" : "Laporan baru dari pengguna dashboard:",
+            'color' => $color,
+            'fields' => $fields,
+            'footer' => [
+                'text' => 'Tactical Police Multiview System • ' . now()->format('d M Y H:i:s T'),
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        // Attach image to Discord Embed if provided
+        if (!empty($validated['image_url'])) {
+            $embedData['image'] = [
+                'url' => $validated['image_url']
+            ];
+        }
+
         $embedPayload = [
             'username' => 'IME Police Command Center',
             'avatar_url' => 'https://api.dicebear.com/7.x/bottts/svg?seed=DispatchBot',
-            'embeds' => [
-                [
-                    'title' => "🚨 MASUKAN BARU: {$typeLabel}",
-                    'description' => "Ada masukan/usulan baru dari pengunjung dashboard:",
-                    'color' => $color,
-                    'fields' => $fields,
-                    'footer' => [
-                        'text' => 'Tactical Police Multiview System • ' . now()->format('d M Y H:i:s T'),
-                    ],
-                    'timestamp' => now()->toIso8601String(),
-                ],
-            ],
+            'embeds' => [$embedData],
         ];
 
-        // If webhook is configured, send to Discord
+        // Send to Discord Webhook if configured
         if ($webhookUrl) {
             try {
                 $response = Http::timeout(6)->post($webhookUrl, $embedPayload);

@@ -61,7 +61,7 @@ import iconUrl from '@/Components/Icons/url-checker-svgrepo-com.svg';
                             </Link>
                         </li>
                         <li class="col-span-2">
-                            <Link href="/feedback" class="text-sky-400 hover:text-sky-300 transition flex items-center gap-1.5 py-1">
+                            <Link href="/feedback" class="text-blue-400 hover:text-blue-300 transition flex items-center gap-1.5 py-1">
                                 <img :src="iconFeedback" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                                 <span>Requests & Feedback</span>
                             </Link>

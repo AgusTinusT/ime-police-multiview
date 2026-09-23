@@ -19,7 +19,6 @@ import iconQuickAdd from "@/Components/Icons/button-plus-svgrepo-com.svg";
 import iconFullscreen from "@/Components/Icons/full-screen-svgrepo-com.svg";
 import iconExitFullscreen from "@/Components/Icons/minimize-svgrepo-com.svg";
 import iconFocus from "@/Components/Icons/focus-point-round-844-svgrepo-com.svg";
-import iconLogout from "@/Components/Icons/leave-svgrepo-com.svg";
 import iconSearch from "@/Components/Icons/search-svgrepo-com.svg";
 import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
 import iconPinPlus from "@/Components/Icons/star-line-svgrepo-com.svg";
@@ -27,8 +26,6 @@ import iconPinPlus from "@/Components/Icons/star-line-svgrepo-com.svg";
 // Refactored Sub-Components
 import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
 import TacChannelToolbar from "@/Components/TacChannelToolbar.vue";
-import QuickFeedDrawer from "@/Components/QuickFeedDrawer.vue";
-import StreamGridCard from "@/Components/StreamGridCard.vue";
 import iconPinMinus from "@/Components/Icons/star-svgrepo-com.svg";
 import iconEdit from "@/Components/Icons/edit-2-svgrepo-com.svg";
 import iconDelete from "@/Components/Icons/delete-2-svgrepo-com.svg";
@@ -1317,7 +1314,7 @@ const formatDescriptionWithLinks = (text) => {
     // Convert standard URLs (https://, http://) into clickable styled links
     const urlRegex = /(https?:\/\/[^\s<>"']+)/g;
     return safeText.replace(urlRegex, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:text-sky-300 underline font-medium break-all hover:text-white transition-colors">${url}</a>`;
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline font-medium break-all hover:text-white transition-colors">${url}</a>`;
     });
 };
 
@@ -3376,7 +3373,7 @@ const submitFeedbackForm = async () => {
 </script>
 
 <template>
-    <Head title="IME RP — SASP POLICE DUTY | Live Officer Bodycam & Dispatch" />
+    <Head title="IME RP — SASP Police Duty | Live Officer Bodycam & Dispatch" />
 
     <div
         class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased pb-20 md:pb-6"
@@ -3445,7 +3442,7 @@ const submitFeedbackForm = async () => {
 
                     <Link
                         href="/feedback"
-                        class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-sky-300 hover:bg-sky-950/40 transition shrink-0"
+                        class="px-2 py-1 lg:px-3 lg:py-1.5 text-xs font-medium rounded-lg text-slate-300 hover:text-blue-300 hover:bg-blue-950/40 transition shrink-0"
                         title="Channel Requests & System Feedback"
                     >
                         Feedback<span class="hidden xl:inline"> & Reports</span>
@@ -8480,7 +8477,7 @@ const submitFeedbackForm = async () => {
                                 <div class="flex flex-col gap-2 pt-1">
                                     <Link
                                         href="/feedback"
-                                        class="w-full py-2 px-3 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-sky-600/30 transition flex items-center justify-center gap-2"
+                                        class="w-full py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2"
                                     >
                                         <img
                                             :src="iconFeedback"
@@ -8571,7 +8568,7 @@ const submitFeedbackForm = async () => {
                                 activeRightDrawer === 'RADIO_CODES',
                             'bg-emerald-950/80 border-emerald-500/60 text-emerald-400':
                                 activeRightDrawer === 'QUICK_ADD',
-                            'bg-sky-950/80 border-sky-500/60 text-sky-400':
+                            'bg-blue-950/80 border-blue-500/60 text-blue-400':
                                 activeRightDrawer === 'FEEDBACK',
                             'bg-indigo-950/80 border-indigo-500/60 text-indigo-400':
                                 activeRightDrawer === 'ABOUT',
@@ -8627,7 +8624,7 @@ const submitFeedbackForm = async () => {
                                         activeRightDrawer === 'RADIO_CODES',
                                     'text-emerald-300':
                                         activeRightDrawer === 'QUICK_ADD',
-                                    'text-sky-300':
+                                    'text-blue-300':
                                         activeRightDrawer === 'FEEDBACK',
                                     'text-indigo-300':
                                         activeRightDrawer === 'ABOUT',
@@ -8665,7 +8662,7 @@ const submitFeedbackForm = async () => {
                                         activeRightDrawer === 'RADIO_CODES',
                                     'bg-emerald-500/20 text-emerald-300 border-emerald-500/40':
                                         activeRightDrawer === 'QUICK_ADD',
-                                    'bg-sky-500/20 text-sky-300 border-sky-500/40':
+                                    'bg-blue-500/20 text-blue-300 border-blue-500/40':
                                         activeRightDrawer === 'FEEDBACK',
                                     'bg-indigo-500/20 text-indigo-300 border-indigo-500/40':
                                         activeRightDrawer === 'ABOUT',
@@ -9267,10 +9264,10 @@ const submitFeedbackForm = async () => {
                     </div>
 
                     <div
-                        class="bg-sky-950/20 border border-sky-500/30 rounded-xl p-3 text-xs text-sky-200/90 leading-relaxed"
+                        class="bg-blue-950/20 border border-blue-500/30 rounded-xl p-3 text-xs text-blue-200/90 leading-relaxed"
                     >
                         <div
-                            class="font-bold flex items-center gap-1.5 mb-1 text-sky-300"
+                            class="font-bold flex items-center gap-1.5 mb-1 text-blue-300"
                         >
                             <img
                                 :src="iconRadio"
@@ -9301,7 +9298,7 @@ const submitFeedbackForm = async () => {
                                     "
                                     :class="
                                         feedbackForm.type === 'CHANNEL_REQUEST'
-                                            ? 'bg-sky-600 text-white font-bold border-sky-400 shadow-md shadow-sky-600/30'
+                                            ? 'bg-blue-600 text-white font-bold border-blue-400 shadow-md shadow-blue-600/30'
                                             : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border-slate-800'
                                     "
                                     class="px-2.5 py-2 rounded-lg border text-xs text-left transition flex items-center gap-1.5"
@@ -9379,7 +9376,7 @@ const submitFeedbackForm = async () => {
                                     v-model="feedbackForm.sender_name"
                                     type="text"
                                     placeholder="Warga / Nama Anda"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 placeholder-slate-600"
                                 />
                             </div>
                             <div>
@@ -9391,7 +9388,7 @@ const submitFeedbackForm = async () => {
                                     v-model="feedbackForm.handle_or_url"
                                     type="text"
                                     placeholder="@NamaStreamer atau URL"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 font-mono placeholder-slate-600"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono placeholder-slate-600"
                                 />
                             </div>
                         </div>
@@ -9412,7 +9409,7 @@ const submitFeedbackForm = async () => {
                                     v-model="feedbackForm.officer_name"
                                     type="text"
                                     placeholder="Ofc. Budi / 1-ADAM-12"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 placeholder-slate-600"
                                 />
                             </div>
                             <div>
@@ -9422,7 +9419,7 @@ const submitFeedbackForm = async () => {
                                 >
                                 <select
                                     v-model="feedbackForm.department"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
                                 >
                                     <option value="LSPD">LSPD (Police)</option>
                                     <option value="BCSO">BCSO (Sheriff)</option>
@@ -9450,7 +9447,7 @@ const submitFeedbackForm = async () => {
                                           ? 'Jelaskan data apa yang perlu dikoreksi (misal pangkat naik jadi Sergeant, ganti callsign)...'
                                           : 'Tuliskan detail masukan atau kendala Anda...'
                                 "
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-sky-500 placeholder-slate-600"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:border-blue-500 placeholder-slate-600"
                             ></textarea>
                         </div>
 
@@ -9467,7 +9464,7 @@ const submitFeedbackForm = async () => {
                             <button
                                 type="submit"
                                 :disabled="isSubmittingFeedback"
-                                class="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-lg shadow-sky-600/30 flex items-center gap-1.5 transition"
+                                class="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-lg shadow-blue-600/30 flex items-center gap-1.5 transition"
                             >
                                 <img
                                     v-if="isSubmittingFeedback"
@@ -10603,7 +10600,7 @@ const submitFeedbackForm = async () => {
                 "
                 :class="
                     activeMobileNav === 'MENU'
-                        ? 'text-sky-400 font-bold'
+                        ? 'text-blue-400 font-bold'
                         : 'text-slate-400 hover:text-slate-200'
                 "
                 class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
