@@ -19,6 +19,30 @@ router.on('navigate', () => {
     }
 });
 
+// GA4 Engagement Heartbeat Ping (Every 2 Minutes / 120,000ms)
+// Keeps passive multiview stream viewers counted in GA4 Realtime (5-min window)
+// and prevents GA4 session timeouts (30-min threshold) during long patrol watching sessions.
+const GA_HEARTBEAT_INTERVAL_MS = 120000; // 2 minutes
+
+setInterval(() => {
+    if (document.visibilityState === 'visible') {
+        if (typeof window.gtag === 'function') {
+            window.gtag('event', 'stream_heartbeat', {
+                event_category: 'engagement',
+                event_label: 'active_watching',
+                non_interaction: false, // Ensures user is counted as active in GA4
+            });
+        } else if (window.dataLayer && Array.isArray(window.dataLayer)) {
+            window.dataLayer.push({
+                event: 'stream_heartbeat',
+                event_category: 'engagement',
+                event_label: 'active_watching',
+                non_interaction: false,
+            });
+        }
+    }
+}, GA_HEARTBEAT_INTERVAL_MS);
+
 createInertiaApp({
     title: (title) => title ? title : 'IME RP — SASP Police Duty',
     resolve: (name) =>
