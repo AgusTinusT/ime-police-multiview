@@ -962,16 +962,13 @@ const filteredOfficers = computed(() => {
                             <div class="shrink-0">
                                 <span
                                     v-if="officer.is_online"
-                                    class="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold"
+                                    class="inline-flex items-center text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold whitespace-nowrap"
                                 >
-                                    <span
-                                        class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
-                                    ></span>
                                     <span>10-8 ON DUTY</span>
                                 </span>
                                 <span
                                     v-else
-                                    class="text-[10px] px-2 py-0.5 rounded-full bg-slate-950 text-slate-500 border border-slate-800 font-mono"
+                                    class="inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-slate-950 text-slate-500 border border-slate-800 font-mono whitespace-nowrap"
                                 >
                                     10-7 OFF DUTY
                                 </span>
@@ -1272,19 +1269,16 @@ const filteredOfficers = computed(() => {
                                 </td>
 
                                 <!-- Status Duty -->
-                                <td class="py-3.5 px-4">
+                                <td class="py-3.5 px-4 whitespace-nowrap">
                                     <span
                                         v-if="officer.is_online"
-                                        class="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold"
+                                        class="inline-flex items-center text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold whitespace-nowrap"
                                     >
-                                        <span
-                                            class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
-                                        ></span>
                                         <span>10-8 LIVE</span>
                                     </span>
                                     <span
                                         v-else
-                                        class="text-[10px] px-2 py-0.5 rounded-full bg-slate-950 text-slate-500 border border-slate-800 font-mono"
+                                        class="inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-slate-950 text-slate-500 border border-slate-800 font-mono whitespace-nowrap"
                                     >
                                         10-7 OFF
                                     </span>

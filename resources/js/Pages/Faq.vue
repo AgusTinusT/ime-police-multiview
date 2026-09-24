@@ -885,7 +885,7 @@ const highlightKeyword = (text) => {
                                     d="M5 13l4 4L19 7"
                                 />
                             </svg>
-                            Waktu Respon &lt; 5 Menit
+                            Dukungan Laporan Best Effort
                         </span>
                         <span class="flex items-center gap-2">
                             <svg
@@ -901,7 +901,7 @@ const highlightKeyword = (text) => {
                                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                                 />
                             </svg>
-                            SLA Multiview 99.9% Up
+                            Project Komunitas Independent
                         </span>
                         <span class="flex items-center gap-2">
                             <svg
@@ -917,7 +917,7 @@ const highlightKeyword = (text) => {
                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                                 />
                             </svg>
-                            Pemantauan Operational 24/7
+                            Sinkronisasi Live Otomatis
                         </span>
                     </div>
                 </div>

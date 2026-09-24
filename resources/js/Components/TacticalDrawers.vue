@@ -83,7 +83,7 @@ const getDeptBadgeClass = (dept) => {
     const d = (dept || "").toUpperCase();
     if (d.includes("LSPD")) return "bg-blue-900/60 text-blue-200 border-blue-700/80";
     if (d.includes("BCSO") || d.includes("LSCSD")) return "bg-amber-900/60 text-amber-200 border-amber-700/80";
-    if (d.includes("SASP")) return "bg-purple-900/60 text-purple-200 border-purple-700/80";
+    if (d.includes("SASP")) return "bg-teal-900/60 text-teal-200 border-teal-700/80";
     if (d.includes("SAPR") || d.includes("RANGER")) return "bg-emerald-900/60 text-emerald-200 border-emerald-700/80";
     return "bg-slate-800 text-slate-300 border-slate-700";
 };
