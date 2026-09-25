@@ -1,14 +1,24 @@
 import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
 
+/**
+ * Senior Web Architect Refactored useYouTubePlayer Composable
+ * 
+ * Complies with YouTube Embedded Ads Requirements:
+ * 1. No simultaneous mass `playVideo()` calls (Sequential Staggered Activation).
+ * 2. Master Active Player concept for single interactive audio stream & high-res ad eligibility.
+ * 3. Standardized YT IFrame API parameters (enablejsapi, origin, playsinline, allow permissions).
+ */
 export function useYouTubePlayer() {
     // Player State
     const activeAudioVideoId = ref(null);
+    const masterActiveVideoId = ref(null);
     const focusedStreamId = ref(null);
     const isDataSaverEnabled = ref(true);
     const activePreviewVideoIds = ref([]);
     const activeGridVideoIds = ref([]);
     const isFullscreen = ref(false);
     const ytApiReady = ref(false);
+    const isSequentialLoading = ref(false);
     const players = {};
 
     // Origin URL & Embed Domain for YouTube API Handshake
@@ -48,46 +58,54 @@ export function useYouTubePlayer() {
             }
         }
 
+        const existingReady = window.onYouTubeIframeAPIReady;
         window.onYouTubeIframeAPIReady = () => {
+            if (typeof existingReady === "function") existingReady();
             ytApiReady.value = true;
         };
     };
 
-    // Ensure Video Playback Command
-    const ensureVideoPlaying = (videoId) => {
-        if (!videoId) return;
-        const iframes = document.querySelectorAll(
-            `iframe[id="yt-bodycam-${videoId}"]`
-        );
-        iframes.forEach((iframe) => {
-            if (iframe && iframe.contentWindow) {
-                try {
-                    iframe.contentWindow.postMessage(
-                        JSON.stringify({
-                            event: "command",
-                            func: "playVideo",
-                            args: [],
-                        }),
-                        "*"
-                    );
-                } catch (e) {}
+    /**
+     * Create or Bind YT.Player Instance (Standard API Handshake)
+     */
+    const bindYTPlayer = (domId, videoId, onReadyCallback = null) => {
+        if (typeof window === "undefined" || !window.YT || !window.YT.Player) return null;
+        
+        try {
+            if (players[videoId]) {
+                return players[videoId];
             }
-        });
-        if (players[videoId]) {
-            try {
-                if (typeof players[videoId].playVideo === "function") {
-                    players[videoId].playVideo();
+
+            const player = new window.YT.Player(domId, {
+                events: {
+                    onReady: (event) => {
+                        if (typeof onReadyCallback === "function") {
+                            onReadyCallback(event);
+                        }
+                    },
+                    onStateChange: (event) => {
+                        // Standard state change monitoring for ad events or playback status
+                    }
                 }
-            } catch (e) {}
+            });
+            players[videoId] = player;
+            return player;
+        } catch (e) {
+            console.warn(`Failed to bind YT.Player for ${videoId}:`, e);
+            return null;
         }
     };
 
-    // Resilient Audio Controller (HTML5 postMessage + YT API fallback)
+    // Resilient Audio Controller & Master Player Router
     const controlPlayerAudio = (videoId, shouldUnmute) => {
         if (!videoId) return;
+
+        const isMaster = masterActiveVideoId.value === videoId;
+
         const iframes = document.querySelectorAll(
             `iframe[id="yt-bodycam-${videoId}"]`
         );
+
         iframes.forEach((iframe) => {
             if (iframe && iframe.contentWindow) {
                 try {
@@ -102,14 +120,6 @@ export function useYouTubePlayer() {
                                 event: "command",
                                 func: "setVolume",
                                 args: [100],
-                            }),
-                            "*"
-                        );
-                        iframe.contentWindow.postMessage(
-                            JSON.stringify({
-                                event: "command",
-                                func: "playVideo",
-                                args: [],
                             }),
                             "*"
                         );
@@ -138,6 +148,33 @@ export function useYouTubePlayer() {
         }
     };
 
+    // Master Player Switcher (User Interaction Triggered)
+    const setMasterActivePlayer = (videoId, allActiveStreams = []) => {
+        if (!videoId) return;
+
+        masterActiveVideoId.value = videoId;
+        activeAudioVideoId.value = videoId;
+
+        // Mute all other streams
+        allActiveStreams.forEach((s) => {
+            if (s.video_id !== videoId) {
+                controlPlayerAudio(s.video_id, false);
+                applyQualityToPlayer(s.video_id, false);
+            }
+        });
+
+        Object.keys(players).forEach((id) => {
+            if (id !== videoId) {
+                controlPlayerAudio(id, false);
+                applyQualityToPlayer(id, false);
+            }
+        });
+
+        // Unmute & Elevate Quality for Master Player
+        controlPlayerAudio(videoId, true);
+        applyQualityToPlayer(videoId, true);
+    };
+
     // Video Playback Quality Controller
     const applyQualityToPlayer = (videoId, isHighQuality) => {
         if (!videoId) return;
@@ -153,9 +190,6 @@ export function useYouTubePlayer() {
                 }
                 if (typeof players[videoId].setPlaybackQuality === "function") {
                     players[videoId].setPlaybackQuality(targetQuality);
-                }
-                if (typeof players[videoId].setSuggestedQuality === "function") {
-                    players[videoId].setSuggestedQuality(targetQuality);
                 }
             } catch (e) {}
         }
@@ -174,22 +208,6 @@ export function useYouTubePlayer() {
                         }),
                         "*"
                     );
-                    iframe.contentWindow.postMessage(
-                        JSON.stringify({
-                            event: "command",
-                            func: "setPlaybackQualityRange",
-                            args: qualityRange,
-                        }),
-                        "*"
-                    );
-                    iframe.contentWindow.postMessage(
-                        JSON.stringify({
-                            event: "command",
-                            func: "setSuggestedQuality",
-                            args: [targetQuality],
-                        }),
-                        "*"
-                    );
                 } catch (err) {}
             }
         });
@@ -200,7 +218,6 @@ export function useYouTubePlayer() {
         const isAudioActive = activeAudioVideoId.value === videoId;
         controlPlayerAudio(videoId, isAudioActive);
         applyQualityToPlayer(videoId, isFocusedLead);
-        ensureVideoPlaying(videoId);
     };
 
     const destroyAllPlayers = () => {
@@ -214,25 +231,18 @@ export function useYouTubePlayer() {
         });
     };
 
-    // Single-Audio Policy Enforcement
+    // Single-Audio Policy Enforcement with Master Active Player Promotion
     const toggleAudio = (videoId, allActiveStreams = []) => {
         if (activeAudioVideoId.value === videoId) {
             controlPlayerAudio(videoId, false);
             activeAudioVideoId.value = null;
+            if (masterActiveVideoId.value === videoId) {
+                masterActiveVideoId.value = null;
+            }
             return;
         }
 
-        // Mute ALL other players first (Strict Single Audio Rule)
-        allActiveStreams.forEach((s) => {
-            controlPlayerAudio(s.video_id, false);
-        });
-        Object.keys(players).forEach((id) => {
-            controlPlayerAudio(id, false);
-        });
-
-        // Unmute requested stream
-        controlPlayerAudio(videoId, true);
-        activeAudioVideoId.value = videoId;
+        setMasterActivePlayer(videoId, allActiveStreams);
     };
 
     const muteAll = (allActiveStreams = []) => {
@@ -243,6 +253,7 @@ export function useYouTubePlayer() {
             controlPlayerAudio(id, false);
         });
         activeAudioVideoId.value = null;
+        masterActiveVideoId.value = null;
     };
 
     // Data Saver Toggles
@@ -290,20 +301,40 @@ export function useYouTubePlayer() {
         activePreviewVideoIds.value = [];
         if (!isFocusMode) {
             activeAudioVideoId.value = null;
+            masterActiveVideoId.value = null;
             muteAll(allActiveStreams);
         }
     };
 
-    const disableDataSaverAndPlayAll = (onPlayAllCallback) => {
+    /**
+     * Staggered Sequential Activation Queue (No Mass Scripted Play)
+     * Replaces simultaneous playVideo calls with smooth 600ms interval queueing.
+     */
+    const disableDataSaverAndPlayAll = (allActiveStreams = [], onPlayAllCallback = null) => {
         isDataSaverEnabled.value = false;
         activeGridVideoIds.value = [];
         activePreviewVideoIds.value = [];
-        if (typeof onPlayAllCallback === "function") {
-            nextTick(() => {
+        isSequentialLoading.value = true;
+
+        if (Array.isArray(allActiveStreams) && allActiveStreams.length > 0) {
+            allActiveStreams.forEach((stream, index) => {
                 setTimeout(() => {
-                    onPlayAllCallback();
-                }, 300);
+                    if (!activeGridVideoIds.value.includes(stream.video_id)) {
+                        activeGridVideoIds.value.push(stream.video_id);
+                    }
+                    if (index === allActiveStreams.length - 1) {
+                        isSequentialLoading.value = false;
+                        if (typeof onPlayAllCallback === "function") {
+                            onPlayAllCallback();
+                        }
+                    }
+                }, index * 600); // 600ms staggered delay interval per player
             });
+        } else {
+            isSequentialLoading.value = false;
+            if (typeof onPlayAllCallback === "function") {
+                nextTick(onPlayAllCallback);
+            }
         }
     };
 
@@ -390,19 +421,22 @@ export function useYouTubePlayer() {
     return {
         // State
         activeAudioVideoId,
+        masterActiveVideoId,
         focusedStreamId,
         isDataSaverEnabled,
         activePreviewVideoIds,
         activeGridVideoIds,
         isFullscreen,
         ytApiReady,
+        isSequentialLoading,
         originUrl,
         chatEmbedDomain,
         players,
 
         // Player & Audio Methods
         loadYouTubeAPI,
-        ensureVideoPlaying,
+        bindYTPlayer,
+        setMasterActivePlayer,
         controlPlayerAudio,
         applyQualityToPlayer,
         initializePlayer,
@@ -418,3 +452,4 @@ export function useYouTubePlayer() {
         handleFullscreenChange
     };
 }
+

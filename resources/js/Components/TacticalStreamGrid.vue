@@ -1852,7 +1852,7 @@ const getCustomOrderRank = (videoId) => {
 
                             <!-- Big Video Player Container with Floating Hover Overlay Bar -->
                             <div
-                                class="relative w-full aspect-video bg-black group/thumb"
+                                class="relative w-full aspect-video bg-black group/thumb min-w-[320px] min-h-[200px]"
                             >
                                 <iframe
                                     :key="`primary-player-${primaryFocusedStream.video_id}`"
@@ -2193,7 +2193,7 @@ const getCustomOrderRank = (videoId) => {
                                     </div>
                                 </div>
                                 <div
-                                    class="relative w-full aspect-video bg-black overflow-hidden group/thumb"
+                                    class="relative w-full aspect-video bg-black overflow-hidden group/thumb min-w-[320px] min-h-[200px]"
                                 >
                                     <template
                                         v-if="
@@ -2438,7 +2438,7 @@ const getCustomOrderRank = (videoId) => {
 
                                 <!-- VIDEO DISPLAY: IFRAME OR POSTER THUMBNAIL -->
                                 <div
-                                    class="relative w-full aspect-video bg-black overflow-hidden flex-1 group/thumb"
+                                    class="relative w-full aspect-video bg-black overflow-hidden flex-1 group/thumb min-w-[320px] min-h-[200px]"
                                 >
                                     <template
                                         v-if="
