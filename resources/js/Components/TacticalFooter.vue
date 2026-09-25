@@ -10,7 +10,7 @@ import iconUrl from '@/Components/Icons/url-checker-svgrepo-com.svg';
 
 <template>
     <footer class="mt-auto bg-[#080d16] border-t border-blue-900/40 text-slate-300 font-sans pt-8 pb-6 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-7xl mx-auto space-y-6">
+        <div class="max-w-screen-2xl mx-auto space-y-6">
             
             <!-- Top Footer Grid: Branding, Quick Navigation & System Status -->
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-slate-800/80">

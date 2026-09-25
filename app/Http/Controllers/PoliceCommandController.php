@@ -127,6 +127,127 @@ class PoliceCommandController extends Controller
             ];
         });
 
+        return Inertia::render('Dashboard', [
+            'initialStreams' => $activeStreams->values(),
+            'initialOfflineOfficers' => $offlineOfficers->values(),
+            'initialTacChannels' => $tacChannels->values(),
+            'initialReplays' => $recentReplays,
+            'deptStats' => $deptStats,
+            'lastSyncedAt' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Render the Standalone Full Viewport Multiview Theater Stage (PoliceDashboard reference page).
+     */
+    public function multiview(Request $request)
+    {
+        $host = $request->getHost();
+
+        // Get Online 10-8 Live Streams
+        $activeStreams = ActiveStream::with('officer')
+            ->where('status', 'LIVE')
+            ->where(function ($q) {
+                $q->whereHas('officer', fn($o) => $o->where('is_active', true))
+                  ->orWhereDoesntHave('officer');
+            })
+            ->get()
+            ->unique('video_id')
+            ->map(function ($stream) use ($host) {
+                $officer = $stream->officer;
+                return [
+                    'id' => $stream->id,
+                    'video_id' => $stream->video_id,
+                    'title' => $stream->title ?? 'Patrol Stream',
+                    'thumbnail' => $stream->thumbnail_url,
+                    'status' => 'LIVE',
+                    'incident_code' => $stream->incident_code ?? '10-8 Routine Patrol',
+                    'description' => $stream->description ?? '',
+                    'viewers_count' => $stream->viewers_count ?? 0,
+                    'live_chat_url' => "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}&dark_theme=1",
+                    'officer' => $officer ? [
+                        'id' => $officer->id,
+                        'channel_id' => $officer->channel_id,
+                        'handle' => $officer->handle,
+                        'streamer_name' => $officer->streamer_name,
+                        'officer_name' => $officer->officer_name,
+                        'callsign' => $officer->callsign,
+                        'badge_number' => $officer->badge_number,
+                        'department' => $officer->department,
+                        'rank' => $officer->rank,
+                        'patrol_zone' => $officer->patrol_zone,
+                        'avatar_url' => $officer->avatar_url,
+                        'subscriber_count' => $officer->subscriber_count,
+                        'subscriber_count_text' => $officer->subscriber_count_text,
+                    ] : [
+                        'id' => 0,
+                        'channel_id' => $stream->channel_id,
+                        'handle' => '@Unit',
+                        'streamer_name' => 'Officer',
+                        'officer_name' => 'Patrol Unit',
+                        'callsign' => '1-ADAM-00',
+                        'badge_number' => '#000',
+                        'department' => 'LSPD',
+                        'rank' => 'Officer',
+                        'patrol_zone' => 'Los Santos',
+                        'avatar_url' => null,
+                    ],
+                ];
+            });
+
+        $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->toArray();
+
+        $offlineOfficers = Officer::where('is_active', true)
+            ->whereNotIn('channel_id', $liveChannelIds)
+            ->orderBy('department')
+            ->orderBy('rank')
+            ->get()
+            ->map(function ($officer) {
+                return [
+                    'id' => $officer->id,
+                    'channel_id' => $officer->channel_id,
+                    'handle' => $officer->handle,
+                    'streamer_name' => $officer->streamer_name,
+                    'officer_name' => $officer->officer_name,
+                    'callsign' => $officer->callsign,
+                    'badge_number' => $officer->badge_number,
+                    'department' => $officer->department,
+                    'rank' => $officer->rank,
+                    'patrol_zone' => $officer->patrol_zone,
+                    'avatar_url' => $officer->avatar_url,
+                    'subscriber_count' => $officer->subscriber_count,
+                    'subscriber_count_text' => $officer->subscriber_count_text,
+                    'status' => '10-7 OFFLINE',
+                ];
+            });
+
+        $recentReplays = Cache::get('cinema_hub_replays_cache', []);
+
+        $deptStats = [
+            'total_officers' => Officer::where('is_active', true)->count(),
+            'total_live' => $activeStreams->count(),
+            'total_offline' => $offlineOfficers->count(),
+            'lspd_live' => $activeStreams->where('officer.department', 'LSPD')->count(),
+            'bcso_live' => $activeStreams->where('officer.department', 'BCSO')->count(),
+            'sasp_live' => $activeStreams->where('officer.department', 'SASP')->count(),
+            'sapr_live' => $activeStreams->filter(fn($s) => in_array($s['officer']['department'] ?? '', ['SAPR', 'PARK RANGER']))->count(),
+        ];
+
+        TacChannel::ensureChannelsExist();
+        $tacChannels = TacChannel::orderBy('id')->get()->map(function ($ch) {
+            $ch->checkAndResetIfExpired();
+            return [
+                'id' => $ch->id,
+                'code' => $ch->code,
+                'name' => $ch->name,
+                'video_ids' => $ch->video_ids ?? [],
+                'expires_at' => $ch->expires_at ? $ch->expires_at->toIso8601String() : null,
+                'remaining_seconds' => $ch->remaining_seconds,
+                'is_active' => $ch->is_active,
+                'unit_count' => $ch->unit_count,
+            ];
+        });
+
         return Inertia::render('PoliceDashboard', [
             'initialStreams' => $activeStreams->values(),
             'initialOfflineOfficers' => $offlineOfficers->values(),

@@ -25,16 +25,19 @@ import iconChat from "@/Components/Icons/chat-svgrepo-com.svg";
 import iconChatRemove from "@/Components/Icons/chat-remove-svgrepo-com.svg";
 import iconClock from "@/Components/Icons/time-svgrepo-com.svg";
 import iconTarget from "@/Components/Icons/target-svgrepo-com.svg";
+import iconFullscreen from "@/Components/Icons/full-screen-svgrepo-com.svg";
 
 import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
 import TacChannelToolbar from "@/Components/TacChannelToolbar.vue";
 
 const props = defineProps({
+    mode: { type: String, default: "gmeet" }, // 'gmeet' (Multiview Grid) or 'netflix' (Dashboard Swimlane Discovery)
     selectedDepartment: { type: String, required: true },
     selectedLayout: { type: String, default: "auto" },
     searchFilter: { type: String, default: "" },
     isDataSaverEnabled: { type: Boolean, default: false },
     isSyncingFeeds: { type: Boolean, default: false },
+    isTheaterMode: { type: Boolean, default: false },
     allActiveStreams: { type: Array, default: () => [] },
     allCatalogStreams: { type: Array, default: () => [] },
     trendingStreams: { type: Array, default: () => [] },
@@ -70,6 +73,8 @@ const emit = defineEmits([
     "play-stream-in-focus",
     "set-focus-stream",
     "toggle-audio",
+    "toggle-theater-mode",
+    "toggle-fullscreen",
     "toggle-personal-stream",
     "toggle-custom-order",
     "assign-stream-to-tac",
@@ -87,7 +92,73 @@ const emit = defineEmits([
     "update:activeTab",
     "update:selectedDepartment",
     "update:selectedLayout",
+    "update:searchFilter",
 ]);
+
+// GMeet Dock Popover Controls State
+const isDockCategoryOpen = ref(false);
+const isDockLayoutOpen = ref(false);
+const isDockSearchOpen = ref(false);
+
+const toggleDockCategory = () => {
+    isDockCategoryOpen.value = !isDockCategoryOpen.value;
+    if (isDockCategoryOpen.value) {
+        isDockLayoutOpen.value = false;
+        isDockSearchOpen.value = false;
+    }
+};
+
+const toggleDockLayout = () => {
+    isDockLayoutOpen.value = !isDockLayoutOpen.value;
+    if (isDockLayoutOpen.value) {
+        isDockCategoryOpen.value = false;
+        isDockSearchOpen.value = false;
+    }
+};
+
+const toggleDockSearch = () => {
+    isDockSearchOpen.value = !isDockSearchOpen.value;
+    if (isDockSearchOpen.value) {
+        isDockCategoryOpen.value = false;
+        isDockLayoutOpen.value = false;
+    }
+};
+
+const getDeptCount = (deptId) => {
+    if (deptId === "ALL") return props.allActiveStreams?.length || 0;
+    if (deptId === "PERSONAL") return props.activePersonalStreams?.length || 0;
+    if (deptId && deptId.startsWith("TAC_")) {
+        const ch = (props.tacChannels || []).find((c) => c.code === deptId);
+        if (!ch) return 0;
+        return ch.video_ids?.length || ch.unit_count || 0;
+    }
+    return (props.allActiveStreams || []).filter((s) => {
+        const d = (s.officer?.department || "").toUpperCase();
+        if (deptId === "SAPR") return d === "SAPR" || d === "PARK RANGER";
+        return d === deptId;
+    }).length;
+};
+
+const selectedDeptLabel = computed(() => {
+    const d = props.selectedDepartment;
+    if (d === "ALL") return "Semua Kesatuan";
+    if (d === "LSPD") return "LSPD Metro";
+    if (d === "BCSO") return "BCSO Sheriff";
+    if (d === "SASP") return "SASP State";
+    if (d === "SAPR") return "SAPR Ranger";
+    if (d === "PERSONAL") return "Watchlist";
+    if (d && d.startsWith("TAC_")) return d.replace("_", " ");
+    return d || "Semua Kesatuan";
+});
+
+const selectedLayoutLabel = computed(() => {
+    const l = props.selectedLayout;
+    if (l === "grid-1x2") return "1x2 Grid";
+    if (l === "grid-2x2") return "2x2 Grid";
+    if (l === "grid-3x3") return "3x3 Grid";
+    if (l === "grid-4x4") return "4x4 Grid";
+    return "Auto Grid";
+});
 
 // Focus Mode Right-Column Live Chat State
 const isRightChatOpen = ref(true);
@@ -138,16 +209,27 @@ const displayedGridStreams = computed(() => {
         : props.visibleStreams;
 });
 
-// Dynamic Grid Layout CSS Class
+// Dynamic Grid Layout CSS Class (Google Meet Viewport Responsive Grid)
 const layoutGridClass = computed(() => {
     const layout = props.selectedLayout;
-    if (layout === "grid-1x2") return "grid grid-cols-1 md:grid-cols-2 gap-3.5";
-    if (layout === "grid-2x2") return "grid grid-cols-1 md:grid-cols-2 gap-3.5";
+    const count = displayedGridStreams.value.length;
+
+    if (layout === "grid-1x2")
+        return "grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4";
+    if (layout === "grid-2x2")
+        return "grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4";
     if (layout === "grid-3x3")
-        return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5";
+        return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3";
     if (layout === "grid-4x4")
-        return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5";
-    return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5";
+        return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5";
+
+    // Auto GMeet Mode scaling based on stream count
+    if (count <= 1) return "grid grid-cols-1 gap-3 sm:gap-4";
+    if (count <= 2) return "grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4";
+    if (count <= 4) return "grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4";
+    if (count <= 9)
+        return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3";
+    return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5";
 });
 
 // Horizontal Scroll Helper for Netflix Swimlanes
@@ -261,11 +343,18 @@ const getCustomOrderRank = (videoId) => {
     />
 
     <!-- TAB 1: 10-8 ACTIVE LIVE BODYCAM FEEDS -->
-    <div v-if="activeTab === '10-8'">
-        <!-- MODE A: ALL UNITS -> NETFLIX-STYLE POLICE CINEMA & DISCOVERY HUB -->
+    <div
+        v-if="activeTab === '10-8'"
+        :class="
+            mode === 'gmeet'
+                ? 'w-full flex flex-col relative space-y-4 pb-24'
+                : 'w-full'
+        "
+    >
+        <!-- MODE A: ALL UNITS -> NETFLIX-STYLE POLICE CINEMA & DISCOVERY HUB (When mode === 'netflix') -->
         <div
-            v-if="selectedDepartment === 'ALL'"
-            class="space-y-8 pb-12 animate-in fade-in duration-300"
+            v-if="mode === 'netflix'"
+            class="space-y-8 pb-16 animate-in fade-in duration-300 w-full"
         >
             <!-- Standby Banner (Only when all streams are off-duty / empty) -->
             <div
@@ -1379,172 +1468,9 @@ const getCustomOrderRank = (videoId) => {
                     </div>
                 </div>
             </section>
-
-            <!-- 10. 10-7 OFFLINE ROSTER SWIMLANE -->
-            <section
-                v-if="filteredOfflineOfficers.length > 0"
-                class="space-y-3"
-            >
-                <div class="flex items-center justify-between px-1">
-                    <h3
-                        class="text-sm sm:text-base md:text-lg font-bold text-slate-100 tracking-wide"
-                    >
-                        10-7 Officer Roster
-                    </h3>
-                    <div class="flex items-center space-x-1.5 shrink-0">
-                        <button
-                            @click="scrollRow('row-offline', 'left')"
-                            class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
-                            title="Geser Kiri"
-                        >
-                            <svg
-                                class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2.5"
-                                    d="M15 19l-7-7 7-7"
-                                />
-                            </svg>
-                        </button>
-                        <button
-                            @click="scrollRow('row-offline', 'right')"
-                            class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 shadow-md transition-all duration-200 transform active:scale-95 flex items-center justify-center group"
-                            title="Geser Kanan"
-                        >
-                            <svg
-                                class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2.5"
-                                    d="M9 5l7 7-7 7"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div
-                    id="row-offline"
-                    class="flex gap-3.5 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 px-1 focus:outline-none"
-                >
-                    <div
-                        v-for="officer in filteredOfflineOfficers"
-                        :key="`off-${officer.channel_id}`"
-                        class="w-[200px] sm:w-[220px] shrink-0 snap-start bg-[#0b121e]/90 hover:bg-[#0f1828] border border-slate-800/80 hover:border-slate-700 rounded-xl p-3 transition flex flex-col justify-between"
-                    >
-                        <div class="flex flex-col min-w-0">
-                            <div
-                                class="flex items-center justify-between gap-1 mb-1.5"
-                            >
-                                <span
-                                    class="px-1.5 py-0.5 text-[9px] font-black rounded border"
-                                    :class="
-                                        getDeptBadgeClass(officer.department)
-                                    "
-                                    >{{ officer.department }}</span
-                                >
-                                <span
-                                    class="text-[10px] text-slate-500 font-mono"
-                                    >10-7 OFFLINE</span
-                                >
-                            </div>
-                            <h5
-                                class="text-xs font-bold text-slate-100 truncate"
-                            >
-                                {{ officer.officer_name }}
-                            </h5>
-                            <div
-                                v-if="officer.rank"
-                                class="text-[11px] text-slate-400 font-mono truncate mt-0.5"
-                            >
-                                {{ officer.rank }}
-                            </div>
-                        </div>
-                        <div
-                            class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]"
-                        >
-                            <span class="text-slate-500 font-mono text-[9px]"
-                                >OFF-DUTY</span
-                            >
-                            <div class="flex items-center space-x-1">
-                                <button
-                                    @click="
-                                        emit(
-                                            'toggle-personal-stream',
-                                            officer.channel_id ||
-                                                officer.handle,
-                                        )
-                                    "
-                                    class="p-1 rounded transition"
-                                    :class="
-                                        isPersonalStream(
-                                            officer.channel_id ||
-                                                officer.handle,
-                                        )
-                                            ? 'text-purple-300 bg-purple-950/70 border border-purple-500/50'
-                                            : 'text-slate-400 hover:text-purple-300 hover:bg-slate-800'
-                                    "
-                                    :title="
-                                        isPersonalStream(
-                                            officer.channel_id ||
-                                                officer.handle,
-                                        )
-                                            ? 'Hapus'
-                                            : 'Pin ke Personal'
-                                    "
-                                >
-                                    <img
-                                        :src="
-                                            isPersonalStream(
-                                                officer.channel_id ||
-                                                    officer.handle,
-                                            )
-                                                ? iconPinMinus
-                                                : iconPinPlus
-                                        "
-                                        class="w-2.5 h-2.5 invert"
-                                    />
-                                </button>
-                                <button
-                                    @click="
-                                        emit(
-                                            'open-subscribe-popup',
-                                            officer.channel_id ||
-                                                officer.handle,
-                                            officer.officer_name,
-                                        )
-                                    "
-                                    class="bg-red-600/90 hover:bg-red-600 text-white font-bold px-1.5 py-0.5 rounded text-[9px] transition"
-                                >
-                                    Sub
-                                </button>
-                                <a
-                                    :href="`https://www.youtube.com/${officer.handle}`"
-                                    target="_blank"
-                                    class="text-blue-400 hover:underline flex items-center gap-0.5"
-                                >
-                                    <img
-                                        :src="iconExternal"
-                                        class="w-2.5 h-2.5 invert opacity-70"
-                                    />
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </div>
 
-        <!-- MODE B: SPECIFIC DEPARTMENTS / TAC / PERSONAL -> TACTICAL CCTV GRID -->
+        <!-- MODE B: GMEET CCTV GRID (When mode === 'gmeet') -->
         <template v-else>
             <TacChannelToolbar
                 v-if="isTacDepartment(selectedDepartment)"
@@ -2356,54 +2282,6 @@ const getCustomOrderRank = (videoId) => {
 
             <!-- STANDARD GRID VIEWS (Auto, 2x2, 3x3, 4x4) -->
             <div v-else class="space-y-3">
-                <!-- DATA SAVER HELPER BANNER -->
-                <div
-                    v-if="isDataSaverEnabled"
-                    class="bg-slate-900/90 border border-slate-800/90 px-3.5 py-2.5 rounded-xl flex items-center justify-between flex-wrap gap-2.5 shadow-lg"
-                >
-                    <div class="flex items-center space-x-2 text-xs font-mono">
-                        <span
-                            class="text-emerald-400 font-bold flex items-center gap-1.5"
-                        >
-                            <img
-                                :src="iconSaver"
-                                class="w-3.5 h-3.5 invert"
-                                alt=""
-                            />
-                            <span>SAVER MODE ACTIVE:</span>
-                        </span>
-                        <span class="text-slate-300"
-                            >Feeds are in standby. Click Play to view any feed,
-                            or switch to Play All.</span
-                        >
-                    </div>
-                    <div class="flex items-center space-x-2 shrink-0">
-                        <button
-                            @click="emit('disable-data-saver')"
-                            class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow"
-                        >
-                            <img
-                                :src="iconPlayAll"
-                                class="w-3 h-3 invert"
-                                alt=""
-                            />
-                            <span>Play All Videos</span>
-                        </button>
-                        <button
-                            v-if="activeGridVideoIds.length > 0"
-                            @click="emit('enable-data-saver')"
-                            class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-mono transition flex items-center gap-1"
-                        >
-                            <img
-                                :src="iconReset"
-                                class="w-3 h-3 invert opacity-70"
-                                alt=""
-                            />
-                            <span>Reset to Saver</span>
-                        </button>
-                    </div>
-                </div>
-
                 <!-- MAIN GRID VIEW -->
                 <div
                     :class="
@@ -2832,6 +2710,526 @@ const getCustomOrderRank = (videoId) => {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- GOOGLE MEET FLOATING CONTROL DOCK WITH INTEGRATED PLAYER FEATURES -->
+            <div
+                class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center pointer-events-none"
+            >
+                <!-- Popover 1: Department & Category Selector Menu -->
+                <div
+                    v-if="isDockCategoryOpen"
+                    class="pointer-events-auto mb-3 w-80 sm:w-96 max-h-[70vh] overflow-y-auto bg-slate-950/95 border border-slate-700/80 rounded-2xl p-3 shadow-2xl backdrop-blur-2xl text-xs space-y-3 animate-in fade-in zoom-in-95 font-sans scrollbar-thin scrollbar-thumb-slate-700"
+                    @click.stop
+                >
+                    <div
+                        class="flex items-center justify-between pb-2 border-b border-slate-800 text-slate-300 font-bold font-mono"
+                    >
+                        <span class="flex items-center gap-1.5 text-blue-400">
+                            <img
+                                :src="iconAllUnits"
+                                class="w-4 h-4 invert opacity-90"
+                            />
+                            <span>PILIH KATEGORI / DEPARTEMEN</span>
+                        </span>
+                        <button
+                            @click="isDockCategoryOpen = false"
+                            class="text-slate-500 hover:text-white p-1"
+                        >
+                            ✕
+                        </button>
+                    </div>
+
+                    <!-- Main Departments Grid -->
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button
+                            @click="
+                                emit('update:selectedDepartment', 'ALL');
+                                isDockCategoryOpen = false;
+                            "
+                            :class="[
+                                'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                                selectedDepartment === 'ALL'
+                                    ? 'bg-blue-600 text-white border-blue-400 font-bold shadow-md'
+                                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                            ]"
+                        >
+                            <div class="flex items-center gap-2">
+                                <img
+                                    :src="iconAllUnits"
+                                    class="w-4 h-4 invert opacity-90"
+                                />
+                                <span>Semua Kesatuan</span>
+                            </div>
+                            <span
+                                class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                                >{{ getDeptCount("ALL") }}</span
+                            >
+                        </button>
+
+                        <button
+                            @click="
+                                emit('update:selectedDepartment', 'LSPD');
+                                isDockCategoryOpen = false;
+                            "
+                            :class="[
+                                'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                                selectedDepartment === 'LSPD'
+                                    ? 'bg-blue-600 text-white border-blue-400 font-bold shadow-md'
+                                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                            ]"
+                        >
+                            <div class="flex items-center gap-2">
+                                <img
+                                    :src="iconLspd"
+                                    class="w-4 h-4 object-contain brightness-0 invert opacity-90"
+                                />
+                                <span>LSPD Metro</span>
+                            </div>
+                            <span
+                                class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                                >{{ getDeptCount("LSPD") }}</span
+                            >
+                        </button>
+
+                        <button
+                            @click="
+                                emit('update:selectedDepartment', 'BCSO');
+                                isDockCategoryOpen = false;
+                            "
+                            :class="[
+                                'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                                selectedDepartment === 'BCSO'
+                                    ? 'bg-amber-600 text-white border-amber-400 font-bold shadow-md'
+                                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                            ]"
+                        >
+                            <div class="flex items-center gap-2">
+                                <img
+                                    :src="iconBcso"
+                                    class="w-4 h-4 object-contain brightness-0 invert opacity-90"
+                                />
+                                <span>BCSO Sheriff</span>
+                            </div>
+                            <span
+                                class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                                >{{ getDeptCount("BCSO") }}</span
+                            >
+                        </button>
+
+                        <button
+                            @click="
+                                emit('update:selectedDepartment', 'SASP');
+                                isDockCategoryOpen = false;
+                            "
+                            :class="[
+                                'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                                selectedDepartment === 'SASP'
+                                    ? 'bg-teal-600 text-white border-teal-400 font-bold shadow-md'
+                                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                            ]"
+                        >
+                            <div class="flex items-center gap-2">
+                                <img
+                                    :src="iconSasp"
+                                    class="w-4 h-4 object-contain brightness-0 invert opacity-90"
+                                />
+                                <span>SASP State</span>
+                            </div>
+                            <span
+                                class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                                >{{ getDeptCount("SASP") }}</span
+                            >
+                        </button>
+
+                        <button
+                            @click="
+                                emit('update:selectedDepartment', 'SAPR');
+                                isDockCategoryOpen = false;
+                            "
+                            :class="[
+                                'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                                selectedDepartment === 'SAPR'
+                                    ? 'bg-emerald-600 text-white border-emerald-400 font-bold shadow-md'
+                                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                            ]"
+                        >
+                            <div class="flex items-center gap-2">
+                                <img
+                                    :src="iconSapr"
+                                    class="w-4 h-4 object-contain brightness-0 invert opacity-90"
+                                />
+                                <span>SAPR Ranger</span>
+                            </div>
+                            <span
+                                class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                                >{{ getDeptCount("SAPR") }}</span
+                            >
+                        </button>
+
+                        <button
+                            @click="
+                                emit('update:selectedDepartment', 'PERSONAL');
+                                isDockCategoryOpen = false;
+                            "
+                            :class="[
+                                'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                                selectedDepartment === 'PERSONAL'
+                                    ? 'bg-purple-600 text-white border-purple-400 font-bold shadow-md'
+                                    : 'bg-slate-900/80 hover:bg-slate-800 text-purple-300 border-purple-900/50',
+                            ]"
+                        >
+                            <div class="flex items-center gap-2">
+                                <img
+                                    :src="iconPersonal"
+                                    class="w-4 h-4 invert opacity-90"
+                                />
+                                <span>Watchlist</span>
+                            </div>
+                            <span
+                                class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                                >{{ getDeptCount("PERSONAL") }}</span
+                            >
+                        </button>
+                    </div>
+
+                    <!-- TAC Channels Section -->
+                    <div class="pt-2 border-t border-slate-800 space-y-1.5">
+                        <div
+                            class="text-[11px] font-mono font-bold text-amber-400 flex items-center gap-1.5"
+                        >
+                            <img
+                                :src="iconRadio"
+                                class="w-3.5 h-3.5 invert opacity-90"
+                            />
+                            <span>KANAL RADIO OPERASIONAL (TAC)</span>
+                        </div>
+                        <div class="grid grid-cols-5 gap-1">
+                            <button
+                                v-for="i in 10"
+                                :key="`tac-${i}`"
+                                @click="
+                                    emit(
+                                        'update:selectedDepartment',
+                                        `TAC_${i}`,
+                                    );
+                                    isDockCategoryOpen = false;
+                                "
+                                :class="[
+                                    'p-1.5 rounded-lg border text-center transition flex flex-col items-center justify-center gap-0.5 cursor-pointer',
+                                    selectedDepartment === `TAC_${i}`
+                                        ? 'bg-amber-600 text-white border-amber-400 font-bold shadow'
+                                        : getDeptCount(`TAC_${i}`) > 0
+                                          ? 'bg-amber-950/40 text-amber-300 border-amber-700/50 font-semibold'
+                                          : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:bg-slate-800',
+                                ]"
+                            >
+                                <span class="text-[10px] font-mono"
+                                    >TAC {{ i }}</span
+                                >
+                                <span
+                                    class="text-[9px] px-1 rounded font-mono"
+                                    :class="
+                                        getDeptCount(`TAC_${i}`) > 0
+                                            ? 'bg-amber-400 text-black font-bold'
+                                            : 'bg-black/40 text-slate-500'
+                                    "
+                                >
+                                    {{ getDeptCount(`TAC_${i}`) }}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Popover 2: Grid Layout Selector Menu -->
+                <div
+                    v-if="isDockLayoutOpen"
+                    class="pointer-events-auto mb-3 w-64 bg-slate-950/95 border border-slate-700/80 rounded-2xl p-3 shadow-2xl backdrop-blur-2xl text-xs space-y-2 animate-in fade-in zoom-in-95 font-sans"
+                    @click.stop
+                >
+                    <div
+                        class="flex items-center justify-between pb-2 border-b border-slate-800 text-slate-300 font-bold font-mono"
+                    >
+                        <span>TATA LETAK GRID (LAYOUT)</span>
+                        <button
+                            @click="isDockLayoutOpen = false"
+                            class="text-slate-500 hover:text-white p-1"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                    <div class="space-y-1">
+                        <button
+                            v-for="l in [
+                                {
+                                    id: 'auto',
+                                    name: 'Auto Grid',
+                                    desc: 'Adaptif sesuai jumlah stream',
+                                },
+                                {
+                                    id: 'grid-1x2',
+                                    name: '1 x 2 Grid',
+                                    desc: '2 Kamera bersampingan',
+                                },
+                                {
+                                    id: 'grid-2x2',
+                                    name: '2 x 2 Grid',
+                                    desc: '4 Kamera Quad Matrix',
+                                },
+                                {
+                                    id: 'grid-3x3',
+                                    name: '3 x 3 Grid',
+                                    desc: '9 Kamera Matrix',
+                                },
+                                {
+                                    id: 'grid-4x4',
+                                    name: '4 x 4 Grid',
+                                    desc: '16 Kamera Matrix',
+                                },
+                            ]"
+                            :key="l.id"
+                            @click="
+                                emit('update:selectedLayout', l.id);
+                                isDockLayoutOpen = false;
+                            "
+                            :class="[
+                                'w-full p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                                selectedLayout === l.id
+                                    ? 'bg-blue-600 text-white border-blue-400 font-bold shadow-md'
+                                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                            ]"
+                        >
+                            <div>
+                                <div class="font-bold text-xs">
+                                    {{ l.name }}
+                                </div>
+                                <div
+                                    class="text-[10px] text-slate-400 font-light"
+                                >
+                                    {{ l.desc }}
+                                </div>
+                            </div>
+                            <span v-if="selectedLayout === l.id" class="text-xs"
+                                >✓</span
+                            >
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Popover 3: Quick Search Filter Input Bar -->
+                <div
+                    v-if="isDockSearchOpen"
+                    class="pointer-events-auto mb-3 w-72 sm:w-80 bg-slate-950/95 border border-slate-700/80 rounded-2xl p-2.5 shadow-2xl backdrop-blur-2xl text-xs animate-in fade-in zoom-in-95 font-sans"
+                    @click.stop
+                >
+                    <div class="relative flex items-center">
+                        <input
+                            type="text"
+                            :value="searchFilter"
+                            @input="
+                                emit('update:searchFilter', $event.target.value)
+                            "
+                            placeholder="Cari perwira, divisi, judul siaran..."
+                            class="w-full bg-slate-900 text-white placeholder-slate-500 text-xs px-3 py-2 pr-8 rounded-xl border border-slate-700 focus:outline-none focus:border-blue-500 font-sans"
+                        />
+                        <button
+                            v-if="searchFilter"
+                            @click="emit('update:searchFilter', '')"
+                            class="absolute right-2.5 text-slate-400 hover:text-white text-xs"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                <!-- FLOATING DOCK BAR -->
+                <div
+                    class="pointer-events-auto bg-slate-950/90 backdrop-blur-xl border border-slate-700/70 shadow-2xl px-3 sm:px-4 py-2 rounded-full flex items-center gap-2 sm:gap-2.5 text-xs text-slate-200 animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-[96vw] overflow-x-auto scrollbar-none"
+                    @click.stop
+                >
+                    <!-- Category Selector Button -->
+                    <button
+                        @click="toggleDockCategory"
+                        :class="[
+                            'px-3 py-1.5 rounded-full text-xs font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                            isDockCategoryOpen
+                                ? 'bg-blue-600 text-white border-blue-400 shadow-md ring-2 ring-blue-500/40'
+                                : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-700',
+                        ]"
+                        title="Pilih Kategori / Departemen Kesatuan"
+                    >
+                        <img
+                            :src="getDeptIcon(selectedDepartment)"
+                            class="w-3.5 h-3.5 invert opacity-90 shrink-0"
+                        />
+                        <span class="font-mono text-[11px]">{{
+                            selectedDeptLabel
+                        }}</span>
+                        <span
+                            class="px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-mono font-bold"
+                            >{{ visibleStreams.length }}</span
+                        >
+                        <span class="text-[10px] text-slate-400">▾</span>
+                    </button>
+
+                    <div class="h-4 w-px bg-slate-800 shrink-0"></div>
+
+                    <!-- Layout Selector Button -->
+                    <button
+                        @click="toggleDockLayout"
+                        :class="[
+                            'px-3 py-1.5 rounded-full text-xs font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                            isDockLayoutOpen
+                                ? 'bg-blue-600 text-white border-blue-400 shadow-md ring-2 ring-blue-500/40'
+                                : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-700',
+                        ]"
+                        title="Pilih Tata Letak Kamera (Grid Layout)"
+                    >
+                        <span class="text-[11px]">📐</span>
+                        <span class="font-mono text-[11px]">{{
+                            selectedLayoutLabel
+                        }}</span>
+                        <span class="text-[10px] text-slate-400">▾</span>
+                    </button>
+
+                    <div class="h-4 w-px bg-slate-800 shrink-0"></div>
+
+                    <!-- Quick Search Filter Button -->
+                    <button
+                        @click="toggleDockSearch"
+                        :class="[
+                            'p-2 rounded-full border transition shrink-0 relative cursor-pointer',
+                            isDockSearchOpen || searchFilter
+                                ? 'bg-blue-950 text-blue-300 border-blue-500 ring-1 ring-blue-400'
+                                : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-700',
+                        ]"
+                        title="Cari Petugas / Stream"
+                    >
+                        <svg
+                            class="w-3.5 h-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            />
+                        </svg>
+                        <span
+                            v-if="searchFilter"
+                            class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-400 rounded-full"
+                        ></span>
+                    </button>
+
+                    <!-- Sync / Refresh Feeds Button -->
+                    <button
+                        @click="emit('trigger-manual-sync')"
+                        :disabled="isSyncingFeeds"
+                        class="p-2 rounded-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-slate-300 border border-slate-700 transition shrink-0 cursor-pointer"
+                        title="Sinkronkan Feeds Live Terbaru"
+                    >
+                        <img
+                            :src="iconRefresh"
+                            class="w-3.5 h-3.5 invert opacity-90"
+                            :class="{ 'animate-spin': isSyncingFeeds }"
+                        />
+                    </button>
+
+                    <!-- Data Saver Toggle Button -->
+                    <button
+                        @click="
+                            isDataSaverEnabled
+                                ? emit('disable-data-saver')
+                                : emit('enable-data-saver')
+                        "
+                        :class="[
+                            'px-2.5 py-1.5 rounded-full text-[11px] font-mono font-bold border transition flex items-center gap-1 shrink-0 cursor-pointer',
+                            isDataSaverEnabled
+                                ? 'bg-amber-950 text-amber-300 border-amber-500 shadow-sm'
+                                : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-700',
+                        ]"
+                        :title="
+                            isDataSaverEnabled
+                                ? 'Hemat Data Aktif (Tutup untuk otomatis play)'
+                                : 'Aktifkan Hemat Data'
+                        "
+                    >
+                        <img
+                            :src="iconSaver"
+                            class="w-3.5 h-3.5 invert opacity-90"
+                        />
+                        <span class="hidden sm:inline">{{
+                            isDataSaverEnabled ? "Saver ON" : "Saver OFF"
+                        }}</span>
+                    </button>
+
+                    <div class="h-4 w-px bg-slate-800 shrink-0"></div>
+
+                    <!-- Theater Mode Toggle -->
+                    <button
+                        @click="emit('toggle-theater-mode')"
+                        class="px-3 py-1.5 rounded-full text-[11px] font-mono font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer"
+                        :class="
+                            isTheaterMode
+                                ? 'bg-blue-600 text-white border-blue-400 shadow-md'
+                                : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-700'
+                        "
+                        :title="
+                            isTheaterMode
+                                ? 'Keluar Theater Mode'
+                                : 'Theater Mode (100% Layar)'
+                        "
+                    >
+                        <span>{{
+                            isTheaterMode ? "🎭 Exit" : "🎭 Theater"
+                        }}</span>
+                    </button>
+
+                    <!-- Audio Switch Button -->
+                    <button
+                        @click="
+                            emit(
+                                'toggle-audio',
+                                activeAudioVideoId ||
+                                    (visibleStreams[0]
+                                        ? visibleStreams[0].video_id
+                                        : null),
+                            )
+                        "
+                        class="p-2 rounded-full border transition shrink-0 cursor-pointer"
+                        :class="
+                            activeAudioVideoId
+                                ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50'
+                                : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-700'
+                        "
+                        :title="
+                            activeAudioVideoId
+                                ? 'Suara Aktif (Mute)'
+                                : 'Aktivasi Suara Feed'
+                        "
+                    >
+                        <img
+                            :src="activeAudioVideoId ? iconUnmute : iconMute"
+                            class="w-3.5 h-3.5 invert opacity-90"
+                        />
+                    </button>
+
+                    <!-- Fullscreen Toggle -->
+                    <button
+                        @click="emit('toggle-fullscreen')"
+                        class="p-2 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition shrink-0 cursor-pointer"
+                        title="Toggle Layar Penuh (Fullscreen)"
+                    >
+                        <img
+                            :src="iconFullscreen"
+                            class="w-3.5 h-3.5 invert opacity-90"
+                        />
+                    </button>
                 </div>
             </div>
         </template>

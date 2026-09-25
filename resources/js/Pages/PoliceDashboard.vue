@@ -24,7 +24,7 @@ import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
 import iconPinPlus from "@/Components/Icons/star-line-svgrepo-com.svg";
 
 // Refactored Sub-Components
-import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
+import MultiviewHeader from "@/Components/MultiviewHeader.vue";
 import TacticalFilterToolbar from "@/Components/TacticalFilterToolbar.vue";
 import TacticalStreamGrid from "@/Components/TacticalStreamGrid.vue";
 import TacticalRosterTab from "@/Components/TacticalRosterTab.vue";
@@ -97,6 +97,12 @@ const getInitialDepartment = () => {
 };
 
 const selectedDepartment = ref(getInitialDepartment());
+
+// Theater Mode toggle for full-height multiview grid
+const isTheaterMode = ref(false);
+const toggleTheaterMode = () => {
+    isTheaterMode.value = !isTheaterMode.value;
+};
 
 watch(selectedDepartment, (newDept) => {
     if (typeof window === "undefined") return;
@@ -3070,10 +3076,15 @@ const submitFeedbackForm = async () => {
     <Head title="IME RP — SASP Police Duty | Live Officer Bodycam & Dispatch" />
 
     <div
-        class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased pb-20 md:pb-6"
+        class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased"
     >
-        <!-- Refactored Tactical Header Bar Component -->
-        <TacticalDashboardHeader
+        <!-- Dedicated Multiview Master Header Component (Hidden when Theater Mode is active) -->
+        <MultiviewHeader
+            v-if="!isTheaterMode"
+            v-model:selectedDepartment="selectedDepartment"
+            :all-active-streams="allActiveStreams"
+            :active-personal-streams="activePersonalStreams"
+            :tac-channels="tacChannels"
             :is-data-saver-enabled="isDataSaverEnabled"
             :is-syncing-feeds="isSyncingFeeds"
             :is-fullscreen="isFullscreen"
@@ -3084,8 +3095,9 @@ const submitFeedbackForm = async () => {
             @toggle-fullscreen="toggleBrowserFullscreen"
         />
 
-        <!-- Refactored Department Filter Toolbar & Search / Grid Controls -->
+        <!-- Refactored Department Filter Toolbar & Search / Grid Controls (Only shown for 10-7 Offline Roster; 10-8 GMeet uses bottom floating dock) -->
         <TacticalFilterToolbar
+            v-if="activeTab === '10-7'"
             v-model:selectedDepartment="selectedDepartment"
             v-model:selectedLayout="selectedLayout"
             v-model:searchFilter="searchFilter"
@@ -3101,7 +3113,13 @@ const submitFeedbackForm = async () => {
         />
 
         <!-- Main Content Area -->
-        <main class="flex-1 p-3.5 md:p-4 overflow-y-auto">
+        <main
+            :class="
+                activeTab === '10-8'
+                    ? 'flex-1 w-full max-w-screen-2xl mx-auto p-2 sm:p-4 pb-28 relative'
+                    : 'flex-1 p-3.5 md:p-4 overflow-y-auto pb-20 md:pb-6'
+            "
+        >
             <!-- Refactored Tactical Stream Grid Component (Option B Clean Code) -->
             <TacticalStreamGrid
                 v-if="activeTab === '10-8'"
@@ -3113,6 +3131,7 @@ const submitFeedbackForm = async () => {
                 :search-filter="searchFilter"
                 :is-data-saver-enabled="isDataSaverEnabled"
                 :is-syncing-feeds="isSyncingFeeds"
+                :is-theater-mode="isTheaterMode"
                 :all-active-streams="allActiveStreams"
                 :all-catalog-streams="allCatalogStreams"
                 :trending-streams="trendingStreams"
@@ -3142,6 +3161,8 @@ const submitFeedbackForm = async () => {
                 @play-stream-in-focus="playStreamInFocus"
                 @set-focus-stream="setFocusStream"
                 @toggle-audio="toggleAudio"
+                @toggle-theater-mode="toggleTheaterMode"
+                @toggle-fullscreen="toggleBrowserFullscreen"
                 @toggle-personal-stream="togglePersonalStream"
                 @toggle-custom-order="toggleCustomOrderPin"
                 @assign-stream-to-tac="assignStreamToTac"
@@ -3674,8 +3695,8 @@ const submitFeedbackForm = async () => {
             </div>
         </div>
 
-        <!-- Tactical Footer -->
-        <TacticalFooter />
+        <!-- Tactical Footer (Only shown on 10-7 tab; 10-8 ALL tab includes footer inside its scroll container) -->
+        <TacticalFooter v-if="activeTab === '10-7'" />
 
         <!-- Floating Tactical Community Chat -->
         <TacticalChatDrawer />

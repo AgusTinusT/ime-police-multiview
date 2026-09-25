@@ -11,6 +11,7 @@ use Inertia\Inertia;
 // Main Police Tactical Command Center Dashboard
 Route::get('/', [PoliceCommandController::class, 'dashboard'])->name('home');
 Route::get('/dashboard', [PoliceCommandController::class, 'dashboard'])->name('dashboard');
+Route::get('/multiview', [PoliceCommandController::class, 'multiview'])->name('multiview');
 
 // Dedicated Standalone Pages
 Route::get('/officers', [PoliceCommandController::class, 'officers'])->name('officers.index');

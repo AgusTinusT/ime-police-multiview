@@ -70,8 +70,9 @@ const updateSearch = (val) => {
 <template>
     <!-- Department Filter Toolbar & Search / Grid Controls -->
     <div
-        class="bg-[#090f1a] border-b border-slate-800/80 px-3 sm:px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-2.5"
+        class="bg-[#090f1a] border-b border-slate-800/80 px-3 sm:px-4 lg:px-8 py-2"
     >
+        <div class="max-w-screen-2xl mx-auto w-full flex flex-col md:flex-row md:items-center justify-between gap-2.5">
         <!-- Department Tabs (Horizontal Scrollable Bar on Left + Fixed More TAC Dropdown) -->
         <div
             class="flex items-center space-x-1.5 flex-1 min-w-0 relative z-30"
@@ -277,7 +278,6 @@ const updateSearch = (val) => {
 
             <!-- Mobile Layout Selector (< md) -->
             <div
-                v-if="selectedDepartment !== 'ALL'"
                 class="flex md:hidden items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0"
             >
                 <button
@@ -337,7 +337,6 @@ const updateSearch = (val) => {
 
             <!-- Desktop / Tablet Layout Selector (hidden on mobile) -->
             <div
-                v-if="selectedDepartment !== 'ALL'"
                 class="hidden md:flex items-center bg-slate-950/90 rounded-lg p-0.5 border border-slate-800 shrink-0"
             >
                 <button
@@ -430,6 +429,7 @@ const updateSearch = (val) => {
                     <span>Focus</span>
                 </button>
             </div>
+        </div>
         </div>
     </div>
 </template>
