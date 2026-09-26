@@ -127,7 +127,7 @@ class PoliceCommandController extends Controller
             ];
         });
 
-        return Inertia::render('Dashboard', [
+        return Inertia::render('PoliceDashboard', [
             'initialStreams' => $activeStreams->values(),
             'initialOfflineOfficers' => $offlineOfficers->values(),
             'initialTacChannels' => $tacChannels->values(),
@@ -135,6 +135,14 @@ class PoliceCommandController extends Controller
             'deptStats' => $deptStats,
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
+    }
+
+    /**
+     * Render the Dedicated Police Tactical Command Center Dashboard.
+     */
+    public function policePage(Request $request)
+    {
+        return $this->multiview($request);
     }
 
     /**
@@ -248,7 +256,7 @@ class PoliceCommandController extends Controller
             ];
         });
 
-        return Inertia::render('PoliceDashboard', [
+        return Inertia::render('Dashboard', [
             'initialStreams' => $activeStreams->values(),
             'initialOfflineOfficers' => $offlineOfficers->values(),
             'initialTacChannels' => $tacChannels->values(),
