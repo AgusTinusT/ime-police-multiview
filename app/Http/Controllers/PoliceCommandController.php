@@ -127,7 +127,7 @@ class PoliceCommandController extends Controller
             ];
         });
 
-        return Inertia::render('PoliceDashboard', [
+        return Inertia::render('Dashboard', [
             'initialStreams' => $activeStreams->values(),
             'initialOfflineOfficers' => $offlineOfficers->values(),
             'initialTacChannels' => $tacChannels->values(),
