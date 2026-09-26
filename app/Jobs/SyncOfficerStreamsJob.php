@@ -55,6 +55,14 @@ class SyncOfficerStreamsJob implements ShouldQueue
                     ->where('channel_id', '!=', $channelId)
                     ->delete();
 
+                $streamDescription = $liveData['description'] ?? null;
+                if (!empty($liveData['video_id']) && (empty($streamDescription) || strlen($streamDescription) < 150)) {
+                    $details = $scraper->scrapeVideoDetails($liveData['video_id']);
+                    if ($details && !empty($details['description'])) {
+                        $streamDescription = $details['description'];
+                    }
+                }
+
                 // Update or create active stream
                 ActiveStream::updateOrCreate(
                     [
@@ -66,7 +74,7 @@ class SyncOfficerStreamsJob implements ShouldQueue
                         'thumbnail_url' => $liveData['thumbnail_url'],
                         'status' => 'LIVE',
                         'viewers_count' => $liveData['viewers_count'] ?? 0,
-                        'description' => $liveData['description'] ?? null,
+                        'description' => $streamDescription,
                         'last_synced_at' => now(),
                     ]
                 );

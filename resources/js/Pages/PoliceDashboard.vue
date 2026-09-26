@@ -129,7 +129,17 @@ watch(selectedDepartment, (newDept) => {
 
 const activeTab = ref("10-8"); // '10-8' (online feeds) or '10-7' (offline roster)
 const isSidebarOpen = ref(true);
-const selectedLayout = ref("auto"); // 'auto', 'grid-2x2', 'grid-3x3', 'grid-4x4', 'focus'
+const getInitialLayout = () => {
+    if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("focus")) {
+            return "focus";
+        }
+    }
+    return "auto";
+};
+
+const selectedLayout = ref(getInitialLayout());
 const searchFilter = ref("");
 const activeMobileNav = ref(null); // Mobile bottom sheet state ('TAC', 'MENU', or null)
 
@@ -886,7 +896,10 @@ onUnmounted(() => {
 });
 
 const enableDataSaver = () => {
-    composableEnableDataSaver(allActiveStreams.value, selectedLayout.value === "focus");
+    composableEnableDataSaver(
+        allActiveStreams.value,
+        selectedLayout.value === "focus",
+    );
 };
 
 const disableDataSaverAndPlayAll = () => {
@@ -2399,6 +2412,18 @@ watch(
 
 onMounted(() => {
     loadYouTubeAPI();
+    if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const focusId = params.get("focus");
+        if (focusId) {
+            const targetStream = streams.value.find(
+                (s) => String(s.video_id) === String(focusId),
+            );
+            if (targetStream) {
+                playStreamInFocus(targetStream);
+            }
+        }
+    }
 });
 
 // Layout Grid CSS Class Computation
@@ -3116,7 +3141,9 @@ const submitFeedbackForm = async () => {
         <main
             :class="
                 activeTab === '10-8'
-                    ? 'flex-1 w-full max-w-screen-2xl mx-auto p-2 sm:p-4 pb-28 relative'
+                    ? isTheaterMode
+                        ? 'flex-1 w-full px-2 sm:px-4 pt-3 sm:pt-4 pb-28 relative transition-all duration-300'
+                        : 'flex-1 w-full max-w-screen-2xl mx-auto p-2 sm:p-4 pb-28 relative transition-all duration-300'
                     : 'flex-1 p-3.5 md:p-4 overflow-y-auto pb-20 md:pb-6'
             "
         >
@@ -3187,10 +3214,8 @@ const submitFeedbackForm = async () => {
                 @toggle-personal-stream="togglePersonalStream"
                 @open-subscribe-popup="openSubscribePopup"
             />
-
-
         </main>
-                 <!-- UNIFIED RIGHT SLIDE-OVER SIDEBAR / DRAWER -->
+        <!-- UNIFIED RIGHT SLIDE-OVER SIDEBAR / DRAWER -->
         <TacticalDrawers
             :active-right-drawer="activeRightDrawer"
             v-model:quick-add-mode="quickAddMode"
@@ -3229,7 +3254,7 @@ const submitFeedbackForm = async () => {
             @submit-feedback="submitFeedbackForm"
             @open-subscribe-popup="openSubscribePopup"
             @set-focus-stream="setFocusStream"
-            @set-department="(dept) => selectedDepartment = dept"
+            @set-department="(dept) => (selectedDepartment = dept)"
         />
 
         <!-- Global Expiring TAC Channel Alert Prompt (When viewing other tabs) -->

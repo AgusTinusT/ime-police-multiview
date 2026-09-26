@@ -39,31 +39,39 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div ref="dropdownRef" class="relative inline-block text-left z-50">
-        <!-- Logged-in State: YouTube-Style Pure Circular Avatar Button -->
+    <div ref="dropdownRef" class="relative flex items-center text-left z-50 shrink-0">
+        <!-- Logged-in State: Username + Down Arrow Button (Exact h-8 Height Matching Quick Feed) -->
         <template v-if="$page.props.auth?.user">
             <button
                 @click.stop="toggleDropdown"
-                class="relative rounded-full focus:outline-none group p-0.5 transition transform hover:scale-105"
+                class="h-8 flex items-center space-x-1.5 px-3 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 transition shadow-md group cursor-pointer focus:outline-none shrink-0"
                 :title="`Logged in as ${$page.props.auth.user.name} (${$page.props.auth.user.role || 'member'})`"
             >
-                <!-- Avatar Circle with Initial -->
-                <div
-                    :class="[
-                        'w-8 h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-black shadow-lg tracking-wider border-2 transition',
-                        $page.props.auth.user.role === 'admin'
-                            ? 'bg-gradient-to-br from-amber-500 via-yellow-600 to-amber-700 text-slate-950 border-amber-400 shadow-amber-950/60 group-hover:border-amber-300'
-                            : 'bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-800 text-white border-blue-400/80 shadow-blue-950/60 group-hover:border-blue-300',
-                    ]"
+                <!-- Username -->
+                <span
+                    class="text-xs font-bold text-slate-200 group-hover:text-white truncate max-w-[110px] sm:max-w-[140px] leading-none"
                 >
-                    {{
-                        $page.props.auth.user.name?.charAt(0).toUpperCase() ||
-                        "U"
-                    }}
-                </div>
+                    {{ $page.props.auth.user.name }}
+                </span>
+
+                <!-- Down Arrow Icon -->
+                <svg
+                    class="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-transform duration-200 shrink-0"
+                    :class="{ 'rotate-180': isOpen }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                        d="M19 9l-7 7-7-7"
+                    />
+                </svg>
             </button>
 
-            <!-- YouTube-Style Floating Popover Dropdown Card -->
+            <!-- YouTube-Style Floating Popover Dropdown Card (Positioned Below Header) -->
             <transition
                 enter-active-class="transition ease-out duration-150 transform"
                 enter-from-class="opacity-0 scale-95 -translate-y-2"
@@ -74,7 +82,7 @@ onUnmounted(() => {
             >
                 <div
                     v-if="isOpen"
-                    class="absolute right-0 mt-2 w-72 bg-[#0d1527]/95 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/80 backdrop-blur-xl divide-y divide-slate-800/80 overflow-hidden font-sans z-50 animate-in"
+                    class="absolute right-0 top-full mt-2 w-72 bg-[#0d1527]/95 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/80 backdrop-blur-xl divide-y divide-slate-800/80 overflow-hidden font-sans z-50 animate-in"
                 >
                     <!-- Header Profile Section (YouTube Style) -->
                     <div
@@ -211,11 +219,11 @@ onUnmounted(() => {
             </transition>
         </template>
 
-        <!-- Guest State: YouTube-Style Sign In Button -->
+        <!-- Guest State: YouTube-Style Sign In Button (Exact h-8 Height Matching Quick Feed) -->
         <template v-else>
             <Link
                 href="/login"
-                class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 border border-blue-400/50 transition hover:scale-105"
+                class="h-8 flex items-center space-x-1.5 px-3 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 border border-blue-400/50 transition hover:scale-105 shrink-0"
             >
                 <svg
                     class="w-4 h-4 text-white"

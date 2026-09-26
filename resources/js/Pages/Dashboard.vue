@@ -27,6 +27,7 @@ import iconPinPlus from "@/Components/Icons/star-line-svgrepo-com.svg";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import TacticalFilterToolbar from "@/Components/TacticalFilterToolbar.vue";
 import TacticalStreamGrid from "@/Components/TacticalStreamGrid.vue";
+import TacticalStreamSlimles from "@/Components/TacticalStreamSlimles.vue";
 import TacticalDrawers from "@/Components/TacticalDrawers.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
@@ -312,10 +313,10 @@ const scrollToUnitsGrid = () => {
                             <h1
                                 class="text-3xl sm:text-5xl lg:text-6xl font-tactical font-bold text-white tracking-wide leading-tight"
                             >
-                                SAN ANDREAS POLICE <br />
+                                IME POLICE <br />
                                 <span
                                     class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400"
-                                    >MULTIVIEW STREAMING HUB</span
+                                    >BODYCAM STREAMING</span
                                 >
                             </h1>
 
@@ -329,18 +330,12 @@ const scrollToUnitsGrid = () => {
                                 interaktif.
                             </p>
 
-                            <!-- Department Quick Filter Buttons -->
+                            <!-- Department Quick Status Badges -->
                             <div
                                 class="flex flex-wrap items-center gap-2.5 pt-1"
                             >
-                                <button
-                                    @click="selectedDepartment = 'ALL'"
-                                    :class="[
-                                        'px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold transition flex items-center gap-2 border',
-                                        selectedDepartment === 'ALL'
-                                            ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300 shadow-md shadow-emerald-950/50'
-                                            : 'bg-slate-900/80 border-slate-700/60 hover:bg-slate-800 text-slate-300',
-                                    ]"
+                                <div
+                                    class="px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold flex items-center gap-2 border bg-slate-900/80 border-slate-800 text-slate-300 shadow-sm"
                                 >
                                     <span
                                         class="w-2 h-2 rounded-full bg-emerald-400"
@@ -350,16 +345,10 @@ const scrollToUnitsGrid = () => {
                                             allActiveStreams.length
                                         }})</span
                                     >
-                                </button>
+                                </div>
 
-                                <button
-                                    @click="selectedDepartment = 'LSPD'"
-                                    :class="[
-                                        'px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold transition flex items-center gap-2 border',
-                                        selectedDepartment === 'LSPD'
-                                            ? 'bg-blue-950/80 border-blue-500 text-blue-300 shadow-md shadow-blue-950/50'
-                                            : 'bg-slate-900/80 border-slate-700/60 hover:bg-slate-800 text-slate-300',
-                                    ]"
+                                <div
+                                    class="px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold flex items-center gap-2 border bg-slate-900/80 border-slate-800 text-slate-300 shadow-sm"
                                 >
                                     <span
                                         class="w-2 h-2 rounded-full bg-blue-400"
@@ -369,16 +358,10 @@ const scrollToUnitsGrid = () => {
                                             lspdCatalogStreams.length
                                         }})</span
                                     >
-                                </button>
+                                </div>
 
-                                <button
-                                    @click="selectedDepartment = 'BCSO'"
-                                    :class="[
-                                        'px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold transition flex items-center gap-2 border',
-                                        selectedDepartment === 'BCSO'
-                                            ? 'bg-amber-950/80 border-amber-500 text-amber-300 shadow-md shadow-amber-950/50'
-                                            : 'bg-slate-900/80 border-slate-700/60 hover:bg-slate-800 text-slate-300',
-                                    ]"
+                                <div
+                                    class="px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold flex items-center gap-2 border bg-slate-900/80 border-slate-800 text-slate-300 shadow-sm"
                                 >
                                     <span
                                         class="w-2 h-2 rounded-full bg-amber-400"
@@ -388,16 +371,10 @@ const scrollToUnitsGrid = () => {
                                             bcsoCatalogStreams.length
                                         }})</span
                                     >
-                                </button>
+                                </div>
 
-                                <button
-                                    @click="selectedDepartment = 'SASP'"
-                                    :class="[
-                                        'px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold transition flex items-center gap-2 border',
-                                        selectedDepartment === 'SASP'
-                                            ? 'bg-teal-950/80 border-teal-500 text-teal-300 shadow-md shadow-teal-950/50'
-                                            : 'bg-slate-900/80 border-slate-700/60 hover:bg-slate-800 text-slate-300',
-                                    ]"
+                                <div
+                                    class="px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold flex items-center gap-2 border bg-slate-900/80 border-slate-800 text-slate-300 shadow-sm"
                                 >
                                     <span
                                         class="w-2 h-2 rounded-full bg-teal-400"
@@ -407,7 +384,7 @@ const scrollToUnitsGrid = () => {
                                             saspCatalogStreams.length
                                         }})</span
                                     >
-                                </button>
+                                </div>
                             </div>
 
                             <!-- Hero Action Links -->
@@ -416,11 +393,20 @@ const scrollToUnitsGrid = () => {
                                     href="/multiview"
                                     class="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-tactical font-bold tracking-wider text-sm shadow-xl shadow-blue-600/30 flex items-center gap-2.5 transition duration-200 transform hover:scale-[1.02] active:scale-95"
                                 >
-                                    <img
-                                        :src="iconFullscreen"
-                                        class="w-4 h-4 invert opacity-95"
-                                    />
-                                    <span>BUKA HALAMAN MULTIVIEW ➔</span>
+                                    <svg
+                                        class="w-3.5 h-3.5 text-white-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                        />
+                                    </svg>
+                                    <span>OPEN MULTI-BODYCAM</span>
                                 </Link>
 
                                 <button
@@ -441,7 +427,7 @@ const scrollToUnitsGrid = () => {
                                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                                         />
                                     </svg>
-                                    <span>JELAJAHI FEED BODYCAM</span>
+                                    <span>Explore Bodycam Feeds</span>
                                 </button>
                             </div>
                         </div>
@@ -477,7 +463,7 @@ const scrollToUnitsGrid = () => {
                                     >
                                         <span
                                             class="text-[11px] font-mono text-slate-400 block uppercase"
-                                            >LIVE FEEDS (10-8)</span
+                                            >ON DUTY FEEDS</span
                                         >
                                         <div class="flex items-baseline gap-2">
                                             <span
@@ -488,7 +474,7 @@ const scrollToUnitsGrid = () => {
                                             >
                                             <span
                                                 class="text-xs text-slate-500 font-mono"
-                                                >Feeds</span
+                                                >Active</span
                                             >
                                         </div>
                                     </div>
@@ -517,7 +503,7 @@ const scrollToUnitsGrid = () => {
                                     >
                                         <span
                                             class="text-[11px] font-mono text-slate-400 block uppercase"
-                                            >OFFICERS ONLINE</span
+                                            >TOTAL OFFICER</span
                                         >
                                         <div class="flex items-baseline gap-2">
                                             <span
@@ -529,7 +515,7 @@ const scrollToUnitsGrid = () => {
                                             >
                                             <span
                                                 class="text-xs text-slate-500 font-mono"
-                                                >Active</span
+                                                >Officers</span
                                             >
                                         </div>
                                     </div>
@@ -629,20 +615,15 @@ const scrollToUnitsGrid = () => {
             </section>
 
             <!-- Swimlanes & Roster Section Wrapper (Full Width Swimlane Discovery Hub) -->
-            <div id="units-grid" class="w-full px-3.5 sm:px-6 lg:px-8 py-6 space-y-8 scroll-mt-6">
-                <!-- Refactored Tactical Stream Grid Component (Netflix Swimlane Discovery Hub) -->
-                <TacticalStreamGrid
-                    mode="netflix"
-                    v-model:activeTacPopoverVideoId="activeTacPopoverVideoId"
-                    v-model:activeChatVideoId="activeChatVideoId"
+            <div
+                id="units-grid"
+                class="w-full px-3.5 sm:px-6 lg:px-8 py-6 space-y-8 scroll-mt-6"
+            >
+                <!-- Refactored Tactical Stream Slimles Component (Netflix Swimlane Discovery Hub) -->
+                <TacticalStreamSlimles
                     v-model:activeTab="activeTab"
-                    v-model:selectedDepartment="selectedDepartment"
-                    v-model:selectedLayout="selectedLayout"
-                    :search-filter="searchFilter"
-                    :is-data-saver-enabled="isDataSaverEnabled"
                     :is-syncing-feeds="isSyncingFeeds"
                     :all-active-streams="allActiveStreams"
-                    :all-catalog-streams="allCatalogStreams"
                     :trending-streams="trendingStreams"
                     :recent-replay-streams="recentReplayStreams"
                     :active-personal-streams="activePersonalStreams"
@@ -651,37 +632,9 @@ const scrollToUnitsGrid = () => {
                     :bcso-catalog-streams="bcsoCatalogStreams"
                     :sapr-catalog-streams="saprCatalogStreams"
                     :special-ops-catalog-streams="specialOpsCatalogStreams"
-                    :tac-situational-streams="tacSituationalStreams"
-                    :filtered-offline-officers="filteredOfflineOfficers"
-                    :visible-streams="visibleStreams"
-                    :focus-stream="primaryFocusedStream"
-                    :side-streams="secondaryStreams"
-                    :grid-streams="displayedGridStreams"
-                    :active-preview-video-ids="activePreviewVideoIds"
-                    :active-grid-video-ids="activeGridVideoIds"
-                    :active-audio-video-id="activeAudioVideoId"
-                    :active-grid-chat-stream="activeGridChatStream"
-                    :origin-url="originUrl"
-                    :chat-embed-domain="chatEmbedDomain"
-                    :active-announcements="activeAnnouncements"
-                    :personal-stream-ids="personalVideoIds"
                     :tac-channels="tacChannels"
-                    :custom-order-map="customStreamOrder"
                     @play-stream-in-focus="playStreamInFocus"
-                    @set-focus-stream="setFocusStream"
-                    @toggle-audio="toggleAudio"
-                    @toggle-personal-stream="togglePersonalStream"
-                    @toggle-custom-order="toggleCustomOrderPin"
-                    @assign-stream-to-tac="assignStreamToTac"
-                    @remove-stream-from-tac="removeStreamFromTac"
-                    @open-subscribe-popup="openSubscribePopup"
                     @trigger-manual-sync="triggerManualSync"
-                    @toggle-sidebar-preview="toggleSidebarPreview"
-                    @extend-tac-timer="extendTacTimer"
-                    @disband-tac-channel="disbandTacChannel"
-                    @disable-data-saver="disableDataSaverAndPlayAll"
-                    @enable-data-saver="enableDataSaver"
-                    @toggle-grid-stream-play="toggleGridStreamPlay"
                 />
             </div>
         </main>

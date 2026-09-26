@@ -212,7 +212,7 @@ const getDeptCount = (deptId) => {
             <div class="flex items-center space-x-2 shrink-0">
                 <button
                     @click="$emit('open-quick-add')"
-                    class="h-8 px-3 py-1 text-xs font-bold rounded-lg bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-300 border border-emerald-500/40 transition flex items-center gap-1.5 shadow-sm shrink-0 cursor-pointer"
+                    class="h-8 px-2.5 text-xs font-bold rounded-lg bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-300 border border-emerald-500/40 transition flex items-center gap-1.5 shadow-sm shrink-0 cursor-pointer"
                     title="Add External YouTube URL to CCTV Wall"
                 >
                     <img
@@ -220,7 +220,7 @@ const getDeptCount = (deptId) => {
                         class="w-3.5 h-3.5 invert opacity-90 shrink-0"
                         alt="Quick Feed"
                     />
-                    <span class="hidden sm:inline">Quick Feed</span>
+                    <span class="hidden sm:inline leading-none">Quick Feed</span>
                 </button>
 
                 <UserAccountMenu />
