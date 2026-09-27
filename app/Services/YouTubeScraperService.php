@@ -48,9 +48,9 @@ class YouTubeScraperService
         $results = [];
         $unmatchedOfficers = collect();
 
-        // --- TIER 1: Fast Hashtag Live Scan (#imepolice, #imeroleplay, #imerp, #ime) ---
+        // --- TIER 1: Fast Hashtag Live Scan (#imepolice, #lspd, #bcso, #sasp, #sapr, #polisiime, #imesheriff, #imeroleplay, #imerp, #ime) ---
         $hashtagLiveStreams = [];
-        foreach (['#imepolice', '#imeroleplay', '#imerp', '#ime'] as $tag) {
+        foreach (['#imepolice', '#lspd', '#bcso', '#sasp', '#sapr', '#polisiime', '#imesheriff', '#imeroleplay', '#imerp', '#ime'] as $tag) {
             $streams = $this->searchLiveStreams($tag, 35);
             foreach ($streams as $s) {
                 if (!empty($s['video_id'])) {
@@ -110,7 +110,7 @@ class YouTubeScraperService
                 }
             }
 
-            if ($matchedStream) {
+            if ($matchedStream && $this->isPolicePatrolStream($matchedStream['title'] ?? '', $matchedStream['description'] ?? '', $officer)) {
                 $vId = $matchedStream['video_id'];
                 $claimedVideoIds[$vId] = $officer->id;
                 unset($hashtagLiveStreams[$vId]);
@@ -171,7 +171,7 @@ class YouTubeScraperService
                 foreach ($rssCandidates as $officerId => $cand) {
                     $vId = $cand['video_id'];
                     $t = $telemetry[$vId] ?? null;
-                    if ($t && ($t['status'] ?? '') === 'LIVE' && $this->isImeRpContent($cand['title'] ?? '')) {
+                    if ($t && ($t['status'] ?? '') === 'LIVE' && $this->isPolicePatrolStream($cand['title'] ?? '', '', $cand['officer'])) {
                         $results[$officerId] = [
                             'status' => 'LIVE',
                             'video_id' => $vId,
@@ -198,7 +198,7 @@ class YouTubeScraperService
                 $formattedHandle = str_starts_with($officer->handle, '@') ? $officer->handle : '@' . $officer->handle;
                 $directData = $directLiveResults[$officer->handle] ?? ($directLiveResults[$formattedHandle] ?? null);
 
-                if ($directData && $this->isImeRpContent($directData['title'] ?? '', $directData['description'] ?? '')) {
+                if ($directData && $this->isPolicePatrolStream($directData['title'] ?? '', $directData['description'] ?? '', $officer)) {
                     $results[$officer->id] = [
                         'status' => 'LIVE',
                         'video_id' => $directData['video_id'],
@@ -814,7 +814,7 @@ class YouTubeScraperService
                     '#imeroleplay', '#imepolice', '#imerp', '#imesheriff', '#ime',
                     'imeroleplay', 'imepolice', 'imerp', 'imesheriff',
                     'ime roleplay', 'ime police', 'ime rp',
-                    'lspd', 'bcso', 'sasp', 'sapr', '969police', '969garage', '969'
+                    'lspd', 'bcso', 'sasp', 'sapr'
                 ];
 
                 foreach ($highScoreKeywords as $kw) {
@@ -1210,7 +1210,6 @@ class YouTubeScraperService
         $policeKeywords = [
             '#imepolice', 'imepolice', 'ime police',
             '#imesheriff', 'imesheriff', 'ime sheriff',
-            '#969police', '969police', '969garage', '969',
             'lspd', 'bcso', 'sasp', 'sapr', 'park ranger', 'parkranger',
             'police', 'polisi', 'patrol', 'patroli', 'cop', 'dinas', 'reserse',
             'satlantas', '10-8', 'sheriff', 'trooper', 'officer'
@@ -1223,6 +1222,58 @@ class YouTubeScraperService
         }
 
         return false;
+    }
+
+    /**
+     * Verify whether a live stream title/description represents an active 10-8 Police Duty stream
+     * vs a Badside / Non-Police stream.
+     */
+    public function isPolicePatrolStream(string $title, string $description = '', ?\App\Models\Officer $officer = null): bool
+    {
+        // Admin Override: If officer has bypass_hashtag_check active, always treat stream as valid 10-8 Police Patrol
+        if ($officer && $officer->bypass_hashtag_check) {
+            return true;
+        }
+
+        // Only evaluate the stream title (ignore default channel descriptions)
+        $rawText = $title;
+        if (class_exists('Normalizer')) {
+            $rawText = Normalizer::normalize($rawText, Normalizer::FORM_KD) ?? $rawText;
+        }
+        $text = mb_strtolower(preg_replace('/\p{M}/u', '', $rawText), 'UTF-8');
+
+        // 1. Badside / Non-Police Exclusion Signals
+        $badsideExclusions = [
+            'badside', 'bad side', 'rampok', 'perampok', 'robb', 'heist',
+            'mafia', 'begal', 'gangster', 'gengster', 'ems', 'dokter',
+            'mekanik', 'bengkel', 'civilian', 'warga'
+        ];
+
+        // 2. Explicit Police 10-8 Duty Signals
+        $policeDutySignals = [
+            '#imepolice', 'imepolice', 'ime police',
+            '10-8', '108', 'on duty', 'onduty',
+            '#lspd', 'lspd', '#bcso', 'bcso', '#sasp', 'sasp', '#sapr', 'sapr',
+            'patroli', 'polisi', 'sheriff', 'trooper', 'swat', 'k9'
+        ];
+
+        $hasPoliceSignal = false;
+        foreach ($policeDutySignals as $sig) {
+            if (str_contains($text, $sig)) {
+                $hasPoliceSignal = true;
+                break;
+            }
+        }
+
+        // If badside exclusion keyword is present, exclude stream unless officer has bypass flag
+        foreach ($badsideExclusions as $bad) {
+            if (str_contains($text, $bad)) {
+                return false;
+            }
+        }
+
+        // Must have explicit police duty signal in title
+        return $hasPoliceSignal;
     }
 }
 

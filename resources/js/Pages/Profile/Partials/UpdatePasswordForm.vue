@@ -50,7 +50,7 @@ const updatePassword = () => {
                     type="password"
                     autocomplete="current-password"
                     placeholder="••••••••"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                 />
                 <div v-if="form.errors.current_password" class="text-red-400 text-[11px] mt-1">
                     {{ form.errors.current_password }}
@@ -66,7 +66,7 @@ const updatePassword = () => {
                     type="password"
                     autocomplete="new-password"
                     placeholder="••••••••"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                 />
                 <div v-if="form.errors.password" class="text-red-400 text-[11px] mt-1">
                     {{ form.errors.password }}
@@ -81,7 +81,7 @@ const updatePassword = () => {
                     type="password"
                     autocomplete="new-password"
                     placeholder="••••••••"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                 />
                 <div v-if="form.errors.password_confirmation" class="text-red-400 text-[11px] mt-1">
                     {{ form.errors.password_confirmation }}
@@ -92,7 +92,7 @@ const updatePassword = () => {
                 <button
                     type="submit"
                     :disabled="form.processing"
-                    class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs transition shadow-md"
+                    class="px-5 py-2 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs transition"
                 >
                     {{ form.processing ? 'Menyimpan...' : 'Perbarui Password' }}
                 </button>

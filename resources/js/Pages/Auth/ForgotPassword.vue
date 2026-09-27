@@ -25,7 +25,7 @@ const submit = () => {
     <GuestLayout>
         <Head title="Forgot Password" />
 
-        <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+        <div class="mb-4 text-xs text-slate-400">
             Forgot your password? No problem. Just let us know your email
             address and we will email you a password reset link that will allow
             you to choose a new one.
@@ -33,14 +33,14 @@ const submit = () => {
 
         <div
             v-if="status"
-            class="mb-4 text-sm font-medium text-green-600 dark:text-green-400"
+            class="mb-4 text-xs font-mono font-medium text-blue-400 bg-slate-950 p-3 rounded-md border border-blue-900/50"
         >
             {{ status }}
         </div>
 
-        <form @submit.prevent="submit">
+        <form @submit.prevent="submit" class="space-y-4">
             <div>
-                <InputLabel for="email" value="Email" />
+                <InputLabel for="email" value="Email Address" />
 
                 <TextInput
                     id="email"
@@ -50,13 +50,15 @@ const submit = () => {
                     required
                     autofocus
                     autocomplete="username"
+                    placeholder="nama@email.com"
                 />
 
-                <InputError class="mt-2" :message="form.errors.email" />
+                <InputError class="mt-2 text-red-400 text-[11px]" :message="form.errors.email" />
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
+            <div class="pt-2 flex items-center justify-end">
                 <PrimaryButton
+                    class="w-full"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >

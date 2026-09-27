@@ -110,12 +110,12 @@ const getTacUnitCountLocal = (tacKey) => {
         <div
             v-if="activeRightDrawer"
             @click="emit('close')"
-            class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300"
+            class="fixed inset-0 bg-black/60 z-50 transition-opacity duration-300"
         ></div>
 
         <!-- Sliding Drawer Panel -->
         <aside
-            class="fixed inset-y-0 right-0 z-50 bg-[#080d17]/98 border-l border-slate-800/90 shadow-2xl backdrop-blur-2xl flex flex-col transition-all duration-300 ease-in-out"
+            class="fixed inset-y-0 right-0 z-50 bg-slate-950 border-l border-slate-800 flex flex-col transition-all duration-300 ease-in-out"
             :class="[
                 activeRightDrawer
                     ? 'translate-x-0'
@@ -250,7 +250,7 @@ const getTacUnitCountLocal = (tacKey) => {
             </div>
 
             <!-- DRAWER CONTENT BODY -->
-            <div class="flex-1 overflow-y-auto scrollbar-thin flex flex-col min-h-0 bg-[#060a12]">
+            <div class="flex-1 overflow-y-auto scrollbar-thin flex flex-col min-h-0 bg-slate-950">
                 <!-- 1. QUICK ADD STREAM PANEL -->
                 <div v-if="activeRightDrawer === 'QUICK_ADD'" class="p-4 flex flex-col gap-3.5">
                     <div

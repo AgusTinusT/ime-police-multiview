@@ -41,17 +41,19 @@ const handleSearch = () => {
 <template>
     <div 
         v-if="isOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 animate-in fade-in duration-200 font-sans"
     >
         <div 
-            class="bg-[#090e1a] border border-blue-500/40 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+            class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]"
             @click.stop
         >
             <!-- Modal Header -->
-            <div class="px-6 py-4 bg-gradient-to-r from-blue-950 via-slate-900 to-slate-950 border-b border-blue-900/40 flex items-center justify-between">
+            <div class="px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-300 text-sm font-bold">
-                        📺
+                    <div class="w-8 h-8 rounded-md bg-slate-950 border border-slate-800 flex items-center justify-center text-blue-400">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
                     </div>
                     <div>
                         <h3 class="text-sm font-bold text-white font-mono uppercase tracking-wide">
@@ -63,27 +65,33 @@ const handleSearch = () => {
 
                 <button 
                     @click="emit('close')"
-                    class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition"
+                    class="w-8 h-8 rounded-md bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition"
                 >
                     ✕
                 </button>
             </div>
 
             <!-- Tab Switcher -->
-            <div class="flex border-b border-slate-800 bg-slate-950/60 px-6 pt-2 gap-4 text-xs font-mono">
+            <div class="flex border-b border-slate-800 bg-slate-950 px-6 pt-2 gap-4 text-xs font-mono">
                 <button 
                     @click="activeTab = 'quick'"
-                    class="pb-2.5 font-bold transition border-b-2"
+                    class="pb-2.5 font-bold transition border-b-2 flex items-center gap-1.5"
                     :class="activeTab === 'quick' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'"
                 >
-                    🔗 Input URL / Video ID YouTube
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    <span>Input URL / Video ID YouTube</span>
                 </button>
                 <button 
                     @click="activeTab = 'search'"
-                    class="pb-2.5 font-bold transition border-b-2"
+                    class="pb-2.5 font-bold transition border-b-2 flex items-center gap-1.5"
                     :class="activeTab === 'search' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'"
                 >
-                    🔍 Cari Siaran Live #imeroleplay
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <span>Cari Siaran Live #imeroleplay</span>
                 </button>
             </div>
 
@@ -100,7 +108,7 @@ const handleSearch = () => {
                             v-model="quickAddInput.videoUrlOrId"
                             type="text"
                             placeholder="Contoh: https://www.youtube.com/watch?v=dQw4w9WgXcQ atau dQw4w9WgXcQ"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono shadow-inner"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
                         />
                     </div>
 
@@ -113,7 +121,7 @@ const handleSearch = () => {
                                 v-model="quickAddInput.officerName"
                                 type="text"
                                 placeholder="Misal: Officer John"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-sans"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-sans"
                             />
                         </div>
 
@@ -125,7 +133,7 @@ const handleSearch = () => {
                                 v-model="quickAddInput.callsign"
                                 type="text"
                                 placeholder="Misal: 1A-12"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono uppercase"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono uppercase"
                             />
                         </div>
 
@@ -135,7 +143,7 @@ const handleSearch = () => {
                             </label>
                             <select 
                                 v-model="quickAddInput.department"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
                             >
                                 <option value="LSPD">LSPD (Los Santos PD)</option>
                                 <option value="LSCSD">LSCSD (Sheriff Dept)</option>
@@ -151,9 +159,12 @@ const handleSearch = () => {
                         <button 
                             @click="handleSubmitQuickAdd"
                             :disabled="!quickAddInput.videoUrlOrId.trim() || isCheckingChannel"
-                            class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold text-xs font-mono shadow-lg transition flex items-center gap-2"
+                            class="px-5 py-2.5 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold text-xs font-mono transition flex items-center gap-2"
                         >
-                            <span>{{ isCheckingChannel ? 'Memeriksa Stream...' : '⚡ Tambahkan Stream ke Multiview' }}</span>
+                            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            <span>{{ isCheckingChannel ? 'Memeriksa Stream...' : 'Tambahkan Stream ke Multiview' }}</span>
                         </button>
                     </div>
                 </div>
@@ -165,13 +176,13 @@ const handleSearch = () => {
                             v-model="searchQuery"
                             type="text"
                             placeholder="Cari kata kunci hashtag live..."
-                            class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+                            class="flex-1 bg-slate-950 border border-slate-800 rounded-md px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
                             @keyup.enter="handleSearch"
                         />
                         <button 
                             @click="handleSearch"
                             :disabled="isSearchingLive"
-                            class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs font-mono shadow transition"
+                            class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs font-mono transition"
                         >
                             {{ isSearchingLive ? 'Mencari...' : 'Cari' }}
                         </button>
@@ -186,10 +197,10 @@ const handleSearch = () => {
                         <div 
                             v-for="item in liveSearchResults" 
                             :key="item.video_id"
-                            class="p-3 bg-slate-900/80 border border-slate-800 hover:border-blue-500/50 rounded-xl flex items-center justify-between gap-3 transition"
+                            class="p-3 bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-md flex items-center justify-between gap-3 transition"
                         >
                             <div class="flex items-center space-x-3 min-w-0">
-                                <img :src="item.thumbnail" class="w-16 h-10 object-cover rounded-lg border border-slate-700 shrink-0" alt="" />
+                                <img :src="item.thumbnail" class="w-16 h-10 object-cover rounded-md border border-slate-800 shrink-0" alt="" />
                                 <div class="min-w-0">
                                     <h5 class="text-xs font-bold text-white truncate">{{ item.title }}</h5>
                                     <p class="text-[10px] text-slate-400 font-mono mt-0.5 truncate">{{ item.channel_title }}</p>
@@ -198,7 +209,7 @@ const handleSearch = () => {
 
                             <button 
                                 @click="emit('addQuickSearchStream', item)"
-                                class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] font-mono shrink-0"
+                                class="px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] font-mono shrink-0"
                             >
                                 + Tambah
                             </button>

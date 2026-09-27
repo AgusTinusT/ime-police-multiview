@@ -57,10 +57,68 @@ const showToast = (message, type = 'success') => {
 };
 
 // Modal State: Officer
-const showModal = ref(false);
-const isEditMode = ref(false);
-const showDeleteConfirm = ref(false);
-const officerToDelete = ref(null);
+// Duty Time Adjustment Modal State
+const showDutyModal = ref(false);
+const dutyOfficer = ref(null);
+const dutyAction = ref('add'); // 'add', 'subtract', 'set'
+const dutyMinutesInput = ref(60);
+const isAdjustingDuty = ref(false);
+
+const openDutyModal = (officer) => {
+    dutyOfficer.value = officer;
+    dutyAction.value = 'add';
+    dutyMinutesInput.value = 60;
+    showDutyModal.value = true;
+};
+
+const handleAdjustDuty = async () => {
+    if (!dutyOfficer.value) return;
+    isAdjustingDuty.value = true;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    try {
+        const res = await axios.patch(`/api/v1/officers/${dutyOfficer.value.id}/adjust-duty`, {
+            action: dutyAction.value,
+            minutes: dutyMinutesInput.value,
+        }, {
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+        if (res.data && res.data.status === 'success') {
+            showToast(res.data.message, 'success');
+            dutyOfficer.value.monthly_duty_minutes = res.data.monthly_duty_minutes;
+            showDutyModal.value = false;
+            fetchOfficers();
+        } else {
+            showToast(res.data?.message || 'Gagal mengubah waktu patroli', 'error');
+        }
+    } catch (e) {
+        showToast('Gagal mengubah waktu patroli: ' + (e.response?.data?.message || e.message), 'error');
+    } finally {
+        isAdjustingDuty.value = false;
+    }
+};
+
+const toggleHashtagBypass = async (officer) => {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    try {
+        const res = await axios.patch(`/api/v1/officers/${officer.id}/toggle-hashtag-bypass`, {}, {
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+        if (res.data && res.data.status === 'success') {
+            officer.bypass_hashtag_check = res.data.bypass_hashtag_check;
+            showToast(res.data.message, 'success');
+        } else {
+            showToast(res.data?.message || 'Gagal mengubah status bypass hashtag', 'error');
+        }
+    } catch (e) {
+        showToast('Gagal mengubah status bypass hashtag: ' + (e.response?.data?.message || e.message), 'error');
+    }
+};
+
+const formatDutyHours = (minutes) => {
+    const min = parseInt(minutes || 0);
+    const hrs = (min / 60).toFixed(1);
+    return `${hrs} Jam (${min} mnt)`;
+};
 
 const form = ref({
     id: null,
@@ -79,6 +137,8 @@ const form = ref({
     channel_id: '',
     avatar_url: '',
     is_active: true,
+    monthly_duty_minutes: 0,
+    bypass_hashtag_check: false,
 });
 
 // Available Ranks & Divisions based on selected Agency in Form
@@ -578,6 +638,8 @@ const openAddModal = () => {
         channel_id: '',
         avatar_url: '',
         is_active: true,
+        monthly_duty_minutes: 0,
+        bypass_hashtag_check: false,
     };
     showModal.value = true;
 };
@@ -602,6 +664,8 @@ const openEditModal = (officer) => {
         channel_id: officer.channel_id || '',
         avatar_url: officer.avatar_url || '',
         is_active: Boolean(officer.is_active),
+        monthly_duty_minutes: officer.monthly_duty_minutes || 0,
+        bypass_hashtag_check: Boolean(officer.bypass_hashtag_check),
     };
     showModal.value = true;
 };
@@ -928,9 +992,9 @@ onMounted(() => {
         <!-- MAIN CONTENT AREA -->
         <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
             <!-- PAGE HEADER CARD -->
-            <div class="bg-gradient-to-r from-blue-950/80 via-slate-900 to-slate-950 border border-blue-900/50 rounded-2xl p-5 shadow-xl flex items-center justify-between gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between gap-4">
                 <div class="flex items-center space-x-3.5">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-400/30 shrink-0">
+                    <div class="w-10 h-10 rounded-md bg-blue-600 flex items-center justify-center text-white shrink-0">
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
@@ -940,7 +1004,7 @@ onMounted(() => {
                             <h1 class="text-base sm:text-lg font-black tracking-wider text-white font-mono uppercase">
                                 Tactical Admin Hub
                             </h1>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase bg-cyan-500/20 text-cyan-400 border border-cyan-500/40">
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono uppercase bg-slate-950 text-blue-400 border border-slate-800">
                                 Dispatcher Portal
                             </span>
                         </div>
@@ -951,8 +1015,8 @@ onMounted(() => {
                 </div>
 
                 <div class="flex items-center space-x-2 text-xs font-mono text-slate-400">
-                    <span class="px-3 py-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-300">
-                        Logged in as: <strong class="text-cyan-400 font-bold">{{ auth.user?.name || 'Admin' }}</strong>
+                    <span class="px-3 py-1 bg-slate-950 border border-slate-800 rounded-md text-slate-300">
+                        Logged in as: <strong class="text-blue-400 font-bold">{{ auth.user?.name || 'Admin' }}</strong>
                     </span>
                 </div>
             </div>
@@ -961,34 +1025,34 @@ onMounted(() => {
             <div class="flex items-center space-x-2 border-b border-slate-800 pb-2 overflow-x-auto">
                 <button 
                     @click="activeTab = 'officers'" 
-                    :class="['px-4 py-2 rounded-lg text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'officers' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-inner' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800']"
+                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'officers' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
                 >
                     🚔 Officers Roster
                 </button>
                 <button 
                     @click="activeTab = 'agencies'" 
-                    :class="['px-4 py-2 rounded-lg text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'agencies' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-inner' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800']"
+                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'agencies' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
                 >
                     🏛️ Agencies & Ranks Structure
                 </button>
                 <button 
                     @click="activeTab = 'certifications'" 
-                    :class="['px-4 py-2 rounded-lg text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'certifications' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-inner' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800']"
+                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'certifications' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
                 >
                     🎖️ Tactical Certifications
                 </button>
                 <button 
                     @click="activeTab = 'announcements'" 
-                    :class="['px-4 py-2 rounded-lg text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'announcements' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-inner' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800']"
+                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'announcements' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
                 >
                     📢 Promotions & Alerts
                 </button>
                 <button 
                     @click="activeTab = 'users'" 
-                    :class="['px-4 py-2 rounded-lg text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5', activeTab === 'users' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-inner' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800']"
+                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5', activeTab === 'users' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
                 >
                     <span>👥 Member Accounts</span>
-                    <span class="px-1.5 py-0.2 text-[10px] bg-cyan-950 text-cyan-300 rounded-full font-mono border border-cyan-700/50">{{ usersList.length }}</span>
+                    <span class="px-1.5 py-0.2 text-[10px] bg-slate-900 text-slate-200 rounded-md font-mono border border-slate-800">{{ usersList.length }}</span>
                 </button>
             </div>
 
@@ -996,44 +1060,44 @@ onMounted(() => {
             <div v-if="activeTab === 'officers'" class="space-y-6">
                 <!-- STATS CARDS -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
-                    <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
                         <span class="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">Total Units</span>
                         <div class="text-2xl font-black text-white mt-1">{{ deptCounts.ALL }}</div>
                     </div>
 
-                    <div class="bg-slate-900/80 border border-emerald-900/40 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
                         <span class="text-[11px] font-mono font-bold text-emerald-400 uppercase tracking-wider">Active Units</span>
                         <div class="text-2xl font-black text-emerald-400 mt-1">{{ deptCounts.active }}</div>
                     </div>
 
-                    <div class="bg-slate-900/80 border border-blue-900/40 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
                         <span class="text-[11px] font-mono font-bold text-blue-400 uppercase tracking-wider">LSPD</span>
                         <div class="text-2xl font-black text-blue-400 mt-1">{{ deptCounts.LSPD }}</div>
                     </div>
 
-                    <div class="bg-slate-900/80 border border-amber-900/40 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
                         <span class="text-[11px] font-mono font-bold text-amber-400 uppercase tracking-wider">BCSO</span>
                         <div class="text-2xl font-black text-amber-400 mt-1">{{ deptCounts.BCSO }}</div>
                     </div>
 
-                    <div class="bg-slate-900/80 border border-emerald-900/40 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
-                        <span class="text-[11px] font-mono font-bold text-emerald-300 uppercase tracking-wider">SASP</span>
-                        <div class="text-2xl font-black text-emerald-300 mt-1">{{ deptCounts.SASP }}</div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                        <span class="text-[11px] font-mono font-bold text-teal-300 uppercase tracking-wider">SASP</span>
+                        <div class="text-2xl font-black text-teal-300 mt-1">{{ deptCounts.SASP }}</div>
                     </div>
 
-                    <div class="bg-slate-900/80 border border-green-900/40 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
-                        <span class="text-[11px] font-mono font-bold text-green-400 uppercase tracking-wider">SAPR</span>
-                        <div class="text-2xl font-black text-green-400 mt-1">{{ deptCounts.SAPR }}</div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                        <span class="text-[11px] font-mono font-bold text-emerald-400 uppercase tracking-wider">SAPR</span>
+                        <div class="text-2xl font-black text-emerald-400 mt-1">{{ deptCounts.SAPR }}</div>
                     </div>
 
-                    <div class="bg-slate-900/80 border border-red-900/40 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
-                        <span class="text-[11px] font-mono font-bold text-red-400 uppercase tracking-wider">Disabled</span>
-                        <div class="text-2xl font-black text-red-400 mt-1">{{ deptCounts.inactive }}</div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                        <span class="text-[11px] font-mono font-bold text-rose-400 uppercase tracking-wider">Disabled</span>
+                        <div class="text-2xl font-black text-rose-400 mt-1">{{ deptCounts.inactive }}</div>
                     </div>
                 </div>
 
                 <!-- ACTION CONTROL BAR -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
                     <!-- Search & Filters -->
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
                         <!-- Search Input -->
@@ -1042,28 +1106,28 @@ onMounted(() => {
                                 v-model="searchQuery" 
                                 type="text" 
                                 placeholder="Search officer name, callsign, badge, handle..." 
-                                class="w-full bg-slate-950/80 border border-slate-800 text-slate-100 placeholder-slate-500 rounded-xl px-4 py-2.5 pl-10 text-xs sm:text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-inner"
+                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 rounded-md px-4 py-2 pl-10 text-xs sm:text-sm focus:outline-none focus:border-blue-500"
                             />
-                            <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <button 
                                 v-if="searchQuery" 
                                 @click="searchQuery = ''" 
-                                class="absolute right-3 top-3 text-slate-500 hover:text-slate-300 text-xs"
+                                class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 text-xs"
                             >
                                 ✕
                             </button>
                         </div>
 
                         <!-- Department Tabs Filter -->
-                        <div class="flex items-center space-x-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 shrink-0">
+                        <div class="flex items-center space-x-1 bg-slate-950 p-1 rounded-md border border-slate-800 shrink-0">
                             <button 
                                 v-for="dept in ['ALL', 'LSPD', 'BCSO', 'SASP', 'SAPR']" 
                                 :key="dept" 
                                 @click="selectedDept = dept"
-                                class="px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition"
-                                :class="selectedDept === dept ? 'bg-cyan-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'"
+                                class="px-3 py-1.5 rounded-md text-xs font-bold font-mono transition"
+                                :class="selectedDept === dept ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'"
                             >
                                 {{ dept }}
                             </button>
@@ -1073,7 +1137,7 @@ onMounted(() => {
                         <div class="relative shrink-0">
                             <select 
                                 v-model="selectedStatus" 
-                                class="appearance-none bg-slate-950/80 border border-slate-800 text-slate-200 rounded-xl pl-3.5 pr-9 py-2.5 text-xs font-mono focus:outline-none focus:border-cyan-500 cursor-pointer shadow-inner"
+                                class="appearance-none bg-slate-950 border border-slate-800 text-slate-200 rounded-md pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-none focus:border-blue-500 cursor-pointer"
                             >
                                 <option value="ALL">All Statuses</option>
                                 <option value="ACTIVE">Active Only</option>
@@ -1087,7 +1151,7 @@ onMounted(() => {
                         <button 
                             @click="triggerSyncStreams" 
                             :disabled="isSyncingStreams"
-                            class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-cyan-300 border border-cyan-700/40 text-xs font-bold font-mono shadow-md hover:shadow-cyan-900/30 transition flex items-center space-x-2"
+                            class="px-3.5 py-2 rounded-md bg-slate-950 hover:bg-slate-800 disabled:opacity-50 text-slate-300 border border-slate-800 text-xs font-bold font-mono transition flex items-center space-x-2"
                         >
                             <span>{{ isSyncingStreams ? 'Syncing...' : 'Sync Live Streams' }}</span>
                         </button>
@@ -1095,14 +1159,14 @@ onMounted(() => {
                         <button 
                             @click="triggerSyncSubs" 
                             :disabled="isSyncingSubs"
-                            class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-emerald-300 border border-emerald-700/40 text-xs font-bold font-mono shadow-md hover:shadow-emerald-900/30 transition flex items-center space-x-2"
+                            class="px-3.5 py-2 rounded-md bg-slate-950 hover:bg-slate-800 disabled:opacity-50 text-emerald-400 border border-slate-800 text-xs font-bold font-mono transition flex items-center space-x-2"
                         >
                             <span>{{ isSyncingSubs ? 'Syncing Subs...' : 'Sync Subscribers' }}</span>
                         </button>
 
                         <button 
                             @click="openAddModal" 
-                            class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold font-mono shadow-lg shadow-cyan-600/30 transition flex items-center space-x-1.5"
+                            class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold font-mono transition flex items-center space-x-1.5"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
@@ -1113,10 +1177,10 @@ onMounted(() => {
                 </div>
 
                 <!-- OFFICERS TABLE -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
                     <div class="p-4 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
                         <div>Showing <strong class="text-white">{{ filteredOfficers.length }}</strong> of {{ officers.length }} total units</div>
-                        <button @click="fetchOfficers" class="hover:text-cyan-400 flex items-center space-x-1">
+                        <button @click="fetchOfficers" class="hover:text-blue-400 flex items-center space-x-1">
                             <span>Refresh Data</span>
                         </button>
                     </div>
@@ -1124,11 +1188,12 @@ onMounted(() => {
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-950/80 text-[11px] font-mono uppercase text-slate-400 border-b border-slate-800">
+                                <tr class="bg-slate-950 text-[11px] font-mono uppercase text-slate-400 border-b border-slate-800">
                                     <th class="py-3 px-4">Officer Unit</th>
                                     <th class="py-3 px-4">Agency & Rank</th>
                                     <th class="py-3 px-4">Callsign / Badge</th>
                                     <th class="py-3 px-4">Duty Status & Certs</th>
+                                    <th class="py-3 px-4">Akumulasi Duty & Hashtag Rule</th>
                                     <th class="py-3 px-4">YouTube Handle</th>
                                     <th class="py-3 px-4 text-center">Status</th>
                                     <th class="py-3 px-4 text-right">Actions</th>
@@ -1147,7 +1212,7 @@ onMounted(() => {
                                             <img 
                                                 :src="officer.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${officer.callsign}`" 
                                                 referrerpolicy="no-referrer"
-                                                class="w-10 h-10 rounded-xl bg-slate-800 object-cover border border-slate-700/80 shrink-0" 
+                                                class="w-10 h-10 rounded-md bg-slate-950 object-cover border border-slate-800 shrink-0" 
                                                 loading="lazy"
                                             />
                                             <div>
@@ -1162,19 +1227,19 @@ onMounted(() => {
                                     <!-- Agency & Rank -->
                                     <td class="py-3.5 px-4 font-mono">
                                         <div class="flex flex-col items-start gap-1">
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold border" :class="getDeptBadgeClass(officer.agency?.agency_code || officer.department)">
+                                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border" :class="getDeptBadgeClass(officer.agency?.agency_code || officer.department)">
                                                 {{ officer.agency?.agency_name || officer.department }}
                                             </span>
                                             <span class="text-slate-300 text-[11px] font-medium">
                                                 {{ officer.rank_relation?.rank_title || officer.rank || 'Officer' }}
-                                                <span v-if="officer.division" class="text-cyan-400">({{ officer.division.division_code || officer.division.division_name }})</span>
+                                                <span v-if="officer.division" class="text-blue-400">({{ officer.division.division_code || officer.division.division_name }})</span>
                                             </span>
                                         </div>
                                     </td>
 
                                     <!-- Callsign / Badge -->
                                     <td class="py-3.5 px-4 font-mono">
-                                        <div class="font-bold text-cyan-300">{{ officer.callsign }}</div>
+                                        <div class="font-bold text-blue-400">{{ officer.callsign }}</div>
                                         <div class="text-slate-400 text-[11px]">Badge {{ officer.badge_number || '#000' }}</div>
                                     </td>
 
@@ -1187,7 +1252,7 @@ onMounted(() => {
                                             <span 
                                                 v-for="cert in officer.certifications" 
                                                 :key="cert.id"
-                                                class="px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 text-[9px] border border-cyan-700/50"
+                                                class="px-1.5 py-0.2 rounded-md bg-slate-950 text-blue-300 text-[9px] border border-slate-800"
                                             >
                                                 🎖️ {{ cert.cert_type }}
                                             </span>
@@ -1195,12 +1260,36 @@ onMounted(() => {
                                         <span v-else class="text-[10px] text-slate-500 italic">No certs</span>
                                     </td>
 
+                                    <!-- Akumulasi Duty & Hashtag Bypass -->
+                                    <td class="py-3.5 px-4 font-mono">
+                                        <div class="flex items-center space-x-1.5 mb-1">
+                                            <span class="text-amber-400 font-bold text-[11px]">⏱️ {{ formatDutyHours(officer.monthly_duty_minutes) }}</span>
+                                            <button 
+                                                @click="openDutyModal(officer)"
+                                                title="Kelola/Sesuaikan Waktu Jam Patroli"
+                                                class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] border border-slate-700 transition"
+                                            >
+                                                ✏️ Adjust
+                                            </button>
+                                        </div>
+                                        <div class="mt-1">
+                                            <button 
+                                                @click="toggleHashtagBypass(officer)"
+                                                class="px-2 py-0.5 rounded text-[10px] font-bold border transition flex items-center space-x-1"
+                                                :class="officer.bypass_hashtag_check ? 'bg-purple-950/80 text-purple-300 border-purple-700/60 hover:bg-purple-900' : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'"
+                                                :title="officer.bypass_hashtag_check ? 'Bypass Aktif: Streamer dihitung valid patroli meski lupa memasukkan hashtag #imepolice' : 'Wajib Hashtag: Streamer harus memasukkan hashtag #imepolice / keyword valid'"
+                                            >
+                                                <span>{{ officer.bypass_hashtag_check ? '🔓 Bypass Hashtag: ON' : '🔒 Hashtag Check: Strict' }}</span>
+                                            </button>
+                                        </div>
+                                    </td>
+
                                     <!-- YouTube Handle -->
                                     <td class="py-3.5 px-4 font-mono">
                                         <a 
-                                            :href="`https://www.youtube.com/${officer.handle}`" 
+                                            :href="`https://www.youtube.com/${officer.handle && officer.handle.startsWith('@') ? officer.handle : '@' + (officer.handle || '')}`" 
                                             target="_blank" 
-                                            class="text-blue-400 hover:text-blue-300 hover:underline flex items-center space-x-1"
+                                            class="text-blue-400 hover:underline flex items-center space-x-1"
                                         >
                                             <span>{{ officer.handle }}</span>
                                         </a>
@@ -1210,8 +1299,8 @@ onMounted(() => {
                                     <td class="py-3.5 px-4 text-center">
                                         <button 
                                             @click="toggleOfficerStatus(officer)"
-                                            class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider transition border shadow-sm"
-                                            :class="officer.is_active ? 'bg-emerald-950 text-emerald-400 border-emerald-600/50 hover:bg-emerald-900' : 'bg-red-950 text-red-400 border-red-700/50 hover:bg-red-900'"
+                                            class="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider transition border"
+                                            :class="officer.is_active ? 'bg-emerald-950 text-emerald-400 border-emerald-800 hover:bg-emerald-900' : 'bg-rose-950 text-rose-400 border-rose-800 hover:bg-rose-900'"
                                         >
                                             {{ officer.is_active ? 'ACTIVE' : 'DISABLED' }}
                                         </button>
@@ -1222,13 +1311,13 @@ onMounted(() => {
                                         <div class="flex items-center justify-end space-x-2">
                                             <button 
                                                 @click="openEditModal(officer)" 
-                                                class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition text-xs font-mono"
+                                                class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 transition text-xs font-mono"
                                             >
                                                 Edit
                                             </button>
                                             <button 
                                                 @click="confirmDeleteOfficer(officer)" 
-                                                class="p-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 hover:text-red-300 border border-red-800/40 transition text-xs font-mono"
+                                                class="px-2.5 py-1 rounded-md bg-rose-950 hover:bg-rose-900 text-rose-400 border border-rose-800 transition text-xs font-mono"
                                             >
                                                 Hapus
                                             </button>
@@ -1243,12 +1332,12 @@ onMounted(() => {
 
             <!-- TAB 2: AGENCIES & RANKS STRUCTURE -->
             <div v-if="activeTab === 'agencies'" class="space-y-6 font-mono text-xs">
-                <div class="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl p-4">
                     <div>
                         <h2 class="text-sm font-bold text-white uppercase">Master Instansi Kepolisian & Hierarki Pangkat</h2>
                         <p class="text-slate-400 text-[11px] mt-0.5">Kelola data instansi (SASP, LSPD, BCSO, SAPR), tingkatan pangkat, level komando & sub-divisi taktis.</p>
                     </div>
-                    <button @click="openAddAgencyModal" class="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold rounded-xl shadow">
+                    <button @click="openAddAgencyModal" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md">
                         + Tambah Instansi
                     </button>
                 </div>
@@ -1257,56 +1346,56 @@ onMounted(() => {
                     <div 
                         v-for="agency in agenciesList" 
                         :key="agency.id"
-                        class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4"
+                        class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4"
                     >
                         <!-- Agency Header -->
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                             <div class="flex items-center space-x-3">
-                                <div class="px-3 py-1.5 rounded-xl font-black text-sm border" :class="getDeptBadgeClass(agency.agency_code)">
+                                <div class="px-3 py-1.5 rounded-md font-black text-sm border" :class="getDeptBadgeClass(agency.agency_code)">
                                     {{ agency.agency_code }}
                                 </div>
                                 <div>
                                     <h3 class="text-sm font-bold text-white">{{ agency.agency_name }}</h3>
-                                    <span class="text-[10px] text-slate-400">Yurisdiksi: <strong class="text-cyan-300">{{ agency.jurisdiction }}</strong></span>
+                                    <span class="text-[10px] text-slate-400">Yurisdiksi: <strong class="text-blue-400">{{ agency.jurisdiction }}</strong></span>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <button @click="openEditAgencyModal(agency)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[11px]">Edit</button>
-                                <button @click="deleteAgency(agency.id)" class="px-2 py-1 bg-red-950 text-red-400 hover:bg-red-900 border border-red-800/40 rounded text-[11px]">Hapus</button>
+                                <button @click="openEditAgencyModal(agency)" class="px-2.5 py-1 bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 rounded-md text-[11px]">Edit</button>
+                                <button @click="deleteAgency(agency.id)" class="px-2.5 py-1 bg-rose-950 hover:bg-rose-900 text-rose-400 border border-rose-800 rounded-md text-[11px]">Hapus</button>
                             </div>
                         </div>
 
                         <!-- Ranks List -->
                         <div class="space-y-2">
-                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold border-b border-slate-800/60 pb-1">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold border-b border-slate-800 pb-1">
                                 <span>TINGKATAN PANGKAT (LEVEL 1-10)</span>
-                                <button @click="openAddRankModal(agency.id)" class="text-cyan-400 hover:underline">+ Tambah Pangkat</button>
+                                <button @click="openAddRankModal(agency.id)" class="text-blue-400 hover:underline">+ Tambah Pangkat</button>
                             </div>
                             <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                                <div v-for="r in agency.ranks" :key="r.id" class="p-2 bg-slate-950/60 border border-slate-800 rounded-xl flex items-center justify-between">
+                                <div v-for="r in agency.ranks" :key="r.id" class="p-2 bg-slate-950 border border-slate-800 rounded-md flex items-center justify-between">
                                     <div>
                                         <span class="font-bold text-white">{{ r.rank_title }}</span>
                                         <span class="text-[10px] text-slate-400 ml-2">Level {{ r.level }} • ${{ Number(r.base_salary).toLocaleString() }}/duty</span>
                                     </div>
                                     <div class="flex items-center space-x-1.5">
                                         <button @click="openEditRankModal(r)" class="text-slate-400 hover:text-white">✏️</button>
-                                        <button @click="deleteRank(r.id)" class="text-red-400 hover:text-red-300">✕</button>
+                                        <button @click="deleteRank(r.id)" class="text-rose-400 hover:text-rose-300">✕</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Divisions List -->
-                        <div class="space-y-2 pt-2 border-t border-slate-800/60">
-                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold border-b border-slate-800/60 pb-1">
+                        <div class="space-y-2 pt-2 border-t border-slate-800">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold border-b border-slate-800 pb-1">
                                 <span>SUB-DIVISI KERJA</span>
-                                <button @click="openAddDivisionModal(agency.id)" class="text-cyan-400 hover:underline">+ Tambah Divisi</button>
+                                <button @click="openAddDivisionModal(agency.id)" class="text-blue-400 hover:underline">+ Tambah Divisi</button>
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                <div v-for="d in agency.divisions" :key="d.id" class="px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-xl flex items-center gap-2">
+                                <div v-for="d in agency.divisions" :key="d.id" class="px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-md flex items-center gap-2">
                                     <span class="font-bold text-slate-200">{{ d.division_name }}</span>
-                                    <span class="text-[10px] text-cyan-400">({{ d.division_code || '-' }})</span>
-                                    <button @click="deleteDivision(d.id)" class="text-red-400 hover:text-red-300 text-[10px]">✕</button>
+                                    <span class="text-[10px] text-blue-400">({{ d.division_code || '-' }})</span>
+                                    <button @click="deleteDivision(d.id)" class="text-rose-400 hover:text-rose-300 text-[10px]">✕</button>
                                 </div>
                             </div>
                         </div>
@@ -1317,10 +1406,10 @@ onMounted(() => {
             <!-- TAB 3: TACTICAL CERTIFICATIONS -->
             <div v-if="activeTab === 'certifications'" class="space-y-6 font-mono text-xs">
                 <!-- Cert Add Control -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                     <h2 class="text-sm font-bold text-white uppercase">Pemberian Kualifikasi Taktis Personel</h2>
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        <select v-model="certOfficerId" class="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs flex-1">
+                        <select v-model="certOfficerId" class="bg-slate-950 border border-slate-800 text-slate-200 rounded-md px-3 py-2 text-xs flex-1">
                             <option :value="null">-- Pilih Petugas Kepolisian --</option>
                             <option v-for="o in officers" :key="o.id" :value="o.id">
                                 {{ o.officer_name }} ({{ o.callsign }} - {{ o.department }})
@@ -1330,35 +1419,35 @@ onMounted(() => {
                             v-model="certType" 
                             type="text" 
                             placeholder="Contoh: Class 2 Firearms, Air Support Pilot, CQB Breaching..." 
-                            class="bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs flex-1"
+                            class="bg-slate-950 border border-slate-800 text-slate-200 rounded-md px-3 py-2 text-xs flex-1"
                         />
-                        <button @click="addCertification" class="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow">
+                        <button @click="addCertification" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md">
                             + Berikan Kualifikasi
                         </button>
                     </div>
                 </div>
 
                 <!-- Certifications Roster Table -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
                     <h3 class="text-sm font-bold text-slate-200">Daftar Kualifikasi Taktis Aktif Member</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div 
                             v-for="o in officers.filter(o => o.certifications && o.certifications.length > 0)" 
                             :key="o.id"
-                            class="p-4 bg-slate-950/80 border border-slate-800 rounded-2xl space-y-2"
+                            class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"
                         >
                             <div class="font-bold text-white text-sm flex items-center justify-between">
                                 <span>{{ o.officer_name }}</span>
-                                <span class="text-cyan-400 text-xs font-mono">{{ o.callsign }}</span>
+                                <span class="text-blue-400 text-xs font-mono">{{ o.callsign }}</span>
                             </div>
                             <div class="flex flex-wrap gap-1.5">
                                 <span 
                                     v-for="c in o.certifications" 
                                     :key="c.id" 
-                                    class="px-2 py-1 bg-slate-900 border border-cyan-500/40 text-cyan-300 rounded-lg text-[10px] flex items-center gap-1.5"
+                                    class="px-2 py-1 bg-slate-900 border border-slate-800 text-blue-300 rounded-md text-[10px] flex items-center gap-1.5"
                                 >
                                     <span>🎖️ {{ c.cert_type }}</span>
-                                    <button @click="deleteCertification(c.id)" class="text-red-400 hover:text-white">✕</button>
+                                    <button @click="deleteCertification(c.id)" class="text-rose-400 hover:text-white">✕</button>
                                 </span>
                             </div>
                         </div>
@@ -1368,12 +1457,12 @@ onMounted(() => {
 
             <!-- TAB 4: ANNOUNCEMENTS & ALERTS -->
             <div v-if="activeTab === 'announcements'" class="space-y-6 font-mono text-xs">
-                <div class="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+                <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl p-4">
                     <div>
                         <h2 class="text-sm font-bold text-white uppercase">Manajemen Promosi, Pengumuman & Alert Dashboard</h2>
                         <p class="text-slate-400 text-[11px] mt-0.5">Kelola banner pengumuman taktis yang muncul di halaman utama CCTV Multiview.</p>
                     </div>
-                    <button @click="openAddAnnouncementModal" class="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow">
+                    <button @click="openAddAnnouncementModal" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md">
                         + Tambah Alert
                     </button>
                 </div>
@@ -1382,14 +1471,14 @@ onMounted(() => {
                     <div 
                         v-for="a in announcements" 
                         :key="a.id"
-                        class="p-4 bg-slate-900/90 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between"
+                        class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2 flex flex-col justify-between"
                     >
                         <div class="space-y-1">
                             <div class="flex items-center justify-between">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-950 text-blue-300 border border-slate-800">
                                     {{ a.type }}
                                 </span>
-                                <button @click="toggleAnnouncement(a.id)" class="px-2 py-0.5 rounded text-[10px] font-bold" :class="a.is_active ? 'bg-emerald-950 text-emerald-400' : 'bg-red-950 text-red-400'">
+                                <button @click="toggleAnnouncement(a.id)" class="px-2 py-0.5 rounded-md text-[10px] font-bold border" :class="a.is_active ? 'bg-emerald-950 text-emerald-400 border-emerald-800' : 'bg-rose-950 text-rose-400 border-rose-800'">
                                     {{ a.is_active ? 'AKTIF' : 'NONAKTIF' }}
                                 </button>
                             </div>
@@ -1401,7 +1490,7 @@ onMounted(() => {
                             <span class="text-slate-500">{{ a.action_text || 'Tanpa Action' }}</span>
                             <div class="flex items-center space-x-2">
                                 <button @click="openEditAnnouncementModal(a)" class="text-slate-300 hover:text-white">Edit</button>
-                                <button @click="deleteAnnouncement(a.id)" class="text-red-400 hover:text-red-300">Hapus</button>
+                                <button @click="deleteAnnouncement(a.id)" class="text-rose-400 hover:text-rose-300">Hapus</button>
                             </div>
                         </div>
                     </div>
@@ -1410,20 +1499,20 @@ onMounted(() => {
 
             <!-- TAB 5: MEMBER ACCOUNTS -->
             <div v-if="activeTab === 'users'" class="space-y-6 font-mono text-xs">
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                     <div>
                         <h2 class="text-sm font-bold text-white uppercase">Daftar Akun Member Terdaftar</h2>
                         <p class="text-slate-400 text-[11px] mt-0.5">Kelola akun pengunjung & hak akses role di platform IME Police Multiview.</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <input v-model="userSearchQuery" type="text" placeholder="Cari nama / email..." class="w-64 bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-1.5 text-xs" />
-                        <button @click="openAddUserModal" class="px-3.5 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow shrink-0 hover:from-cyan-500 hover:to-blue-500">
+                        <input v-model="userSearchQuery" type="text" placeholder="Cari nama / email..." class="w-64 bg-slate-950 border border-slate-800 text-slate-200 rounded-md px-3 py-1.5 text-xs" />
+                        <button @click="openAddUserModal" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md shrink-0">
                             + Tambah Member
                         </button>
                     </div>
                 </div>
 
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
                     <table class="w-full text-left">
                         <thead>
                             <tr class="bg-slate-950 text-slate-400 text-[11px] uppercase border-b border-slate-800">
@@ -1439,24 +1528,24 @@ onMounted(() => {
                                 <td class="p-3.5 font-bold text-white">{{ u.name }}</td>
                                 <td class="p-3.5 text-slate-300">{{ u.email }}</td>
                                 <td class="p-3.5">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase" :class="{
-                                        'bg-purple-950 text-purple-300 border border-purple-700/60': u.role === 'admin',
-                                        'bg-cyan-950 text-cyan-300 border border-cyan-700/60': u.role === 'clipper',
-                                        'bg-slate-800 text-slate-300 border border-slate-700': u.role !== 'admin' && u.role !== 'clipper',
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase" :class="{
+                                        'bg-purple-950 text-purple-300 border border-purple-800': u.role === 'admin',
+                                        'bg-blue-950 text-blue-300 border border-blue-800': u.role === 'clipper',
+                                        'bg-slate-950 text-slate-300 border border-slate-800': u.role !== 'admin' && u.role !== 'clipper',
                                     }">
                                         {{ u.role || 'member' }}
                                     </span>
                                 </td>
                                 <td class="p-3.5">
-                                    <button @click="selectedUserWatchlistModal = u" class="text-cyan-400 hover:underline">
+                                    <button @click="selectedUserWatchlistModal = u" class="text-blue-400 hover:underline">
                                         ⭐ {{ u.watchlists_count || 0 }} Stream
                                     </button>
                                 </td>
                                 <td class="p-3.5 text-right space-x-1.5">
-                                    <button @click="openEditUserModal(u)" class="px-2 py-1 bg-slate-800 text-slate-200 border border-slate-700 rounded hover:bg-slate-700">
+                                    <button @click="openEditUserModal(u)" class="px-2.5 py-1 bg-slate-950 text-slate-200 border border-slate-800 rounded-md hover:bg-slate-800">
                                         ✏️ Edit
                                     </button>
-                                    <button v-if="u.id !== auth.user?.id" @click="handleDeleteUser(u.id, u.name)" class="px-2 py-1 bg-red-950 text-red-400 border border-red-800/40 rounded hover:bg-red-900">
+                                    <button v-if="u.id !== auth.user?.id" @click="handleDeleteUser(u.id, u.name)" class="px-2.5 py-1 bg-rose-950 text-rose-400 border border-rose-800 rounded-md hover:bg-rose-900">
                                         Hapus
                                     </button>
                                     <span v-else class="text-slate-500 italic text-[11px]">Anda (Admin)</span>
@@ -1470,8 +1559,8 @@ onMounted(() => {
         </div>
 
         <!-- MODAL: ADD / EDIT OFFICER (With Cascading Agency Dropdown) -->
-        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-            <div class="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-5 my-8 font-mono text-xs">
+        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-xl p-6 space-y-5 my-8 font-mono text-xs">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                     <h3 class="text-base font-bold text-white uppercase">
                         {{ isEditMode ? 'Edit Officer Details' : 'Add New Police Unit' }}
@@ -1488,12 +1577,12 @@ onMounted(() => {
                                 v-model="form.handle" 
                                 type="text" 
                                 placeholder="@channelname" 
-                                class="flex-1 bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3.5 py-2 focus:outline-none focus:border-cyan-500"
+                                class="flex-1 bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2 focus:outline-none focus:border-blue-500"
                             />
                             <button 
                                 @click="verifyYouTubeChannel" 
                                 :disabled="isCheckingChannel"
-                                class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-700/40 rounded-xl font-bold shadow transition shrink-0"
+                                class="px-3 py-2 bg-slate-950 hover:bg-slate-800 text-blue-400 border border-slate-800 rounded-md font-bold transition shrink-0"
                             >
                                 {{ isCheckingChannel ? 'Verifying...' : 'Verify' }}
                             </button>
@@ -1504,11 +1593,11 @@ onMounted(() => {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Streamer OOC Name *</label>
-                            <input v-model="form.streamer_name" type="text" placeholder="e.g. Gusti Aidan" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3.5 py-2" />
+                            <input v-model="form.streamer_name" type="text" placeholder="e.g. Gusti Aidan" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2" />
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Officer IC Name *</label>
-                            <input v-model="form.officer_name" type="text" placeholder="e.g. Ofc. Adam Darski" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3.5 py-2" />
+                            <input v-model="form.officer_name" type="text" placeholder="e.g. Ofc. Adam Darski" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2" />
                         </div>
                     </div>
 
@@ -1516,7 +1605,7 @@ onMounted(() => {
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Instansi (Agency) *</label>
-                            <select v-model="form.agency_id" @change="onAgencyChange" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3.5 py-2">
+                            <select v-model="form.agency_id" @change="onAgencyChange" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2">
                                 <option :value="null">-- Default (LSPD) --</option>
                                 <option v-for="a in agenciesList" :key="a.id" :value="a.id">
                                     {{ a.agency_code }} - {{ a.agency_name }}
@@ -1525,7 +1614,7 @@ onMounted(() => {
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Pangkat (Rank) *</label>
-                            <select v-model="form.rank_id" @change="onRankChange" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3.5 py-2">
+                            <select v-model="form.rank_id" @change="onRankChange" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2">
                                 <option :value="null">-- Select Rank --</option>
                                 <option v-for="r in availableRanksForSelectedAgency" :key="r.id" :value="r.id">
                                     {{ r.rank_title }} (Lvl {{ r.level }})
@@ -1534,7 +1623,7 @@ onMounted(() => {
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Sub-Divisi Kerja</label>
-                            <select v-model="form.division_id" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3.5 py-2">
+                            <select v-model="form.division_id" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2">
                                 <option :value="null">-- General Patrol --</option>
                                 <option v-for="d in availableDivisionsForSelectedAgency" :key="d.id" :value="d.id">
                                     {{ d.division_name }} ({{ d.division_code }})
@@ -1547,15 +1636,15 @@ onMounted(() => {
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Callsign Radio *</label>
-                            <input v-model="form.callsign" type="text" placeholder="e.g. 1-ADAM-12" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3.5 py-2 font-bold text-cyan-300" />
+                            <input v-model="form.callsign" type="text" placeholder="e.g. 1-ADAM-12" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2 font-bold text-blue-400" />
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Badge Number</label>
-                            <input v-model="form.badge_number" type="text" placeholder="e.g. #163" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3.5 py-2" />
+                            <input v-model="form.badge_number" type="text" placeholder="e.g. #163" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2" />
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Duty Status</label>
-                            <select v-model="form.duty_status" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3.5 py-2">
+                            <select v-model="form.duty_status" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2">
                                 <option value="10-8 (On-Duty)">10-8 (On-Duty)</option>
                                 <option value="10-7 (Off-Duty)">10-7 (Off-Duty)</option>
                                 <option value="10-6 (Busy)">10-6 (Busy)</option>
@@ -1568,20 +1657,38 @@ onMounted(() => {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Patrol Zone</label>
-                            <input v-model="form.patrol_zone" type="text" placeholder="e.g. Mission Row / Downtown" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3.5 py-2" />
+                            <input v-model="form.patrol_zone" type="text" placeholder="e.g. Mission Row / Downtown" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2" />
                         </div>
                         <div class="flex items-center pt-5">
                             <label class="flex items-center space-x-2 cursor-pointer">
-                                <input v-model="form.is_active" type="checkbox" class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-cyan-500" />
+                                <input v-model="form.is_active" type="checkbox" class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-blue-500" />
                                 <span class="text-slate-200 font-bold">Status Aktif Dimonitor</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Admin Duty & Hashtag Settings -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Akumulasi Duty (Menit)</label>
+                            <input v-model.number="form.monthly_duty_minutes" type="number" min="0" placeholder="0" class="w-full bg-slate-950 border border-slate-800 text-amber-400 font-mono font-bold rounded-md px-3.5 py-2" />
+                            <span class="text-[10px] text-slate-400">Setara ~{{ ( (form.monthly_duty_minutes || 0) / 60 ).toFixed(1) }} jam patroli</span>
+                        </div>
+                        <div class="flex items-center pt-2">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input v-model="form.bypass_hashtag_check" type="checkbox" class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-purple-500" />
+                                <div>
+                                    <span class="text-slate-200 font-bold block text-xs">Break / Bypass Hashtag Rule</span>
+                                    <span class="text-[10px] text-slate-400 block leading-tight">Selalu lolos 10-8 walau lupa hashtag #IMEPolice</span>
+                                </div>
                             </label>
                         </div>
                     </div>
                 </div>
 
                 <div class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-3">
-                    <button @click="showModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl">Batal</button>
-                    <button @click="saveOfficer" :disabled="isSavingOfficer" class="px-5 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow">
+                    <button @click="showModal = false" class="px-4 py-2 bg-slate-950 border border-slate-800 text-slate-300 rounded-md hover:bg-slate-800">Batal</button>
+                    <button @click="saveOfficer" :disabled="isSavingOfficer" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md">
                         {{ isSavingOfficer ? 'Saving...' : 'Simpan Data Petugas' }}
                     </button>
                 </div>
@@ -1589,8 +1696,8 @@ onMounted(() => {
         </div>
 
         <!-- MODAL: ADD / EDIT AGENCY -->
-        <div v-if="showAgencyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 font-mono text-xs">
+        <div v-if="showAgencyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-6 space-y-4 font-mono text-xs">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <h3 class="text-sm font-bold text-white uppercase">{{ isEditAgency ? 'Edit Instansi' : 'Tambah Instansi Baru' }}</h3>
                     <button @click="showAgencyModal = false" class="text-slate-400 hover:text-white">✕</button>
@@ -1598,15 +1705,15 @@ onMounted(() => {
                 <div class="space-y-3">
                     <div>
                         <label class="block text-slate-300 mb-1 font-bold">Kode Instansi (e.g. SASP, LSPD) *</label>
-                        <input v-model="agencyForm.agency_code" type="text" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                        <input v-model="agencyForm.agency_code" type="text" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                     </div>
                     <div>
                         <label class="block text-slate-300 mb-1 font-bold">Nama Lengkap Instansi *</label>
-                        <input v-model="agencyForm.agency_name" type="text" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                        <input v-model="agencyForm.agency_name" type="text" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                     </div>
                     <div>
                         <label class="block text-slate-300 mb-1 font-bold">Yurisdiksi *</label>
-                        <select v-model="agencyForm.jurisdiction" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2">
+                        <select v-model="agencyForm.jurisdiction" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2">
                             <option value="Statewide">Statewide</option>
                             <option value="City">City</option>
                             <option value="County">County</option>
@@ -1615,15 +1722,15 @@ onMounted(() => {
                     </div>
                 </div>
                 <div class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2">
-                    <button @click="showAgencyModal = false" class="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-xl">Batal</button>
-                    <button @click="saveAgency" class="px-4 py-1.5 bg-cyan-600 text-white font-bold rounded-xl">Simpan Instansi</button>
+                    <button @click="showAgencyModal = false" class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md">Batal</button>
+                    <button @click="saveAgency" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md">Simpan Instansi</button>
                 </div>
             </div>
         </div>
 
         <!-- MODAL: ADD / EDIT RANK -->
-        <div v-if="showRankModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 font-mono text-xs">
+        <div v-if="showRankModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-6 space-y-4 font-mono text-xs">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <h3 class="text-sm font-bold text-white uppercase">{{ isEditRank ? 'Edit Pangkat' : 'Tambah Pangkat Baru' }}</h3>
                     <button @click="showRankModal = false" class="text-slate-400 hover:text-white">✕</button>
@@ -1631,29 +1738,29 @@ onMounted(() => {
                 <div class="space-y-3">
                     <div>
                         <label class="block text-slate-300 mb-1 font-bold">Nama Pangkat (e.g. Senior Trooper) *</label>
-                        <input v-model="rankForm.rank_title" type="text" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                        <input v-model="rankForm.rank_title" type="text" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Level (1 - 10)</label>
-                            <input v-model="rankForm.level" type="number" min="1" max="10" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                            <input v-model="rankForm.level" type="number" min="1" max="10" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Gaji Pokok ($)</label>
-                            <input v-model="rankForm.base_salary" type="number" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                            <input v-model="rankForm.base_salary" type="number" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                         </div>
                     </div>
                 </div>
                 <div class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2">
-                    <button @click="showRankModal = false" class="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-xl">Batal</button>
-                    <button @click="saveRank" class="px-4 py-1.5 bg-cyan-600 text-white font-bold rounded-xl">Simpan Pangkat</button>
+                    <button @click="showRankModal = false" class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md">Batal</button>
+                    <button @click="saveRank" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md">Simpan Pangkat</button>
                 </div>
             </div>
         </div>
 
         <!-- MODAL: ADD / EDIT DIVISION -->
-        <div v-if="showDivisionModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 font-mono text-xs">
+        <div v-if="showDivisionModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-6 space-y-4 font-mono text-xs">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <h3 class="text-sm font-bold text-white uppercase">{{ isEditDivision ? 'Edit Sub-Divisi' : 'Tambah Sub-Divisi Baru' }}</h3>
                     <button @click="showDivisionModal = false" class="text-slate-400 hover:text-white">✕</button>
@@ -1661,23 +1768,23 @@ onMounted(() => {
                 <div class="space-y-3">
                     <div>
                         <label class="block text-slate-300 mb-1 font-bold">Nama Sub-Divisi (e.g. Special Response Team) *</label>
-                        <input v-model="divisionForm.division_name" type="text" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                        <input v-model="divisionForm.division_name" type="text" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                     </div>
                     <div>
                         <label class="block text-slate-300 mb-1 font-bold">Kode Divisi (e.g. SRT, HP, CID)</label>
-                        <input v-model="divisionForm.division_code" type="text" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                        <input v-model="divisionForm.division_code" type="text" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                     </div>
                 </div>
                 <div class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2">
-                    <button @click="showDivisionModal = false" class="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-xl">Batal</button>
-                    <button @click="saveDivision" class="px-4 py-1.5 bg-cyan-600 text-white font-bold rounded-xl">Simpan Divisi</button>
+                    <button @click="showDivisionModal = false" class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md">Batal</button>
+                    <button @click="saveDivision" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md">Simpan Divisi</button>
                 </div>
             </div>
         </div>
 
         <!-- MODAL: ADD / EDIT ANNOUNCEMENT / ALERT -->
-        <div v-if="showAnnouncementModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4 font-mono text-xs">
+        <div v-if="showAnnouncementModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-lg p-6 space-y-4 font-mono text-xs">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <h3 class="text-sm font-bold text-white uppercase">{{ isEditAnnouncement ? 'Edit Announcement / Alert' : 'Tambah Announcement / Alert Baru' }}</h3>
                     <button @click="showAnnouncementModal = false" class="text-slate-400 hover:text-white">✕</button>
@@ -1686,7 +1793,7 @@ onMounted(() => {
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Tipe Alert *</label>
-                            <select v-model="announcementForm.type" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2">
+                            <select v-model="announcementForm.type" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2">
                                 <option value="info">Info (Biru)</option>
                                 <option value="warning">Peringatan (Kuning)</option>
                                 <option value="danger">Bahaya / Darurat (Merah)</option>
@@ -1696,7 +1803,7 @@ onMounted(() => {
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Status *</label>
-                            <select v-model="announcementForm.is_active" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2">
+                            <select v-model="announcementForm.is_active" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2">
                                 <option :value="true">Aktif (Tampil)</option>
                                 <option :value="false">Nonaktif (Sembunyikan)</option>
                             </select>
@@ -1705,39 +1812,39 @@ onMounted(() => {
 
                     <div>
                         <label class="block text-slate-300 mb-1 font-bold">Judul Alert / Banner *</label>
-                        <input v-model="announcementForm.title" type="text" placeholder="Contoh: CODE 3 EMERGENCY ANNOUNCEMENT" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                        <input v-model="announcementForm.title" type="text" placeholder="Contoh: CODE 3 EMERGENCY ANNOUNCEMENT" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                     </div>
 
                     <div>
                         <label class="block text-slate-300 mb-1 font-bold">Pesan Pengumuman *</label>
-                        <textarea v-model="announcementForm.message" rows="3" placeholder="Tulis isi pengumuman atau instruksi taktis..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2 resize-none"></textarea>
+                        <textarea v-model="announcementForm.message" rows="3" placeholder="Tulis isi pengumuman atau instruksi taktis..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 resize-none"></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Teks Tombol Aksi (Opsional)</label>
-                            <input v-model="announcementForm.action_text" type="text" placeholder="Contoh: Lihat Detail" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                            <input v-model="announcementForm.action_text" type="text" placeholder="Contoh: Lihat Detail" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">URL Aksi (Opsional)</label>
-                            <input v-model="announcementForm.action_url" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                            <input v-model="announcementForm.action_url" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Icon (Opsional)</label>
-                            <input v-model="announcementForm.icon" type="text" placeholder="Contoh: 🚨, 📢, ⚠️" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                            <input v-model="announcementForm.icon" type="text" placeholder="Contoh: 🚨, 📢, ⚠️" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">URL Banner Image (Opsional)</label>
-                            <input v-model="announcementForm.image_url" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2" />
+                            <input v-model="announcementForm.image_url" type="text" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2" />
                         </div>
                     </div>
                 </div>
                 <div class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2">
-                    <button @click="showAnnouncementModal = false" class="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700">Batal</button>
-                    <button @click="saveAnnouncement" :disabled="isSavingAnnouncement" class="px-4 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50">
+                    <button @click="showAnnouncementModal = false" class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md">Batal</button>
+                    <button @click="saveAnnouncement" :disabled="isSavingAnnouncement" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md disabled:opacity-50">
                         {{ isSavingAnnouncement ? 'Menyimpan...' : (isEditAnnouncement ? 'Update Alert' : 'Simpan Alert Baru') }}
                     </button>
                 </div>
@@ -1755,11 +1862,11 @@ onMounted(() => {
         >
             <div 
                 v-if="toast.show" 
-                class="fixed bottom-5 right-5 z-50 max-w-sm rounded-2xl p-4 shadow-2xl border flex items-center space-x-3 font-mono text-xs"
+                class="fixed bottom-5 right-5 z-50 max-w-sm rounded-md p-4 border flex items-center space-x-3 font-mono text-xs"
                 :class="{
-                    'bg-emerald-950/95 text-emerald-200 border-emerald-600/60 shadow-emerald-950/50': toast.type === 'success',
-                    'bg-red-950/95 text-red-200 border-red-600/60 shadow-red-950/50': toast.type === 'error',
-                    'bg-slate-900/95 text-slate-200 border-cyan-500/60 shadow-black/60': toast.type === 'info',
+                    'bg-slate-900 text-emerald-300 border-emerald-800': toast.type === 'success',
+                    'bg-slate-900 text-rose-300 border-rose-800': toast.type === 'error',
+                    'bg-slate-900 text-blue-300 border-blue-800': toast.type === 'info',
                 }"
             >
                 <span v-if="toast.type === 'success'" class="text-base">✓</span>
@@ -1772,8 +1879,8 @@ onMounted(() => {
 
         <!-- USER WATCHLIST DETAIL MODAL -->
         <Teleport to="body">
-            <div v-if="selectedUserWatchlistModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-                <div class="relative w-full max-w-lg bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl p-6 text-slate-100 font-sans space-y-4">
+            <div v-if="selectedUserWatchlistModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+                <div class="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-100 font-sans space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                         <div class="flex items-center space-x-2">
                             <span class="text-xl">⭐</span>
@@ -1789,19 +1896,19 @@ onMounted(() => {
                         <div v-if="!selectedUserWatchlistModal.watchlists || selectedUserWatchlistModal.watchlists.length === 0" class="py-6 text-center text-slate-500 font-mono text-xs">
                             Member ini belum menyimpan stream ke Cloud Watchlist.
                         </div>
-                        <div v-else v-for="item in selectedUserWatchlistModal.watchlists" :key="item.id" class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+                        <div v-else v-for="item in selectedUserWatchlistModal.watchlists" :key="item.id" class="p-3 bg-slate-950 border border-slate-800 rounded-md flex items-center justify-between text-xs">
                             <div>
                                 <div class="font-bold text-slate-200">{{ item.officer_name || item.video_id }}</div>
                                 <div class="text-[10px] text-slate-500 font-mono">Video ID: {{ item.video_id }}</div>
                             </div>
-                            <a :href="`https://youtube.com/watch?v=${item.video_id}`" target="_blank" class="px-2 py-1 bg-red-950 text-red-300 border border-red-800/40 rounded text-[11px] font-mono hover:bg-red-900 transition">
+                            <a :href="`https://youtube.com/watch?v=${item.video_id}`" target="_blank" class="px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800 rounded-md text-[11px] font-mono hover:bg-rose-900 transition">
                                 YouTube ↗
                             </a>
                         </div>
                     </div>
 
                     <div class="pt-2 text-right border-t border-slate-800">
-                        <button @click="selectedUserWatchlistModal = null" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl text-slate-200 transition">
+                        <button @click="selectedUserWatchlistModal = null" class="px-4 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-bold rounded-md text-slate-200 transition">
                             Tutup
                         </button>
                     </div>
@@ -1811,8 +1918,8 @@ onMounted(() => {
 
         <!-- MODAL: ADD / EDIT USER MEMBER -->
         <Teleport to="body">
-            <div v-if="showUserModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 font-mono text-xs text-slate-100">
+            <div v-if="showUserModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-6 space-y-4 font-mono text-xs text-slate-100">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                         <h3 class="text-sm font-bold text-white uppercase">{{ isEditUser ? 'Edit Akun Member' : 'Tambah Akun Member Baru' }}</h3>
                         <button @click="showUserModal = false" class="text-slate-400 hover:text-white">✕</button>
@@ -1820,21 +1927,21 @@ onMounted(() => {
                     <div class="space-y-3">
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Nama Lengkap *</label>
-                            <input v-model="userForm.name" type="text" placeholder="Contoh: John Doe" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500" />
+                            <input v-model="userForm.name" type="text" placeholder="Contoh: John Doe" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500" />
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Email Address *</label>
-                            <input v-model="userForm.email" type="email" placeholder="nama@email.com" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500" />
+                            <input v-model="userForm.email" type="email" placeholder="nama@email.com" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500" />
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">
                                 Password {{ isEditUser ? '(Opsional - Isi jika ingin ubah password)' : '*' }}
                             </label>
-                            <input v-model="userForm.password" type="password" placeholder="Minimal 6 karakter" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500" />
+                            <input v-model="userForm.password" type="password" placeholder="Minimal 6 karakter" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500" />
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Role Akses Pengguna *</label>
-                            <select v-model="userForm.role" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500">
+                            <select v-model="userForm.role" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500">
                                 <option value="member">Member (Pengunjung Umum - Watchlist Cloud)</option>
                                 <option value="clipper">Clipper (Editor - Akses Fitur Potong Video Clipper)</option>
                                 <option value="admin">Admin (Akses Penuh Command Center & Dashboard Dispatcher)</option>
@@ -1842,9 +1949,60 @@ onMounted(() => {
                         </div>
                     </div>
                     <div class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2">
-                        <button @click="showUserModal = false" class="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700">Batal</button>
-                        <button @click="saveUser" :disabled="isSavingUser" class="px-4 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-xl shadow disabled:opacity-50 hover:from-cyan-500 hover:to-blue-500">
+                        <button @click="showUserModal = false" class="px-3 py-1.5 bg-slate-950 border border-slate-800 text-slate-300 rounded-md hover:bg-slate-800">Batal</button>
+                        <button @click="saveUser" :disabled="isSavingUser" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md disabled:opacity-50">
                             {{ isSavingUser ? 'Menyimpan...' : (isEditUser ? 'Update Akun' : 'Simpan Akun Baru') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
+        <!-- MODAL: ADJUST DUTY TIME -->
+        <Teleport to="body">
+            <div v-if="showDutyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 font-mono text-xs">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-6 space-y-4 text-slate-100">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-white uppercase">Adjust Duty Time</h3>
+                            <p class="text-[11px] text-slate-400" v-if="dutyOfficer">{{ dutyOfficer.officer_name }} ({{ dutyOfficer.callsign }})</p>
+                        </div>
+                        <button @click="showDutyModal = false" class="text-slate-400 hover:text-white">✕</button>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="p-3 bg-slate-950 border border-slate-800 rounded-md text-slate-300">
+                            <div>Waktu Akumulasi Saat Ini: <strong class="text-amber-400">{{ formatDutyHours(dutyOfficer?.monthly_duty_minutes) }}</strong></div>
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Jenis Penyesuaian</label>
+                            <select v-model="dutyAction" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2">
+                                <option value="add">➕ Tambah Waktu (Menit)</option>
+                                <option value="subtract">➖ Kurangi Waktu (Menit)</option>
+                                <option value="set">📌 Set Total Menit Langsung</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold">Durasi Menit</label>
+                            <input 
+                                v-model.number="dutyMinutesInput" 
+                                type="number" 
+                                min="0" 
+                                placeholder="Masukkan menit, contoh: 60 (1 jam)" 
+                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2 font-mono text-white" 
+                            />
+                            <div class="text-[10px] text-slate-400 mt-1">
+                                Subtotal setara ±{{ ((dutyMinutesInput || 0) / 60).toFixed(1) }} jam
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-2">
+                        <button @click="showDutyModal = false" class="px-4 py-2 bg-slate-950 border border-slate-800 text-slate-300 rounded-md hover:bg-slate-800">Batal</button>
+                        <button @click="handleAdjustDuty" :disabled="isAdjustingDuty" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-md disabled:opacity-50">
+                            {{ isAdjustingDuty ? 'Memproses...' : 'Terapkan Penyesuaian' }}
                         </button>
                     </div>
                 </div>

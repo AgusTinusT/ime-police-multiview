@@ -32,6 +32,8 @@ Homestead.yaml
 Thumbs.db
 
 # Documentation & Scratch Files
+scratch/
+panduan.html
 ACCOUNTS_SEEDER.md
 PROJECT_IMPROVEMENTS_ROADMAP.md
 Spesifikasi Skema Tabel.md

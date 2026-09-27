@@ -147,18 +147,11 @@ const submitFeedbackForm = async () => {
     <TacticalLayout>
         <Head title="Pusat Laporan & Feedback — IME Police Terminal" />
 
-        <!-- Ambient background glow spots -->
-        <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-            <div class="absolute -top-32 left-1/4 -translate-x-1/2 w-[700px] h-[400px] bg-blue-600/10 blur-[140px] rounded-full"></div>
-            <div class="absolute top-[35%] -right-28 w-[500px] h-[500px] bg-blue-800/15 blur-[130px] rounded-full"></div>
-            <div class="absolute bottom-10 left-1/3 w-[600px] h-[350px] bg-slate-900/40 blur-[150px] rounded-full"></div>
-        </div>
-
         <main class="relative z-10 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
             
             <!-- Hero Header Section -->
             <div class="text-center space-y-3">
-                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-950/80 border border-blue-800/60 text-blue-400 font-mono text-xs font-bold shadow-sm">
+                <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-mono text-xs font-bold">
                     <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" alt="" />
                     <span>DUKUNGAN PENGGUNA & DISPATCH</span>
                 </div>
@@ -173,11 +166,11 @@ const submitFeedbackForm = async () => {
             <!-- Toast Notifications -->
             <div
                 v-if="successMessage"
-                class="bg-emerald-950/90 border border-emerald-500/50 rounded-2xl p-4 text-xs text-emerald-300 font-mono flex items-start gap-3 shadow-lg"
+                class="bg-slate-900 border border-emerald-800 rounded-md p-4 text-xs text-emerald-400 font-mono flex items-start gap-3"
             >
                 <span class="text-lg leading-none">✓</span>
                 <div>
-                    <div class="font-bold text-emerald-200 mb-0.5">
+                    <div class="font-bold text-emerald-300 mb-0.5">
                         Laporan Berhasil Terkirim!
                     </div>
                     <div>{{ successMessage }}</div>
@@ -186,19 +179,19 @@ const submitFeedbackForm = async () => {
 
             <div
                 v-if="errorMessage"
-                class="bg-rose-950/90 border border-rose-500/50 rounded-2xl p-4 text-xs text-rose-300 font-mono flex items-start gap-3 shadow-lg"
+                class="bg-slate-900 border border-rose-800 rounded-md p-4 text-xs text-rose-400 font-mono flex items-start gap-3"
             >
                 <span class="text-lg leading-none">✕</span>
                 <div>
-                    <div class="font-bold text-rose-200 mb-0.5">
+                    <div class="font-bold text-rose-300 mb-0.5">
                         Gagal Mengirim Laporan
                     </div>
                     <div>{{ errorMessage }}</div>
                 </div>
             </div>
 
-            <!-- Main Form Card Container (Sleek Dark Surface) -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-8">
+            <!-- Main Form Card Container (Solid Dark Surface) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 space-y-8">
                 
                 <!-- 1. Category Selector (4 Interactive Cards) -->
                 <div>
@@ -212,10 +205,10 @@ const submitFeedbackForm = async () => {
                             type="button"
                             @click="selectType('BUG_REPORT')"
                             :class="[
-                                'p-4 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1.5',
+                                'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
                                 feedbackForm.type === 'BUG_REPORT'
-                                    ? 'bg-rose-950/80 border-rose-500/80 text-white shadow-lg shadow-rose-950/50 ring-1 ring-rose-500/30'
-                                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                                    ? 'bg-rose-950 border-rose-800 text-white'
+                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                             ]"
                         >
                             <img :src="iconBug" class="w-6 h-6 invert" alt="" />
@@ -228,10 +221,10 @@ const submitFeedbackForm = async () => {
                             type="button"
                             @click="selectType('DATA_CORRECTION')"
                             :class="[
-                                'p-4 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1.5',
+                                'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
                                 feedbackForm.type === 'DATA_CORRECTION'
-                                    ? 'bg-amber-950/80 border-amber-500/80 text-white shadow-lg shadow-amber-950/50 ring-1 ring-amber-500/30'
-                                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                                    ? 'bg-amber-950 border-amber-800 text-white'
+                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                             ]"
                         >
                             <img :src="iconEdit" class="w-6 h-6 invert" alt="" />
@@ -244,10 +237,10 @@ const submitFeedbackForm = async () => {
                             type="button"
                             @click="selectType('CHANNEL_REQUEST')"
                             :class="[
-                                'p-4 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1.5',
+                                'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
                                 feedbackForm.type === 'CHANNEL_REQUEST'
-                                    ? 'bg-blue-950/80 border-blue-500/80 text-white shadow-lg shadow-blue-950/50 ring-1 ring-blue-500/30'
-                                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                                    ? 'bg-blue-950 border-blue-800 text-white'
+                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                             ]"
                         >
                             <img :src="iconQuickAdd" class="w-6 h-6 invert" alt="" />
@@ -260,10 +253,10 @@ const submitFeedbackForm = async () => {
                             type="button"
                             @click="selectType('OTHER')"
                             :class="[
-                                'p-4 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1.5',
+                                'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
                                 feedbackForm.type === 'OTHER'
-                                    ? 'bg-purple-950/80 border-purple-500/80 text-white shadow-lg shadow-purple-950/50 ring-1 ring-purple-500/30'
-                                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                                    ? 'bg-purple-950 border-purple-800 text-white'
+                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                             ]"
                         >
                             <img :src="iconFeedback" class="w-6 h-6 invert" alt="" />
@@ -286,7 +279,7 @@ const submitFeedbackForm = async () => {
                             type="text"
                             required
                             :placeholder="titlePlaceholder"
-                            class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition"
+                            class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition"
                         />
                     </div>
 
@@ -300,7 +293,7 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.typo_wrong"
                                 type="text"
                                 placeholder="Contoh: 'Pengamban Patroli'"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500 font-mono"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500 font-mono"
                             />
                         </div>
                         <div>
@@ -311,7 +304,7 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.typo_correct"
                                 type="text"
                                 placeholder="Contoh: 'Pengembangan Patroli'"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500 font-mono"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500 font-mono"
                             />
                         </div>
                     </div>
@@ -326,7 +319,7 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.officer_name"
                                 type="text"
                                 placeholder="Ofc. Budi / 1-ADAM-12"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -335,7 +328,7 @@ const submitFeedbackForm = async () => {
                             </label>
                             <select
                                 v-model="feedbackForm.department"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500 font-mono"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500 font-mono cursor-pointer"
                             >
                                 <option value="LSPD">LSPD (Police)</option>
                                 <option value="BCSO">BCSO (Sheriff)</option>
@@ -355,7 +348,7 @@ const submitFeedbackForm = async () => {
                             required
                             rows="4"
                             :placeholder="descriptionPlaceholder"
-                            class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition leading-relaxed"
+                            class="w-full px-4 py-3 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition leading-relaxed"
                         ></textarea>
                     </div>
 
@@ -369,9 +362,9 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.image_url"
                                 type="url"
                                 placeholder="Tempelkan URL Gambar (contoh: https://i.imgur.com/example.png atau Discord attachment link)..."
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-none focus:border-blue-500"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-none focus:border-blue-500"
                             />
-                            <div class="border border-dashed border-slate-800 rounded-2xl p-4 text-center bg-slate-950/40 text-xs text-slate-400 space-y-1">
+                            <div class="border border-dashed border-slate-800 rounded-md p-4 text-center bg-slate-950 text-xs text-slate-400 space-y-1">
                                 <div class="flex items-center justify-center gap-1.5 text-blue-400 font-mono text-[11px] font-semibold">
                                     <span>🤖 INTEGRASI GAMBAR DISCORD BOT AUTOMATIC</span>
                                 </div>
@@ -392,7 +385,7 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.sender_name"
                                 type="text"
                                 placeholder="Contoh: Citizen Ray / raymond@gmail.com"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -403,13 +396,13 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.handle_or_url"
                                 type="url"
                                 placeholder="https://youtube.com/@handle atau link halaman terkait"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-none focus:border-blue-500"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-none focus:border-blue-500"
                             />
                         </div>
                     </div>
 
                     <!-- Submit Action Footer -->
-                    <div class="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="pt-2 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <span class="text-[11px] text-slate-500 font-mono">
                             ⚡ Terhubung langsung ke Webhook Dispatcher
                         </span>
@@ -417,7 +410,7 @@ const submitFeedbackForm = async () => {
                         <button
                             type="submit"
                             :disabled="isSubmitting"
-                            class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-mono font-bold uppercase tracking-wider transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
+                            class="w-full sm:w-auto px-6 py-3 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-center gap-2"
                         >
                             <img
                                 v-if="isSubmitting"
@@ -439,9 +432,9 @@ const submitFeedbackForm = async () => {
             </div>
 
             <!-- Bottom Info Banner -->
-            <div class="flex items-center gap-3 p-4 rounded-2xl bg-slate-900 border border-slate-800 text-xs text-slate-400 shadow-sm">
-                <div class="p-2 rounded-xl bg-blue-950 text-blue-400 border border-blue-800/60 shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-3 p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
+                <div class="p-1.5 rounded-md bg-slate-950 text-blue-400 border border-slate-800 shrink-0">
+                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>

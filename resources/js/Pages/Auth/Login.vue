@@ -45,7 +45,7 @@ const submit = () => {
             </div>
 
             <!-- Card Container -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5">
                 <!-- Tab Switcher -->
                 <div class="flex border-b border-slate-800 pb-3">
                     <span class="flex-1 py-1.5 text-xs font-mono text-center font-bold text-blue-400 border-b-2 border-blue-500">
@@ -56,7 +56,7 @@ const submit = () => {
                     </Link>
                 </div>
 
-                <div v-if="status" class="p-3 rounded-lg bg-blue-950 border border-blue-700/50 text-blue-300 text-xs font-mono">
+                <div v-if="status" class="p-3 rounded-md bg-slate-950 border border-blue-900/50 text-blue-400 text-xs font-mono">
                     {{ status }}
                 </div>
 
@@ -70,7 +70,7 @@ const submit = () => {
                             required
                             autofocus
                             placeholder="nama@email.com"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                         />
                         <div v-if="form.errors.email" class="text-red-400 text-[11px] mt-1">
                             {{ form.errors.email }}
@@ -85,7 +85,7 @@ const submit = () => {
                             v-model="form.password"
                             required
                             placeholder="••••••••"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                         />
                         <div v-if="form.errors.password" class="text-red-400 text-[11px] mt-1">
                             {{ form.errors.password }}
@@ -97,7 +97,7 @@ const submit = () => {
                             <input
                                 type="checkbox"
                                 v-model="form.remember"
-                                class="rounded bg-slate-950 border-slate-800 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                                class="rounded-md bg-slate-950 border-slate-800 text-blue-600 focus:ring-0 w-4 h-4"
                             />
                             <span class="text-xs">Ingat saya</span>
                         </label>
@@ -107,14 +107,14 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs transition shadow-sm"
+                            class="w-full py-2.5 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs transition"
                         >
                             {{ form.processing ? 'Signing In...' : 'Sign In' }}
                         </button>
                     </div>
                 </form>
 
-                <div class="pt-3 border-t border-slate-800/80 text-center">
+                <div class="pt-3 border-t border-slate-800 text-center">
                     <p class="text-xs text-slate-400">
                         Belum memiliki akun?
                         <Link href="/register" class="text-blue-400 hover:text-blue-300 font-semibold ml-1">

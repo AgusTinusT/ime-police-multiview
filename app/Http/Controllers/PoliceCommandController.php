@@ -133,6 +133,8 @@ class PoliceCommandController extends Controller
             'initialTacChannels' => $tacChannels->values(),
             'initialReplays' => $recentReplays,
             'deptStats' => $deptStats,
+            'monthlyLeaderboard' => $this->getMonthlyLeaderboard(),
+            'supportOfficers' => $this->getSupportOfficers(),
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
     }
@@ -370,6 +372,8 @@ class PoliceCommandController extends Controller
             'replays' => $recentReplays,
             'offline_officers' => $offlineOfficers->values(),
             'dept_stats' => $deptStats,
+            'monthly_leaderboard' => $this->getMonthlyLeaderboard(),
+            'support_officers' => $this->getSupportOfficers(),
             'count' => $activeStreams->count(),
             'synced_at' => now()->toIso8601String(),
         ]);
@@ -513,7 +517,7 @@ class PoliceCommandController extends Controller
                     'patrol_zone' => $officer->patrol_zone,
                     'avatar_url' => $officer->avatar_url,
                     'subscriber_count' => $officer->subscriber_count ?? 0,
-                    'subscriber_count_text' => $officer->subscriber_count_text,
+                    'subscriber_count_text' => $officer->subscriber_count_text ?: ($officer->subscriber_count ? number_format($officer->subscriber_count) . " subs" : "< 1k subs"),
                     'is_online' => $isLive,
                     'live_video_id' => $liveStream ? $liveStream->video_id : null,
                 ];
@@ -622,6 +626,150 @@ class PoliceCommandController extends Controller
     }
 
     /**
+     * Generate monthly leaderboard metrics for officers based on DB data & live status.
+     */
+    public function getMonthlyLeaderboard(): array
+    {
+        $now = now();
+        $daysInMonth = $now->daysInMonth;
+        $daysLeft = max(1, $daysInMonth - $now->day);
+        $monthName = strtoupper($now->locale('id')->translatedFormat('F Y'));
+        $periodText = $monthName;
+        $resetCycleText = "Siklus Reset: {$daysLeft} Hari Lagi";
+
+        $liveStreams = ActiveStream::where('status', 'LIVE')->get()->keyBy('channel_id');
+        $officers = Officer::where('is_active', true)->get();
+
+        if ($officers->isEmpty()) {
+            return [
+                'period_text' => $periodText,
+                'reset_cycle_text' => $resetCycleText,
+                'top_streamers' => [],
+                'ranks_four_to_six' => [],
+                'all_top' => [],
+            ];
+        }
+
+        $mapped = $officers->map(function ($officer) use ($liveStreams, $now) {
+            $isLive = $liveStreams->has($officer->channel_id);
+            $liveStream = $isLive ? $liveStreams->get($officer->channel_id) : null;
+
+            $totalMinutesRaw = (int) ($officer->monthly_duty_minutes ?? 0);
+
+            $totalHoursDecimal = round($totalMinutesRaw / 60, 1);
+            $hoursPart = floor($totalMinutesRaw / 60);
+            $minsPart = $totalMinutesRaw % 60;
+            $totalHoursStr = "{$hoursPart} Jam {$minsPart}m";
+
+            $avgDaily = round($totalHoursDecimal / max(1, $now->day), 1);
+            $avgShiftStr = "{$avgDaily}j / hari";
+
+            $handle = trim($officer->handle ?? '');
+            if (!empty($handle)) {
+                $cleanHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
+                $youtubeUrl = "https://www.youtube.com/{$cleanHandle}";
+            } elseif (!empty($officer->channel_id) && !str_starts_with($officer->channel_id, 'UC_')) {
+                $youtubeUrl = "https://www.youtube.com/channel/{$officer->channel_id}";
+            } else {
+                $youtubeUrl = "https://youtube.com";
+            }
+
+            return [
+                'id' => $officer->id,
+                'officer_name' => $officer->officer_name,
+                'streamer_name' => $officer->streamer_name,
+                'callsign' => $officer->department ? "{$officer->department} • {$officer->callsign}" : $officer->callsign,
+                'department' => $officer->department,
+                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'total_hours' => $totalHoursStr,
+                'total_hours_num' => $totalHoursDecimal,
+                'avg_shift' => $avgShiftStr,
+                'is_live' => $isLive,
+                'live_viewers' => $liveStream ? ($liveStream->viewers_count ?? 0) : 0,
+                'youtube_url' => $youtubeUrl,
+            ];
+        })->sortByDesc('total_hours_num')->values();
+
+        $topHours = $mapped->first()['total_hours_num'] ?? 184;
+
+        $leaderboard = $mapped->take(6)->map(function ($item, $index) use ($topHours) {
+            $rank = $index + 1;
+            $percent = $topHours > 0 ? min(100, round(($item['total_hours_num'] / $topHours) * 100)) : 100;
+
+            $badge = match ($rank) {
+                1 => 'EMAS',
+                2 => 'SILVER',
+                3 => 'BRONZE',
+                default => 'RUNNER_UP',
+            };
+
+            return array_merge($item, [
+                'rank' => $rank,
+                'badge' => $badge,
+                'percent' => $percent,
+                'role' => "{$item['department']} • {$item['total_hours']}",
+            ]);
+        });
+
+        return [
+            'period_text' => $periodText,
+            'reset_cycle_text' => $resetCycleText,
+            'top_streamers' => $leaderboard->slice(0, 3)->values()->all(),
+            'ranks_four_to_six' => $leaderboard->slice(3, 3)->values()->all(),
+            'all_top' => $leaderboard->values()->all(),
+        ];
+    }
+
+    /**
+     * Get active officers with under 1,000 YouTube subscribers for the Road to 1K Support Grid.
+     */
+    public function getSupportOfficers(): array
+    {
+        $liveStreams = ActiveStream::where('status', 'LIVE')->get()->keyBy('channel_id');
+
+        // Query active officers with subscriber_count < 1000 (or null)
+        $officers = Officer::where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('subscriber_count')
+                  ->orWhere('subscriber_count', '<', 1000);
+            })
+            ->get();
+
+        if ($officers->isEmpty()) {
+            $officers = Officer::where('is_active', true)
+                ->orderBy('subscriber_count', 'asc')
+                ->take(9)
+                ->get();
+        }
+
+        return $officers->map(function ($officer) use ($liveStreams) {
+            $isLive = $liveStreams->has($officer->channel_id);
+            $handle = trim($officer->handle ?? '');
+            if (!empty($handle)) {
+                $cleanHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
+                $youtubeUrl = "https://www.youtube.com/{$cleanHandle}";
+            } elseif (!empty($officer->channel_id) && !str_starts_with($officer->channel_id, 'UC_')) {
+                $youtubeUrl = "https://www.youtube.com/channel/{$officer->channel_id}";
+            } else {
+                $youtubeUrl = "https://youtube.com";
+            }
+
+            return [
+                'id' => $officer->id,
+                'officer_name' => $officer->officer_name,
+                'streamer_name' => ltrim($officer->handle ?: $officer->streamer_name, '@'),
+                'callsign' => $officer->callsign,
+                'department' => $officer->department,
+                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'subscriber_count' => $officer->subscriber_count ?? 0,
+                'subscriber_count_text' => $officer->subscriber_count_text ?: ($officer->subscriber_count ? number_format($officer->subscriber_count) . " subs" : "< 1k subs"),
+                'is_live_now' => $isLive,
+                'youtube_url' => $youtubeUrl,
+            ];
+        })->sortByDesc('is_live_now')->values()->take(12)->all();
+    }
+
+    /**
      * Sync active stream statuses with a fast 25-second cooldown lock.
      */
     protected function syncStreamsIfNeeded(): void
@@ -641,4 +789,5 @@ class PoliceCommandController extends Controller
         }
     }
 }
+
 

@@ -93,7 +93,7 @@ const faqs = [
         category: "MULTIVIEW",
         categoryLabel: "Multiview & Fitur",
         question: "Bagaimana cara kerja platform IME Police Multiview ini?",
-        answer: 'Platform ini dirancang sebagai pusat pemantauan patroli kepolisian IME Roleplay. Sistem menampilkan tayangan langsung (live bodycam/stream) dari perwira aktif secara bersamaan agar komando dan penonton dapat memantau situasi operasi secara real-time.<br/><br/><div class="p-3.5 rounded-xl bg-slate-950 border border-blue-900/50 text-slate-300 text-xs font-mono space-y-1.5"><div class="flex items-center justify-between"><strong class="uppercase text-blue-400 font-tactical tracking-wider text-xs">Aturan Judul Live Stream:</strong><span class="text-[10px] text-blue-500 font-mono">HASHTAG RULE</span></div><p class="leading-relaxed">Judul siaran perwira <strong>wajib menyertakan hashtag <code class="bg-slate-900 px-1.5 py-0.5 rounded text-blue-400 border border-blue-800/60 font-mono">#imepolice</code></strong> agar siaran patroli terdeteksi dan tampil otomatis di layar pemantauan.</p></div>',
+        answer: 'Platform ini dirancang sebagai pusat pemantauan patroli kepolisian IME Roleplay. Sistem menampilkan tayangan langsung (live bodycam/stream) dari perwira aktif secara bersamaan agar komando dan penonton dapat memantau situasi operasi secara real-time.<br/><br/><div class="p-3.5 rounded-md bg-slate-950 border border-slate-800 text-slate-300 text-xs font-mono space-y-1.5"><div class="flex items-center justify-between"><strong class="uppercase text-blue-400 font-tactical tracking-wider text-xs">Aturan Judul Live Stream:</strong><span class="text-[10px] text-blue-400 font-mono">HASHTAG RULE</span></div><p class="leading-relaxed">Judul siaran perwira <strong>wajib menyertakan hashtag <code class="bg-slate-900 px-1.5 py-0.5 rounded-md text-blue-400 border border-slate-800 font-mono">#imepolice</code></strong> agar siaran patroli terdeteksi dan tampil otomatis di layar pemantauan.</p></div>',
     },
     {
         id: 2,
@@ -243,25 +243,18 @@ const highlightKeyword = (text) => {
     <TacticalLayout>
         <Head title="SOP & FAQ — IME Police Terminal" />
 
-        <!-- Ambient background glow spots -->
-        <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-            <div class="absolute -top-32 left-1/4 -translate-x-1/2 w-[700px] h-[400px] bg-blue-600/10 blur-[140px] rounded-full"></div>
-            <div class="absolute top-[35%] -right-28 w-[500px] h-[500px] bg-blue-800/15 blur-[130px] rounded-full"></div>
-            <div class="absolute bottom-10 left-1/3 w-[600px] h-[350px] bg-slate-900/40 blur-[150px] rounded-full"></div>
-        </div>
-
         <main
             class="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-12"
         >
-            <!-- Hero Header Section (Sleek LSPD Blue Styling) -->
+            <!-- Hero Header Section -->
             <section
                 class="text-center max-w-3xl mx-auto py-6 sm:py-10 space-y-6 sm:space-y-8"
             >
                 <div
-                    class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-blue-950/60 border border-blue-800/60 text-xs font-mono text-blue-400 shadow-sm"
+                    class="inline-flex items-center space-x-2 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300"
                 >
                     <span
-                        class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"
+                        class="w-2 h-2 rounded-full bg-blue-400"
                     ></span>
                     <span
                         >DISPATCH MANUAL v{{ appVersion }} •
@@ -282,12 +275,12 @@ const highlightKeyword = (text) => {
                     kendala teknis bodycam, dan regulasi pendaftaran perwira.
                 </p>
 
-                <!-- Modern Blue Search Field (Sleek Blue Glow Pill Style) -->
+                <!-- Search Field -->
                 <div class="relative max-w-2xl mx-auto pt-4 sm:pt-6">
                     <div
-                        class="relative flex items-center bg-slate-900/90 border border-blue-900/50 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 rounded-2xl shadow-lg shadow-blue-950/40 transition duration-200 p-1.5"
+                        class="relative flex items-center bg-slate-900 border border-slate-800 focus-within:border-blue-500 rounded-md p-1.5 transition duration-200"
                     >
-                        <div class="pl-3.5 text-blue-400 shrink-0">
+                        <div class="pl-3.5 text-slate-400 shrink-0">
                             <svg
                                 class="w-5 h-5 text-blue-400"
                                 fill="none"
@@ -306,12 +299,12 @@ const highlightKeyword = (text) => {
                             v-model="searchQuery"
                             type="text"
                             placeholder="Ketik kata kunci (contoh: #imepolice, Focus Mode, TAC Radio)..."
-                            class="w-full bg-transparent border-0 border-none ring-0 focus:ring-0 focus:outline-none focus:border-none shadow-none px-3.5 py-3 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-slate-500"
+                            class="w-full bg-transparent border-0 border-none ring-0 focus:ring-0 focus:outline-none focus:border-none shadow-none px-3.5 py-2 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-slate-500"
                         />
                         <button
                             v-if="searchQuery"
                             @click="clearSearch"
-                            class="p-1.5 text-slate-400 hover:text-blue-300 rounded-xl hover:bg-blue-950 transition text-xs font-mono shrink-0"
+                            class="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition text-xs font-mono shrink-0"
                             title="Bersihkan pencarian"
                         >
                             ✕
@@ -320,7 +313,7 @@ const highlightKeyword = (text) => {
                             class="hidden sm:flex items-center pr-3 pointer-events-none shrink-0"
                         >
                             <kbd
-                                class="px-2 py-0.5 text-[10px] font-mono font-semibold text-blue-400 bg-blue-950/80 border border-blue-800/50 rounded-md"
+                                class="px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 border border-slate-800 rounded-md"
                                 >ESC</kbd
                             >
                         </div>
@@ -328,30 +321,30 @@ const highlightKeyword = (text) => {
 
                     <!-- Quick Search Chips -->
                     <div
-                        class="mt-5 flex flex-wrap items-center justify-center gap-2.5 text-xs font-mono text-slate-400"
+                        class="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-slate-400"
                     >
                         <span class="text-slate-500">Kata Kunci Cepat:</span>
                         <button
                             @click="setSearchKeyword('#imepolice')"
-                            class="px-2.5 py-1 rounded-full bg-blue-950/60 hover:bg-blue-900/80 border border-blue-800/60 text-blue-300 transition"
+                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 transition"
                         >
                             # #imepolice
                         </button>
                         <button
                             @click="setSearchKeyword('Focus Mode')"
-                            class="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
+                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
                         >
                             # Focus Mode
                         </button>
                         <button
                             @click="setSearchKeyword('TAC')"
-                            class="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
+                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
                         >
                             # TAC Radio
                         </button>
                         <button
                             @click="setSearchKeyword('Sync')"
-                            class="px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
+                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
                         >
                             # Sync Error
                         </button>
@@ -365,7 +358,7 @@ const highlightKeyword = (text) => {
                 <section class="lg:col-span-8 space-y-4">
                     <!-- Search Meta Indicator & Expand All Toolbar -->
                     <div
-                        class="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono shadow-sm"
+                        class="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono"
                     >
                         <div class="flex items-center gap-2 text-slate-300">
                             <svg
@@ -403,7 +396,7 @@ const highlightKeyword = (text) => {
                             </button>
                             <button
                                 @click="toggleAllAccordions"
-                                class="px-3 py-1 rounded-lg bg-blue-950/60 border border-blue-800/60 hover:bg-blue-900/80 text-blue-400 hover:text-blue-200 transition text-[11px] font-mono font-semibold flex items-center gap-1.5"
+                                class="px-3 py-1 rounded-md bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 transition text-[11px] font-mono font-semibold flex items-center gap-1.5"
                             >
                                 <svg
                                     class="w-3.5 h-3.5 text-blue-400"
@@ -428,13 +421,13 @@ const highlightKeyword = (text) => {
                     <!-- Empty Search State -->
                     <div
                         v-if="filteredFaqs.length === 0"
-                        class="bg-slate-900 border border-slate-800 rounded-2xl p-10 text-center space-y-4 shadow-sm"
+                        class="bg-slate-900 border border-slate-800 rounded-xl p-10 text-center space-y-4"
                     >
                         <div
-                            class="w-14 h-14 rounded-2xl bg-blue-950/80 border border-blue-800/60 flex items-center justify-center mx-auto text-blue-400"
+                            class="w-12 h-12 rounded-md bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto text-blue-400"
                         >
                             <svg
-                                class="w-7 h-7"
+                                class="w-6 h-6"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -464,7 +457,7 @@ const highlightKeyword = (text) => {
                                 clearSearch();
                                 activeCategory = 'ALL';
                             "
-                            class="px-4 py-2.5 bg-blue-950/80 hover:bg-blue-900 border border-blue-800/80 text-blue-400 rounded-xl text-xs font-mono font-bold uppercase transition"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-mono font-bold uppercase transition"
                         >
                             RESET FILTER PENCARIAN
                         </button>
@@ -476,10 +469,10 @@ const highlightKeyword = (text) => {
                             v-for="faq in filteredFaqs"
                             :key="faq.id"
                             :id="faq.code"
-                            class="bg-slate-900 border rounded-2xl transition-all duration-150 overflow-hidden"
+                            class="bg-slate-900 border rounded-xl transition overflow-hidden"
                             :class="
                                 isFaqOpen(faq.id)
-                                    ? 'border-blue-800/80 shadow-md ring-1 ring-blue-900/30'
+                                    ? 'border-slate-700'
                                     : 'border-slate-800 hover:border-slate-700'
                             "
                         >
@@ -491,7 +484,7 @@ const highlightKeyword = (text) => {
                                 <div class="space-y-2 min-w-0">
                                     <div class="flex items-center gap-2">
                                         <span
-                                            class="px-2 py-0.5 text-[11px] font-mono font-semibold rounded bg-blue-950/70 text-blue-400 border border-blue-800/60 uppercase"
+                                            class="px-2 py-0.5 text-[11px] font-mono font-semibold rounded-md bg-slate-950 text-slate-300 border border-slate-800 uppercase"
                                         >
                                             {{ faq.code }}
                                         </span>
@@ -507,14 +500,9 @@ const highlightKeyword = (text) => {
                                     ></h2>
                                 </div>
 
-                                <!-- Rotating Chevron Icon -->
+                                <!-- Chevron Icon -->
                                 <div
-                                    class="w-8 h-8 rounded-xl bg-slate-950 border flex items-center justify-center text-slate-400 shrink-0 transition-all duration-200 mt-1"
-                                    :class="
-                                        isFaqOpen(faq.id)
-                                            ? 'border-blue-800 text-blue-400 bg-blue-950/50'
-                                            : 'border-slate-800 group-hover:border-slate-700 group-hover:text-slate-200'
-                                    "
+                                    class="w-7 h-7 rounded-md bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 shrink-0 transition duration-200 mt-1"
                                 >
                                     <svg
                                         class="w-4 h-4 transform transition-transform duration-200"
@@ -540,7 +528,7 @@ const highlightKeyword = (text) => {
                             <!-- Accordion Body Answer -->
                             <div
                                 v-show="isFaqOpen(faq.id)"
-                                class="px-5 pb-5 pt-2 border-t border-slate-800/80 bg-slate-950/60 text-slate-300 font-sans text-sm leading-relaxed space-y-4"
+                                class="px-5 pb-5 pt-2 border-t border-slate-800 bg-slate-950/60 text-slate-300 font-sans text-sm leading-relaxed space-y-4"
                             >
                                 <div
                                     class="prose prose-invert max-w-2xl text-slate-300 text-sm leading-relaxed"
@@ -549,7 +537,7 @@ const highlightKeyword = (text) => {
 
                                 <!-- Shareable Direct Link & Action Footer -->
                                 <div
-                                    class="pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs font-mono text-slate-400"
+                                    class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400"
                                 >
                                     <span
                                         class="text-slate-500 flex items-center gap-1.5"
@@ -599,11 +587,11 @@ const highlightKeyword = (text) => {
                     </div>
                 </section>
 
-                <!-- Right Column: Sticky Navigation Sidebar (Right Column - 4 cols) -->
+                <!-- Right Column: Sticky Navigation Sidebar -->
                 <aside class="lg:col-span-4 space-y-5 lg:sticky lg:top-20">
                     <!-- Category Navigation Pills Card -->
                     <div
-                        class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-sm"
+                        class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3"
                     >
                         <div
                             class="flex items-center justify-between pb-3 border-b border-slate-800"
@@ -627,7 +615,7 @@ const highlightKeyword = (text) => {
                                 KATEGORI PROSEDUR
                             </span>
                             <span
-                                class="text-[11px] px-2.5 py-0.5 rounded-full bg-blue-950/80 text-blue-400 font-mono border border-blue-800/60 font-semibold"
+                                class="text-[11px] px-2.5 py-0.5 rounded-md bg-slate-950 text-blue-400 font-mono border border-slate-800 font-semibold"
                             >
                                 {{
                                     activeCategory === "ALL"
@@ -645,17 +633,17 @@ const highlightKeyword = (text) => {
                                 :key="cat.id"
                                 @click="activeCategory = cat.id"
                                 :class="[
-                                    'w-full px-3.5 py-2.5 rounded-xl text-xs font-sans font-medium transition flex items-center justify-between text-left border',
+                                    'w-full px-3.5 py-2.5 rounded-md text-xs font-sans font-medium transition flex items-center justify-between text-left border',
                                     activeCategory === cat.id
-                                        ? 'bg-blue-950/80 text-blue-400 border-blue-800/80 font-semibold shadow-md shadow-blue-950/40'
-                                        : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border-transparent',
+                                        ? 'bg-blue-600 text-white font-semibold border-blue-600'
+                                        : 'bg-slate-950 text-slate-400 hover:text-slate-100 hover:bg-slate-800 border-slate-800',
                                 ]"
                             >
                                 <div class="flex items-center gap-2.5 min-w-0">
-                                    <!-- Category SVG Icon -->
                                     <svg
                                         v-if="cat.icon === 'grid'"
-                                        class="w-4 h-4 text-blue-400 shrink-0"
+                                        class="w-4 h-4 shrink-0"
+                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -669,7 +657,8 @@ const highlightKeyword = (text) => {
                                     </svg>
                                     <svg
                                         v-else-if="cat.icon === 'video'"
-                                        class="w-4 h-4 text-blue-400 shrink-0"
+                                        class="w-4 h-4 shrink-0"
+                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -683,7 +672,8 @@ const highlightKeyword = (text) => {
                                     </svg>
                                     <svg
                                         v-else-if="cat.icon === 'radio'"
-                                        class="w-4 h-4 text-blue-400 shrink-0"
+                                        class="w-4 h-4 shrink-0"
+                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -697,7 +687,8 @@ const highlightKeyword = (text) => {
                                     </svg>
                                     <svg
                                         v-else-if="cat.icon === 'user'"
-                                        class="w-4 h-4 text-blue-400 shrink-0"
+                                        class="w-4 h-4 shrink-0"
+                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -711,7 +702,8 @@ const highlightKeyword = (text) => {
                                     </svg>
                                     <svg
                                         v-else-if="cat.icon === 'wrench'"
-                                        class="w-4 h-4 text-blue-400 shrink-0"
+                                        class="w-4 h-4 shrink-0"
+                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -732,11 +724,11 @@ const highlightKeyword = (text) => {
                                     <span class="truncate">{{ cat.name }}</span>
                                 </div>
                                 <span
-                                    class="px-2 py-0.5 text-[10px] font-mono rounded-full shrink-0"
+                                    class="px-2 py-0.5 text-[10px] font-mono rounded-md shrink-0"
                                     :class="
                                         activeCategory === cat.id
-                                            ? 'bg-blue-900/80 text-blue-200'
-                                            : 'bg-slate-950 text-slate-500'
+                                            ? 'bg-blue-700 text-white'
+                                            : 'bg-slate-900 text-slate-500'
                                     "
                                 >
                                     {{
@@ -753,14 +745,14 @@ const highlightKeyword = (text) => {
 
                     <!-- Dispatch Support CTA Box -->
                     <div
-                        class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3.5 shadow-sm"
+                        class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3.5"
                     >
                         <div class="flex items-start gap-3">
                             <div
-                                class="p-2.5 rounded-xl bg-blue-950 text-blue-400 border border-blue-800/60 shrink-0"
+                                class="p-2 rounded-md bg-slate-950 text-blue-400 border border-slate-800 shrink-0"
                             >
                                 <svg
-                                    class="w-5 h-5"
+                                    class="w-5 h-5 text-blue-400"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -790,7 +782,7 @@ const highlightKeyword = (text) => {
                         </div>
                         <Link
                             href="/feedback"
-                            class="w-full py-2.5 px-4 rounded-xl bg-blue-950/70 hover:bg-blue-900 text-blue-400 border border-blue-800/70 hover:border-blue-600 text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-sm"
+                            class="w-full py-2.5 px-4 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-center gap-2"
                         >
                             <span>LAPOR DISPATCH / FEEDBACK</span>
                             <img
@@ -806,13 +798,13 @@ const highlightKeyword = (text) => {
             <!-- Bottom Operational Support Card (#hubungi-kami) -->
             <section id="hubungi-kami" class="pt-8 border-t border-slate-800">
                 <div
-                    class="rounded-2xl bg-slate-900 border border-slate-800 p-6 sm:p-10 space-y-6 text-center max-w-4xl mx-auto shadow-sm"
+                    class="rounded-xl bg-slate-900 border border-slate-800 p-6 sm:p-10 space-y-6 text-center max-w-4xl mx-auto"
                 >
                     <div
-                        class="w-12 h-12 rounded-2xl bg-blue-950 text-blue-400 border border-blue-800/60 flex items-center justify-center mx-auto shadow-sm"
+                        class="w-12 h-12 rounded-md bg-slate-950 text-blue-400 border border-slate-800 flex items-center justify-center mx-auto"
                     >
                         <svg
-                            class="w-6 h-6"
+                            class="w-6 h-6 text-blue-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -848,7 +840,7 @@ const highlightKeyword = (text) => {
                     >
                         <Link
                             href="/feedback"
-                            class="px-6 py-3 rounded-xl bg-blue-950/80 hover:bg-blue-900 text-blue-400 border border-blue-800/80 hover:border-blue-600 text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2 shadow-sm"
+                            class="px-6 py-3 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2"
                         >
                             <span>KIRIM LAPORAN / TIKET DISPATCH</span>
                             <img
@@ -862,14 +854,14 @@ const highlightKeyword = (text) => {
                                 clearSearch();
                                 activeCategory = 'ALL';
                             "
-                            class="px-6 py-3 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-mono font-semibold uppercase transition"
+                            class="px-6 py-3 rounded-md bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-mono font-semibold uppercase transition"
                         >
                             LIHAT SEMUA DOKUMEN SOP
                         </button>
                     </div>
 
                     <div
-                        class="pt-5 border-t border-slate-800/80 flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-slate-400"
+                        class="pt-5 border-t border-slate-800 flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-slate-400"
                     >
                         <span class="flex items-center gap-2">
                             <svg

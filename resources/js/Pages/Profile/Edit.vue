@@ -24,15 +24,15 @@ const user = usePage().props.auth.user;
         <div class="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-6">
             
             <!-- User Header Summary Card -->
-            <div class="bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="flex items-center space-x-4">
                     <!-- Avatar Circle -->
                     <div 
                         :class="[
-                            'w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black shadow-lg border-2 shrink-0',
+                            'w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-black border shrink-0',
                             user.role === 'admin' 
-                                ? 'bg-gradient-to-br from-amber-500 via-yellow-600 to-amber-700 text-slate-950 border-amber-400 shadow-amber-950/60' 
-                                : 'bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-800 text-white border-blue-400/80 shadow-blue-950/60'
+                                ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' 
+                                : 'bg-blue-600/20 text-blue-400 border-blue-500/40'
                         ]"
                     >
                         {{ user.name?.charAt(0).toUpperCase() || 'U' }}
@@ -45,13 +45,31 @@ const user = usePage().props.auth.user;
                             </h1>
                             <span 
                                 :class="[
-                                    'px-2.5 py-0.5 text-[10px] font-extrabold rounded-full tracking-wider uppercase border',
+                                    'inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-extrabold rounded-md tracking-wider uppercase border',
                                     user.role === 'admin' 
-                                        ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-sm' 
-                                        : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50 shadow-sm'
+                                        ? 'bg-amber-950/80 text-amber-300 border-amber-500/50' 
+                                        : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50'
                                 ]"
                             >
-                                {{ user.role === 'admin' ? '🛡️ Admin Dispatcher' : '👤 Member User' }}
+                                <svg 
+                                    v-if="user.role === 'admin'"
+                                    class="w-3 h-3 text-amber-400 shrink-0" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                <svg 
+                                    v-else
+                                    class="w-3 h-3 text-emerald-400 shrink-0" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                {{ user.role === 'admin' ? 'Admin Dispatcher' : 'Member User' }}
                             </span>
                         </div>
                         <p class="text-xs text-slate-400 font-mono">
@@ -69,7 +87,7 @@ const user = usePage().props.auth.user;
             </div>
 
             <!-- Profile Information Form -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
                 <UpdateProfileInformationForm
                     :must-verify-email="mustVerifyEmail"
                     :status="status"
@@ -78,12 +96,12 @@ const user = usePage().props.auth.user;
             </div>
 
             <!-- Update Password Form -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
                 <UpdatePasswordForm class="max-w-2xl" />
             </div>
 
             <!-- Delete User Account Form -->
-            <div class="bg-slate-900 border border-red-950/60 rounded-2xl p-6 shadow-xl">
+            <div class="bg-slate-900 border border-red-900/50 rounded-xl p-6">
                 <DeleteUserForm class="max-w-2xl" />
             </div>
 

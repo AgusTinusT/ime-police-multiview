@@ -29,11 +29,17 @@ class Officer extends Model
         'subscriber_count_text',
         'avatar_url',
         'is_active',
+        'monthly_duty_minutes',
+        'last_duty_at',
+        'bypass_hashtag_check',
     ];
 
     protected $casts = [
         'subscriber_count' => 'integer',
+        'monthly_duty_minutes' => 'integer',
+        'last_duty_at' => 'datetime',
         'is_active' => 'boolean',
+        'bypass_hashtag_check' => 'boolean',
     ];
 
     /**

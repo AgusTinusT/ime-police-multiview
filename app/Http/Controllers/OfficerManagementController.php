@@ -67,6 +67,8 @@ class OfficerManagementController extends Controller
             'channel_id' => 'nullable|string|max:64',
             'avatar_url' => 'nullable|string|max:500',
             'is_active' => 'nullable|boolean',
+            'monthly_duty_minutes' => 'nullable|integer|min:0',
+            'bypass_hashtag_check' => 'nullable|boolean',
         ]);
 
         $handle = trim($validated['handle']);
@@ -125,6 +127,8 @@ class OfficerManagementController extends Controller
         $validated['patrol_zone'] = $validated['patrol_zone'] ?? 'Los Santos Metropolitan';
         $validated['duty_status'] = $validated['duty_status'] ?? '10-8 (On-Duty)';
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['bypass_hashtag_check'] = $request->boolean('bypass_hashtag_check', false);
+        $validated['monthly_duty_minutes'] = $request->input('monthly_duty_minutes', 0);
 
         // Check if handle or channel_id already exists
         $existing = Officer::where('handle', $validated['handle'])
@@ -177,6 +181,8 @@ class OfficerManagementController extends Controller
             'channel_id' => 'nullable|string|max:64',
             'avatar_url' => 'nullable|string|max:500',
             'is_active' => 'nullable|boolean',
+            'monthly_duty_minutes' => 'nullable|integer|min:0',
+            'bypass_hashtag_check' => 'nullable|boolean',
         ]);
 
         $handle = trim($validated['handle']);
@@ -199,12 +205,77 @@ class OfficerManagementController extends Controller
             }
         }
 
+        if ($request->has('bypass_hashtag_check')) {
+            $validated['bypass_hashtag_check'] = $request->boolean('bypass_hashtag_check');
+        }
+
         $officer->update($validated);
 
         return response()->json([
             'status' => 'success',
             'message' => "Officer {$officer->officer_name} updated successfully.",
             'data' => $officer->load(['agency', 'rankRelation', 'division', 'certifications']),
+        ]);
+    }
+
+    /**
+     * Adjust accumulated monthly duty minutes for an officer.
+     */
+    public function adjustDuty(Request $request, $id)
+    {
+        $officer = Officer::findOrFail($id);
+
+        $validated = $request->validate([
+            'action' => 'nullable|string|in:add,subtract,set',
+            'minutes' => 'required|integer',
+        ]);
+
+        $action = $validated['action'] ?? 'set';
+        $minutes = (int) $validated['minutes'];
+
+        $currentMinutes = (int) ($officer->monthly_duty_minutes ?? 0);
+
+        if ($action === 'add') {
+            $newMinutes = max(0, $currentMinutes + abs($minutes));
+        } else if ($action === 'subtract') {
+            $newMinutes = max(0, $currentMinutes - abs($minutes));
+        } else {
+            $newMinutes = max(0, $minutes);
+        }
+
+        $officer->monthly_duty_minutes = $newMinutes;
+        $officer->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Waktu akumulasi patroli {$officer->officer_name} diperbarui menjadi {$newMinutes} menit (" . round($newMinutes / 60, 1) . " jam).",
+            'monthly_duty_minutes' => $newMinutes,
+            'data' => $officer,
+        ]);
+    }
+
+    /**
+     * Toggle hashtag check bypass for an officer.
+     */
+    public function toggleHashtagBypass(Request $request, $id)
+    {
+        $officer = Officer::findOrFail($id);
+        
+        if ($request->has('bypass_hashtag_check')) {
+            $officer->bypass_hashtag_check = $request->boolean('bypass_hashtag_check');
+        } else {
+            $officer->bypass_hashtag_check = !$officer->bypass_hashtag_check;
+        }
+        
+        $officer->save();
+
+        $statusStr = $officer->bypass_hashtag_check ? 'AKTIF (Bypass Hashtag / Validasi Selalu Lolos)' : 'NONAKTIF (Wajib Hashtag Valid)';
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Bypass hashtag valid untuk {$officer->officer_name} sekarang: {$statusStr}.",
+            'bypass_hashtag_check' => $officer->bypass_hashtag_check,
+            'data' => $officer,
         ]);
     }
 

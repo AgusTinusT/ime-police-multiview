@@ -39,7 +39,20 @@ const officers = ref(props.initialOfficers);
 const searchQuery = ref("");
 const selectedDept = ref("ALL"); // 'ALL', 'LIVE_ONLY', 'LSPD', 'BCSO', 'SASP', 'SAPR'
 const statusFilter = ref("all"); // 'all', 'online', 'offline'
-const sortBy = ref("status"); // 'status', 'subs_desc', 'subs_asc', 'name'
+
+// Read URL query parameters (e.g. /officers?sort=subs_asc)
+const getInitialSort = () => {
+    if (typeof window !== "undefined" && window.location.search) {
+        const params = new URLSearchParams(window.location.search);
+        const sortParam = params.get("sort");
+        if (sortParam && ["status", "subs_desc", "subs_asc", "name"].includes(sortParam)) {
+            return sortParam;
+        }
+    }
+    return "status";
+};
+
+const sortBy = ref(getInitialSort()); // 'status', 'subs_desc', 'subs_asc', 'name'
 const viewMode = ref("grid"); // 'grid' | 'table'
 const isSyncing = ref(false);
 
@@ -355,19 +368,12 @@ const filteredOfficers = computed(() => {
     <TacticalLayout>
         <Head title="Direktori & Manajemen Pengguna — IME Police Terminal" />
 
-        <!-- Ambient background glow spots -->
-        <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-            <div class="absolute -top-32 left-1/4 -translate-x-1/2 w-[700px] h-[400px] bg-blue-600/10 blur-[140px] rounded-full"></div>
-            <div class="absolute top-[35%] -right-28 w-[500px] h-[500px] bg-blue-800/15 blur-[130px] rounded-full"></div>
-            <div class="absolute bottom-10 left-1/3 w-[600px] h-[350px] bg-slate-900/40 blur-[150px] rounded-full"></div>
-        </div>
-
         <main
             class="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8"
         >
             <!-- PAGE HERO & GOVERNANCE TITLE BANNER -->
             <section
-                class="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-blue-950/90 via-slate-900/90 to-slate-950 border border-blue-900/50 shadow-2xl relative overflow-hidden backdrop-blur-xl space-y-6"
+                class="p-6 sm:p-8 rounded-xl bg-slate-900 border border-slate-800 space-y-6"
             >
                 <div
                     class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10"
@@ -382,7 +388,7 @@ const filteredOfficers = computed(() => {
                             <span>Personil Kepolisian</span>
                             <span class="text-slate-600">›</span>
                             <span
-                                class="text-blue-400 font-semibold px-2.5 py-0.5 rounded-full bg-blue-950/80 border border-blue-800/60 uppercase"
+                                class="text-slate-300 font-semibold px-2.5 py-0.5 rounded-md bg-slate-800 border border-slate-700 uppercase"
                             >
                                 San Andreas Police
                             </span>
@@ -409,15 +415,15 @@ const filteredOfficers = computed(() => {
                             class="pt-1 flex flex-wrap items-center gap-2.5 text-xs font-mono text-slate-300"
                         >
                             <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 font-bold"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 font-bold"
                             >
                                 <span
-                                    class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+                                    class="w-2 h-2 rounded-full bg-emerald-400"
                                 ></span>
                                 10-8 Live Duty: {{ deptStats.total_live || 0 }} Unit
                             </span>
                             <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-800"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-950 border border-slate-800"
                             >
                                 <svg
                                     class="w-3.5 h-3.5 text-blue-400"
@@ -435,7 +441,7 @@ const filteredOfficers = computed(() => {
                                 Multi-Divisi: LSPD / BCSO / SASP / SAPR
                             </span>
                             <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-300"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-950 border border-slate-800 text-slate-300"
                             >
                                 <svg
                                     class="w-3.5 h-3.5 text-amber-400"
@@ -462,7 +468,7 @@ const filteredOfficers = computed(() => {
                     >
                         <button
                             @click="openAddModal"
-                            class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-600/30 transition transform hover:-translate-y-0.5"
+                            class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition"
                         >
                             <svg
                                 class="w-4 h-4"
@@ -481,7 +487,7 @@ const filteredOfficers = computed(() => {
                         </button>
                         <button
                             @click="exportCSV"
-                            class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-semibold transition"
+                            class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-md bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 text-xs font-semibold transition"
                         >
                             <svg
                                 class="w-4 h-4 text-blue-400"
@@ -506,7 +512,7 @@ const filteredOfficers = computed(() => {
             <section class="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono">
                 <!-- Card 1: Total Officer -->
                 <div
-                    class="p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm relative overflow-hidden group"
+                    class="p-4 sm:p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-2"
                 >
                     <div class="flex items-center justify-between">
                         <span
@@ -514,10 +520,10 @@ const filteredOfficers = computed(() => {
                             >Total Personil</span
                         >
                         <div
-                            class="p-2 rounded-xl bg-blue-950 text-blue-400 border border-blue-800/60"
+                            class="p-1.5 rounded-md bg-slate-950 text-slate-300 border border-slate-800"
                         >
                             <svg
-                                class="w-4 h-4"
+                                class="w-4 h-4 text-blue-400"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -532,12 +538,12 @@ const filteredOfficers = computed(() => {
                         </div>
                     </div>
                     <div
-                        class="mt-2 text-2xl sm:text-3xl font-black text-slate-100"
+                        class="text-2xl sm:text-3xl font-black text-slate-100"
                     >
                         {{ officers.length }}
                     </div>
                     <div
-                        class="text-[11px] text-emerald-400 mt-1 flex items-center gap-1"
+                        class="text-[11px] text-emerald-400 flex items-center gap-1"
                     >
                         <span>✓</span> Terdaftar di database repositori
                     </div>
@@ -545,7 +551,7 @@ const filteredOfficers = computed(() => {
 
                 <!-- Card 2: 10-8 Live Active -->
                 <div
-                    class="p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm relative overflow-hidden group"
+                    class="p-4 sm:p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-2"
                 >
                     <div class="flex items-center justify-between">
                         <span
@@ -553,10 +559,10 @@ const filteredOfficers = computed(() => {
                             >Petugas 10-8 (On Duty)</span
                         >
                         <div
-                            class="p-2 rounded-xl bg-emerald-950 text-emerald-400 border border-emerald-800/60"
+                            class="p-1.5 rounded-md bg-slate-950 text-emerald-400 border border-slate-800"
                         >
                             <svg
-                                class="w-4 h-4"
+                                class="w-4 h-4 text-emerald-400"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -571,21 +577,21 @@ const filteredOfficers = computed(() => {
                         </div>
                     </div>
                     <div
-                        class="mt-2 text-2xl sm:text-3xl font-black text-emerald-400 flex items-center gap-2"
+                        class="text-2xl sm:text-3xl font-black text-emerald-400 flex items-center gap-2"
                     >
                         <span
-                            class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"
+                            class="w-2 h-2 rounded-full bg-emerald-400"
                         ></span>
                         <span>{{ deptStats.total_live || 0 }}</span>
                     </div>
-                    <div class="text-[11px] text-emerald-400 mt-1">
+                    <div class="text-[11px] text-emerald-400">
                         Sesi live streaming aktif
                     </div>
                 </div>
 
                 <!-- Card 3: 10-7 Off Duty -->
                 <div
-                    class="p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm relative overflow-hidden group"
+                    class="p-4 sm:p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-2"
                 >
                     <div class="flex items-center justify-between">
                         <span
@@ -593,10 +599,10 @@ const filteredOfficers = computed(() => {
                             >Petugas 10-7 (Off Duty)</span
                         >
                         <div
-                            class="p-2 rounded-xl bg-zinc-800/80 text-zinc-400 border border-zinc-700/60"
+                            class="p-1.5 rounded-md bg-slate-950 text-slate-400 border border-slate-800"
                         >
                             <svg
-                                class="w-4 h-4"
+                                class="w-4 h-4 text-slate-400"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -611,21 +617,23 @@ const filteredOfficers = computed(() => {
                         </div>
                     </div>
                     <div
-                        class="mt-2 text-2xl sm:text-3xl font-black text-slate-300"
+                        class="text-2xl sm:text-3xl font-black text-slate-300"
                     >
                         {{
                             deptStats.total_offline ||
                             officers.length - (deptStats.total_live || 0)
                         }}
                     </div>
-                    <div class="text-[11px] text-slate-400 mt-1">
+                    <div class="text-[11px] text-slate-400">
                         Standby / Tidak siaran
                     </div>
                 </div>
 
                 <!-- Card 4: Target <1K Subs -->
                 <div
-                    class="p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm relative overflow-hidden group"
+                    @click="sortBy = 'subs_asc'"
+                    class="p-4 sm:p-5 rounded-xl bg-slate-900 hover:bg-slate-800/80 border border-slate-800 space-y-2 cursor-pointer transition"
+                    title="Klik untuk mengurutkan perwira berdasarkan Target 1K Milestone"
                 >
                     <div class="flex items-center justify-between">
                         <span
@@ -633,7 +641,7 @@ const filteredOfficers = computed(() => {
                             >Target &lt;1K Subs</span
                         >
                         <div
-                            class="p-2 rounded-xl bg-amber-950 text-amber-400 border border-amber-800/60"
+                            class="p-1.5 rounded-md bg-slate-950 text-amber-400 border border-slate-800"
                         >
                             <img
                                 :src="iconTarget"
@@ -643,7 +651,7 @@ const filteredOfficers = computed(() => {
                         </div>
                     </div>
                     <div
-                        class="mt-2 text-2xl sm:text-3xl font-black text-amber-400"
+                        class="text-2xl sm:text-3xl font-black text-amber-400"
                     >
                         {{
                             officers.filter(
@@ -651,7 +659,7 @@ const filteredOfficers = computed(() => {
                             ).length
                         }}
                     </div>
-                    <div class="text-[11px] text-slate-400 mt-1">
+                    <div class="text-[11px] text-slate-400">
                         Personil butuh dukungan subscriber
                     </div>
                 </div>
@@ -659,7 +667,7 @@ const filteredOfficers = computed(() => {
 
             <!-- Comprehensive Search, Filter, Sort & View Mode Switcher -->
             <section
-                class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4"
+                class="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 space-y-4"
             >
                 <!-- Top Row: Search Input & Controls -->
                 <div
@@ -680,7 +688,7 @@ const filteredOfficers = computed(() => {
                             v-model="searchQuery"
                             type="text"
                             placeholder="Cari berdasarkan nama, email, departemen, peran, atau lokasi..."
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-9 py-2.5 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition duration-200"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md pl-10 pr-9 py-2 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition duration-200"
                         />
                         <button
                             v-if="searchQuery"
@@ -700,7 +708,7 @@ const filteredOfficers = computed(() => {
                         <div class="relative">
                             <select
                                 v-model="statusFilter"
-                                class="appearance-none bg-slate-950 border border-slate-800 rounded-xl pl-3 py-2.5 pr-7 text-xs text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
+                                class="appearance-none bg-slate-950 border border-slate-800 rounded-md pl-3 py-2 pr-7 text-xs text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
                             >
                                 <option value="all">Semua Status Akun</option>
                                 <option value="online">
@@ -716,14 +724,14 @@ const filteredOfficers = computed(() => {
                         <div class="relative">
                             <select
                                 v-model="sortBy"
-                                class="appearance-none bg-slate-950 border border-slate-800 rounded-xl pl-3 py-2.5 pr-7 text-xs text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
+                                class="appearance-none bg-slate-950 border border-slate-800 rounded-md pl-3 py-2 pr-7 text-xs text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
                             >
-                                <option value="status">Terakhir Aktif</option>
+                                <option value="status">Terakhir Aktif (10-8 Live)</option>
                                 <option value="subs_desc">
-                                    Tugas Terbanyak
+                                    Subscribers Terbanyak
                                 </option>
                                 <option value="subs_asc">
-                                    Target 1K Milestone
+                                    Target 1K Milestone (< 1K Subs)
                                 </option>
                                 <option value="name">Nama (A - Z)</option>
                             </select>
@@ -731,16 +739,16 @@ const filteredOfficers = computed(() => {
 
                         <!-- View Mode Switcher (Grid vs Table) -->
                         <div
-                            class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800"
+                            class="inline-flex rounded-md bg-slate-950 p-1 border border-slate-800"
                         >
                             <button
                                 @click="viewMode = 'grid'"
                                 :class="
                                     viewMode === 'grid'
-                                        ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30'
+                                        ? 'bg-blue-600 text-white font-bold'
                                         : 'text-slate-400 hover:text-white'
                                 "
-                                class="p-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                                class="px-2.5 py-1.5 rounded-md text-xs font-semibold transition flex items-center gap-1.5"
                                 title="Tampilan Kartu Grid"
                             >
                                 <svg
@@ -762,10 +770,10 @@ const filteredOfficers = computed(() => {
                                 @click="viewMode = 'table'"
                                 :class="
                                     viewMode === 'table'
-                                        ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30'
+                                        ? 'bg-blue-600 text-white font-bold'
                                         : 'text-slate-400 hover:text-white'
                                 "
-                                class="p-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                                class="px-2.5 py-1.5 rounded-md text-xs font-semibold transition flex items-center gap-1.5"
                                 title="Tampilan Tabel Detail"
                             >
                                 <svg
@@ -789,7 +797,7 @@ const filteredOfficers = computed(() => {
 
                 <!-- Bottom Row: Department Division Pills -->
                 <div
-                    class="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs font-mono"
+                    class="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-mono"
                 >
                     <div
                         class="flex items-center space-x-1.5 overflow-x-auto scrollbar-none"
@@ -798,10 +806,10 @@ const filteredOfficers = computed(() => {
                             @click="selectedDept = 'ALL'"
                             :class="
                                 selectedDept === 'ALL'
-                                    ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400'
+                                    ? 'bg-blue-600 text-white font-bold border-blue-600'
                                     : 'bg-slate-950 text-slate-400 hover:bg-slate-800 border-slate-800'
                             "
-                            class="px-3 py-1.5 rounded-full border transition whitespace-nowrap"
+                            class="px-3 py-1 rounded-md border transition whitespace-nowrap"
                         >
                             Semua Kesatuan ({{ officers.length }})
                         </button>
@@ -809,13 +817,13 @@ const filteredOfficers = computed(() => {
                             @click="selectedDept = 'LIVE_ONLY'"
                             :class="
                                 selectedDept === 'LIVE_ONLY'
-                                    ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/30 border-emerald-400'
+                                    ? 'bg-emerald-600 text-white font-bold border-emerald-600'
                                     : 'bg-slate-950 text-emerald-400 hover:bg-slate-800 border-slate-800'
                             "
-                            class="px-3 py-1.5 rounded-full border transition flex items-center gap-1.5 whitespace-nowrap"
+                            class="px-3 py-1 rounded-md border transition flex items-center gap-1.5 whitespace-nowrap"
                         >
                             <span
-                                class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
+                                class="w-1.5 h-1.5 rounded-full bg-emerald-400"
                             ></span>
                             <span
                                 >10-8 Live ({{
@@ -827,10 +835,10 @@ const filteredOfficers = computed(() => {
                             @click="selectedDept = 'LSPD'"
                             :class="
                                 selectedDept === 'LSPD'
-                                    ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 border-blue-400'
+                                    ? 'bg-blue-600 text-white font-bold border-blue-600'
                                     : 'bg-slate-950 text-blue-300 hover:bg-slate-800 border-slate-800'
                             "
-                            class="px-3 py-1.5 rounded-full border transition whitespace-nowrap"
+                            class="px-3 py-1 rounded-md border transition whitespace-nowrap"
                         >
                             LSPD ({{ deptStats.lspd_total || 0 }})
                         </button>
@@ -838,10 +846,10 @@ const filteredOfficers = computed(() => {
                             @click="selectedDept = 'BCSO'"
                             :class="
                                 selectedDept === 'BCSO'
-                                    ? 'bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 border-amber-400'
+                                    ? 'bg-amber-600 text-white font-bold border-amber-600'
                                     : 'bg-slate-950 text-amber-300 hover:bg-slate-800 border-slate-800'
                             "
-                            class="px-3 py-1.5 rounded-full border transition whitespace-nowrap"
+                            class="px-3 py-1 rounded-md border transition whitespace-nowrap"
                         >
                             BCSO ({{ deptStats.bcso_total || 0 }})
                         </button>
@@ -849,10 +857,10 @@ const filteredOfficers = computed(() => {
                             @click="selectedDept = 'SASP'"
                             :class="
                                 selectedDept === 'SASP'
-                                    ? 'bg-teal-600 text-white font-bold shadow-md shadow-teal-600/30 border-teal-400'
+                                    ? 'bg-teal-600 text-white font-bold border-teal-600'
                                     : 'bg-slate-950 text-teal-300 hover:bg-slate-800 border-slate-800'
                             "
-                            class="px-3 py-1.5 rounded-full border transition whitespace-nowrap"
+                            class="px-3 py-1 rounded-md border transition whitespace-nowrap"
                         >
                             SASP ({{ deptStats.sasp_total || 0 }})
                         </button>
@@ -860,10 +868,10 @@ const filteredOfficers = computed(() => {
                             @click="selectedDept = 'SAPR'"
                             :class="
                                 selectedDept === 'SAPR'
-                                    ? 'bg-green-600 text-white font-bold shadow-md shadow-green-600/30 border-green-400'
+                                    ? 'bg-green-600 text-white font-bold border-green-600'
                                     : 'bg-slate-950 text-green-300 hover:bg-slate-800 border-slate-800'
                             "
-                            class="px-3 py-1.5 rounded-full border transition whitespace-nowrap"
+                            class="px-3 py-1 rounded-md border transition whitespace-nowrap"
                         >
                             SAPR ({{ deptStats.sapr_total || 0 }})
                         </button>
@@ -886,10 +894,10 @@ const filteredOfficers = computed(() => {
             <!-- Empty Search State -->
             <div
                 v-if="filteredOfficers.length === 0"
-                class="py-16 text-center text-slate-500 bg-slate-900/60 rounded-2xl border border-slate-800 space-y-3"
+                class="py-16 text-center text-slate-500 bg-slate-900 rounded-xl border border-slate-800 space-y-3"
             >
                 <div
-                    class="w-12 h-12 rounded-2xl bg-blue-950/80 border border-blue-800/60 flex items-center justify-center mx-auto text-blue-400"
+                    class="w-12 h-12 rounded-md bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto text-blue-400"
                 >
                     <img
                         :src="iconSearch"
@@ -912,7 +920,7 @@ const filteredOfficers = computed(() => {
                         selectedDept = 'ALL';
                         statusFilter = 'all';
                     "
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold uppercase rounded-xl transition"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold uppercase rounded-md transition"
                 >
                     Reset Filter Pencarian
                 </button>
@@ -927,12 +935,7 @@ const filteredOfficers = computed(() => {
                     v-for="officer in filteredOfficers"
                     :key="officer.id"
                     @click="openDrawer(officer)"
-                    class="bg-slate-900/90 border rounded-2xl p-4 flex flex-col justify-between transition-all duration-200 hover:border-blue-500/50 hover:shadow-xl cursor-pointer group"
-                    :class="
-                        officer.is_online
-                            ? 'border-emerald-500/40'
-                            : 'border-slate-800'
-                    "
+                    class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 flex flex-col justify-between transition cursor-pointer group"
                 >
                     <div>
                         <!-- Card Header: Department, Callsign, Status Badge -->
@@ -941,7 +944,7 @@ const filteredOfficers = computed(() => {
                         >
                             <div class="flex items-center space-x-2 min-w-0">
                                 <span
-                                    class="px-2 py-0.5 text-[10px] font-black rounded border font-mono uppercase"
+                                    class="px-2 py-0.5 text-[10px] font-black rounded-md border font-mono uppercase"
                                     :class="
                                         getDeptBadgeClass(officer.department)
                                     "
@@ -962,13 +965,13 @@ const filteredOfficers = computed(() => {
                             <div class="shrink-0">
                                 <span
                                     v-if="officer.is_online"
-                                    class="inline-flex items-center text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold whitespace-nowrap"
+                                    class="inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-emerald-950 text-emerald-400 border border-emerald-800 font-mono font-bold whitespace-nowrap"
                                 >
                                     <span>10-8 ON DUTY</span>
                                 </span>
                                 <span
                                     v-else
-                                    class="inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-slate-950 text-slate-500 border border-slate-800 font-mono whitespace-nowrap"
+                                    class="inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-slate-950 text-slate-500 border border-slate-800 font-mono whitespace-nowrap"
                                 >
                                     10-7 OFF DUTY
                                 </span>
@@ -989,7 +992,7 @@ const filteredOfficers = computed(() => {
                                     @error="
                                         (e) => handleAvatarError(e, officer)
                                     "
-                                    class="w-12 h-12 rounded-full object-cover border-2 border-slate-700/80 shadow-md transition-transform duration-200 group-hover:scale-105"
+                                    class="w-12 h-12 rounded-full object-cover border border-slate-700 shrink-0"
                                 />
                             </div>
 
@@ -1023,7 +1026,7 @@ const filteredOfficers = computed(() => {
                         <div class="mt-3.5 font-mono">
                             <div
                                 v-if="(officer.subscriber_count || 0) < 1000"
-                                class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5"
+                                class="bg-slate-950 border border-slate-800 rounded-md p-2.5"
                             >
                                 <div
                                     class="flex items-center justify-between text-[11px] mb-1"
@@ -1053,7 +1056,7 @@ const filteredOfficers = computed(() => {
                                     class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden"
                                 >
                                     <div
-                                        class="h-full bg-amber-500 rounded-full transition-all duration-500"
+                                        class="h-full bg-amber-500 rounded-full"
                                         :style="{
                                             width: `${Math.min(100, Math.round(((officer.subscriber_count || 0) / 1000) * 100))}%`,
                                         }"
@@ -1063,7 +1066,7 @@ const filteredOfficers = computed(() => {
 
                             <div
                                 v-else
-                                class="text-[11px] text-slate-400 flex items-center justify-between px-1 bg-slate-950/40 rounded-xl p-2 border border-slate-800/60"
+                                class="text-[11px] text-slate-400 flex items-center justify-between bg-slate-950 rounded-md p-2 border border-slate-800"
                             >
                                 <span>Total Subscribers:</span>
                                 <span class="font-bold text-slate-200">{{
@@ -1077,7 +1080,7 @@ const filteredOfficers = computed(() => {
 
                     <!-- Card Action Footer -->
                     <div
-                        class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between"
+                        class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between"
                         @click.stop
                     >
                         <div
@@ -1100,12 +1103,12 @@ const filteredOfficers = computed(() => {
                                         officer.officer_name,
                                     )
                                 "
-                                class="w-8 h-8 rounded-xl border transition flex items-center justify-center"
+                                class="w-8 h-8 rounded-md border transition flex items-center justify-center"
                                 :class="
                                     isPinned(
                                         officer.channel_id || officer.handle,
                                     )
-                                        ? 'text-purple-300 bg-purple-950/80 border-purple-500/50'
+                                        ? 'text-purple-300 bg-purple-950 border-purple-800'
                                         : 'text-slate-400 hover:text-purple-300 bg-slate-950 hover:bg-slate-800 border-slate-800'
                                 "
                                 :title="
@@ -1138,7 +1141,7 @@ const filteredOfficers = computed(() => {
                                         officer.officer_name,
                                     )
                                 "
-                                class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white transition flex items-center justify-center font-mono"
+                                class="w-8 h-8 rounded-md bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white transition flex items-center justify-center font-mono"
                                 title="Subscribe ke YouTube channel"
                             >
                                 <span class="text-[10px] font-black">SUB</span>
@@ -1146,9 +1149,9 @@ const filteredOfficers = computed(() => {
 
                             <!-- YouTube External Link -->
                             <a
-                                :href="`https://www.youtube.com/${officer.handle}`"
+                                :href="officer.handle ? (officer.handle.startsWith('@') ? `https://www.youtube.com/${officer.handle}` : `https://www.youtube.com/@${officer.handle}`) : 'https://www.youtube.com/'"
                                 target="_blank"
-                                class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 hover:border-blue-500/50 transition flex items-center justify-center"
+                                class="w-8 h-8 rounded-md bg-slate-950 border border-slate-800 hover:border-slate-700 transition flex items-center justify-center"
                                 title="Buka Channel YouTube"
                             >
                                 <img
@@ -1165,7 +1168,7 @@ const filteredOfficers = computed(() => {
             <!-- VIEW MODE 2: TABLE VIEW -->
             <div
                 v-else
-                class="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl"
+                class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden"
             >
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm font-sans">
@@ -1251,7 +1254,7 @@ const filteredOfficers = computed(() => {
                                 <td class="py-3.5 px-4">
                                     <div class="space-y-1">
                                         <span
-                                            class="px-2 py-0.5 text-[10px] font-black rounded border font-mono uppercase"
+                                            class="px-2 py-0.5 text-[10px] font-black rounded-md border font-mono uppercase"
                                             :class="
                                                 getDeptBadgeClass(
                                                     officer.department,
@@ -1272,13 +1275,13 @@ const filteredOfficers = computed(() => {
                                 <td class="py-3.5 px-4 whitespace-nowrap">
                                     <span
                                         v-if="officer.is_online"
-                                        class="inline-flex items-center text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold whitespace-nowrap"
+                                        class="inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-emerald-950 text-emerald-400 border border-emerald-800 font-mono font-bold whitespace-nowrap"
                                     >
                                         <span>10-8 LIVE</span>
                                     </span>
                                     <span
                                         v-else
-                                        class="inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-slate-950 text-slate-500 border border-slate-800 font-mono whitespace-nowrap"
+                                        class="inline-flex items-center text-[10px] px-2 py-0.5 rounded-md bg-slate-950 text-slate-500 border border-slate-800 font-mono whitespace-nowrap"
                                     >
                                         10-7 OFF
                                     </span>
@@ -1361,13 +1364,13 @@ const filteredOfficers = computed(() => {
                                                     officer.officer_name,
                                                 )
                                             "
-                                            class="w-8 h-8 rounded-xl border transition flex items-center justify-center"
+                                            class="w-8 h-8 rounded-md border transition flex items-center justify-center"
                                             :class="
                                                 isPinned(
                                                     officer.channel_id ||
                                                         officer.handle,
                                                 )
-                                                    ? 'text-purple-300 bg-purple-950/80 border-purple-500/50'
+                                                    ? 'text-purple-300 bg-purple-950 border-purple-800'
                                                     : 'text-slate-400 hover:text-purple-300 bg-slate-950 hover:bg-slate-800 border-slate-800'
                                             "
                                             :title="
@@ -1401,16 +1404,16 @@ const filteredOfficers = computed(() => {
                                                     officer.officer_name,
                                                 )
                                             "
-                                            class="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white transition font-mono text-[10px] font-bold"
+                                            class="px-2.5 py-1.5 rounded-md bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white transition font-mono text-[10px] font-bold"
                                             title="Subscribe ke YouTube channel"
                                         >
                                             SUB
                                         </button>
 
                                         <a
-                                            :href="`https://www.youtube.com/${officer.handle}`"
+                                            :href="officer.handle ? (officer.handle.startsWith('@') ? `https://www.youtube.com/${officer.handle}` : `https://www.youtube.com/@${officer.handle}`) : 'https://www.youtube.com/'"
                                             target="_blank"
-                                            class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 hover:border-blue-500/50 transition flex items-center justify-center"
+                                            class="w-8 h-8 rounded-md bg-slate-950 border border-slate-800 hover:border-slate-700 transition flex items-center justify-center"
                                             title="Buka Channel YouTube"
                                         >
                                             <img
@@ -1436,22 +1439,22 @@ const filteredOfficers = computed(() => {
             <!-- Modal Backdrop -->
             <div
                 @click="closeAddModal"
-                class="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity duration-300"
+                class="fixed inset-0 bg-black/75 transition-opacity duration-300"
             ></div>
 
             <!-- Modal Panel -->
             <div
-                class="relative z-10 w-full max-w-lg bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl space-y-4"
+                class="relative z-10 w-full max-w-lg bg-slate-950 border border-slate-800 rounded-xl overflow-hidden space-y-4"
             >
                 <div
-                    class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90"
+                    class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900"
                 >
                     <div class="flex items-center space-x-2.5">
                         <div
-                            class="p-2 rounded-xl bg-blue-950 text-blue-400 border border-blue-800/60"
+                            class="p-1.5 rounded-md bg-slate-950 text-blue-400 border border-slate-800"
                         >
                             <svg
-                                class="w-5 h-5"
+                                class="w-5 h-5 text-blue-400"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -1477,7 +1480,7 @@ const filteredOfficers = computed(() => {
                     </div>
                     <button
                         @click="closeAddModal"
-                        class="text-slate-400 hover:text-white p-1 rounded-xl hover:bg-slate-800 font-mono transition text-xs font-bold"
+                        class="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 font-mono transition text-xs font-bold"
                     >
                         ✕
                     </button>
@@ -1496,7 +1499,7 @@ const filteredOfficers = computed(() => {
                             type="text"
                             required
                             placeholder="Contoh: dr. Adelia Putri / Ofc. Budi"
-                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                            class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
                         />
                     </div>
 
@@ -1511,7 +1514,7 @@ const filteredOfficers = computed(() => {
                                 v-model="newOfficerForm.callsign"
                                 type="text"
                                 placeholder="1-ADAM-12"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500"
+                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -1524,7 +1527,7 @@ const filteredOfficers = computed(() => {
                                 v-model="newOfficerForm.badge_number"
                                 type="text"
                                 placeholder="#302 / +62 812..."
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500"
+                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500"
                             />
                         </div>
                     </div>
@@ -1538,7 +1541,7 @@ const filteredOfficers = computed(() => {
                             </label>
                             <select
                                 v-model="newOfficerForm.department"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500 cursor-pointer"
+                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500 cursor-pointer"
                             >
                                 <option value="LSPD">LSPD (Police)</option>
                                 <option value="BCSO">BCSO (Sheriff)</option>
@@ -1560,7 +1563,7 @@ const filteredOfficers = computed(() => {
                                 v-model="newOfficerForm.rank"
                                 type="text"
                                 placeholder="Sergeant / Officer II"
-                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
                             />
                         </div>
                     </div>
@@ -1573,7 +1576,7 @@ const filteredOfficers = computed(() => {
                             v-model="newOfficerForm.handle"
                             type="text"
                             placeholder="@HandleYouTube"
-                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500"
+                            class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500"
                         />
                     </div>
 
@@ -1583,13 +1586,13 @@ const filteredOfficers = computed(() => {
                         <button
                             type="button"
                             @click="closeAddModal"
-                            class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold transition"
+                            class="px-4 py-2 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs font-semibold transition"
                         >
                             Batal
                         </button>
                         <button
                             type="submit"
-                            class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase transition shadow-lg shadow-blue-600/30"
+                            class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase transition"
                         >
                             Simpan & Daftarkan
                         </button>
@@ -1603,16 +1606,16 @@ const filteredOfficers = computed(() => {
             <!-- Backdrop Overlay -->
             <div
                 @click="closeDrawer"
-                class="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity duration-300"
+                class="fixed inset-0 bg-black/70 transition-opacity duration-300"
             ></div>
 
             <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
                 <div
-                    class="w-screen max-w-md bg-slate-950 border-l border-slate-800 shadow-2xl flex flex-col justify-between text-slate-200"
+                    class="w-screen max-w-md bg-slate-950 border-l border-slate-800 flex flex-col justify-between text-slate-200"
                 >
                     <!-- Drawer Header -->
                     <div
-                        class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90"
+                        class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900"
                     >
                         <div class="flex items-center space-x-2">
                             <span
@@ -1622,7 +1625,7 @@ const filteredOfficers = computed(() => {
                         </div>
                         <button
                             @click="closeDrawer"
-                            class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm font-mono font-bold"
+                            class="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm font-mono font-bold"
                         >
                             ✕
                         </button>
@@ -1635,7 +1638,7 @@ const filteredOfficers = computed(() => {
                     >
                         <!-- Header Profile Avatar & Basic Info -->
                         <div
-                            class="flex items-start gap-4 p-4 rounded-2xl bg-slate-900 border border-slate-800"
+                            class="flex items-start gap-4 p-4 rounded-xl bg-slate-900 border border-slate-800"
                         >
                             <img
                                 :src="
@@ -1647,12 +1650,12 @@ const filteredOfficers = computed(() => {
                                 @error="
                                     (e) => handleAvatarError(e, activeOfficer)
                                 "
-                                class="w-16 h-16 rounded-full object-cover border-2 border-slate-700 shadow-md shrink-0"
+                                class="w-16 h-16 rounded-full object-cover border border-slate-700 shrink-0"
                             />
                             <div class="min-w-0 flex-1 space-y-1">
                                 <div class="flex items-center gap-2">
                                     <span
-                                        class="px-2 py-0.5 text-[10px] font-black rounded border font-mono uppercase"
+                                        class="px-2 py-0.5 text-[10px] font-black rounded-md border font-mono uppercase"
                                         :class="
                                             getDeptBadgeClass(
                                                 activeOfficer.department,
@@ -1695,7 +1698,7 @@ const filteredOfficers = computed(() => {
                                         class="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-bold"
                                     >
                                         <span
-                                            class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+                                            class="w-2 h-2 rounded-full bg-emerald-400"
                                         ></span>
                                         10-8 LIVE ON DUTY
                                     </span>
@@ -1723,7 +1726,7 @@ const filteredOfficers = computed(() => {
 
                         <!-- YouTube Streamer Info & Subscriber Stats -->
                         <div
-                            class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 font-mono"
+                            class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3 font-mono"
                         >
                             <div
                                 class="flex items-center justify-between text-xs border-b border-slate-800 pb-2"
@@ -1806,13 +1809,13 @@ const filteredOfficers = computed(() => {
                                     activeOfficer.officer_name,
                                 )
                             "
-                            class="px-3.5 py-2 rounded-xl border text-xs font-semibold transition"
+                            class="px-3.5 py-2 rounded-md border text-xs font-semibold transition"
                             :class="
                                 isPinned(
                                     activeOfficer.channel_id ||
                                         activeOfficer.handle,
                                 )
-                                    ? 'bg-purple-950/80 border-purple-500/50 text-purple-300'
+                                    ? 'bg-purple-950 border-purple-800 text-purple-300'
                                     : 'bg-slate-950 border-slate-800 text-slate-300 hover:text-white'
                             "
                         >
@@ -1834,7 +1837,7 @@ const filteredOfficers = computed(() => {
                                     activeOfficer.officer_name,
                                 )
                             "
-                            class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition shadow-md shadow-blue-600/30"
+                            class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold transition"
                         >
                             SUBSCRIBE YOUTUBE
                         </button>
@@ -1846,7 +1849,7 @@ const filteredOfficers = computed(() => {
         <!-- Floating Toast Notification -->
         <div
             v-if="showToastNotification"
-            class="fixed bottom-6 right-6 z-50 bg-slate-900 border border-blue-500/60 text-slate-100 px-4 py-3 rounded-2xl shadow-2xl font-mono text-xs flex items-center gap-2"
+            class="fixed bottom-6 right-6 z-50 bg-slate-900 border border-slate-800 text-slate-100 px-4 py-3 rounded-md shadow-lg font-mono text-xs flex items-center gap-2"
         >
             <span class="text-blue-400 font-bold">✓</span>
             <span>{{ toastMessage }}</span>

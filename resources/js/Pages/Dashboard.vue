@@ -25,9 +25,10 @@ import iconPinPlus from "@/Components/Icons/star-line-svgrepo-com.svg";
 
 // Refactored Sub-Components
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
-import TacticalFilterToolbar from "@/Components/TacticalFilterToolbar.vue";
 import TacticalStreamGrid from "@/Components/TacticalStreamGrid.vue";
 import TacticalStreamSlimles from "@/Components/TacticalStreamSlimles.vue";
+import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
+import TacticalSubSupportGrid from "@/Components/TacticalSubSupportGrid.vue";
 import TacticalDrawers from "@/Components/TacticalDrawers.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
@@ -53,6 +54,14 @@ const props = defineProps({
     deptStats: {
         type: Object,
         default: () => ({}),
+    },
+    monthlyLeaderboard: {
+        type: Object,
+        default: () => ({}),
+    },
+    supportOfficers: {
+        type: Array,
+        default: () => [],
     },
     lastSyncedAt: {
         type: String,
@@ -252,8 +261,12 @@ const scrollToUnitsGrid = () => {
     />
 
     <div
-        class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased"
+        class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased relative overflow-hidden"
     >
+        <!-- Crisp Minimalist Grid Overlay -->
+        <div
+            class="fixed inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none z-0"
+        ></div>
         <!-- Refactored Tactical Header Bar Component -->
         <TacticalDashboardHeader
             :is-data-saver-enabled="isDataSaverEnabled"
@@ -262,66 +275,61 @@ const scrollToUnitsGrid = () => {
             @enable-data-saver="enableDataSaver"
             @disable-data-saver="disableDataSaverAndPlayAll"
             @trigger-sync="triggerManualSync"
-            @open-quick-add="openRightDrawer('QUICK_ADD')"
             @toggle-fullscreen="toggleBrowserFullscreen"
         />
 
         <!-- Main Content Area -->
         <main class="flex-1 w-full">
-            <!-- HERO SPOTLIGHT BANNER SECTION (Full Width Background with max-w-screen-2xl Inner Content) -->
-            <section class="relative w-full bg-[#080d16] overflow-hidden group">
-                <!-- Full-Width Background Hero Backdrop Image with Vignette Overlay -->
-                <div class="absolute inset-0 z-0 pointer-events-none">
+            <!-- HERO SPOTLIGHT BANNER SECTION (Section 1: Darkest Slate Canvas - bg-slate-950, No Border) -->
+            <section class="relative w-full bg-slate-950 overflow-hidden group">
+                <!-- Full-Width Background Hero Backdrop Image with Minimal Overlay -->
+                <div
+                    class="absolute inset-0 z-0 pointer-events-none opacity-30"
+                >
                     <img
                         src="/images/hero-fallback.jpg"
-                        class="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-700"
+                        class="w-full h-full object-cover grayscale mix-blend-luminosity"
                         alt="IME Police Duty Hero"
                     />
-                    <div
-                        class="absolute inset-0 bg-gradient-to-r from-[#070b12] via-[#070b12]/90 to-[#070b12]/60"
-                    ></div>
-                    <div
-                        class="absolute inset-0 bg-gradient-to-t from-[#070b12] via-transparent to-[#070b12]/70"
-                    ></div>
+                    <div class="absolute inset-0 bg-slate-950/40"></div>
                 </div>
 
                 <!-- Inner Content Container (Restricted to max-w-screen-2xl) -->
                 <div
-                    class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-24 relative z-10"
+                    class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 lg:pt-14 pb-10 sm:pb-14 relative z-10"
                 >
                     <div
                         class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
                     >
                         <!-- Left Hero Content -->
-                        <div class="lg:col-span-7 space-y-6">
+                        <div class="lg:col-span-7 space-y-5">
                             <div
-                                class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-blue-950/70 border border-blue-500/30 text-xs font-mono text-blue-300 backdrop-blur-md"
+                                class="hidden sm:inline-flex items-center gap-2.5 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300"
                             >
                                 <span
-                                    class="w-2 h-2 rounded-full bg-blue-400 animate-ping"
+                                    class="w-2 h-2 rounded-full bg-blue-500 animate-pulse shrink-0"
                                 ></span>
                                 <span
                                     >SERVER: IME ROLEPLAY // LIVE MULTIVIEW
                                     STREAMING</span
                                 >
-                                <span class="text-white/20">|</span>
+                                <span class="text-slate-700">|</span>
                                 <span class="text-slate-400"
                                     >SAN ANDREAS STATE</span
                                 >
                             </div>
 
                             <h1
-                                class="text-3xl sm:text-5xl lg:text-6xl font-tactical font-bold text-white tracking-wide leading-tight"
+                                class="text-3xl sm:text-5xl lg:text-6xl font-sans font-bold text-slate-100 tracking-tight leading-tight"
                             >
                                 IME POLICE <br />
-                                <span
-                                    class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400"
+                                <span class="text-blue-500"
                                     >BODYCAM STREAMING</span
                                 >
                             </h1>
 
                             <p
-                                class="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl font-light"
+                                class="text-slate-400 text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl font-normal"
                             >
                                 Pusat pemantauan taktis & live streaming bodycam
                                 perwira di lapangan. Pantau seluruh tayangan
@@ -330,15 +338,13 @@ const scrollToUnitsGrid = () => {
                                 interaktif.
                             </p>
 
-                            <!-- Department Quick Status Badges -->
-                            <div
-                                class="flex flex-wrap items-center gap-2.5 pt-1"
-                            >
+                            <!-- Department Quick Status Badges (Flat Crisp Badges) -->
+                            <div class="flex flex-wrap items-center gap-2 pt-1">
                                 <div
-                                    class="px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold flex items-center gap-2 border bg-slate-900/80 border-slate-800 text-slate-300 shadow-sm"
+                                    class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 border bg-slate-900 border-slate-800 text-slate-300"
                                 >
                                     <span
-                                        class="w-2 h-2 rounded-full bg-emerald-400"
+                                        class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"
                                     ></span>
                                     <span
                                         >ALL UNITS ({{
@@ -348,10 +354,10 @@ const scrollToUnitsGrid = () => {
                                 </div>
 
                                 <div
-                                    class="px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold flex items-center gap-2 border bg-slate-900/80 border-slate-800 text-slate-300 shadow-sm"
+                                    class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 border bg-slate-900 border-slate-800 text-slate-300"
                                 >
                                     <span
-                                        class="w-2 h-2 rounded-full bg-blue-400"
+                                        class="w-2 h-2 rounded-full bg-blue-500 shrink-0"
                                     ></span>
                                     <span
                                         >LSPD METRO ({{
@@ -361,10 +367,10 @@ const scrollToUnitsGrid = () => {
                                 </div>
 
                                 <div
-                                    class="px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold flex items-center gap-2 border bg-slate-900/80 border-slate-800 text-slate-300 shadow-sm"
+                                    class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 border bg-slate-900 border-slate-800 text-slate-300"
                                 >
                                     <span
-                                        class="w-2 h-2 rounded-full bg-amber-400"
+                                        class="w-2 h-2 rounded-full bg-amber-500 shrink-0"
                                     ></span>
                                     <span
                                         >BCSO SHERIFF ({{
@@ -374,10 +380,10 @@ const scrollToUnitsGrid = () => {
                                 </div>
 
                                 <div
-                                    class="px-3.5 py-2 rounded-xl text-xs font-tactical tracking-wider font-bold flex items-center gap-2 border bg-slate-900/80 border-slate-800 text-slate-300 shadow-sm"
+                                    class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 border bg-slate-900 border-slate-800 text-slate-300"
                                 >
                                     <span
-                                        class="w-2 h-2 rounded-full bg-teal-400"
+                                        class="w-2 h-2 rounded-full bg-teal-500 shrink-0"
                                     ></span>
                                     <span
                                         >SASP STATE ({{
@@ -385,16 +391,29 @@ const scrollToUnitsGrid = () => {
                                         }})</span
                                     >
                                 </div>
+
+                                <div
+                                    class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 border bg-slate-900 border-slate-800 text-slate-300"
+                                >
+                                    <span
+                                        class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"
+                                    ></span>
+                                    <span
+                                        >PARK RANGER ({{
+                                            saprCatalogStreams.length
+                                        }})</span
+                                    >
+                                </div>
                             </div>
 
-                            <!-- Hero Action Links -->
-                            <div class="flex flex-wrap items-center gap-4 pt-3">
+                            <!-- Hero Action Links (Flat Buttons from panduan.html) -->
+                            <div class="flex flex-wrap items-center gap-3 pt-2">
                                 <Link
                                     href="/multiview"
-                                    class="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-tactical font-bold tracking-wider text-sm shadow-xl shadow-blue-600/30 flex items-center gap-2.5 transition duration-200 transform hover:scale-[1.02] active:scale-95"
+                                    class="px-4 py-2.5 rounded-md bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-medium text-xs transition-colors flex items-center gap-2"
                                 >
                                     <svg
-                                        class="w-3.5 h-3.5 text-white-400"
+                                        class="w-4 h-4 text-white"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -412,10 +431,10 @@ const scrollToUnitsGrid = () => {
                                 <button
                                     type="button"
                                     @click="scrollToUnitsGrid"
-                                    class="px-6 py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-200 font-tactical font-bold tracking-wider text-sm flex items-center gap-2 transition cursor-pointer hover:border-slate-500 active:scale-95"
+                                    class="px-4 py-2.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700 font-medium text-xs flex items-center gap-2 transition-colors cursor-pointer"
                                 >
                                     <svg
-                                        class="w-4 h-4 text-cyan-400"
+                                        class="w-4 h-4 text-slate-400"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -432,18 +451,18 @@ const scrollToUnitsGrid = () => {
                             </div>
                         </div>
 
-                        <!-- Right Tactical Live HUD Card -->
+                        <!-- Right Tactical Live HUD Card (Flat Surface & Crisp Borders) -->
                         <div class="lg:col-span-5">
                             <div
-                                class="relative rounded-2xl bg-gradient-to-b from-slate-900/95 to-[#0A0F1D]/95 border border-slate-700/60 backdrop-blur-2xl p-5 sm:p-6 shadow-2xl overflow-hidden space-y-5"
+                                class="rounded-xl bg-slate-900 border border-slate-800 p-5 space-y-4"
                             >
                                 <!-- HUD Accent Header -->
                                 <div
-                                    class="flex items-center justify-between pb-3.5 border-b border-white/10"
+                                    class="flex items-center justify-between pb-3 border-b border-slate-800"
                                 >
                                     <div class="flex items-center gap-2">
                                         <span
-                                            class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"
+                                            class="w-2 h-2 rounded-full bg-cyan-400"
                                         ></span>
                                         <span
                                             class="text-xs font-mono font-semibold tracking-wider text-slate-200 uppercase"
@@ -451,7 +470,7 @@ const scrollToUnitsGrid = () => {
                                         >
                                     </div>
                                     <span
-                                        class="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20 font-bold"
+                                        class="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/80 font-medium"
                                         >LIVE METRICS</span
                                     >
                                 </div>
@@ -459,83 +478,83 @@ const scrollToUnitsGrid = () => {
                                 <!-- Stats Matrix Grid (2x2) -->
                                 <div class="grid grid-cols-2 gap-3">
                                     <div
-                                        class="p-3.5 rounded-xl bg-slate-950/70 border border-white/5 space-y-1"
+                                        class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
                                     >
                                         <span
-                                            class="text-[11px] font-mono text-slate-400 block uppercase"
+                                            class="text-[10px] font-mono text-slate-400 block uppercase"
                                             >ON DUTY FEEDS</span
                                         >
                                         <div class="flex items-baseline gap-2">
                                             <span
-                                                class="text-2xl font-tactical font-bold text-cyan-400"
+                                                class="text-xl font-mono font-bold text-cyan-400"
                                                 >{{
                                                     allActiveStreams.length
                                                 }}</span
                                             >
                                             <span
-                                                class="text-xs text-slate-500 font-mono"
+                                                class="text-[11px] text-slate-500 font-mono"
                                                 >Active</span
                                             >
                                         </div>
                                     </div>
 
                                     <div
-                                        class="p-3.5 rounded-xl bg-slate-950/70 border border-white/5 space-y-1"
+                                        class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
                                     >
                                         <span
-                                            class="text-[11px] font-mono text-slate-400 block uppercase"
+                                            class="text-[10px] font-mono text-slate-400 block uppercase"
                                             >DEPARTEMEN</span
                                         >
                                         <div class="flex items-baseline gap-2">
                                             <span
-                                                class="text-2xl font-tactical font-bold text-emerald-400"
+                                                class="text-xl font-mono font-bold text-emerald-400"
                                                 >4</span
                                             >
                                             <span
-                                                class="text-xs text-slate-500 font-mono"
+                                                class="text-[11px] text-slate-500 font-mono"
                                                 >Divisions</span
                                             >
                                         </div>
                                     </div>
 
                                     <div
-                                        class="p-3.5 rounded-xl bg-slate-950/70 border border-white/5 space-y-1"
+                                        class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
                                     >
                                         <span
-                                            class="text-[11px] font-mono text-slate-400 block uppercase"
+                                            class="text-[10px] font-mono text-slate-400 block uppercase"
                                             >TOTAL OFFICER</span
                                         >
                                         <div class="flex items-baseline gap-2">
                                             <span
-                                                class="text-2xl font-tactical font-bold text-amber-400"
+                                                class="text-xl font-mono font-bold text-amber-400"
                                                 >{{
                                                     allActiveStreams.length +
                                                     offlineOfficers.length
                                                 }}</span
                                             >
                                             <span
-                                                class="text-xs text-slate-500 font-mono"
+                                                class="text-[11px] text-slate-500 font-mono"
                                                 >Officers</span
                                             >
                                         </div>
                                     </div>
 
                                     <div
-                                        class="p-3.5 rounded-xl bg-slate-950/70 border border-white/5 space-y-1"
+                                        class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
                                     >
                                         <span
-                                            class="text-[11px] font-mono text-slate-400 block uppercase"
+                                            class="text-[10px] font-mono text-slate-400 block uppercase"
                                             >REPLAY & ARCHIVE</span
                                         >
                                         <div class="flex items-baseline gap-2">
                                             <span
-                                                class="text-2xl font-tactical font-bold text-blue-400"
+                                                class="text-xl font-mono font-bold text-blue-400"
                                                 >{{
                                                     recentReplays.length
                                                 }}</span
                                             >
                                             <span
-                                                class="text-xs text-slate-500 font-mono"
+                                                class="text-[11px] text-slate-500 font-mono"
                                                 >Videos</span
                                             >
                                         </div>
@@ -544,7 +563,7 @@ const scrollToUnitsGrid = () => {
 
                                 <!-- Live Stream Transmission Info Box -->
                                 <div
-                                    class="bg-black/40 rounded-xl p-3.5 border border-white/5 space-y-2"
+                                    class="bg-slate-950 rounded-lg p-3 border border-slate-800 space-y-2"
                                 >
                                     <div
                                         class="flex items-center justify-between text-xs font-mono"
@@ -572,7 +591,7 @@ const scrollToUnitsGrid = () => {
                                         >
                                     </div>
                                     <p
-                                        class="text-xs font-mono text-slate-300 italic bg-slate-900/60 p-2.5 rounded border border-white/5 leading-relaxed"
+                                        class="text-xs font-mono text-slate-400 bg-slate-900 p-2 rounded border border-slate-800 leading-relaxed"
                                     >
                                         "[DISPATCH]: Live bodycam streams
                                         connected. Switch to Multiview Theater
@@ -584,7 +603,7 @@ const scrollToUnitsGrid = () => {
                                         <button
                                             @click="triggerManualSync"
                                             :disabled="isSyncingFeeds"
-                                            class="text-[11px] font-mono text-blue-400 hover:text-blue-300 flex items-center gap-1 transition"
+                                            class="text-[11px] font-mono text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
                                         >
                                             <img
                                                 :src="iconRefresh"
@@ -614,29 +633,43 @@ const scrollToUnitsGrid = () => {
                 </div>
             </section>
 
-            <!-- Swimlanes & Roster Section Wrapper (Full Width Swimlane Discovery Hub) -->
-            <div
+            <!-- SECTION 2: Live Officers & Recent Patrol Replays Section (Section 2: Tactical Navy Surface - bg-[#0a0f1d], No Border) -->
+            <section
                 id="units-grid"
-                class="w-full px-3.5 sm:px-6 lg:px-8 py-6 space-y-8 scroll-mt-6"
+                class="w-full bg-[#0a0f1d] pt-10 sm:pt-14 pb-12 sm:pb-16 scroll-mt-6 relative z-10"
             >
-                <!-- Refactored Tactical Stream Slimles Component (Netflix Swimlane Discovery Hub) -->
-                <TacticalStreamSlimles
-                    v-model:activeTab="activeTab"
-                    :is-syncing-feeds="isSyncingFeeds"
-                    :all-active-streams="allActiveStreams"
-                    :trending-streams="trendingStreams"
-                    :recent-replay-streams="recentReplayStreams"
-                    :active-personal-streams="activePersonalStreams"
-                    :lspd-catalog-streams="lspdCatalogStreams"
-                    :sasp-catalog-streams="saspCatalogStreams"
-                    :bcso-catalog-streams="bcsoCatalogStreams"
-                    :sapr-catalog-streams="saprCatalogStreams"
-                    :special-ops-catalog-streams="specialOpsCatalogStreams"
-                    :tac-channels="tacChannels"
-                    @play-stream-in-focus="playStreamInFocus"
-                    @trigger-manual-sync="triggerManualSync"
-                />
-            </div>
+                <div class="max-w-screen-2xl mx-auto px-3.5 sm:px-6 lg:px-8">
+                    <TacticalStreamSlimles
+                        :is-syncing-feeds="isSyncingFeeds"
+                        :all-active-streams="allActiveStreams"
+                        :trending-streams="trendingStreams"
+                        :recent-replay-streams="recentReplayStreams"
+                        :tac-channels="tacChannels"
+                        @play-stream-in-focus="playStreamInFocus"
+                        @trigger-manual-sync="triggerManualSync"
+                    />
+                </div>
+            </section>
+
+            <!-- SECTION 3: Monthly Patrol Streaming Leaderboard Section (Section 3: Darkest Slate Canvas - bg-slate-950, No Border) -->
+            <section
+                id="leaderboard-section"
+                class="w-full bg-slate-950 pt-12 sm:pt-16 pb-16 sm:pb-24 relative z-10"
+            >
+                <div class="max-w-screen-2xl mx-auto px-3.5 sm:px-6 lg:px-8">
+                    <TacticalMonthlyLeaderboard :leaderboard="monthlyLeaderboard" />
+                </div>
+            </section>
+
+            <!-- SECTION 4: 1K Sub Support Section (Section 4: Tactical Navy Surface - bg-[#0a0f1d], No Border) -->
+            <section
+                id="support-section"
+                class="w-full bg-[#0a0f1d] py-12 sm:py-16 relative z-10"
+            >
+                <div class="max-w-screen-2xl mx-auto px-3.5 sm:px-6 lg:px-8">
+                    <TacticalSubSupportGrid :officers="supportOfficers" />
+                </div>
+            </section>
         </main>
 
         <!-- Full-Width Edge-to-Edge Tactical Footer -->

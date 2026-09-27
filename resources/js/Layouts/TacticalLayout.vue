@@ -37,9 +37,7 @@ onUnmounted(() => {
         class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased"
     >
         <!-- Standardized Tactical Header Bar -->
-        <TacticalDashboardHeader
-            @open-quick-add="router.visit('/?quick_add=1')"
-        />
+        <TacticalDashboardHeader />
 
         <!-- Dynamic Content Area -->
         <main class="flex-1 w-full">

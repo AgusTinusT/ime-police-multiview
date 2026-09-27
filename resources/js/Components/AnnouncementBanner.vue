@@ -73,9 +73,6 @@ onUnmounted(() => {
         @mouseleave="startTimer"
         class="bg-gradient-to-r from-blue-950/90 via-indigo-950/95 to-slate-950 border border-blue-500/40 rounded-2xl p-3 sm:p-4 mb-4 shadow-2xl backdrop-blur-xl transition-all duration-300 relative overflow-hidden font-sans group"
     >
-        <!-- Background Ambient Glow -->
-        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
         <div class="flex items-start sm:items-center justify-between gap-3 relative z-10">
             <!-- Banner Main Content -->
             <div class="flex items-start sm:items-center space-x-3 min-w-0 flex-1">

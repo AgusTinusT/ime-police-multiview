@@ -2,33 +2,26 @@
     <TacticalLayout>
         <Head title="ClipStudio - Tactical Video Clipper & Media Hub" />
 
-        <!-- Ambient background glow spots -->
-        <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-            <div class="absolute -top-32 left-1/4 -translate-x-1/2 w-[700px] h-[400px] bg-blue-600/10 blur-[140px] rounded-full"></div>
-            <div class="absolute top-[35%] -right-28 w-[500px] h-[500px] bg-blue-800/15 blur-[130px] rounded-full"></div>
-            <div class="absolute bottom-10 left-1/3 w-[600px] h-[350px] bg-slate-900/40 blur-[150px] rounded-full"></div>
-        </div>
-
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-8 font-sans">
             
             <!-- HEADER / HERO & URL INPUT SECTION -->
             <section class="text-center max-w-3xl mx-auto space-y-4">
-                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-900/80 border border-blue-500/30 text-xs font-semibold text-blue-300 backdrop-blur-md">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-xs font-semibold text-blue-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                     <span>Pemrosesan Lossless YouTube & Multi-Format (MP4 / WebM / MP3 / GIF)</span>
                 </div>
 
                 <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight uppercase font-tactical">
                     Potong & Klip Video YouTube <br class="hidden sm:inline" />
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-blue-300 to-white">Dengan Presisi Milidetik</span>
+                    <span class="text-blue-400">Dengan Presisi Milidetik</span>
                 </h1>
                 <p class="text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto">
                     Masukkan URL video YouTube untuk menentukan titik potong, preview klip instan, dan unduh ke format MP4, WebM, MP3 Audio, atau GIF animasi tanpa watermark (Maksimal 10 Menit).
                 </p>
 
-                <!-- URL Loader Bar (Border-free input) -->
+                <!-- URL Loader Bar -->
                 <div class="pt-2 max-w-2xl mx-auto">
-                    <div class="relative flex items-center bg-slate-950/90 border border-blue-500/30 rounded-2xl p-1.5 shadow-2xl shadow-blue-950/40 focus-within:border-blue-500 transition duration-200">
+                    <div class="relative flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1.5 focus-within:border-blue-500 transition duration-200">
                         <div class="pl-3.5 text-red-500 shrink-0">
                             <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
@@ -42,7 +35,7 @@
                         />
                         <button
                             @click="loadVideoFromInput"
-                            class="px-4 sm:px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold transition shadow-lg shadow-blue-600/30 flex items-center gap-1.5 shrink-0"
+                            class="px-4 sm:px-6 py-2.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold transition flex items-center gap-1.5 shrink-0"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -58,7 +51,7 @@
                             v-for="(sample, idx) in sampleVideos"
                             :key="idx"
                             @click="setSampleVideo(idx)"
-                            class="px-2.5 py-1 rounded-lg bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-blue-500/50 text-slate-300 hover:text-white transition text-xs font-mono"
+                            class="px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition text-xs font-mono"
                         >
                             {{ sample.shortLabel }}
                         </button>
@@ -68,7 +61,7 @@
 
             <!-- NOTIFICATION BANNERS -->
             <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0">
-                <div v-if="formError" class="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center justify-between gap-3 shadow-lg">
+                <div v-if="formError" class="p-4 rounded-md bg-slate-950 border border-red-900/50 text-red-400 text-sm flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5">
                         <svg class="w-5 h-5 shrink-0 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -80,7 +73,7 @@
             </transition>
 
             <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0">
-                <div v-if="successMessage" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm flex items-center justify-between gap-3 shadow-lg">
+                <div v-if="successMessage" class="p-4 rounded-md bg-slate-950 border border-emerald-900/50 text-emerald-400 text-sm flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2.5">
                         <svg class="w-5 h-5 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -92,24 +85,24 @@
             </transition>
 
             <!-- INTERACTIVE TRIMMER WORKSPACE -->
-            <section class="bg-slate-900/90 border border-blue-900/40 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6 backdrop-blur-xl">
+            <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-7 space-y-6">
                 
                 <!-- Video Details Header Bar -->
                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-5 border-b border-slate-800">
                     <div class="flex items-start space-x-4">
-                        <div class="relative w-20 h-14 sm:w-28 sm:h-16 rounded-xl overflow-hidden bg-black shrink-0 border border-slate-800 shadow-inner">
+                        <div class="relative w-20 h-14 sm:w-28 sm:h-16 rounded-md overflow-hidden bg-black shrink-0 border border-slate-800">
                             <img
                                 :src="videoThumb"
                                 alt="Video thumbnail"
                                 class="w-full h-full object-cover"
                             />
-                            <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white font-semibold">
+                            <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-sm bg-black/80 text-[10px] font-mono text-white font-semibold">
                                 {{ formatSecondsToTimestamp(videoDurationSec).split('.')[0] }}
                             </span>
                         </div>
                         <div>
                             <div class="flex items-center gap-2 flex-wrap">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-950/80 text-blue-300 border border-blue-800/60 font-mono">
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-950 text-blue-400 border border-slate-800 font-mono">
                                     {{ activeVideoId ? `YOUTUBE ID: ${activeVideoId}` : 'DEMO SOURCE' }}
                                 </span>
                                 <span class="text-xs text-slate-400 font-mono">
@@ -129,7 +122,7 @@
 
                     <!-- Clip Range Badge -->
                     <div class="flex items-center gap-2 sm:self-center font-mono">
-                        <div class="px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                        <div class="px-3.5 py-2 rounded-md bg-slate-950 border border-slate-800 text-xs">
                             <span class="text-slate-400">Durasi Potongan:</span>
                             <strong class="text-blue-400 font-bold ml-1.5">
                                 {{ formattedDuration }}
@@ -145,7 +138,7 @@
                     <div class="lg:col-span-8 space-y-4">
                         
                         <!-- Video Canvas / Player Container -->
-                        <div class="relative aspect-video rounded-2xl overflow-hidden bg-black border border-slate-800 shadow-2xl group flex items-center justify-center">
+                        <div class="relative aspect-video rounded-xl overflow-hidden bg-black border border-slate-800 group flex items-center justify-center">
                             
                             <!-- YouTube Embed Player Iframe -->
                             <template v-if="activeVideoId">
@@ -171,27 +164,27 @@
                             </template>
 
                             <!-- Live Time Controls Overlay -->
-                            <div class="absolute bottom-3 left-3 right-3 p-2.5 rounded-2xl bg-slate-950/90 backdrop-blur-md border border-slate-800 flex items-center justify-between gap-2 text-xs opacity-90 group-hover:opacity-100 transition duration-200">
+                            <div class="absolute bottom-3 left-3 right-3 p-2.5 rounded-md bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 text-xs">
                                 
                                 <div class="flex items-center space-x-1.5 font-mono">
                                     <span class="text-slate-400 text-[11px]">Waktu Pemutar:</span>
-                                    <span class="font-bold text-white bg-slate-900 border border-slate-800 px-2 py-0.5 rounded font-mono">
+                                    <span class="font-bold text-white bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-md font-mono">
                                         {{ formatSecondsToTimestamp(playerCurrentSeconds) }}
                                     </span>
                                 </div>
 
                                 <!-- Seek Controls -->
                                 <div class="flex items-center gap-1 font-mono">
-                                    <button @click="seekPlayer(-30)" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
+                                    <button @click="seekPlayer(-30)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
                                         -30s
                                     </button>
-                                    <button @click="seekPlayer(-10)" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
+                                    <button @click="seekPlayer(-10)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
                                         -10s
                                     </button>
-                                    <button @click="seekPlayer(10)" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
+                                    <button @click="seekPlayer(10)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
                                         +10s
                                     </button>
-                                    <button @click="seekPlayer(30)" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
+                                    <button @click="seekPlayer(30)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
                                         +30s
                                     </button>
                                 </div>
@@ -200,13 +193,13 @@
                                 <div class="flex items-center gap-1.5">
                                     <button
                                         @click="captureStartTime"
-                                        class="px-2.5 py-1 rounded-lg bg-blue-950/80 hover:bg-blue-900 border border-blue-500/40 text-blue-300 font-bold text-[11px] transition flex items-center gap-1 font-mono"
+                                        class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition flex items-center gap-1 font-mono"
                                     >
                                         <span>Set Start (IN)</span>
                                     </button>
                                     <button
                                         @click="captureEndTime"
-                                        class="px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 font-bold text-[11px] transition flex items-center gap-1 font-mono"
+                                        class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition flex items-center gap-1 font-mono"
                                     >
                                         <span>Set End (OUT)</span>
                                     </button>
@@ -217,7 +210,7 @@
                     </div>
 
                     <!-- RIGHT COLUMN: EXPORT PARAMETERS & FORM (4 cols) -->
-                    <div class="lg:col-span-4 space-y-4 bg-slate-950/80 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-md">
+                    <div class="lg:col-span-4 space-y-4 bg-slate-950 border border-slate-800 rounded-xl p-5">
                         <div>
                             <h3 class="text-sm font-bold text-white flex items-center gap-2 font-sans uppercase tracking-wider">
                                 <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,7 +229,7 @@
                                 v-model="form.youtube_url"
                                 type="text"
                                 placeholder="https://www.youtube.com/watch?v=..."
-                                class="w-full rounded-xl bg-slate-900 border border-slate-800 px-3.5 py-2 text-xs text-white focus:border-blue-500 transition font-mono"
+                                class="w-full rounded-md bg-slate-900 border border-slate-800 px-3.5 py-2 text-xs text-white focus:border-blue-500 transition font-mono"
                             />
                         </div>
 
@@ -249,7 +242,7 @@
                                 v-model="form.title"
                                 type="text"
                                 placeholder="Beri judul klip kejadian ini..."
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:border-blue-500 transition"
+                                class="w-full px-3.5 py-2 rounded-md bg-slate-900 border border-slate-800 text-white text-xs focus:border-blue-500 transition"
                             />
                         </div>
 
@@ -263,7 +256,7 @@
                                     v-model="form.start_time"
                                     type="text"
                                     placeholder="00:00:00"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2 text-xs font-mono text-white text-center focus:border-blue-500 font-bold"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-md px-2.5 py-2 text-xs font-mono text-white text-center focus:border-blue-500 font-bold"
                                 />
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Format: HH:MM:SS</span>
                             </div>
@@ -276,7 +269,7 @@
                                     v-model="form.end_time"
                                     type="text"
                                     placeholder="00:05:00"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2 text-xs font-mono text-white text-center focus:border-blue-500 font-bold"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-md px-2.5 py-2 text-xs font-mono text-white text-center focus:border-blue-500 font-bold"
                                 />
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Format: HH:MM:SS</span>
                             </div>
@@ -286,13 +279,13 @@
                         <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-0.5">
                             <span>Durasi Cepat dari Mulai:</span>
                             <div class="flex items-center gap-1.5">
-                                <button @click="setPresetDuration(60)" class="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[10px]">
+                                <button @click="setPresetDuration(60)" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[10px]">
                                     +1m
                                 </button>
-                                <button @click="setPresetDuration(180)" class="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[10px]">
+                                <button @click="setPresetDuration(180)" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[10px]">
                                     +3m
                                 </button>
-                                <button @click="setPresetDuration(300)" class="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[10px]">
+                                <button @click="setPresetDuration(300)" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[10px]">
                                     +5m
                                 </button>
                             </div>
@@ -300,14 +293,14 @@
 
                         <!-- Duration Progress Indicator -->
                         <div
-                            class="rounded-xl border p-3 space-y-1"
-                            :class="isDurationValid ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300' : 'bg-red-950/20 border-red-500/30 text-red-300'"
+                            class="rounded-md border p-3 space-y-1"
+                            :class="isDurationValid ? 'bg-slate-900 border-slate-800 text-emerald-400' : 'bg-slate-900 border-red-900/50 text-red-400'"
                         >
                             <div class="flex items-center justify-between text-xs font-mono">
                                 <span>Total Durasi:</span>
                                 <span class="font-bold">{{ formattedDuration }}</span>
                             </div>
-                            <div class="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                            <div class="w-full h-1.5 rounded-full bg-slate-950 overflow-hidden">
                                 <div 
                                     class="h-full transition-all duration-300"
                                     :class="isDurationValid ? 'bg-emerald-500' : 'bg-red-500'"
@@ -328,8 +321,8 @@
                                 <label
                                     v-for="fmt in formatOptions"
                                     :key="fmt.value"
-                                    class="flex items-center space-x-2 p-2 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer hover:border-blue-500/60 transition"
-                                    :class="form.format === fmt.value ? 'border-blue-500 bg-blue-950/30' : ''"
+                                    class="flex items-center space-x-2 p-2 rounded-md bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700 transition"
+                                    :class="form.format === fmt.value ? 'border-blue-500 bg-slate-950' : ''"
                                 >
                                     <input
                                         type="radio"
@@ -347,7 +340,7 @@
                         <button
                             @click="submitTrim"
                             :disabled="isSubmitting || !isDurationValid"
-                            class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-blue-950/60 transition transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-tactical"
+                            class="w-full py-3 px-4 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-tactical"
                         >
                             <svg v-if="isSubmitting" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -375,7 +368,7 @@
                             <h2 class="text-2xl font-bold text-white tracking-tight uppercase font-tactical">
                                 Koleksi Klip Video Saya
                             </h2>
-                            <span v-if="clipsList.length" class="px-2.5 py-0.5 rounded-full bg-blue-950/80 border border-blue-800/60 text-blue-400 font-mono text-xs font-bold">
+                            <span v-if="clipsList.length" class="px-2.5 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-blue-400 font-mono text-xs font-bold">
                                 {{ clipsList.length }} Klip
                             </span>
                         </div>
@@ -387,7 +380,7 @@
                     <div class="flex items-center gap-2">
                         <button 
                             @click="fetchClips"
-                            class="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1.5 font-mono"
+                            class="px-3.5 py-2 rounded-md bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1.5 font-mono"
                         >
                             <svg class="w-3.5 h-3.5" :class="isLoadingClips ? 'animate-spin text-blue-400' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -398,7 +391,7 @@
                 </div>
 
                 <!-- Info Notice -->
-                <div class="p-3 rounded-xl bg-amber-950/30 border border-amber-900/40 text-xs text-amber-300/90 flex items-center gap-2.5">
+                <div class="p-3 rounded-md bg-slate-900 border border-amber-900/50 text-xs text-amber-300 flex items-center gap-2.5">
                     <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -415,7 +408,7 @@
                 </div>
 
                 <!-- Empty State -->
-                <div v-else-if="clipsList.length === 0" class="py-12 text-center text-slate-400 text-xs bg-slate-900/60 rounded-3xl border border-slate-800 space-y-2">
+                <div v-else-if="clipsList.length === 0" class="py-12 text-center text-slate-400 text-xs bg-slate-900 rounded-xl border border-slate-800 space-y-2">
                     <p class="font-bold text-white uppercase font-tactical text-sm">Belum ada klip video yang disimpan.</p>
                     <p class="text-slate-400 font-sans">Gunakan form di atas untuk mulai memotong klip video dari YouTube.</p>
                 </div>
@@ -425,7 +418,7 @@
                     <div 
                         v-for="clip in clipsList" 
                         :key="clip.id"
-                        class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition shadow-xl group"
+                        class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition group"
                     >
                         <div class="space-y-2">
                             <div class="flex items-start justify-between gap-2">
@@ -434,16 +427,16 @@
                                 </h3>
                                 
                                 <!-- Status Badges -->
-                                <span v-if="clip.status === 'completed'" class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">
+                                <span v-if="clip.status === 'completed'" class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-emerald-400 border border-emerald-900/50 font-mono">
                                     Selesai
                                 </span>
-                                <span v-else-if="clip.status === 'processing'" class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse font-mono">
+                                <span v-else-if="clip.status === 'processing'" class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-amber-400 border border-amber-900/50 font-mono">
                                     Memproses...
                                 </span>
-                                <span v-else-if="clip.status === 'pending'" class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-mono">
+                                <span v-else-if="clip.status === 'pending'" class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-blue-400 border border-blue-900/50 font-mono">
                                     Antrean
                                 </span>
-                                <span v-else class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-500/20 text-red-400 border border-red-500/30 font-mono">
+                                <span v-else class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-red-400 border border-red-900/50 font-mono">
                                     Gagal
                                 </span>
                             </div>
@@ -458,30 +451,30 @@
                                     <span>•</span>
                                     <span>{{ new Date(clip.created_at).toLocaleDateString('id-ID') }}</span>
                                 </div>
-                                <span v-if="clip.status === 'completed'" class="text-[10px] text-amber-400 font-sans flex items-center gap-1 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20" title="File ini akan dihapus otomatis 1 jam setelah dibuat">
+                                <span v-if="clip.status === 'completed'" class="text-[10px] text-amber-400 font-sans flex items-center gap-1 bg-slate-950 px-1.5 py-0.5 rounded-md border border-amber-900/50" title="File ini akan dihapus otomatis 1 jam setelah dibuat">
                                     ⏱️ 1 Jam
                                 </span>
                             </div>
                         </div>
 
                         <!-- Error Banner if failed -->
-                        <div v-if="clip.status === 'failed' && clip.error_message" class="text-[10px] p-2 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400 font-mono break-words">
+                        <div v-if="clip.status === 'failed' && clip.error_message" class="text-[10px] p-2 rounded-md bg-slate-950 border border-red-900/50 text-red-400 font-mono break-words">
                             {{ clip.error_message }}
                         </div>
 
-                        <!-- HTML5 Video Player Preview (if completed & available) -->
+                        <!-- HTML5 Video Player Preview -->
                         <div v-if="clip.status === 'completed' && clip.download_url" class="space-y-2">
-                            <video controls class="w-full max-h-48 rounded-xl bg-black border border-slate-800">
+                            <video controls class="w-full max-h-48 rounded-md bg-black border border-slate-800">
                                 <source :src="clip.download_url" type="video/mp4">
                                 Browser Anda tidak mendukung HTML5 Video.
                             </video>
                         </div>
 
                         <!-- Card Footer Controls -->
-                        <div class="flex items-center justify-between pt-2 border-t border-slate-950">
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-800">
                             <button 
                                 @click="deleteClip(clip.id)" 
-                                class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-950 transition text-xs flex items-center gap-1.5 font-mono"
+                                class="p-1.5 rounded-md text-slate-400 hover:text-red-400 hover:bg-slate-950 transition text-xs flex items-center gap-1.5 font-mono"
                                 title="Hapus Klip"
                             >
                                 <img :src="iconDelete" class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100" alt="" />
@@ -492,7 +485,7 @@
                                 v-if="clip.status === 'completed' && clip.download_url"
                                 :href="clip.download_url" 
                                 download 
-                                class="py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow"
+                                class="py-1.5 px-3 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition flex items-center gap-1.5"
                             >
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3m0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

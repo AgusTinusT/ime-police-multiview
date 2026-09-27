@@ -10,18 +10,18 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
 
 <template>
     <footer
-        class="mt-auto bg-[#080d16] border-t border-blue-900/40 text-slate-300 font-sans pt-8 pb-6 px-4 sm:px-6 lg:px-8"
+        class="mt-auto bg-slate-950 border-t border-slate-800 text-slate-300 font-sans pt-8 pb-6 px-4 sm:px-6 lg:px-8"
     >
         <div class="max-w-screen-2xl mx-auto space-y-6">
             <!-- Top Footer Grid: Branding, Quick Navigation & System Status -->
             <div
-                class="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-slate-800/80"
+                class="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-slate-800"
             >
                 <!-- Branding & Community Info (Cols 1-5) -->
                 <div class="md:col-span-5 space-y-3">
                     <div class="flex items-center space-x-3">
                         <div
-                            class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-950/60 via-slate-900 to-slate-950 border border-blue-500/40 p-1 shadow-inner overflow-hidden shrink-0"
+                            class="w-10 h-10 rounded-md bg-slate-900 border border-slate-800 p-1 overflow-hidden shrink-0"
                         >
                             <img
                                 :src="logoSaspColor"
@@ -60,7 +60,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                         <li>
                             <Link
                                 href="/multiview"
-                                class="text-slate-300 hover:text-white transition flex items-center gap-1.5 py-1"
+                                class="text-slate-400 hover:text-slate-100 transition flex items-center gap-1.5 py-1"
                             >
                                 <img
                                     :src="iconFocus"
@@ -73,7 +73,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                         <li>
                             <Link
                                 href="/officers"
-                                class="text-slate-300 hover:text-white transition flex items-center gap-1.5 py-1"
+                                class="text-slate-400 hover:text-slate-100 transition flex items-center gap-1.5 py-1"
                             >
                                 <img
                                     :src="iconRoster"
@@ -86,7 +86,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                         <li>
                             <Link
                                 href="/faq"
-                                class="text-slate-300 hover:text-white transition flex items-center gap-1.5 py-1"
+                                class="text-slate-400 hover:text-slate-100 transition flex items-center gap-1.5 py-1"
                             >
                                 <img
                                     :src="iconRadio"
@@ -99,7 +99,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                         <li>
                             <Link
                                 href="/about"
-                                class="text-slate-300 hover:text-white transition flex items-center gap-1.5 py-1"
+                                class="text-slate-400 hover:text-slate-100 transition flex items-center gap-1.5 py-1"
                             >
                                 <img
                                     :src="iconUrl"
@@ -112,7 +112,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                         <li class="col-span-2">
                             <Link
                                 href="/feedback"
-                                class="text-slate-300 hover:text-white transition flex items-center gap-1.5 py-1"
+                                class="text-slate-400 hover:text-slate-100 transition flex items-center gap-1.5 py-1"
                             >
                                 <img
                                     :src="iconFeedback"

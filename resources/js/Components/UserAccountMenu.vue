@@ -40,11 +40,11 @@ onUnmounted(() => {
 
 <template>
     <div ref="dropdownRef" class="relative flex items-center text-left z-50 shrink-0">
-        <!-- Logged-in State: Username + Down Arrow Button (Exact h-8 Height Matching Quick Feed) -->
+        <!-- Logged-in State: Username + Down Arrow Button -->
         <template v-if="$page.props.auth?.user">
             <button
                 @click.stop="toggleDropdown"
-                class="h-8 flex items-center space-x-1.5 px-3 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 transition shadow-md group cursor-pointer focus:outline-none shrink-0"
+                class="h-8 flex items-center space-x-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 transition group cursor-pointer focus:outline-none shrink-0"
                 :title="`Logged in as ${$page.props.auth.user.name} (${$page.props.auth.user.role || 'member'})`"
             >
                 <!-- Username -->
@@ -71,7 +71,7 @@ onUnmounted(() => {
                 </svg>
             </button>
 
-            <!-- YouTube-Style Floating Popover Dropdown Card (Positioned Below Header) -->
+            <!-- Profile Floating Popover Dropdown Card -->
             <transition
                 enter-active-class="transition ease-out duration-150 transform"
                 enter-from-class="opacity-0 scale-95 -translate-y-2"
@@ -82,18 +82,16 @@ onUnmounted(() => {
             >
                 <div
                     v-if="isOpen"
-                    class="absolute right-0 top-full mt-2 w-72 bg-[#0d1527]/95 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/80 backdrop-blur-xl divide-y divide-slate-800/80 overflow-hidden font-sans z-50 animate-in"
+                    class="absolute right-0 top-full mt-2 w-72 bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800 overflow-hidden font-sans z-50 animate-in"
                 >
-                    <!-- Header Profile Section (YouTube Style) -->
-                    <div
-                        class="p-4 bg-gradient-to-b from-slate-900/90 to-transparent flex items-start space-x-3"
-                    >
+                    <!-- Header Profile Section -->
+                    <div class="p-4 bg-slate-900 flex items-start space-x-3">
                         <div
                             :class="[
-                                'w-11 h-11 rounded-full flex items-center justify-center text-base font-black shrink-0 shadow-lg border',
+                                'w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold shrink-0 border border-slate-800 bg-slate-950',
                                 $page.props.auth.user.role === 'admin'
-                                    ? 'bg-gradient-to-br from-amber-500 via-yellow-600 to-amber-700 text-slate-950 border-amber-300'
-                                    : 'bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-800 text-white border-blue-400',
+                                    ? 'text-amber-400'
+                                    : 'text-blue-400',
                             ]"
                         >
                             {{
@@ -104,59 +102,66 @@ onUnmounted(() => {
                         </div>
 
                         <div class="flex-1 min-w-0">
-                            <h4
-                                class="text-sm font-bold text-white truncate leading-snug"
-                            >
+                            <h4 class="text-sm font-bold text-white truncate leading-snug">
                                 {{ $page.props.auth.user.name }}
                             </h4>
-                            <p
-                                class="text-xs text-slate-400 truncate mb-1.5 font-mono"
-                            >
+                            <p class="text-xs text-slate-400 truncate mb-1.5 font-mono">
                                 {{ $page.props.auth.user.email }}
                             </p>
 
                             <!-- Role Badge Pill -->
                             <span
                                 :class="[
-                                    'inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-extrabold rounded-full tracking-wider uppercase border',
+                                    'inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-extrabold rounded-md uppercase border border-slate-800 bg-slate-950',
                                     $page.props.auth.user.role === 'admin'
-                                        ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-900/50'
-                                        : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-900/50',
+                                        ? 'text-amber-400'
+                                        : 'text-emerald-400',
                                 ]"
                             >
-                                <span
-                                    class="w-1.5 h-1.5 rounded-full"
-                                    :class="
-                                        $page.props.auth.user.role === 'admin'
-                                            ? 'bg-amber-400 animate-pulse'
-                                            : 'bg-emerald-400'
-                                    "
-                                ></span>
+                                <svg 
+                                    v-if="$page.props.auth.user.role === 'admin'"
+                                    class="w-3 h-3 text-amber-400 shrink-0" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                <svg 
+                                    v-else
+                                    class="w-3 h-3 text-emerald-400 shrink-0" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
                                 {{
                                     $page.props.auth.user.role === "admin"
-                                        ? "🛡️ Admin Dispatcher"
-                                        : "👤 Member User"
+                                        ? "Admin Dispatcher"
+                                        : "Member User"
                                 }}
                             </span>
                         </div>
                     </div>
 
                     <!-- Quick Navigation Action Links -->
-                    <div class="py-1.5 text-xs font-medium">
+                    <div class="py-1.5 text-xs font-medium bg-slate-900">
                         <!-- Admin Command Hub (Admin Only) -->
                         <Link
                             v-if="$page.props.auth.user.role === 'admin'"
                             href="/admin/officers"
                             @click="isOpen = false"
-                            class="flex items-center px-4 py-2.5 text-amber-300 hover:bg-amber-950/40 hover:text-amber-200 transition gap-2.5 font-semibold"
+                            class="flex items-center px-4 py-2.5 text-amber-300 hover:bg-slate-800 hover:text-amber-200 transition gap-2.5 font-semibold"
                         >
-                            <span class="text-base">🛡️</span>
+                            <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
                             <div class="flex flex-col">
                                 <span>Admin Command Hub</span>
-                                <span
-                                    class="text-[10px] text-amber-400/70 font-normal"
-                                    >Kelola Perwira & Pengumuman</span
-                                >
+                                <span class="text-[10px] text-slate-400 font-normal">
+                                    Kelola Perwira & Pengumuman
+                                </span>
                             </div>
                         </Link>
 
@@ -168,19 +173,18 @@ onUnmounted(() => {
                             "
                             href="/clipper"
                             @click="isOpen = false"
-                            class="flex items-center px-4 py-2.5 text-slate-200 hover:bg-slate-800/70 hover:text-white transition gap-2.5 font-semibold group"
+                            class="flex items-center px-4 py-2.5 text-slate-200 hover:bg-slate-800 hover:text-white transition gap-2.5 font-semibold group"
                         >
                             <img
                                 :src="iconCut"
-                                class="w-4 h-4 invert opacity-80 group-hover:opacity-100 group-hover:scale-110 transition shrink-0"
+                                class="w-4 h-4 invert opacity-80 group-hover:opacity-100 transition shrink-0"
                                 alt="Tactical Video Trimmer"
                             />
                             <div class="flex flex-col">
                                 <span>Tactical Video Trimmer</span>
-                                <span
-                                    class="text-[10px] text-slate-400 font-normal"
-                                    >Studio Preview & Potong Video YouTube</span
-                                >
+                                <span class="text-[10px] text-slate-400 font-normal">
+                                    Studio Preview & Potong Video YouTube
+                                </span>
                             </div>
                         </Link>
 
@@ -188,28 +192,29 @@ onUnmounted(() => {
                         <Link
                             href="/profile"
                             @click="isOpen = false"
-                            class="flex items-center px-4 py-2.5 text-slate-200 hover:bg-slate-800/70 hover:text-white transition gap-2.5"
+                            class="flex items-center px-4 py-2.5 text-slate-200 hover:bg-slate-800 hover:text-white transition gap-2.5"
                         >
-                            <span class="text-base">⚙️</span>
+                            <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
                             <div class="flex flex-col">
                                 <span>Profil & Akun</span>
-                                <span
-                                    class="text-[10px] text-slate-400 font-normal"
-                                    >Ubah nama, email, & password</span
-                                >
+                                <span class="text-[10px] text-slate-400 font-normal">
+                                    Ubah nama, email, & password
+                                </span>
                             </div>
                         </Link>
                     </div>
 
                     <!-- Footer Section: Sign Out Button -->
-                    <div class="p-2 bg-slate-950/60">
+                    <div class="p-2 bg-slate-950">
                         <button
                             @click="handleLogout"
-                            class="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-xl bg-red-950/50 hover:bg-red-900/80 text-red-300 hover:text-white border border-red-800/40 transition text-xs font-bold shadow-md group"
+                            class="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-md bg-slate-900 hover:bg-red-950/60 text-red-400 hover:text-red-300 border border-slate-800 transition text-xs font-bold group"
                         >
                             <img
                                 :src="iconLogout"
-                                class="w-4 h-4 invert opacity-80 group-hover:opacity-100 group-hover:scale-110 transition"
+                                class="w-4 h-4 invert opacity-80 group-hover:opacity-100 transition"
                                 alt="Logout"
                             />
                             <span>Keluar (Sign Out)</span>
@@ -219,11 +224,11 @@ onUnmounted(() => {
             </transition>
         </template>
 
-        <!-- Guest State: YouTube-Style Sign In Button (Exact h-8 Height Matching Quick Feed) -->
+        <!-- Guest State: Sign In Button -->
         <template v-else>
             <Link
                 href="/login"
-                class="h-8 flex items-center space-x-1.5 px-3 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 border border-blue-400/50 transition hover:scale-105 shrink-0"
+                class="h-8 flex items-center space-x-1.5 px-3 text-xs font-bold rounded-md bg-blue-600 hover:bg-blue-500 text-white transition shrink-0"
             >
                 <svg
                     class="w-4 h-4 text-white"

@@ -9,7 +9,7 @@ import iconFeedback from "@/Components/Icons/report-svgrepo-com.svg";
 const props = defineProps({
     appVersion: {
         type: String,
-        default: "2.4.0-Pro",
+        default: "2.5.0-Pro",
     },
 });
 
@@ -27,10 +27,84 @@ const categories = [
 // Release History Dataset (Clean Neutral Tactical Theme)
 const releases = ref([
     {
-        version: "v2.4.0-Pro",
-        date: "17 September 2026",
+        version: "v2.5.0-Pro",
+        date: "27 September 2026",
         badge: "RILIS TERBARU",
         isLatest: true,
+        summary:
+            "Pembaruan rilis utama: Halaman Dashboard Utama, Fitur Dukungan Streamer 1K Subs, Leaderboard Streamer Bulanan, Panel Visibilitas & Prioritas Perwira, serta Penyederhanaan Multiview Stage 10-8.",
+        changes: [
+            {
+                type: "FEATURE",
+                tag: "Halaman Utama",
+                tagColor: "bg-blue-950/70 text-blue-300 border-blue-500/40",
+                title: "Halaman Dashboard Utama (Police Duty Command)",
+                description:
+                    "Pemberharuan struktur rute utama dimana pengguna kini disambut dengan halaman Dashboard interaktif sebelum masuk ke stage Multiview.",
+            },
+            {
+                type: "FEATURE",
+                tag: "Fitur Komunitas",
+                tagColor: "bg-purple-950/70 text-purple-300 border-purple-500/40",
+                title: "Dukungan Streamer Road to 1K Subscriber",
+                description:
+                    "Seksi khusus di Dashboard untuk mendukung perwira/streamer yang sedang mengejar target 1.000 subscriber (1K Subs) dengan fitur shortcut subscribe langsung.",
+            },
+            {
+                type: "FEATURE",
+                tag: "Peringkat Patroli",
+                tagColor: "bg-amber-950/70 text-amber-300 border-amber-500/40",
+                title: "Leaderboard Streamer & Jam Patroli Bulanan",
+                description:
+                    "Papan peringkat perwira teraktif bulanan berdasarkan akumulasi durasi jam patroli 10-8, total pemirsa, dan konsistensi siaran bulanan.",
+            },
+            {
+                type: "FEATURE",
+                tag: "Fitur Multiview",
+                tagColor: "bg-blue-950/70 text-blue-300 border-blue-500/40",
+                title: "Panel Visibilitas & Kelola Perwira (BottomSheet)",
+                description:
+                    "Pengaturan visibilitas siaran langsung perwira dengan filter status Tampil, Disembunyikan, dan Prioritas, dilengkapi indikator warna konsisten dan pencarian instan.",
+            },
+            {
+                type: "FEATURE",
+                tag: "Fitur Multiview",
+                tagColor: "bg-blue-950/70 text-blue-300 border-blue-500/40",
+                title: "Pengaturan Hirarki Urutan Grid & Pin Prioritas",
+                description:
+                    "Perwira dapat diprioritaskan tampil pada posisi teratas grid (#1, #2, #3...) menggunakan fitur Pin (📌) dan tombol navigasi Atas/Bawah (▲/▼) berbasis SVG.",
+            },
+            {
+                type: "UIUX",
+                tag: "UI & Pengalaman",
+                tagColor: "bg-slate-800 text-slate-300 border-slate-700",
+                title: "Penyederhanaan Tampilan & Removal 10-7 Offline Roster",
+                description:
+                    "Pembersihan fitur Roster 10-7 Offline dan menu toolbar sub-header untuk mengoptimalkan performa halaman dan memfokuskan antarmuka 100% pada siaran langsung 10-8.",
+            },
+            {
+                type: "BUGFIX",
+                tag: "Perbaikan Bug",
+                tagColor: "bg-emerald-950/70 text-emerald-300 border-emerald-500/40",
+                title: "Perbaikan Pencarian Multiview Control & ReferenceError",
+                description:
+                    "Memperbaiki pencarian perwira realtime di Multiview Control serta menangani masalah `getOfficerKey` untuk stabilitas aksi prioritas perwira.",
+            },
+            {
+                type: "UIUX",
+                tag: "UI & Pengalaman",
+                tagColor: "bg-slate-800 text-slate-300 border-slate-700",
+                title: "Standardisasi UI Sesuai Spesifikasi panduan.html",
+                description:
+                    "Penerapan standar desain panduan.html: penyelarasan sistem warna status (Emerald untuk Tampil, Rose untuk Disembunyikan, Amber untuk Prioritas), penggunaan aksi single-language 'Tampil' vs 'Sembunyi', serta penggantian seluruh emoticon dengan vektor SVG native.",
+            },
+        ],
+    },
+    {
+        version: "v2.4.0-Pro",
+        date: "17 September 2026",
+        badge: "STABLE",
+        isLatest: false,
         summary:
             "Pembaruan rilis minggu ini: Master Instansi & Pangkat Kepolisian, Sertifikasi Taktis, Pengelolaan Akun Member & RBAC, Obrolan Member Real-time, Tampilan HP & Dock Navigasi, Kualitas Video 1080p HD, dan Keamanan Server.",
         changes: [
@@ -293,22 +367,17 @@ const filteredReleases = computed(() => {
 
     <TacticalLayout activeTab="updates">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-            <!-- HERO HEADER BANNER (Clean Subtle Dark Slate Theme) -->
+            <!-- HERO HEADER BANNER -->
             <div
-                class="relative overflow-hidden bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl"
+                class="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8"
             >
-                <!-- Soft Subtle Glow -->
                 <div
-                    class="absolute -top-24 -right-24 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl pointer-events-none"
-                ></div>
-
-                <div
-                    class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6"
+                    class="flex flex-col md:flex-row md:items-center justify-between gap-6"
                 >
                     <div class="space-y-2.5 max-w-2xl">
                         <div class="flex items-center gap-2">
                             <span
-                                class="px-2.5 py-0.5 rounded-full bg-slate-950 text-slate-300 border border-slate-800 text-[10px] font-mono font-bold uppercase tracking-wider"
+                                class="px-2.5 py-0.5 rounded-md bg-slate-950 text-slate-300 border border-slate-800 text-[10px] font-mono font-bold uppercase tracking-wider"
                             >
                                 CATATAN PEMBARUAN SISTEM
                             </span>
@@ -329,9 +398,9 @@ const filteredReleases = computed(() => {
                         </p>
                     </div>
 
-                    <!-- Platform Version Card (Clean Neutral) -->
+                    <!-- Platform Version Card -->
                     <div
-                        class="bg-slate-950 border border-slate-800 rounded-2xl p-4 shrink-0 flex flex-col items-center justify-center text-center gap-1 shadow-inner md:w-48"
+                        class="bg-slate-950 border border-slate-800 rounded-xl p-4 shrink-0 flex flex-col items-center justify-center text-center gap-1 md:w-48"
                     >
                         <div
                             class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest"
@@ -352,10 +421,10 @@ const filteredReleases = computed(() => {
                 </div>
             </div>
 
-            <!-- METRICS SUMMARY ROW (Subtle Slate Theme) -->
+            <!-- METRICS SUMMARY ROW -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <div
-                    class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-sm"
+                    class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
                 >
                     <span
                         class="text-[11px] font-mono text-slate-400 font-semibold uppercase"
@@ -367,7 +436,7 @@ const filteredReleases = computed(() => {
                     >
                 </div>
                 <div
-                    class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-sm"
+                    class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
                 >
                     <span
                         class="text-[11px] font-mono text-slate-400 font-semibold uppercase"
@@ -378,7 +447,7 @@ const filteredReleases = computed(() => {
                     >
                 </div>
                 <div
-                    class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-sm"
+                    class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
                 >
                     <span
                         class="text-[11px] font-mono text-slate-400 font-semibold uppercase"
@@ -390,7 +459,7 @@ const filteredReleases = computed(() => {
                     >
                 </div>
                 <div
-                    class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between shadow-sm"
+                    class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
                 >
                     <span
                         class="text-[11px] font-mono text-slate-400 font-semibold uppercase"
@@ -403,7 +472,7 @@ const filteredReleases = computed(() => {
                 </div>
             </div>
 
-            <!-- CATEGORY FILTER TABS (Clean Slate & Blue Highlight) -->
+            <!-- CATEGORY FILTER TABS -->
             <div
                 class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none"
             >
@@ -412,17 +481,17 @@ const filteredReleases = computed(() => {
                     :key="cat.id"
                     @click="selectedCategory = cat.id"
                     :class="[
-                        'px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition shrink-0 border',
+                        'px-3 py-1.5 rounded-md text-xs font-bold font-mono transition shrink-0 border',
                         selectedCategory === cat.id
-                            ? 'bg-blue-600/30 text-blue-300 border-blue-500/50'
-                            : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 border-slate-800 hover:bg-slate-800',
+                            ? 'bg-blue-600 text-white border-blue-500'
+                            : 'bg-slate-950 text-slate-400 hover:text-slate-200 border-slate-800 hover:bg-slate-800',
                     ]"
                 >
                     {{ cat.label }}
                 </button>
             </div>
 
-            <!-- RELEASE TIMELINE SECTION (Clean Dark Theme) -->
+            <!-- RELEASE TIMELINE SECTION -->
             <div class="space-y-6">
                 <div
                     v-for="rel in filteredReleases"
@@ -431,20 +500,20 @@ const filteredReleases = computed(() => {
                 >
                     <!-- Timeline Marker Dot -->
                     <div
-                        class="absolute -left-[7px] top-2 w-3.5 h-3.5 rounded-full border transition duration-300 shadow-sm"
+                        class="absolute -left-[7px] top-2 w-3.5 h-3.5 rounded-full border transition duration-300"
                         :class="
                             rel.isLatest
-                                ? 'bg-blue-500 border-blue-400 ring-4 ring-blue-500/10'
+                                ? 'bg-blue-500 border-blue-400'
                                 : 'bg-slate-800 border-slate-700 group-hover:border-slate-500'
                         "
                     ></div>
 
                     <!-- Release Header Card -->
                     <div
-                        class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 shadow-lg space-y-3.5"
+                        class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3.5"
                     >
                         <div
-                            class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800/80"
+                            class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800"
                         >
                             <div class="flex items-center space-x-2.5">
                                 <span
@@ -453,10 +522,10 @@ const filteredReleases = computed(() => {
                                     {{ rel.version }}
                                 </span>
                                 <span
-                                    class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border"
+                                    class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase border"
                                     :class="
                                         rel.isLatest
-                                            ? 'bg-blue-950 text-blue-300 border-blue-500/40'
+                                            ? 'bg-blue-950 text-blue-400 border-blue-900/60'
                                             : 'bg-slate-950 text-slate-400 border-slate-800'
                                     "
                                 >
@@ -482,7 +551,7 @@ const filteredReleases = computed(() => {
                             <div
                                 v-for="(change, cIdx) in rel.changes"
                                 :key="cIdx"
-                                class="bg-slate-950/70 border border-slate-800/70 rounded-xl p-3 space-y-1"
+                                class="bg-slate-950 border border-slate-800 rounded-md p-3 space-y-1"
                             >
                                 <div
                                     class="flex items-center justify-between gap-2"
@@ -494,7 +563,7 @@ const filteredReleases = computed(() => {
                                     </span>
                                     <span
                                         :class="[
-                                            'px-2 py-0.5 rounded text-[10px] font-mono font-semibold border shrink-0',
+                                            'px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold border shrink-0',
                                             change.tagColor,
                                         ]"
                                     >
@@ -514,7 +583,7 @@ const filteredReleases = computed(() => {
                 <!-- Empty State -->
                 <div
                     v-if="filteredReleases.length === 0"
-                    class="text-center py-10 bg-slate-900/40 rounded-2xl border border-slate-800 p-6 space-y-2"
+                    class="text-center py-10 bg-slate-900 rounded-xl border border-slate-800 p-6 space-y-2"
                 >
                     <div class="text-xs font-mono text-slate-400">
                         Tidak ada catatan untuk kategori ini.
@@ -522,9 +591,9 @@ const filteredReleases = computed(() => {
                 </div>
             </div>
 
-            <!-- FOOTER CALLOUT BANNER (Clean Slate Style) -->
+            <!-- FOOTER CALLOUT BANNER -->
             <div
-                class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md"
+                class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
             >
                 <div class="space-y-0.5">
                     <h4 class="text-xs font-bold text-slate-200">
@@ -537,7 +606,7 @@ const filteredReleases = computed(() => {
                 </div>
                 <Link
                     href="/feedback"
-                    class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition shrink-0 border border-slate-700 flex items-center justify-center gap-2"
+                    class="px-3.5 py-2 rounded-md bg-slate-950 hover:bg-slate-800 text-slate-200 text-xs font-bold transition shrink-0 border border-slate-800 flex items-center justify-center gap-2"
                 >
                     <img
                         :src="iconFeedback"

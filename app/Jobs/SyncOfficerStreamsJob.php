@@ -63,30 +63,54 @@ class SyncOfficerStreamsJob implements ShouldQueue
                     }
                 }
 
-                // Update or create active stream
-                ActiveStream::updateOrCreate(
-                    [
-                        'channel_id' => $channelId,
-                        'video_id' => $liveData['video_id'],
-                    ],
-                    [
-                        'title' => $liveData['title'],
-                        'thumbnail_url' => $liveData['thumbnail_url'],
-                        'status' => 'LIVE',
-                        'viewers_count' => $liveData['viewers_count'] ?? 0,
-                        'description' => $streamDescription,
-                        'last_synced_at' => now(),
-                    ]
-                );
+                // Check if stream is valid Police Duty 10-8 vs Badside/Civilian
+                $isPolicePatrol = $scraper->isPolicePatrolStream($liveData['title'] ?? '', $streamDescription ?? '', $officer);
 
-                // Mark other previous streams of this officer as ended
-                ActiveStream::where('channel_id', $channelId)
-                    ->where('video_id', '!=', $liveData['video_id'])
-                    ->where('status', 'LIVE')
-                    ->update([
-                        'status' => 'ENDED',
-                        'last_synced_at' => now(),
-                    ]);
+                if ($isPolicePatrol) {
+                    // Update or create active stream
+                    ActiveStream::updateOrCreate(
+                        [
+                            'channel_id' => $channelId,
+                            'video_id' => $liveData['video_id'],
+                        ],
+                        [
+                            'title' => $liveData['title'],
+                            'thumbnail_url' => $liveData['thumbnail_url'],
+                            'status' => 'LIVE',
+                            'viewers_count' => $liveData['viewers_count'] ?? 0,
+                            'description' => $streamDescription,
+                            'last_synced_at' => now(),
+                        ]
+                    );
+
+                    $lastDuty = $officer->last_duty_at;
+                    $minutesToAdd = 5;
+                    if ($lastDuty) {
+                        $diffMins = intval(now()->diffInMinutes($lastDuty));
+                        if ($diffMins >= 1 && $diffMins <= 180) {
+                            $minutesToAdd = $diffMins;
+                        }
+                    }
+                    $officer->increment('monthly_duty_minutes', $minutesToAdd);
+                    $officer->update(['last_duty_at' => now()]);
+
+                    // Mark other previous streams of this officer as ended
+                    ActiveStream::where('channel_id', $channelId)
+                        ->where('video_id', '!=', $liveData['video_id'])
+                        ->where('status', 'LIVE')
+                        ->update([
+                            'status' => 'ENDED',
+                            'last_synced_at' => now(),
+                        ]);
+                } else {
+                    // Stream is not police patrol (e.g. badside / missing hashtag). Mark any existing active stream as ENDED.
+                    ActiveStream::where('channel_id', $channelId)
+                        ->where('status', 'LIVE')
+                        ->update([
+                            'status' => 'ENDED',
+                            'last_synced_at' => now(),
+                        ]);
+                }
             } else {
                 // Officer is not live in this cycle. Mark any existing active stream as ENDED immediately.
                 $channelId = $officer->channel_id ?: 'ch-' . $officer->id;

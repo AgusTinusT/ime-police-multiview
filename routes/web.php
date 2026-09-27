@@ -71,6 +71,8 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/officers')->group(function 
     Route::put('/{id}', [OfficerManagementController::class, 'update']);
     Route::delete('/{id}', [OfficerManagementController::class, 'destroy']);
     Route::patch('/{id}/toggle', [OfficerManagementController::class, 'toggle']);
+    Route::patch('/{id}/adjust-duty', [OfficerManagementController::class, 'adjustDuty']);
+    Route::patch('/{id}/toggle-hashtag-bypass', [OfficerManagementController::class, 'toggleHashtagBypass']);
 });
 
 // Admin-Protected Announcements API

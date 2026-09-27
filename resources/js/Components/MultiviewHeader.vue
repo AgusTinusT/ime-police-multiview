@@ -3,7 +3,6 @@ import { Link } from "@inertiajs/vue3";
 
 // SVG Icon Assets & Branding Logos
 import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
-import iconQuickAdd from "@/Components/Icons/button-plus-svgrepo-com.svg";
 import iconLspd from "@/Components/Icons/LSPD_HD.svg";
 import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
 import iconSasp from "@/Components/Icons/SASP_HD.svg";
@@ -51,7 +50,6 @@ const emit = defineEmits([
     "enable-data-saver",
     "disable-data-saver",
     "trigger-sync",
-    "open-quick-add",
     "toggle-fullscreen",
 ]);
 
@@ -75,7 +73,7 @@ const getDeptCount = (deptId) => {
 <template>
     <!-- Full-Width Edge-to-Edge Master Header Bar -->
     <header
-        class="w-full bg-[#0b1320] border-b border-blue-900/40 sticky top-0 z-40 shadow-xl backdrop-blur-md py-2.5 sm:py-3"
+        class="w-full bg-slate-950 border-b border-slate-800 sticky top-0 z-40 py-2.5 sm:py-3"
     >
         <div class="max-w-screen-2xl mx-auto w-full px-3 sm:px-4 lg:px-8 flex items-center justify-between gap-3 text-slate-100">
             <!-- LEFT BRANDING: Police Duty (Navigates to Dashboard) -->
@@ -85,7 +83,7 @@ const getDeptCount = (deptId) => {
                 title="IME Roleplay — Police Duty Dashboard"
             >
                 <div
-                    class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-blue-950/50 via-slate-900 to-slate-950 border border-blue-500/40 group-hover:border-blue-400 p-1 overflow-hidden transition shadow-inner"
+                    class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-slate-900 border border-slate-800 group-hover:border-slate-700 p-1 overflow-hidden transition"
                 >
                     <img
                         :src="logoSaspColor"
@@ -107,135 +105,122 @@ const getDeptCount = (deptId) => {
                 </div>
             </Link>
 
-            <!-- CENTER CATEGORIES (Consistent Dark-Blue Pill Theme) -->
-            <nav class="hidden md:flex items-center space-x-1.5 overflow-x-auto scrollbar-none px-1 py-0.5">
+            <!-- CENTER CATEGORIES (Title Text Style) -->
+            <nav class="hidden md:flex items-center space-x-2 overflow-x-auto scrollbar-none px-1 py-0.5">
                 <button
                     @click="emit('update:selectedDepartment', 'ALL')"
                     :class="[
-                        'px-3.5 py-1.5 text-xs rounded-full font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
                         selectedDepartment === 'ALL'
-                            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                            ? 'text-blue-400 border-blue-500'
+                            : 'text-slate-400 border-transparent hover:text-slate-200'
                     ]"
                 >
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>All Units</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/40 font-mono">{{ getDeptCount('ALL') }}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('ALL') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', 'LSPD')"
                     :class="[
-                        'px-3.5 py-1.5 text-xs rounded-full font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
                         selectedDepartment === 'LSPD'
-                            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                            ? 'text-blue-400 border-blue-500'
+                            : 'text-slate-400 border-transparent hover:text-slate-200'
                     ]"
                 >
                     <img :src="iconLspd" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
                     <span>LSPD</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/40 font-mono">{{ getDeptCount('LSPD') }}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('LSPD') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', 'BCSO')"
                     :class="[
-                        'px-3.5 py-1.5 text-xs rounded-full font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
                         selectedDepartment === 'BCSO'
-                            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                            ? 'text-blue-400 border-blue-500'
+                            : 'text-slate-400 border-transparent hover:text-slate-200'
                     ]"
                 >
                     <img :src="iconBcso" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
                     <span>BCSO</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/40 font-mono">{{ getDeptCount('BCSO') }}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('BCSO') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', 'SASP')"
                     :class="[
-                        'px-3.5 py-1.5 text-xs rounded-full font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
                         selectedDepartment === 'SASP'
-                            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                            ? 'text-blue-400 border-blue-500'
+                            : 'text-slate-400 border-transparent hover:text-slate-200'
                     ]"
                 >
                     <img :src="iconSasp" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
                     <span>SASP</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/40 font-mono">{{ getDeptCount('SASP') }}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('SASP') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', 'SAPR')"
                     :class="[
-                        'px-3.5 py-1.5 text-xs rounded-full font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
                         selectedDepartment === 'SAPR'
-                            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                            ? 'text-blue-400 border-blue-500'
+                            : 'text-slate-400 border-transparent hover:text-slate-200'
                     ]"
                 >
                     <img :src="iconSapr" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
                     <span>SAPR</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/40 font-mono">{{ getDeptCount('SAPR') }}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('SAPR') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', selectedDepartment.startsWith('TAC_') ? 'ALL' : 'TAC_1')"
                     :class="[
-                        'px-3.5 py-1.5 text-xs rounded-full font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
                         selectedDepartment.startsWith('TAC_')
-                            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                            ? 'text-blue-400 border-blue-500'
+                            : 'text-slate-400 border-transparent hover:text-slate-200'
                     ]"
                 >
                     <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" />
                     <span>{{ selectedDepartment.startsWith('TAC_') ? selectedDepartment.replace('_', ' ') : 'TAC' }}</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/40 font-mono">{{ getDeptCount('TAC') }}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('TAC') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', 'PERSONAL')"
                     :class="[
-                        'px-3.5 py-1.5 text-xs rounded-full font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
                         selectedDepartment === 'PERSONAL'
-                            ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                            : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                            ? 'text-blue-400 border-blue-500'
+                            : 'text-slate-400 border-transparent hover:text-slate-200'
                     ]"
                 >
                     <img :src="iconPersonal" class="w-3.5 h-3.5 invert opacity-90" />
                     <span>Watchlist</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/40 font-mono">{{ getDeptCount('PERSONAL') }}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('PERSONAL') }}</span>
                 </button>
             </nav>
 
             <!-- RIGHT AREA: Action Controls & User Avatar -->
             <div class="flex items-center space-x-2 shrink-0">
-                <button
-                    @click="$emit('open-quick-add')"
-                    class="h-8 px-2.5 text-xs font-bold rounded-lg bg-emerald-950/80 hover:bg-emerald-900/90 text-emerald-300 border border-emerald-500/40 transition flex items-center gap-1.5 shadow-sm shrink-0 cursor-pointer"
-                    title="Add External YouTube URL to CCTV Wall"
-                >
-                    <img
-                        :src="iconQuickAdd"
-                        class="w-3.5 h-3.5 invert opacity-90 shrink-0"
-                        alt="Quick Feed"
-                    />
-                    <span class="hidden sm:inline leading-none">Quick Feed</span>
-                </button>
-
                 <UserAccountMenu />
             </div>
         </div>
 
         <!-- MOBILE SECONDARY NAV RIBBON (< md) -->
         <div
-            class="md:hidden max-w-screen-2xl mx-auto w-full px-3 pt-2 flex items-center space-x-1.5 overflow-x-auto scrollbar-none border-t border-slate-800/60 mt-2"
+            class="hidden max-w-screen-2xl mx-auto w-full px-3 pt-2 items-center space-x-3 overflow-x-auto scrollbar-none border-t border-slate-800 mt-2"
         >
             <button
                 @click="emit('update:selectedDepartment', 'ALL')"
                 :class="[
-                    'px-3 py-1 text-xs rounded-full font-bold transition shrink-0 cursor-pointer',
-                    selectedDepartment === 'ALL' ? 'bg-blue-600 text-white' : 'text-slate-300'
+                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
+                    selectedDepartment === 'ALL' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
                 ]"
             >
                 ALL ({{ getDeptCount('ALL') }})
@@ -243,8 +228,8 @@ const getDeptCount = (deptId) => {
             <button
                 @click="emit('update:selectedDepartment', 'LSPD')"
                 :class="[
-                    'px-3 py-1 text-xs rounded-full font-bold transition shrink-0 cursor-pointer',
-                    selectedDepartment === 'LSPD' ? 'bg-blue-600 text-white' : 'text-slate-300'
+                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
+                    selectedDepartment === 'LSPD' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
                 ]"
             >
                 LSPD ({{ getDeptCount('LSPD') }})
@@ -252,8 +237,8 @@ const getDeptCount = (deptId) => {
             <button
                 @click="emit('update:selectedDepartment', 'BCSO')"
                 :class="[
-                    'px-3 py-1 text-xs rounded-full font-bold transition shrink-0 cursor-pointer',
-                    selectedDepartment === 'BCSO' ? 'bg-blue-600 text-white' : 'text-slate-300'
+                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
+                    selectedDepartment === 'BCSO' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
                 ]"
             >
                 BCSO ({{ getDeptCount('BCSO') }})
@@ -261,8 +246,8 @@ const getDeptCount = (deptId) => {
             <button
                 @click="emit('update:selectedDepartment', 'SASP')"
                 :class="[
-                    'px-3 py-1 text-xs rounded-full font-bold transition shrink-0 cursor-pointer',
-                    selectedDepartment === 'SASP' ? 'bg-blue-600 text-white' : 'text-slate-300'
+                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
+                    selectedDepartment === 'SASP' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
                 ]"
             >
                 SASP ({{ getDeptCount('SASP') }})
@@ -270,8 +255,8 @@ const getDeptCount = (deptId) => {
             <button
                 @click="emit('update:selectedDepartment', 'SAPR')"
                 :class="[
-                    'px-3 py-1 text-xs rounded-full font-bold transition shrink-0 cursor-pointer',
-                    selectedDepartment === 'SAPR' ? 'bg-blue-600 text-white' : 'text-slate-300'
+                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
+                    selectedDepartment === 'SAPR' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
                 ]"
             >
                 SAPR ({{ getDeptCount('SAPR') }})
@@ -279,8 +264,8 @@ const getDeptCount = (deptId) => {
             <button
                 @click="emit('update:selectedDepartment', selectedDepartment.startsWith('TAC_') ? 'ALL' : 'TAC_1')"
                 :class="[
-                    'px-3 py-1 text-xs rounded-full font-bold transition shrink-0 cursor-pointer',
-                    selectedDepartment.startsWith('TAC_') ? 'bg-blue-600 text-white' : 'text-slate-300'
+                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
+                    selectedDepartment.startsWith('TAC_') ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
                 ]"
             >
                 TAC

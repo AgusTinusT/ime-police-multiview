@@ -37,7 +37,7 @@ const submit = () => {
             </div>
 
             <!-- Card Container -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5">
                 <!-- Tab Switcher -->
                 <div class="flex border-b border-slate-800 pb-3">
                     <Link href="/login" class="flex-1 py-1.5 text-xs font-mono text-center font-medium text-slate-400 hover:text-slate-200 transition">
@@ -58,7 +58,7 @@ const submit = () => {
                             required
                             autofocus
                             placeholder="John Doe"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                         />
                         <div v-if="form.errors.name" class="text-red-400 text-[11px] mt-1">
                             {{ form.errors.name }}
@@ -73,7 +73,7 @@ const submit = () => {
                             v-model="form.email"
                             required
                             placeholder="nama@email.com"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                         />
                         <div v-if="form.errors.email" class="text-red-400 text-[11px] mt-1">
                             {{ form.errors.email }}
@@ -88,7 +88,7 @@ const submit = () => {
                             v-model="form.password"
                             required
                             placeholder="Minimal 8 karakter"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                         />
                         <div v-if="form.errors.password" class="text-red-400 text-[11px] mt-1">
                             {{ form.errors.password }}
@@ -103,7 +103,7 @@ const submit = () => {
                             v-model="form.password_confirmation"
                             required
                             placeholder="Ulangi password"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                         />
                         <div v-if="form.errors.password_confirmation" class="text-red-400 text-[11px] mt-1">
                             {{ form.errors.password_confirmation }}
@@ -114,14 +114,14 @@ const submit = () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs transition shadow-sm"
+                            class="w-full py-2.5 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs transition"
                         >
                             {{ form.processing ? 'Creating Account...' : 'Register' }}
                         </button>
                     </div>
                 </form>
 
-                <div class="pt-3 border-t border-slate-800/80 text-center">
+                <div class="pt-3 border-t border-slate-800 text-center">
                     <p class="text-xs text-slate-400">
                         Sudah memiliki akun?
                         <Link href="/login" class="text-blue-400 hover:text-blue-300 font-semibold ml-1">

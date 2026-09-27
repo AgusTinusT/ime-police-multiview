@@ -9,22 +9,17 @@ import iconSasp from "@/Components/Icons/SASP_HD.svg";
 import iconSapr from "@/Components/Icons/ranger_logo.svg";
 import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
 import iconPersonal from "@/Components/Icons/star-svgrepo-com.svg";
-import iconSaver from "@/Components/Icons/gauge-low-svgrepo-com.svg";
-import iconPlayAll from "@/Components/Icons/play-full-svgrepo-com.svg";
-import iconFeedback from "@/Components/Icons/report-svgrepo-com.svg";
 
 // Refactored Sub-Components
 import MultiviewHeader from "@/Components/MultiviewHeader.vue";
-import TacticalFilterToolbar from "@/Components/TacticalFilterToolbar.vue";
 import TacticalStreamGrid from "@/Components/TacticalStreamGrid.vue";
-import TacticalRosterTab from "@/Components/TacticalRosterTab.vue";
 import TacticalDrawers from "@/Components/TacticalDrawers.vue";
-import iconRoster from "@/Components/Icons/doc-svgrepo-com.svg";
 import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
-import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
+import OfficerVisibilityBottomSheet from "@/Components/OfficerVisibilityBottomSheet.vue";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
+import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 
 const props = defineProps({
     initialStreams: {
@@ -74,8 +69,20 @@ const selectedDepartment = ref(getInitialDepartment());
 
 // Theater Mode toggle for full-height multiview grid
 const isTheaterMode = ref(false);
-const toggleTheaterMode = () => {
-    isTheaterMode.value = !isTheaterMode.value;
+const toggleTheaterMode = (forceState = null) => {
+    if (typeof forceState === "boolean") {
+        isTheaterMode.value = forceState;
+    } else {
+        isTheaterMode.value = !isTheaterMode.value;
+    }
+};
+
+const handleScrollTrigger = () => {
+    if (typeof window === "undefined") return;
+    const isMobile = window.innerWidth < 640;
+    if (isMobile && window.scrollY > 30 && !isTheaterMode.value) {
+        isTheaterMode.value = true;
+    }
 };
 
 watch(selectedDepartment, (newDept) => {
@@ -115,7 +122,6 @@ const getInitialLayout = () => {
 
 const selectedLayout = ref(getInitialLayout());
 const searchFilter = ref("");
-const activeMobileNav = ref(null); // Mobile bottom sheet state ('TAC', 'MENU', or null)
 
 // YouTube Player & Audio Composable
 const {
@@ -843,6 +849,7 @@ onMounted(() => {
     document.addEventListener("click", handleGlobalClick);
     window.addEventListener("error", handleYouTubeInternalError, true);
     window.addEventListener("open-clipper-modal", handleOpenClipperEvent);
+    window.addEventListener("scroll", handleScrollTrigger, { passive: true });
     loadPersonalStreamsFromStorage();
     syncCloudWatchlist();
     fetchAnnouncements();
@@ -863,6 +870,7 @@ onUnmounted(() => {
     document.removeEventListener("click", handleGlobalClick);
     window.removeEventListener("error", handleYouTubeInternalError, true);
     window.removeEventListener("open-clipper-modal", handleOpenClipperEvent);
+    window.removeEventListener("scroll", handleScrollTrigger);
     if (tacTimerInterval) clearInterval(tacTimerInterval);
     if (tacPollInterval) clearInterval(tacPollInterval);
     if (streamPollInterval) clearInterval(streamPollInterval);
@@ -1015,8 +1023,19 @@ const savePersonalStreamsToStorage = () => {
     }
 };
 
-// All combined streams (Deduplicated strictly by video_id)
-const allActiveStreams = computed(() => {
+const { isOfficerDisabled, getOfficerKey } = useOfficerFilter();
+const isOfficerVisibilityOpen = ref(false);
+
+const openOfficerVisibilityModal = () => {
+    isOfficerVisibilityOpen.value = true;
+};
+
+const closeOfficerVisibilityModal = () => {
+    isOfficerVisibilityOpen.value = false;
+};
+
+// All combined raw streams (Deduplicated strictly by video_id)
+const rawActiveStreams = computed(() => {
     const streamMap = new Map();
     // 1. Add official synced streams first
     (streams.value || []).forEach((s) => {
@@ -1039,6 +1058,11 @@ const allActiveStreams = computed(() => {
         }
     });
     return Array.from(streamMap.values());
+});
+
+// Active Streams filtered by user-driven officer visibility (Enable/Disable perwira)
+const allActiveStreams = computed(() => {
+    return rawActiveStreams.value.filter((s) => !isOfficerDisabled(s));
 });
 
 // Currently selected stream for Grid Mode Live Chat Sidebar
@@ -1174,7 +1198,7 @@ const togglePersonalStream = (streamOrId) => {
         }
         personalVideoIds.value.push(targetId);
         savePersonalStreamsToStorage();
-        showTacticalToast("Unit ditambahkan ke Personal Watchlist 📌", "info");
+        showTacticalToast("Unit ditambahkan ke Personal Watchlist", "info");
     }
     toggleCloudWatchlist(targetId);
 };
@@ -1642,21 +1666,30 @@ const filteredStreams = computed(() => {
     }
 
     if (searchFilter.value.trim() !== "") {
-        const query = searchFilter.value.toLowerCase();
-        result = result.filter(
-            (s) =>
-                (s.title && s.title.toLowerCase().includes(query)) ||
-                (s.officer?.officer_name &&
-                    s.officer.officer_name.toLowerCase().includes(query)) ||
-                (s.officer?.callsign &&
-                    s.officer.callsign.toLowerCase().includes(query)) ||
-                (s.officer?.badge_number &&
-                    s.officer.badge_number.toLowerCase().includes(query)) ||
-                (s.officer?.streamer_name &&
-                    s.officer.streamer_name.toLowerCase().includes(query)) ||
-                (s.officer?.patrol_zone &&
-                    s.officer.patrol_zone.toLowerCase().includes(query)),
-        );
+        const query = normalizeUnicodeText(searchFilter.value.trim());
+        result = result.filter((s) => {
+            const title = normalizeUnicodeText(s.title || "");
+            const officerName = normalizeUnicodeText(s.officer?.officer_name || s.officer_name || s.name || "");
+            const streamerName = normalizeUnicodeText(s.officer?.streamer_name || s.streamer_name || "");
+            const callsign = normalizeUnicodeText(s.officer?.callsign || s.callsign || "");
+            const badge = normalizeUnicodeText(s.officer?.badge_number || s.badge_number || "");
+            const dept = normalizeUnicodeText(s.officer?.department || s.department || "");
+            const rank = normalizeUnicodeText(s.officer?.rank || s.rank || "");
+            const handle = normalizeUnicodeText(s.officer?.handle || s.handle || s.channel_id || "");
+            const zone = normalizeUnicodeText(s.officer?.patrol_zone || s.patrol_zone || "");
+
+            return (
+                title.includes(query) ||
+                officerName.includes(query) ||
+                streamerName.includes(query) ||
+                callsign.includes(query) ||
+                badge.includes(query) ||
+                dept.includes(query) ||
+                rank.includes(query) ||
+                handle.includes(query) ||
+                zone.includes(query)
+            );
+        });
     }
 
     return result;
@@ -1690,16 +1723,28 @@ const filteredOfflineOfficers = computed(() => {
     }
 
     if (searchFilter.value.trim() !== "") {
-        const query = searchFilter.value.toLowerCase();
-        result = result.filter(
-            (o) =>
-                o.officer_name.toLowerCase().includes(query) ||
-                o.callsign.toLowerCase().includes(query) ||
-                o.streamer_name.toLowerCase().includes(query) ||
-                (o.badge_number &&
-                    o.badge_number.toLowerCase().includes(query)) ||
-                (o.patrol_zone && o.patrol_zone.toLowerCase().includes(query)),
-        );
+        const query = normalizeUnicodeText(searchFilter.value.trim());
+        result = result.filter((o) => {
+            const officerName = normalizeUnicodeText(o.officer_name || o.name || "");
+            const streamerName = normalizeUnicodeText(o.streamer_name || "");
+            const callsign = normalizeUnicodeText(o.callsign || "");
+            const badge = normalizeUnicodeText(o.badge_number || "");
+            const dept = normalizeUnicodeText(o.department || "");
+            const rank = normalizeUnicodeText(o.rank || "");
+            const handle = normalizeUnicodeText(o.handle || o.channel_id || "");
+            const zone = normalizeUnicodeText(o.patrol_zone || "");
+
+            return (
+                officerName.includes(query) ||
+                streamerName.includes(query) ||
+                callsign.includes(query) ||
+                badge.includes(query) ||
+                dept.includes(query) ||
+                rank.includes(query) ||
+                handle.includes(query) ||
+                zone.includes(query)
+            );
+        });
     }
 
     return result;
@@ -1708,53 +1753,62 @@ const filteredOfflineOfficers = computed(() => {
 // Custom Grid Sequence Ordering System (#1, #2, #3...)
 const customStreamOrder = ref([]); // Array of video_id strings in priority sequence
 
-const getCustomOrderRank = (videoId) => {
-    if (!videoId) return 0;
-    const strId = String(videoId).trim();
+const getCustomOrderRank = (item) => {
+    if (!item) return 0;
+    const key = getOfficerKey(item) || (typeof item === "string" ? item.trim() : (item.video_id ? String(item.video_id).trim() : ""));
+    if (!key) return 0;
 
-    // Compute category-relative rank (scoped to currently active category / filteredStreams)
-    const categoryOrderedIds = customStreamOrder.value.filter((id) =>
-        filteredStreams.value.some((s) => String(s.video_id).trim() === id),
-    );
+    const idx = customStreamOrder.value.indexOf(key);
+    if (idx !== -1) return idx + 1;
 
-    const idx = categoryOrderedIds.indexOf(strId);
-    return idx !== -1 ? idx + 1 : 0;
+    if (typeof item === "object" && item.video_id) {
+        const vIdx = customStreamOrder.value.indexOf(String(item.video_id).trim());
+        if (vIdx !== -1) return vIdx + 1;
+    }
+
+    return 0;
 };
 
-const toggleCustomOrderPin = (videoId) => {
-    if (!videoId) return;
-    const strId = String(videoId).trim();
-    const idx = customStreamOrder.value.indexOf(strId);
+const toggleCustomOrderPin = (item) => {
+    if (!item) return;
+    const key = getOfficerKey(item) || (typeof item === "string" ? item.trim() : (item.video_id ? String(item.video_id).trim() : ""));
+    if (!key) return;
+
+    const idx = customStreamOrder.value.indexOf(key);
     if (idx !== -1) {
         customStreamOrder.value.splice(idx, 1);
-        showTacticalToast("Siaran dikeluarkan dari urutan prioritas", "info");
+        showTacticalToast("Perwira dikeluarkan dari urutan prioritas", "info");
     } else {
-        customStreamOrder.value.push(strId);
-        const rank = getCustomOrderRank(strId);
+        customStreamOrder.value.push(key);
+        const rank = customStreamOrder.value.length;
         showTacticalToast(
-            `Siaran ditambahkan ke urutan prioritas #${rank}`,
+            `Perwira ditambahkan ke urutan prioritas #${rank}`,
             "info",
         );
     }
 };
 
-const moveCustomOrderUp = (videoId) => {
-    const strId = String(videoId).trim();
-    const idx = customStreamOrder.value.indexOf(strId);
+const moveCustomOrderUp = (item) => {
+    if (!item) return;
+    const key = getOfficerKey(item) || (typeof item === "string" ? item.trim() : (item.video_id ? String(item.video_id).trim() : ""));
+    if (!key) return;
+
+    const idx = customStreamOrder.value.indexOf(key);
     if (idx > 0) {
-        const item = customStreamOrder.value.splice(idx, 1)[0];
-        customStreamOrder.value.splice(idx - 1, 0, item);
-    } else if (idx === -1) {
-        customStreamOrder.value.unshift(strId);
+        const val = customStreamOrder.value.splice(idx, 1)[0];
+        customStreamOrder.value.splice(idx - 1, 0, val);
     }
 };
 
-const moveCustomOrderDown = (videoId) => {
-    const strId = String(videoId).trim();
-    const idx = customStreamOrder.value.indexOf(strId);
+const moveCustomOrderDown = (item) => {
+    if (!item) return;
+    const key = getOfficerKey(item) || (typeof item === "string" ? item.trim() : (item.video_id ? String(item.video_id).trim() : ""));
+    if (!key) return;
+
+    const idx = customStreamOrder.value.indexOf(key);
     if (idx !== -1 && idx < customStreamOrder.value.length - 1) {
-        const item = customStreamOrder.value.splice(idx, 1)[0];
-        customStreamOrder.value.splice(idx + 1, 0, item);
+        const val = customStreamOrder.value.splice(idx, 1)[0];
+        customStreamOrder.value.splice(idx + 1, 0, val);
     }
 };
 
@@ -1828,7 +1882,7 @@ const displayedGridStreams = computed(() => {
 // ==========================================
 
 // Unicode NFKD Normalization for fancy streamer fonts (Double-Struck, Bold, Italics, Fullwidth, Circled, etc.)
-const normalizeUnicodeText = (text) => {
+function normalizeUnicodeText(text) {
     if (!text) return "";
     try {
         return text
@@ -1838,7 +1892,7 @@ const normalizeUnicodeText = (text) => {
     } catch (e) {
         return (text || "").toLowerCase();
     }
-};
+}
 
 // Check if a stream or replay video is specifically an IME POLICE / PATROL stream
 const hasRequiredImeHashtag = (stream) => {
@@ -1851,7 +1905,7 @@ const hasRequiredImeHashtag = (stream) => {
     const normTitle = normalizeUnicodeText(stream.title || "");
 
     // Required Police Duty Hashtags & Keywords in TITLE
-    const policeTags = ["imepolice", "ime police", "969garage", "969"];
+    const policeTags = ["imepolice", "ime police"];
 
     return policeTags.some((tag) => normTitle.includes(tag));
 };
@@ -3075,7 +3129,7 @@ const submitFeedbackForm = async () => {
     <Head title="IME RP — SASP Police Duty | Live Officer Bodycam & Dispatch" />
 
     <div
-        class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased"
+        class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased"
     >
         <!-- Dedicated Multiview Master Header Component (Hidden when Theater Mode is active) -->
         <MultiviewHeader
@@ -3090,46 +3144,25 @@ const submitFeedbackForm = async () => {
             @enable-data-saver="enableDataSaver"
             @disable-data-saver="disableDataSaverAndPlayAll"
             @trigger-sync="triggerManualSync"
-            @open-quick-add="openRightDrawer('QUICK_ADD')"
             @toggle-fullscreen="toggleBrowserFullscreen"
-        />
-
-        <!-- Refactored Department Filter Toolbar & Search / Grid Controls (Only shown for 10-7 Offline Roster; 10-8 GMeet uses bottom floating dock) -->
-        <TacticalFilterToolbar
-            v-if="activeTab === '10-7'"
-            v-model:selectedDepartment="selectedDepartment"
-            v-model:selectedLayout="selectedLayout"
-            v-model:searchFilter="searchFilter"
-            :departments="departments"
-            :dropdown-tac-departments="dropdownTacDepartments"
-            :total-personal-count="totalPersonalCount"
-            :get-tac-unit-count="getTacUnitCount"
-            :all-active-streams="allActiveStreams"
-            :is-more-tac-open="isMoreTacOpen"
-            :tac-dropdown-pos="tacDropdownPos"
-            @toggle-more-tac="toggleMoreTac"
-            @close-more-tac="isMoreTacOpen = false"
         />
 
         <!-- Main Content Area -->
         <main
             :class="
-                activeTab === '10-8'
-                    ? isTheaterMode
-                        ? 'flex-1 w-full px-2 sm:px-4 pt-3 sm:pt-4 pb-28 relative transition-all duration-300'
-                        : 'flex-1 w-full max-w-screen-2xl mx-auto p-2 sm:p-4 pb-28 relative transition-all duration-300'
-                    : 'flex-1 p-3.5 md:p-4 overflow-y-auto pb-20 md:pb-6'
+                isTheaterMode
+                    ? 'flex-1 w-full px-2 sm:px-4 pt-3 sm:pt-4 pb-6 relative transition-all duration-300'
+                    : 'flex-1 w-full max-w-screen-2xl mx-auto p-2 sm:p-4 pb-6 relative transition-all duration-300'
             "
         >
             <!-- Refactored Tactical Stream Grid Component (Option B Clean Code) -->
             <TacticalStreamGrid
-                v-if="activeTab === '10-8'"
                 v-model:activeTacPopoverVideoId="activeTacPopoverVideoId"
                 v-model:activeChatVideoId="activeChatVideoId"
                 v-model:activeTab="activeTab"
                 v-model:selectedDepartment="selectedDepartment"
                 v-model:selectedLayout="selectedLayout"
-                :search-filter="searchFilter"
+                v-model:searchFilter="searchFilter"
                 :is-data-saver-enabled="isDataSaverEnabled"
                 :is-syncing-feeds="isSyncingFeeds"
                 :is-theater-mode="isTheaterMode"
@@ -3169,6 +3202,8 @@ const submitFeedbackForm = async () => {
                 @assign-stream-to-tac="assignStreamToTac"
                 @remove-stream-from-tac="removeStreamFromTac"
                 @open-subscribe-popup="openSubscribePopup"
+                @open-quick-add="openRightDrawer('QUICK_ADD')"
+                @open-officer-visibility="openOfficerVisibilityModal"
                 @trigger-manual-sync="triggerManualSync"
                 @toggle-sidebar-preview="toggleSidebarPreview"
                 @extend-tac-timer="extendTacTimer"
@@ -3176,17 +3211,6 @@ const submitFeedbackForm = async () => {
                 @disable-data-saver="disableDataSaverAndPlayAll"
                 @enable-data-saver="enableDataSaver"
                 @toggle-grid-stream-play="toggleGridStreamPlay"
-            />
-
-            <!-- TAB 2: 10-7 OFFLINE POLICE ROSTER -->
-            <TacticalRosterTab
-                v-else-if="activeTab === '10-7'"
-                :offline-officers="offlineOfficers"
-                :all-active-streams="allActiveStreams"
-                :filtered-offline-officers="filteredOfflineOfficers"
-                :personal-stream-ids="personalVideoIds"
-                @toggle-personal-stream="togglePersonalStream"
-                @open-subscribe-popup="openSubscribePopup"
             />
         </main>
         <!-- UNIFIED RIGHT SLIDE-OVER SIDEBAR / DRAWER -->
@@ -3234,12 +3258,12 @@ const submitFeedbackForm = async () => {
         <!-- Global Expiring TAC Channel Alert Prompt (When viewing other tabs) -->
         <div
             v-if="expiringTacChannel"
-            class="fixed bottom-4 left-4 z-50 bg-slate-950/95 border-2 border-amber-500/80 rounded-xl p-3 shadow-2xl backdrop-blur-xl flex items-center space-x-3 text-xs animate-in slide-in-from-bottom duration-300 max-w-lg"
+            class="fixed bottom-4 left-4 z-50 bg-slate-900 border border-amber-800 rounded-lg p-3 shadow-lg flex items-center space-x-3 text-xs animate-in slide-in-from-bottom duration-300 max-w-lg"
         >
             <div
-                class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-amber-300 shrink-0 font-mono font-bold text-sm"
+                class="w-8 h-8 rounded bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0"
             >
-                📻
+                <img :src="iconRadio" class="w-4 h-4 brightness-0 invert opacity-90" alt="" />
             </div>
             <div class="flex-1 min-w-0">
                 <div
@@ -3262,19 +3286,19 @@ const submitFeedbackForm = async () => {
             <div class="flex items-center space-x-1.5 shrink-0">
                 <button
                     @click="extendTacTimer(expiringTacChannel.code, 20)"
-                    class="px-2 py-1 bg-amber-600 hover:bg-amber-500 text-black font-bold text-[10px] rounded font-mono shadow"
+                    class="px-2 py-1 bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] rounded-md font-mono"
                 >
                     +20m
                 </button>
                 <button
                     @click="disbandTacChannel(expiringTacChannel.code)"
-                    class="px-2 py-1 bg-red-950 hover:bg-red-900 text-red-300 text-[10px] rounded border border-red-500/40 font-mono"
+                    class="px-2 py-1 bg-rose-950 hover:bg-rose-900 text-rose-300 text-[10px] rounded-md border border-rose-800 font-mono"
                 >
                     Bubarkan
                 </button>
                 <button
                     @click="selectedDepartment = expiringTacChannel.code"
-                    class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] rounded border border-slate-700 font-mono"
+                    class="px-2 py-1 bg-slate-950 hover:bg-slate-800 text-slate-200 text-[10px] rounded-md border border-slate-800 font-mono"
                 >
                     Buka
                 </button>
@@ -3284,7 +3308,7 @@ const submitFeedbackForm = async () => {
         <!-- Floating Tactical Action Toast -->
         <div
             v-if="tacticalToast"
-            class="fixed bottom-16 md:bottom-16 right-4 z-[60] bg-slate-950/95 border border-amber-500/60 rounded-xl px-4 py-2.5 shadow-2xl backdrop-blur-xl flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200 pointer-events-auto"
+            class="fixed bottom-16 md:bottom-16 right-4 z-[60] bg-slate-900 border border-amber-800 rounded-md px-4 py-2.5 flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200 pointer-events-auto"
         >
             <img
                 :src="iconRadio"
@@ -3294,411 +3318,22 @@ const submitFeedbackForm = async () => {
             <span>{{ tacticalToast.message }}</span>
         </div>
 
-        <!-- YouTube-Style Fixed Bottom Navigation Bar for Mobile (< md) -->
-        <nav
-            class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0b1320]/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 flex justify-around items-center shadow-2xl"
-        >
-            <!-- 1. Live Feeds (10-8) -->
-            <button
-                @click="
-                    activeTab = '10-8';
-                    selectedDepartment = 'ALL';
-                    activeMobileNav = null;
-                "
-                :class="
-                    activeTab === '10-8' && selectedDepartment === 'ALL'
-                        ? 'text-blue-400 font-bold'
-                        : 'text-slate-400 hover:text-slate-200'
-                "
-                class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
-            >
-                <div class="relative">
-                    <img
-                        :src="iconPlayAll"
-                        class="w-5 h-5 invert opacity-90"
-                        alt="Feeds"
-                    />
-                    <span
-                        v-if="allActiveStreams.length > 0"
-                        class="absolute -top-1.5 -right-2 bg-red-600 text-white text-[9px] font-bold px-1 rounded-full animate-pulse"
-                    >
-                        {{ allActiveStreams.length }}
-                    </span>
-                </div>
-                <span class="text-[10px] tracking-tight">10-8 Feeds</span>
-            </button>
-
-            <!-- 2. TAC & Departments -->
-            <button
-                @click="
-                    activeMobileNav = activeMobileNav === 'TAC' ? null : 'TAC'
-                "
-                :class="
-                    activeMobileNav === 'TAC' ||
-                    isTacDepartment(selectedDepartment) ||
-                    ['LSPD', 'BCSO', 'SASP', 'SAPR'].includes(
-                        selectedDepartment,
-                    )
-                        ? 'text-amber-400 font-bold'
-                        : 'text-slate-400 hover:text-slate-200'
-                "
-                class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
-            >
-                <img
-                    :src="iconRadio"
-                    class="w-5 h-5 invert opacity-90"
-                    alt="TAC"
-                />
-                <span class="text-[10px] tracking-tight">TAC / Dept</span>
-            </button>
-
-            <!-- 3. Roster (10-7) -->
-            <button
-                @click="
-                    activeTab = '10-7';
-                    selectedDepartment = 'ALL';
-                    activeMobileNav = null;
-                "
-                :class="
-                    activeTab === '10-7'
-                        ? 'text-blue-400 font-bold'
-                        : 'text-slate-400 hover:text-slate-200'
-                "
-                class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
-            >
-                <img
-                    :src="iconRoster"
-                    class="w-5 h-5 invert opacity-90"
-                    alt="Roster"
-                />
-                <span class="text-[10px] tracking-tight">10-7 Roster</span>
-            </button>
-
-            <!-- 4. Pinned / Personal -->
-            <button
-                @click="
-                    selectedDepartment = 'PERSONAL';
-                    activeMobileNav = null;
-                "
-                :class="
-                    selectedDepartment === 'PERSONAL'
-                        ? 'text-purple-400 font-bold'
-                        : 'text-slate-400 hover:text-slate-200'
-                "
-                class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
-            >
-                <img
-                    :src="iconPersonal"
-                    class="w-5 h-5 invert opacity-90"
-                    alt="Pinned"
-                />
-                <span class="text-[10px] tracking-tight">Pinned</span>
-            </button>
-
-            <!-- 5. Main Menu / More -->
-            <button
-                @click="
-                    activeMobileNav = activeMobileNav === 'MENU' ? null : 'MENU'
-                "
-                :class="
-                    activeMobileNav === 'MENU'
-                        ? 'text-blue-400 font-bold'
-                        : 'text-slate-400 hover:text-slate-200'
-                "
-                class="flex flex-col items-center justify-center space-y-0.5 px-2 py-1 relative transition"
-            >
-                <div
-                    class="w-5 h-5 flex flex-col justify-center items-center space-y-1"
-                >
-                    <span class="w-4 h-0.5 bg-current rounded-full"></span>
-                    <span class="w-4 h-0.5 bg-current rounded-full"></span>
-                    <span class="w-4 h-0.5 bg-current rounded-full"></span>
-                </div>
-                <span class="text-[10px] tracking-tight">Menu</span>
-            </button>
-        </nav>
-
-        <!-- Mobile TAC & Department Bottom Sheet Modal (< md) -->
-        <div
-            v-if="activeMobileNav === 'TAC'"
-            class="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end justify-center"
-            @click.self="activeMobileNav = null"
-        >
-            <div
-                class="w-full bg-[#0b1320] border-t border-amber-500/40 rounded-t-2xl p-4 space-y-3 max-h-[75vh] overflow-y-auto animate-in slide-in-from-bottom duration-200"
-            >
-                <div
-                    class="flex items-center justify-between border-b border-slate-800 pb-2"
-                >
-                    <div class="flex items-center space-x-2">
-                        <img
-                            :src="iconRadio"
-                            class="w-4 h-4 invert opacity-90"
-                            alt=""
-                        />
-                        <h3
-                            class="text-xs font-bold text-amber-300 uppercase tracking-wider"
-                        >
-                            Pilih Kesatuan & Saluran TAC
-                        </h3>
-                    </div>
-                    <button
-                        @click="activeMobileNav = null"
-                        class="text-slate-400 hover:text-white text-xs px-2 py-0.5 bg-slate-800 rounded"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button
-                        v-for="dept in departments.filter((d) =>
-                            [
-                                'ALL',
-                                'PERSONAL',
-                                'LSPD',
-                                'BCSO',
-                                'SASP',
-                                'SAPR',
-                            ].includes(d.id),
-                        )"
-                        :key="`mob-${dept.id}`"
-                        @click="
-                            selectedDepartment = dept.id;
-                            activeMobileNav = null;
-                        "
-                        :class="
-                            selectedDepartment === dept.id
-                                ? 'bg-blue-600 text-white font-bold border-blue-400'
-                                : 'bg-slate-900 text-slate-300 border-slate-800'
-                        "
-                        class="p-2.5 rounded-xl border text-xs flex items-center space-x-2 transition"
-                    >
-                        <img
-                            v-if="dept.isSvg"
-                            :src="dept.icon"
-                            class="w-4 h-4 object-contain brightness-0 invert opacity-90"
-                            alt=""
-                        />
-                        <span>{{ dept.name }}</span>
-                    </button>
-                </div>
-                <div class="pt-2 border-t border-slate-800/80">
-                    <span
-                        class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 block"
-                        >Saluran Radio Taktis (TAC):</span
-                    >
-                    <div class="grid grid-cols-3 gap-2">
-                        <button
-                            v-for="tacCode in [
-                                'TAC_1',
-                                'TAC_2',
-                                'TAC_3',
-                                'TAC_4',
-                                'TAC_5',
-                                'TAC_6',
-                                'TAC_7',
-                                'TAC_8',
-                                'TAC_9',
-                                'TAC_10',
-                            ]"
-                            :key="`mob-tac-${tacCode}`"
-                            @click="
-                                selectedDepartment = tacCode;
-                                activeMobileNav = null;
-                            "
-                            :class="
-                                selectedDepartment === tacCode
-                                    ? 'bg-amber-600 text-white font-bold border-amber-400'
-                                    : 'bg-slate-900 text-amber-300 border-amber-900/50'
-                            "
-                            class="p-2 rounded-lg border text-xs text-center font-mono transition"
-                        >
-                            {{ tacCode.replace("_", " ") }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Mobile Main Menu Bottom Sheet Modal (< md) -->
-        <div
-            v-if="activeMobileNav === 'MENU'"
-            class="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm flex items-end justify-center"
-            @click.self="activeMobileNav = null"
-        >
-            <div
-                class="w-full bg-[#0b1320] border-t border-blue-500/40 rounded-t-2xl p-4 space-y-3 max-h-[75vh] overflow-y-auto animate-in slide-in-from-bottom duration-200"
-            >
-                <div
-                    class="flex items-center justify-between border-b border-slate-800 pb-2"
-                >
-                    <h3
-                        class="text-xs font-bold text-blue-400 uppercase tracking-wider"
-                    >
-                        Navigasi Platform & Menu
-                    </h3>
-                    <button
-                        @click="activeMobileNav = null"
-                        class="text-slate-400 hover:text-white text-xs px-2 py-0.5 bg-slate-800 rounded"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <div class="space-y-1.5">
-                    <Link
-                        href="/officers"
-                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
-                    >
-                        <div class="flex items-center space-x-2.5">
-                            <img
-                                :src="iconRoster"
-                                class="w-4 h-4 invert opacity-90 shrink-0"
-                                alt=""
-                            />
-                            <span>Officer Directory (LSPD, BCSO, SASP)</span>
-                        </div>
-                        <span class="text-slate-500">→</span>
-                    </Link>
-                    <Link
-                        href="/about"
-                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
-                    >
-                        <div class="flex items-center space-x-2.5">
-                            <img
-                                :src="iconUrl"
-                                class="w-4 h-4 invert opacity-90 shrink-0"
-                                alt=""
-                            />
-                            <span>About Platform & Credits</span>
-                        </div>
-                        <span class="text-slate-500">→</span>
-                    </Link>
-                    <Link
-                        href="/qna"
-                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
-                    >
-                        <div class="flex items-center space-x-2.5">
-                            <img
-                                :src="iconRadio"
-                                class="w-4 h-4 invert opacity-90 shrink-0"
-                                alt=""
-                            />
-                            <span>QnA & Tactical FAQ Guide</span>
-                        </div>
-                        <span class="text-slate-500">→</span>
-                    </Link>
-                    <Link
-                        href="/feedback"
-                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
-                    >
-                        <div class="flex items-center space-x-2.5">
-                            <img
-                                :src="iconFeedback"
-                                class="w-4 h-4 invert opacity-90 shrink-0"
-                                alt=""
-                            />
-                            <span>Feedback & Channel Requests</span>
-                        </div>
-                        <span class="text-slate-500">→</span>
-                    </Link>
-                    <Link
-                        href="/updates"
-                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
-                    >
-                        <div class="flex items-center space-x-2.5">
-                            <img
-                                :src="iconRadio"
-                                class="w-4 h-4 invert opacity-90 shrink-0"
-                                alt=""
-                            />
-                            <span>System Updates & Release Notes</span>
-                        </div>
-                        <span class="text-slate-500">→</span>
-                    </Link>
-                    <button
-                        @click="
-                            if (isDataSaverEnabled)
-                                disableDataSaverAndPlayAll();
-                            else enableDataSaver();
-                            activeMobileNav = null;
-                        "
-                        class="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 flex items-center justify-between transition"
-                    >
-                        <div class="flex items-center space-x-2.5">
-                            <img
-                                :src="iconSaver"
-                                class="w-4 h-4 invert opacity-90 shrink-0"
-                                alt=""
-                            />
-                            <span>Mode Hemat Bandwidth (Saver)</span>
-                        </div>
-                        <span
-                            class="text-xs font-bold font-mono"
-                            :class="
-                                isDataSaverEnabled
-                                    ? 'text-emerald-400'
-                                    : 'text-slate-500'
-                            "
-                        >
-                            {{ isDataSaverEnabled ? "AKTIF" : "NON-AKTIF" }}
-                        </span>
-                    </button>
-                    <Link
-                        v-if="!$page.props.auth?.user"
-                        href="/login"
-                        class="w-full p-2.5 rounded-xl bg-blue-950/60 hover:bg-blue-900/70 border border-blue-500/40 text-xs text-blue-300 font-bold flex items-center justify-between transition"
-                    >
-                        <span>Sign In / Register Account</span>
-                        <span class="text-blue-400">→</span>
-                    </Link>
-                    <div
-                        v-else
-                        class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-between"
-                    >
-                        <div class="flex items-center space-x-2.5">
-                            <div
-                                class="w-7 h-7 rounded-full bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-xs text-blue-300 font-bold"
-                            >
-                                {{
-                                    $page.props.auth.user.name
-                                        ?.charAt(0)
-                                        .toUpperCase() || "U"
-                                }}
-                            </div>
-                            <div>
-                                <span
-                                    class="text-slate-200 font-bold block leading-tight"
-                                    >{{ $page.props.auth.user.name }}</span
-                                >
-                                <span
-                                    class="text-[10px] text-slate-400 font-mono leading-tight block"
-                                    >{{ $page.props.auth.user.email }}</span
-                                >
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <Link
-                                href="/admin/officers"
-                                class="px-2 py-1 bg-cyan-600 text-white rounded text-[11px] font-bold"
-                                >Admin Hub</Link
-                            >
-                            <button
-                                @click="handleLogout"
-                                class="px-2 py-1 bg-red-950/80 text-red-300 border border-red-800/60 rounded text-[11px] font-semibold"
-                            >
-                                Sign Out
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tactical Footer (Only shown on 10-7 tab; 10-8 ALL tab includes footer inside its scroll container) -->
-        <TacticalFooter v-if="activeTab === '10-7'" />
 
         <!-- Floating Tactical Community Chat -->
         <TacticalChatDrawer />
+
+        <!-- OFFICER VISIBILITY BOTTOM SHEET PANEL (Enable/Disable Perwira) -->
+        <OfficerVisibilityBottomSheet
+            :is-open="isOfficerVisibilityOpen"
+            :all-active-streams="rawActiveStreams"
+            :offline-officers="offlineOfficers"
+            :custom-stream-order="customStreamOrder"
+            @close="closeOfficerVisibilityModal"
+            @toggle-priority="toggleCustomOrderPin"
+            @move-priority-up="moveCustomOrderUp"
+            @move-priority-down="moveCustomOrderDown"
+            @reset-priority="resetCustomStreamOrder"
+        />
     </div>
 </template>
 

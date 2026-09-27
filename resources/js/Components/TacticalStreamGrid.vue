@@ -1,14 +1,18 @@
 <script setup>
 import { ref, computed } from "vue";
+import { Link } from "@inertiajs/vue3";
+import { useOfficerFilter } from "@/Composables/useOfficerFilter";
+
+const { toggleOfficerStatus } = useOfficerFilter();
 
 // SVG Icon Assets & Branding Logos
-import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
 import iconLspd from "@/Components/Icons/LSPD_HD.svg";
 import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
 import iconSasp from "@/Components/Icons/SASP_HD.svg";
 import iconSapr from "@/Components/Icons/ranger_logo.svg";
 import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
 import iconPersonal from "@/Components/Icons/star-svgrepo-com.svg";
+import iconQuickAdd from "@/Components/Icons/button-plus-svgrepo-com.svg";
 import iconSaver from "@/Components/Icons/gauge-low-svgrepo-com.svg";
 import iconPlayAll from "@/Components/Icons/play-full-svgrepo-com.svg";
 import iconPause from "@/Components/Icons/controller-paus-svgrepo-com.svg";
@@ -16,15 +20,11 @@ import iconMute from "@/Components/Icons/audio-off-svgrepo-com.svg";
 import iconUnmute from "@/Components/Icons/audio-svgrepo-com.svg";
 import iconFocus from "@/Components/Icons/focus-point-round-844-svgrepo-com.svg";
 import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
-import iconPinPlus from "@/Components/Icons/star-line-svgrepo-com.svg";
-import iconPinMinus from "@/Components/Icons/star-svgrepo-com.svg";
 import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
 import iconRadio from "@/Components/Icons/radio-tac-svgrepo-com.svg";
-import iconReset from "@/Components/Icons/reset-svgrepo-com.svg";
 import iconChat from "@/Components/Icons/chat-svgrepo-com.svg";
 import iconChatRemove from "@/Components/Icons/chat-remove-svgrepo-com.svg";
 import iconClock from "@/Components/Icons/time-svgrepo-com.svg";
-import iconTarget from "@/Components/Icons/target-svgrepo-com.svg";
 import iconFullscreen from "@/Components/Icons/full-screen-svgrepo-com.svg";
 import iconDoc from "@/Components/Icons/document-svgrepo-com.svg";
 import iconCloseBold from "@/Components/Icons/close-bold-svgrepo-com.svg";
@@ -84,6 +84,8 @@ const emit = defineEmits([
     "assign-stream-to-tac",
     "remove-stream-from-tac",
     "open-subscribe-popup",
+    "open-quick-add",
+    "open-officer-visibility",
     "trigger-manual-sync",
     "toggle-sidebar-preview",
     "extend-tac-timer",
@@ -214,6 +216,10 @@ const toggleStopFeed = (videoId) => {
 };
 
 const handleSetFocusStream = (videoId) => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+    if (isMobile) {
+        emit("toggle-theater-mode", true);
+    }
     const idx = stoppedVideoIds.value.indexOf(videoId);
     if (idx !== -1) {
         stoppedVideoIds.value.splice(idx, 1);
@@ -226,6 +232,21 @@ const handleSetFocusStream = (videoId) => {
 const isRightChatOpen = ref(true);
 const openInfoVideoIds = ref([]);
 const fetchedDescriptions = ref({});
+
+const handleChatClick = (streamId) => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+    if (isMobile) {
+        emit("toggle-theater-mode", true);
+        emit("update:selectedLayout", "focus");
+        emit("set-focus-stream", streamId);
+        isRightChatOpen.value = true;
+    } else {
+        emit(
+            "update:activeChatVideoId",
+            props.activeChatVideoId === streamId ? null : streamId,
+        );
+    }
+};
 
 const isStreamInfoOpen = (videoId) => openInfoVideoIds.value.includes(videoId);
 
@@ -476,10 +497,10 @@ const getCustomOrderRank = (videoId) => {
         <!-- Department Standby Banner when visibleStreams.length === 0 -->
         <div
             v-if="visibleStreams.length === 0"
-            class="relative rounded-2xl overflow-hidden border border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-8 text-center flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200"
+            class="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 p-8 text-center flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200"
         >
             <div
-                class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-1"
+                class="w-14 h-14 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-blue-400 mb-1"
             >
                 <img
                     :src="getDeptIcon(selectedDepartment)"
@@ -496,8 +517,7 @@ const getCustomOrderRank = (videoId) => {
             <p class="text-xs text-slate-400 max-w-md">
                 Saat ini belum ada siaran langsung untuk kesatuan
                 {{ selectedDepartment.replace("_", " ") }}. Anda dapat
-                menyinkronkan data terbaru atau melihat daftar anggota di 10-7
-                Roster.
+                menyinkronkan data terbaru atau menampilkan seluruh unit.
             </p>
             <div class="flex items-center gap-2 mt-2 flex-wrap justify-center">
                 <button
@@ -517,79 +537,11 @@ const getCustomOrderRank = (videoId) => {
                     }}</span>
                 </button>
                 <button
-                    @click="emit('update:activeTab', '10-7')"
-                    class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
-                >
-                    Lihat 10-7 Roster
-                </button>
-                <button
                     @click="emit('update:selectedDepartment', 'ALL')"
                     class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
                 >
                     Tampilkan Seluruh Unit
                 </button>
-            </div>
-
-            <!-- Offline Roster Officers of this Department -->
-            <div
-                v-if="filteredOfflineOfficers.length > 0"
-                class="w-full mt-6 pt-6 border-t border-slate-800/80 text-left"
-            >
-                <h4
-                    class="text-xs font-bold text-slate-300 font-mono mb-3 uppercase tracking-wider"
-                >
-                    Petugas 10-7 (Offline) Kesatuan
-                    {{ selectedDepartment.replace("_", " ") }}:
-                </h4>
-                <div
-                    class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5"
-                >
-                    <div
-                        v-for="officer in filteredOfflineOfficers"
-                        :key="`dept-off-${officer.channel_id}`"
-                        class="bg-slate-900/60 border border-slate-800 rounded-lg p-2 flex flex-col justify-between"
-                    >
-                        <div class="truncate">
-                            <div
-                                class="text-[11px] font-bold text-slate-200 truncate"
-                            >
-                                {{ officer.officer_name }}
-                            </div>
-                            <div
-                                v-if="officer.rank"
-                                class="text-[9px] text-slate-500 font-mono truncate"
-                            >
-                                {{ officer.rank }}
-                            </div>
-                        </div>
-                        <div
-                            class="mt-2 pt-1 border-t border-slate-800/80 flex items-center justify-between"
-                        >
-                            <button
-                                @click="
-                                    emit(
-                                        'open-subscribe-popup',
-                                        officer.channel_id || officer.handle,
-                                        officer.officer_name,
-                                    )
-                                "
-                                class="text-red-400 hover:text-red-300 text-[9px] font-mono font-bold"
-                            >
-                                +Sub
-                            </button>
-                            <a
-                                :href="`https://www.youtube.com/${officer.handle}`"
-                                target="_blank"
-                                class="text-slate-500 hover:text-slate-300"
-                            >
-                                <img
-                                    :src="iconExternal"
-                                    class="w-2.5 h-2.5 invert opacity-60"
-                                />
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -611,15 +563,15 @@ const getCustomOrderRank = (videoId) => {
                 >
                     <div
                         v-if="primaryFocusedStream"
-                        class="bg-slate-950 rounded-2xl overflow-hidden border border-blue-500/40 shadow-2xl shadow-blue-950/20"
+                        class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800"
                     >
                         <!-- Player Header & Action HUD -->
                         <div
-                            class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 px-4 py-2 flex flex-wrap items-center justify-between border-b border-slate-800/80 gap-2"
+                            class="bg-slate-900 px-4 py-2 flex flex-wrap items-center justify-between border-b border-slate-800 gap-2"
                         >
                             <div class="flex items-center space-x-2.5 min-w-0">
                                 <span
-                                    class="px-2 py-0.5 text-xs font-black rounded border tracking-wider shrink-0 shadow"
+                                    class="px-2 py-0.5 text-xs font-black rounded border tracking-wider shrink-0"
                                     :class="
                                         getDeptBadgeClass(
                                             primaryFocusedStream.officer
@@ -645,7 +597,7 @@ const getCustomOrderRank = (videoId) => {
                             </div>
                             <div class="flex items-center space-x-2 shrink-0">
                                 <!-- TAC Channel Dispatch Selector -->
-                                <div class="relative">
+                                <div class="hidden sm:block relative">
                                     <button
                                         @click.stop="
                                             emit(
@@ -656,7 +608,7 @@ const getCustomOrderRank = (videoId) => {
                                                     : primaryFocusedStream.video_id,
                                             )
                                         "
-                                        class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 border shadow-sm"
+                                        class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 border"
                                         :class="
                                             getStreamTac(
                                                 primaryFocusedStream.video_id,
@@ -692,7 +644,7 @@ const getCustomOrderRank = (videoId) => {
                                             activeTacPopoverVideoId ===
                                             primaryFocusedStream.video_id
                                         "
-                                        class="absolute right-0 mt-2 w-56 bg-slate-950 border border-blue-500/50 rounded-xl p-2.5 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150"
+                                        class="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-md p-2.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                                         @click.stop
                                     >
                                         <div
@@ -944,7 +896,7 @@ const getCustomOrderRank = (videoId) => {
                                         primaryFocusedStream.video_id,
                                     )
                                 "
-                                class="absolute bottom-16 left-3 right-3 sm:left-auto sm:right-3 sm:max-w-md bg-slate-950/95 backdrop-blur-md p-3.5 rounded-2xl border border-blue-500/40 shadow-2xl z-30 animate-in fade-in zoom-in-95 duration-150 flex flex-col gap-2 pointer-events-auto"
+                                class="absolute bottom-16 left-3 right-3 sm:left-auto sm:right-3 sm:max-w-md bg-slate-900 p-3.5 rounded-xl border border-slate-800 z-30 animate-in fade-in zoom-in-95 duration-150 flex flex-col gap-2 pointer-events-auto"
                                 @click.stop
                             >
                                 <div
@@ -1001,7 +953,7 @@ const getCustomOrderRank = (videoId) => {
 
                             <!-- Floating Hover Overlay Bar -->
                             <div
-                                class="absolute bottom-3 left-3 right-3 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 bg-slate-950/85 backdrop-blur-md px-3 sm:px-4 py-2 rounded-xl border border-slate-800/90 shadow-2xl flex flex-wrap sm:flex-nowrap items-center justify-between text-xs text-slate-300 gap-2 z-20 pointer-events-auto"
+                                class="absolute bottom-3 left-3 right-3 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 bg-slate-900 px-3 sm:px-4 py-2 rounded-md border border-slate-800 flex flex-wrap sm:flex-nowrap items-center justify-between text-xs text-slate-300 gap-2 z-20 pointer-events-auto"
                             >
                                 <!-- Left Officer Metadata -->
                                 <div
@@ -1015,7 +967,7 @@ const getCustomOrderRank = (videoId) => {
                                                 primaryFocusedStream.officer
                                                     ?.callsign
                                             "
-                                            class="px-1.5 py-0.5 rounded bg-slate-800/90 text-slate-300 border border-slate-700/60 font-mono text-[10px] font-semibold tracking-wider shrink-0"
+                                            class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-800/90 text-slate-300 border border-slate-700/60 font-mono text-[10px] font-semibold tracking-wider shrink-0"
                                         >
                                             {{
                                                 primaryFocusedStream.officer
@@ -1066,26 +1018,15 @@ const getCustomOrderRank = (videoId) => {
                                     class="flex items-center space-x-1.5 shrink-0"
                                 >
                                     <button
-                                        v-if="
-                                            primaryFocusedStream.officer
-                                                ?.channel_id ||
-                                            primaryFocusedStream.officer?.handle
-                                        "
-                                        @click="
-                                            emit(
-                                                'open-subscribe-popup',
-                                                primaryFocusedStream.officer
-                                                    ?.channel_id ||
-                                                    primaryFocusedStream.officer
-                                                        ?.handle,
-                                                primaryFocusedStream.officer
-                                                    ?.officer_name,
+                                        @click.stop="
+                                            toggleOfficerStatus(
+                                                primaryFocusedStream,
                                             )
                                         "
-                                        class="bg-red-600/90 hover:bg-red-500 text-white font-bold px-2.5 py-1 rounded-lg text-[11px] shadow-md transition shrink-0 flex items-center gap-1"
-                                        title="Subscribe to channel"
+                                        class="bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 font-mono font-semibold px-2.5 py-1 rounded-lg text-[11px] transition shrink-0 flex items-center gap-1 cursor-pointer"
+                                        title="Sembunyikan perwira ini dari grid"
                                     >
-                                        <span>Sub</span>
+                                        <span>Sembunyikan</span>
                                     </button>
                                     <!-- Stream Info / Description Popover Toggle Button -->
                                     <button
@@ -1163,7 +1104,7 @@ const getCustomOrderRank = (videoId) => {
                 <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-3">
                     <div
                         v-if="isRightChatOpen && primaryFocusedStream"
-                        class="bg-slate-950 rounded-xl overflow-hidden border border-blue-500/50 shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200"
+                        class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col animate-in fade-in zoom-in-95 duration-200"
                     >
                         <div
                             class="bg-slate-900/95 px-3 py-1.5 flex items-center justify-between border-b border-slate-800 text-xs"
@@ -1191,7 +1132,9 @@ const getCustomOrderRank = (videoId) => {
                                 ✕ Close
                             </button>
                         </div>
-                        <div class="w-full h-[520px] bg-slate-900 relative">
+                        <div
+                            class="w-full h-[350px] sm:h-[520px] bg-slate-900 relative"
+                        >
                             <iframe
                                 :key="`chat-lead-${primaryFocusedStream.video_id}`"
                                 :src="`https://www.youtube.com/live_chat?v=${primaryFocusedStream.video_id}&embed_domain=${chatEmbedDomain}&dark_theme=1`"
@@ -1233,36 +1176,7 @@ const getCustomOrderRank = (videoId) => {
                                 <div
                                     class="flex items-center space-x-1 shrink-0"
                                 >
-                                    <button
-                                        @click="
-                                            emit(
-                                                'toggle-personal-stream',
-                                                stream.video_id,
-                                            )
-                                        "
-                                        :class="
-                                            isPersonalStream(stream.video_id)
-                                                ? 'text-purple-300 bg-purple-950/60 border border-purple-500/40'
-                                                : 'text-slate-500 hover:text-purple-300 bg-slate-900/60 border-slate-800'
-                                        "
-                                        class="p-1 rounded-md transition font-mono border"
-                                        :title="
-                                            isPersonalStream(stream.video_id)
-                                                ? 'Hapus'
-                                                : 'Pin ke Personal'
-                                        "
-                                    >
-                                        <img
-                                            :src="
-                                                isPersonalStream(
-                                                    stream.video_id,
-                                                )
-                                                    ? iconPinMinus
-                                                    : iconPinPlus
-                                            "
-                                            class="w-3 h-3 invert opacity-80"
-                                        />
-                                    </button>
+                                    <!-- Audio Switch -->
                                     <button
                                         @click="
                                             emit(
@@ -1274,9 +1188,9 @@ const getCustomOrderRank = (videoId) => {
                                             activeAudioVideoId ===
                                             stream.video_id
                                                 ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 font-bold'
-                                                : 'text-slate-500 hover:text-slate-200 bg-slate-900/60 border-slate-800'
+                                                : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800'
                                         "
-                                        class="p-1 rounded-md transition font-mono border"
+                                        class="px-2 py-1 rounded-md transition font-mono border text-[10px] flex items-center gap-1.5 cursor-pointer"
                                         title="Audio Switch"
                                     >
                                         <img
@@ -1288,6 +1202,12 @@ const getCustomOrderRank = (videoId) => {
                                             "
                                             class="w-3 h-3 invert opacity-80"
                                         />
+                                        <span>{{
+                                            activeAudioVideoId ===
+                                            stream.video_id
+                                                ? "Mute"
+                                                : "Audio"
+                                        }}</span>
                                     </button>
                                     <button
                                         @click="
@@ -1350,13 +1270,13 @@ const getCustomOrderRank = (videoId) => {
                                         loading="lazy"
                                     />
                                     <div
-                                        class="absolute inset-0 bg-black/50 backdrop-blur-[2px] opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 flex items-center justify-center gap-2 p-3 z-10"
+                                        class="absolute inset-0 bg-slate-950/80 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 flex items-center justify-center gap-2 p-3 z-10"
                                     >
                                         <button
                                             @click="
                                                 toggleStopFeed(stream.video_id)
                                             "
-                                            class="bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg transition flex items-center gap-1.5"
+                                            class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
                                         >
                                             <img
                                                 :src="iconPlayAll"
@@ -1370,7 +1290,7 @@ const getCustomOrderRank = (videoId) => {
                                                     stream.video_id,
                                                 )
                                             "
-                                            class="bg-blue-600/90 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg transition flex items-center gap-1.5"
+                                            class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
                                         >
                                             <img
                                                 :src="iconFocus"
@@ -1420,7 +1340,7 @@ const getCustomOrderRank = (videoId) => {
                         >
                             <!-- HEADER HUD -->
                             <div
-                                class="bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 flex items-center justify-between border-b border-slate-800/80 z-10"
+                                class="bg-slate-900 px-3 py-1.5 flex items-center justify-between border-b border-slate-800 z-10"
                             >
                                 <div
                                     class="flex items-center space-x-2 min-w-0"
@@ -1447,38 +1367,6 @@ const getCustomOrderRank = (videoId) => {
                                 <div
                                     class="flex items-center space-x-1 shrink-0"
                                 >
-                                    <!-- Order Rank Badge Button -->
-                                    <button
-                                        @click="
-                                            emit(
-                                                'toggle-custom-order',
-                                                stream.video_id,
-                                            )
-                                        "
-                                        class="px-1.5 py-0.5 text-[10px] rounded-md transition flex items-center font-mono font-bold border"
-                                        :class="
-                                            getCustomOrderRank(
-                                                stream.video_id,
-                                            ) > 0
-                                                ? 'text-amber-300 bg-amber-500/15 border-amber-500/40'
-                                                : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800'
-                                        "
-                                        :title="
-                                            getCustomOrderRank(
-                                                stream.video_id,
-                                            ) > 0
-                                                ? `Urutan #${getCustomOrderRank(stream.video_id)}`
-                                                : 'Klik untuk prioritas urutan grid'
-                                        "
-                                    >
-                                        <span>{{
-                                            getCustomOrderRank(
-                                                stream.video_id,
-                                            ) > 0
-                                                ? `#${getCustomOrderRank(stream.video_id)}`
-                                                : "#"
-                                        }}</span>
-                                    </button>
                                     <!-- Audio Switch -->
                                     <button
                                         @click="
@@ -1493,7 +1381,13 @@ const getCustomOrderRank = (videoId) => {
                                                 ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 font-bold'
                                                 : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800'
                                         "
-                                        class="p-1 rounded-md transition font-mono border"
+                                        class="px-2 py-1 rounded-md transition font-mono border text-[10px] flex items-center gap-1.5 cursor-pointer"
+                                        :title="
+                                            activeAudioVideoId ===
+                                            stream.video_id
+                                                ? 'Mute Audio'
+                                                : 'Play Audio'
+                                        "
                                     >
                                         <img
                                             :src="
@@ -1504,38 +1398,12 @@ const getCustomOrderRank = (videoId) => {
                                             "
                                             class="w-3 h-3 invert opacity-80"
                                         />
-                                    </button>
-                                    <!-- Personal Stream Pin Toggle -->
-                                    <button
-                                        v-if="stream.status === 'LIVE'"
-                                        @click="
-                                            emit(
-                                                'toggle-personal-stream',
-                                                stream.video_id,
-                                            )
-                                        "
-                                        class="p-1 rounded-md transition border"
-                                        :class="
-                                            isPersonalStream(stream.video_id)
-                                                ? 'text-purple-300 bg-purple-950/60 border-purple-500/40'
-                                                : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800/80'
-                                        "
-                                        :title="
-                                            isPersonalStream(stream.video_id)
-                                                ? 'Hapus'
-                                                : 'Pin ke Personal'
-                                        "
-                                    >
-                                        <img
-                                            :src="
-                                                isPersonalStream(
-                                                    stream.video_id,
-                                                )
-                                                    ? iconPinMinus
-                                                    : iconPinPlus
-                                            "
-                                            class="w-3 h-3 invert opacity-80"
-                                        />
+                                        <span>{{
+                                            activeAudioVideoId ===
+                                            stream.video_id
+                                                ? "Mute"
+                                                : "Audio"
+                                        }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -1586,10 +1454,10 @@ const getCustomOrderRank = (videoId) => {
                                         loading="lazy"
                                     />
                                     <div
-                                        class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40 flex flex-col items-center justify-center p-3"
+                                        class="absolute inset-0 bg-slate-950/70 flex flex-col items-center justify-center p-3"
                                     >
                                         <div
-                                            class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded border border-red-500/30"
+                                            class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800"
                                         >
                                             <span
                                                 class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"
@@ -1605,7 +1473,7 @@ const getCustomOrderRank = (videoId) => {
                                                         stream.video_id,
                                                     )
                                                 "
-                                                class="bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition flex items-center gap-1.5"
+                                                class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5"
                                             >
                                                 <img
                                                     :src="iconPlayAll"
@@ -1619,7 +1487,7 @@ const getCustomOrderRank = (videoId) => {
                                                         stream.video_id,
                                                     )
                                                 "
-                                                class="bg-blue-600/90 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg transition flex items-center gap-1.5"
+                                                class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5"
                                             >
                                                 <img
                                                     :src="iconFocus"
@@ -1633,14 +1501,14 @@ const getCustomOrderRank = (videoId) => {
 
                                 <!-- Floating Hover Overlay Bar -->
                                 <div
-                                    class="absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-200 bg-slate-950/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-800/90 shadow-2xl flex items-center justify-between z-20 pointer-events-auto text-[11px] text-slate-300 gap-1.5"
+                                    class="absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-200 bg-slate-900 px-2.5 py-1.5 rounded-md border border-slate-800 flex items-center justify-between z-20 pointer-events-auto text-[11px] text-slate-300 gap-1.5"
                                 >
                                     <div
                                         class="flex items-center space-x-1.5 min-w-0 flex-1 truncate"
                                     >
                                         <span
                                             v-if="stream.officer?.callsign"
-                                            class="px-1.5 py-0.5 rounded bg-slate-800/90 text-slate-300 border border-slate-700/60 font-mono text-[9px] font-semibold tracking-wider shrink-0"
+                                            class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-800/90 text-slate-300 border border-slate-700/60 font-mono text-[9px] font-semibold tracking-wider shrink-0"
                                         >
                                             {{ stream.officer.callsign }}
                                         </span>
@@ -1655,24 +1523,13 @@ const getCustomOrderRank = (videoId) => {
                                         class="flex items-center space-x-1 shrink-0"
                                     >
                                         <button
-                                            v-if="
-                                                stream.officer?.channel_id ||
-                                                stream.officer?.handle
+                                            @click.stop="
+                                                toggleOfficerStatus(stream)
                                             "
-                                            @click="
-                                                emit(
-                                                    'open-subscribe-popup',
-                                                    stream.officer
-                                                        ?.channel_id ||
-                                                        stream.officer?.handle,
-                                                    stream.officer
-                                                        ?.officer_name,
-                                                )
-                                            "
-                                            class="px-2 py-0.5 bg-red-600/90 hover:bg-red-500 text-white rounded-md text-[10px] font-bold shadow transition shrink-0"
-                                            title="Subscribe"
+                                            class="px-2 py-0.5 bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 rounded-md text-[10px] font-mono font-semibold transition shrink-0 cursor-pointer flex items-center gap-1"
+                                            title="Sembunyikan perwira ini dari grid"
                                         >
-                                            Sub
+                                            <span>Sembunyikan</span>
                                         </button>
                                         <button
                                             @click="
@@ -1695,13 +1552,7 @@ const getCustomOrderRank = (videoId) => {
                                         </button>
                                         <button
                                             @click="
-                                                emit(
-                                                    'update:activeChatVideoId',
-                                                    activeChatVideoId ===
-                                                        stream.video_id
-                                                        ? null
-                                                        : stream.video_id,
-                                                )
+                                                handleChatClick(stream.video_id)
                                             "
                                             :class="
                                                 activeChatVideoId ===
@@ -1744,7 +1595,7 @@ const getCustomOrderRank = (videoId) => {
                     class="lg:col-span-4 xl:col-span-3 space-y-3 animate-in fade-in zoom-in-95 duration-200"
                 >
                     <div
-                        class="bg-slate-950 rounded-xl overflow-hidden border border-blue-500/50 shadow-2xl flex flex-col"
+                        class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col"
                     >
                         <div
                             class="bg-slate-900/95 px-3.5 py-2 flex items-center justify-between border-b border-slate-800 text-xs"
@@ -1773,7 +1624,9 @@ const getCustomOrderRank = (videoId) => {
                                 ✕ Close
                             </button>
                         </div>
-                        <div class="w-full h-[580px] bg-slate-900 relative">
+                        <div
+                            class="w-full h-[260px] sm:h-[580px] bg-slate-900 relative"
+                        >
                             <iframe
                                 :key="`chat-grid-${activeGridChatStream.video_id}`"
                                 :src="`https://www.youtube.com/live_chat?v=${activeGridChatStream.video_id}&embed_domain=${chatEmbedDomain}&dark_theme=1`"
@@ -1786,14 +1639,14 @@ const getCustomOrderRank = (videoId) => {
             </div>
         </div>
 
-        <!-- GOOGLE MEET FLOATING CONTROL DOCK WITH INTEGRATED PLAYER FEATURES -->
+        <!-- GOOGLE MEET BOTTOM STICKY CONTROL BAR -->
         <div
-            class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center pointer-events-none"
+            class="fixed bottom-0 inset-x-0 z-50 flex flex-col items-center pointer-events-none"
         >
             <!-- Popover 1: Department & Category Selector Menu -->
             <div
                 v-if="isDockCategoryOpen"
-                class="pointer-events-auto mb-3 w-80 sm:w-96 max-h-[70vh] overflow-y-auto bg-slate-950/95 border border-slate-700/80 rounded-2xl p-3 shadow-2xl backdrop-blur-2xl text-xs space-y-3 animate-in fade-in zoom-in-95 font-sans scrollbar-thin scrollbar-thumb-slate-700"
+                class="hidden sm:block pointer-events-auto mb-2.5 w-80 sm:w-96 max-h-[70vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs space-y-3 animate-in fade-in zoom-in-95 font-sans scrollbar-thin scrollbar-thumb-slate-700"
                 @click.stop
             >
                 <div
@@ -1822,10 +1675,10 @@ const getCustomOrderRank = (videoId) => {
                             isDockCategoryOpen = false;
                         "
                         :class="[
-                            'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                            'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
                             selectedDepartment === 'ALL'
-                                ? 'bg-blue-600 text-white border-blue-400 font-bold shadow-md'
-                                : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                                ? 'bg-blue-600 text-white border-blue-500 font-bold'
+                                : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
                         ]"
                     >
                         <div class="flex items-center gap-2">
@@ -1836,7 +1689,7 @@ const getCustomOrderRank = (videoId) => {
                             <span>All units</span>
                         </div>
                         <span
-                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                             >{{ getDeptCount("ALL") }}</span
                         >
                     </button>
@@ -1847,10 +1700,10 @@ const getCustomOrderRank = (videoId) => {
                             isDockCategoryOpen = false;
                         "
                         :class="[
-                            'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                            'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
                             selectedDepartment === 'LSPD'
-                                ? 'bg-blue-600 text-white border-blue-400 font-bold shadow-md'
-                                : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                                ? 'bg-blue-600 text-white border-blue-500 font-bold'
+                                : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
                         ]"
                     >
                         <div class="flex items-center gap-2">
@@ -1861,7 +1714,7 @@ const getCustomOrderRank = (videoId) => {
                             <span>LSPD Metro</span>
                         </div>
                         <span
-                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                             >{{ getDeptCount("LSPD") }}</span
                         >
                     </button>
@@ -1872,10 +1725,10 @@ const getCustomOrderRank = (videoId) => {
                             isDockCategoryOpen = false;
                         "
                         :class="[
-                            'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                            'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
                             selectedDepartment === 'BCSO'
-                                ? 'bg-amber-600 text-white border-amber-400 font-bold shadow-md'
-                                : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                                ? 'bg-blue-600 text-white border-blue-500 font-bold'
+                                : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
                         ]"
                     >
                         <div class="flex items-center gap-2">
@@ -1886,7 +1739,7 @@ const getCustomOrderRank = (videoId) => {
                             <span>BCSO Sheriff</span>
                         </div>
                         <span
-                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                             >{{ getDeptCount("BCSO") }}</span
                         >
                     </button>
@@ -1897,10 +1750,10 @@ const getCustomOrderRank = (videoId) => {
                             isDockCategoryOpen = false;
                         "
                         :class="[
-                            'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                            'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
                             selectedDepartment === 'SASP'
-                                ? 'bg-teal-600 text-white border-teal-400 font-bold shadow-md'
-                                : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                                ? 'bg-blue-600 text-white border-blue-500 font-bold'
+                                : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
                         ]"
                     >
                         <div class="flex items-center gap-2">
@@ -1911,7 +1764,7 @@ const getCustomOrderRank = (videoId) => {
                             <span>SASP State</span>
                         </div>
                         <span
-                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                             >{{ getDeptCount("SASP") }}</span
                         >
                     </button>
@@ -1922,10 +1775,10 @@ const getCustomOrderRank = (videoId) => {
                             isDockCategoryOpen = false;
                         "
                         :class="[
-                            'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                            'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
                             selectedDepartment === 'SAPR'
-                                ? 'bg-emerald-600 text-white border-emerald-400 font-bold shadow-md'
-                                : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                                ? 'bg-blue-600 text-white border-blue-500 font-bold'
+                                : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
                         ]"
                     >
                         <div class="flex items-center gap-2">
@@ -1936,7 +1789,7 @@ const getCustomOrderRank = (videoId) => {
                             <span>SAPR Ranger</span>
                         </div>
                         <span
-                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                             >{{ getDeptCount("SAPR") }}</span
                         >
                     </button>
@@ -1947,10 +1800,10 @@ const getCustomOrderRank = (videoId) => {
                             isDockCategoryOpen = false;
                         "
                         :class="[
-                            'p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                            'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
                             selectedDepartment === 'PERSONAL'
-                                ? 'bg-purple-600 text-white border-purple-400 font-bold shadow-md'
-                                : 'bg-slate-900/80 hover:bg-slate-800 text-purple-300 border-purple-900/50',
+                                ? 'bg-blue-600 text-white border-blue-500 font-bold'
+                                : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
                         ]"
                     >
                         <div class="flex items-center gap-2">
@@ -1961,7 +1814,7 @@ const getCustomOrderRank = (videoId) => {
                             <span>Watchlist</span>
                         </div>
                         <span
-                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/40 font-bold"
+                            class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                             >{{ getDeptCount("PERSONAL") }}</span
                         >
                     </button>
@@ -1987,12 +1840,12 @@ const getCustomOrderRank = (videoId) => {
                                 isDockCategoryOpen = false;
                             "
                             :class="[
-                                'p-1.5 rounded-lg border text-center transition flex flex-col items-center justify-center gap-0.5 cursor-pointer',
+                                'p-1.5 rounded-md border text-center transition flex flex-col items-center justify-center gap-0.5 cursor-pointer',
                                 selectedDepartment === `TAC_${i}`
-                                    ? 'bg-amber-600 text-white border-amber-400 font-bold shadow'
+                                    ? 'bg-blue-600 text-white border-blue-500 font-bold'
                                     : getDeptCount(`TAC_${i}`) > 0
-                                      ? 'bg-amber-950/40 text-amber-300 border-amber-700/50 font-semibold'
-                                      : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:bg-slate-800',
+                                      ? 'bg-amber-950/40 text-amber-300 border-amber-800/50 font-semibold'
+                                      : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800',
                             ]"
                         >
                             <span class="text-[10px] font-mono"
@@ -2003,7 +1856,7 @@ const getCustomOrderRank = (videoId) => {
                                 :class="
                                     getDeptCount(`TAC_${i}`) > 0
                                         ? 'bg-amber-400 text-black font-bold'
-                                        : 'bg-black/40 text-slate-500'
+                                        : 'bg-slate-900 text-slate-500'
                                 "
                             >
                                 {{ getDeptCount(`TAC_${i}`) }}
@@ -2016,7 +1869,7 @@ const getCustomOrderRank = (videoId) => {
             <!-- Popover 2: Grid Layout Selector Menu -->
             <div
                 v-if="isDockLayoutOpen"
-                class="pointer-events-auto mb-3 w-64 bg-slate-950/95 border border-slate-700/80 rounded-2xl p-3 shadow-2xl backdrop-blur-2xl text-xs space-y-2 animate-in fade-in zoom-in-95 font-sans"
+                class="hidden sm:block pointer-events-auto mb-2.5 w-64 bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs space-y-2 animate-in fade-in zoom-in-95 font-sans"
                 @click.stop
             >
                 <div
@@ -2065,10 +1918,10 @@ const getCustomOrderRank = (videoId) => {
                             isDockLayoutOpen = false;
                         "
                         :class="[
-                            'w-full p-2 rounded-xl border flex items-center justify-between transition text-left cursor-pointer',
+                            'w-full p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
                             selectedLayout === l.id
-                                ? 'bg-blue-600 text-white border-blue-400 font-bold shadow-md'
-                                : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border-slate-800',
+                                ? 'bg-blue-600 text-white border-blue-500 font-bold'
+                                : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
                         ]"
                     >
                         <div>
@@ -2089,7 +1942,7 @@ const getCustomOrderRank = (videoId) => {
             <!-- Popover 3: Quick Search Filter Input Bar -->
             <div
                 v-if="isDockSearchOpen"
-                class="pointer-events-auto mb-3 w-72 sm:w-80 bg-slate-950/95 border border-slate-700/80 rounded-2xl p-2.5 shadow-2xl backdrop-blur-2xl text-xs animate-in fade-in zoom-in-95 font-sans"
+                class="pointer-events-auto mb-2.5 w-72 sm:w-80 bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs animate-in fade-in zoom-in-95 font-sans"
                 @click.stop
             >
                 <div class="relative flex items-center">
@@ -2099,32 +1952,53 @@ const getCustomOrderRank = (videoId) => {
                         @input="
                             emit('update:searchFilter', $event.target.value)
                         "
-                        placeholder="Cari perwira, divisi, judul siaran..."
-                        class="w-full bg-slate-900 text-white placeholder-slate-500 text-xs px-3 py-2 pr-8 rounded-xl border border-slate-700 focus:outline-none focus:border-blue-500 font-sans"
+                        placeholder="Cari perwira, callsign, divisi, judul..."
+                        class="w-full bg-slate-950 text-white placeholder-slate-500 text-xs px-3 py-2 pr-8 rounded-md border border-slate-800 focus:outline-none focus:border-blue-500 font-sans"
                     />
                     <button
                         v-if="searchFilter"
                         @click="emit('update:searchFilter', '')"
-                        class="absolute right-2.5 text-slate-400 hover:text-white text-xs"
+                        class="absolute right-2.5 text-slate-400 hover:text-white text-xs font-bold p-0.5 rounded"
                     >
                         ✕
                     </button>
                 </div>
             </div>
 
-            <!-- FLOATING DOCK BAR -->
+            <!-- BOTTOM STICKY CONTROL BAR -->
             <div
-                class="pointer-events-auto bg-slate-950/90 backdrop-blur-xl border border-slate-700/70 shadow-2xl px-3 sm:px-4 py-2 rounded-full flex items-center gap-2 sm:gap-2.5 text-xs text-slate-200 animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-[96vw] overflow-x-auto scrollbar-none"
+                class="pointer-events-auto w-full bg-slate-950/95 sm:bg-slate-950 backdrop-blur-md sm:backdrop-blur-none border-t border-slate-800/90 px-3 sm:px-4 pt-2.5 pb-8 sm:py-2.5 flex items-center justify-center gap-2 sm:gap-3 text-xs text-slate-200 animate-in fade-in slide-in-from-bottom-2 duration-200 overflow-x-auto scrollbar-none shadow-2xl sm:shadow-none"
                 @click.stop
             >
+                <!-- Home / Beranda Button -->
+                <Link
+                    href="/"
+                    class="px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold bg-blue-600 hover:bg-blue-500 text-white border border-blue-400 transition flex items-center gap-1.5 shrink-0 cursor-pointer shadow-md"
+                    title="Kembali ke Dashboard Utama"
+                >
+                    <svg
+                        class="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                        />
+                    </svg>
+                    <span>Home</span>
+                </Link>
                 <!-- Category Selector Button -->
                 <button
                     @click="toggleDockCategory"
                     :class="[
-                        'px-3 py-1.5 rounded-full text-xs font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                        'hidden sm:flex px-3 py-1.5 rounded-md text-xs font-bold border transition items-center gap-1.5 shrink-0 cursor-pointer',
                         isDockCategoryOpen
-                            ? 'bg-blue-600 text-white border-blue-400 shadow-md ring-2 ring-blue-500/40'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-700',
+                            ? 'bg-blue-600 text-white border-blue-500'
+                            : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800',
                     ]"
                     title="Pilih Kategori / Departemen Kesatuan"
                 >
@@ -2136,22 +2010,24 @@ const getCustomOrderRank = (videoId) => {
                         selectedDeptLabel
                     }}</span>
                     <span
-                        class="px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-mono font-bold"
+                        class="px-1.5 py-0.2 rounded bg-slate-950 border border-slate-800 text-blue-400 text-[10px] font-mono font-bold"
                         >{{ visibleStreams.length }}</span
                     >
                     <span class="text-[10px] text-slate-400">▾</span>
                 </button>
 
-                <div class="h-4 w-px bg-slate-800 shrink-0"></div>
+                <div
+                    class="hidden sm:block h-4 w-px bg-slate-800 shrink-0"
+                ></div>
 
                 <!-- Layout Selector Button -->
                 <button
                     @click="toggleDockLayout"
                     :class="[
-                        'px-3 py-1.5 rounded-full text-xs font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer',
+                        'hidden sm:flex px-3 py-1.5 rounded-md text-xs font-bold border transition items-center gap-1.5 shrink-0 cursor-pointer',
                         isDockLayoutOpen
-                            ? 'bg-blue-600 text-white border-blue-400 shadow-md ring-2 ring-blue-500/40'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-700',
+                            ? 'bg-blue-600 text-white border-blue-500'
+                            : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800',
                     ]"
                     title="Pilih Tata Letak Kamera (Grid Layout)"
                 >
@@ -2166,16 +2042,18 @@ const getCustomOrderRank = (videoId) => {
                     <span class="text-[10px] text-slate-400">▾</span>
                 </button>
 
-                <div class="h-4 w-px bg-slate-800 shrink-0"></div>
+                <div
+                    class="hidden sm:block h-4 w-px bg-slate-800 shrink-0"
+                ></div>
 
                 <!-- Quick Search Filter Button -->
                 <button
                     @click="toggleDockSearch"
                     :class="[
-                        'p-2 rounded-full border transition shrink-0 relative cursor-pointer',
+                        'flex p-2 rounded-md border transition shrink-0 relative cursor-pointer',
                         isDockSearchOpen || searchFilter
-                            ? 'bg-blue-950 text-blue-300 border-blue-500 ring-1 ring-blue-400'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-700',
+                            ? 'bg-slate-900 text-blue-400 border-blue-500'
+                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800',
                     ]"
                     title="Cari Petugas / Stream"
                 >
@@ -2198,11 +2076,39 @@ const getCustomOrderRank = (videoId) => {
                     ></span>
                 </button>
 
+                <!-- Officer Visibility Bottom Sheet Button ([⚙️ Kelola]) -->
+                <button
+                    @click="emit('open-officer-visibility')"
+                    class="flex px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-800 transition items-center gap-1.5 shrink-0 cursor-pointer"
+                    title="Kelola Tampilan / Enable Disable Perwira (Bottom Sheet)"
+                >
+                    <svg
+                        class="w-3.5 h-3.5 text-blue-400 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                        />
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                    </svg>
+                    <span>Kelola</span>
+                </button>
+
                 <!-- Sync / Refresh Feeds Button -->
                 <button
                     @click="emit('trigger-manual-sync')"
                     :disabled="isSyncingFeeds"
-                    class="p-2 rounded-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-slate-300 border border-slate-700 transition shrink-0 cursor-pointer"
+                    class="p-2 rounded-md bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-slate-300 border border-slate-800 transition shrink-0 cursor-pointer"
                     title="Sinkronkan Feeds Live Terbaru"
                 >
                     <img
@@ -2220,10 +2126,10 @@ const getCustomOrderRank = (videoId) => {
                             : emit('enable-data-saver')
                     "
                     :class="[
-                        'px-2.5 py-1.5 rounded-full text-[11px] font-mono font-bold border transition flex items-center gap-1 shrink-0 cursor-pointer',
+                        'px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer',
                         isDataSaverEnabled
-                            ? 'bg-amber-950 text-amber-300 border-amber-500 shadow-sm'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-700',
+                            ? 'bg-slate-900 text-amber-400 border-amber-800/60'
+                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800',
                     ]"
                     :title="
                         isDataSaverEnabled
@@ -2235,21 +2141,23 @@ const getCustomOrderRank = (videoId) => {
                         :src="iconSaver"
                         class="w-3.5 h-3.5 invert opacity-90"
                     />
-                    <span class="hidden sm:inline">{{
+                    <span>{{
                         isDataSaverEnabled ? "Saver ON" : "Saver OFF"
                     }}</span>
                 </button>
 
-                <div class="h-4 w-px bg-slate-800 shrink-0"></div>
+                <div
+                    class="hidden sm:block h-4 w-px bg-slate-800 shrink-0"
+                ></div>
 
                 <!-- Theater / Bioskop Mode Toggle (100% Full Width vs 2XL Boxed) -->
                 <button
                     @click="emit('toggle-theater-mode')"
-                    class="px-3 py-1.5 rounded-full text-[11px] font-mono font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+                    class="hidden sm:flex px-3 py-1.5 rounded-md text-[11px] font-mono font-bold border transition items-center gap-1.5 shrink-0 cursor-pointer"
                     :class="
                         isTheaterMode
-                            ? 'bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-600/30 ring-2 ring-blue-500/40'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-700'
+                            ? 'bg-blue-600 text-white border-blue-500'
+                            : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
                     "
                     :title="
                         isTheaterMode
@@ -2276,11 +2184,11 @@ const getCustomOrderRank = (videoId) => {
                                     : null),
                         )
                     "
-                    class="p-2 rounded-full border transition shrink-0 cursor-pointer"
+                    class="px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer"
                     :class="
                         activeAudioVideoId
-                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-700'
+                            ? 'bg-slate-900 text-emerald-400 border-emerald-800/60'
+                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
                     "
                     :title="
                         activeAudioVideoId
@@ -2292,12 +2200,15 @@ const getCustomOrderRank = (videoId) => {
                         :src="activeAudioVideoId ? iconUnmute : iconMute"
                         class="w-3.5 h-3.5 invert opacity-90"
                     />
+                    <span>{{
+                        activeAudioVideoId ? "Audio ON" : "Audio OFF"
+                    }}</span>
                 </button>
 
                 <!-- Fullscreen Toggle -->
                 <button
                     @click="emit('toggle-fullscreen')"
-                    class="p-2 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 transition shrink-0 cursor-pointer"
+                    class="hidden sm:flex p-2 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition shrink-0 cursor-pointer"
                     title="Toggle Layar Penuh (Fullscreen)"
                 >
                     <img

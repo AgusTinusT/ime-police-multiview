@@ -15,6 +15,9 @@ Schedule::job(SyncOfficerStreamsJob::class)->everyMinute();
 // Fetch subscriber counts every hour
 Schedule::command('officer:sync-subscribers')->hourly();
 
+// Automated monthly duty reset on the 1st day of every month at 00:00 AM
+Schedule::command('officer:reset-monthly')->monthlyOn(1, '00:00');
+
 // Automated daily database backup at 02:00 AM
 Schedule::command('db:backup')->dailyAt('02:00');
 
