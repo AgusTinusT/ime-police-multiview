@@ -88,11 +88,12 @@ class ProcessVideoClipJob implements ShouldQueue
             // Build format-specific yt-dlp command
             $command = [
                 $ytDlpBin,
+                '--no-cache-dir',
                 '--force-ipv4',
                 '--sleep-requests', '1.5',
                 '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
                 '--js-runtimes', $jsRuntimeSpec,
-                '--extractor-args', 'youtube:player_client=tv_embedded,android_embedded',
+                '--extractor-args', 'youtube:player_client=ios,android,web',
                 '--download-sections', $sectionSpec,
             ];
 
@@ -107,8 +108,9 @@ class ProcessVideoClipJob implements ShouldQueue
             } elseif ($formatOption === 'GIF 60fps') {
                 array_push(
                     $command,
-                    '-f', 'bv*[vcodec^=avc1][height<=480]+ba/b[height<=480]/best',
-                    '--recode-video', 'gif'
+                    '-f', 'bv*[height<=480]/bestvideo[height<=480]/b[height<=480]/best',
+                    '--recode-video', 'gif',
+                    '--postprocessor-args', 'ffmpeg:-vf fps=15,scale=480:-1:flags=lanczos'
                 );
             } elseif ($formatOption === 'MP4 720p') {
                 array_push(
