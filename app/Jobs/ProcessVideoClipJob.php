@@ -37,7 +37,14 @@ class ProcessVideoClipJob implements ShouldQueue
             // Ensure public storage clips directory exists
             Storage::disk('public')->makeDirectory('clips');
 
-            $filename = 'clip_' . $this->videoClip->id . '_' . Str::random(8) . '.mp4';
+            $formatOption = $this->videoClip->format ?? 'MP4 1080p';
+            $ext = match ($formatOption) {
+                'MP3 Audio' => 'mp3',
+                'GIF 60fps' => 'gif',
+                default => 'mp4',
+            };
+
+            $filename = 'clip_' . $this->videoClip->id . '_' . Str::random(8) . '.' . $ext;
             $relativeFilePath = 'clips/' . $filename;
             $absoluteOutputPath = Storage::disk('public')->path($relativeFilePath);
 
@@ -78,9 +85,7 @@ class ProcessVideoClipJob implements ShouldQueue
                 $jsRuntimeSpec = 'node:/usr/local/bin/node';
             }
 
-            // yt-dlp command using Direct Stream Copy (--download-sections)
-            // --force-ipv4 bypasses datacenter IPv6 rate limiting (HTTP 429) on VPS
-            // --concurrent-fragments 8 speeds up clips > 1 minute
+            // Build format-specific yt-dlp command
             $command = [
                 $ytDlpBin,
                 '--force-ipv4',
@@ -89,13 +94,44 @@ class ProcessVideoClipJob implements ShouldQueue
                 '--js-runtimes', $jsRuntimeSpec,
                 '--extractor-args', 'youtube:player_client=tv_embedded,android_embedded',
                 '--download-sections', $sectionSpec,
-                '-f', 'bv*[vcodec^=avc1][height<=1080]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=1080]+ba/b[height<=1080]/best',
-                '--merge-output-format', 'mp4',
+            ];
+
+            if ($formatOption === 'MP3 Audio') {
+                array_push(
+                    $command,
+                    '-f', 'ba/b',
+                    '-x',
+                    '--audio-format', 'mp3',
+                    '--audio-quality', '0'
+                );
+            } elseif ($formatOption === 'GIF 60fps') {
+                array_push(
+                    $command,
+                    '-f', 'bv*[vcodec^=avc1][height<=480]+ba/b[height<=480]/best',
+                    '--recode-video', 'gif'
+                );
+            } elseif ($formatOption === 'MP4 720p') {
+                array_push(
+                    $command,
+                    '-f', 'bv*[vcodec^=avc1][height<=720]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=720]+ba/b[height<=720]/best',
+                    '--merge-output-format', 'mp4',
+                    '--postprocessor-args', 'ffmpeg:-c copy -movflags +faststart'
+                );
+            } else { // Default MP4 1080p
+                array_push(
+                    $command,
+                    '-f', 'bv*[vcodec^=avc1][height<=1080]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=1080]+ba/b[height<=1080]/best',
+                    '--merge-output-format', 'mp4',
+                    '--postprocessor-args', 'ffmpeg:-c copy -movflags +faststart'
+                );
+            }
+
+            array_push(
+                $command,
                 '--hls-use-mpegts',
                 '--concurrent-fragments', '8',
-                '--fragment-retries', '10',
-                '--postprocessor-args', 'ffmpeg:-c copy -movflags +faststart',
-            ];
+                '--fragment-retries', '10'
+            );
 
             if ($ffmpegLocation) {
                 $command[] = '--ffmpeg-location';

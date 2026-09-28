@@ -17,6 +17,7 @@ class VideoClip extends Model
         'start_time',
         'end_time',
         'duration_seconds',
+        'format',
         'file_path',
         'status',
         'error_message',

@@ -127,6 +127,30 @@
                         </div>
                     </div>
 
+                    <!-- Format & Quality Selector -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                            Format & Kualitas Output
+                        </label>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <label
+                                v-for="fmt in formatOptions"
+                                :key="fmt.value"
+                                class="flex items-center space-x-2 p-2.5 rounded-xl bg-slate-900 border border-slate-700/80 cursor-pointer hover:border-red-500/50 transition"
+                                :class="form.format === fmt.value ? 'border-red-500 bg-red-950/20' : ''"
+                            >
+                                <input
+                                    type="radio"
+                                    name="modalFormatOption"
+                                    :value="fmt.value"
+                                    v-model="form.format"
+                                    class="text-red-500 focus:ring-0 bg-slate-950 border-slate-700"
+                                />
+                                <span class="font-medium text-white text-xs">{{ fmt.label }}</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- Duration Badge Counter -->
                     <div class="rounded-xl border p-4 flex items-center justify-between"
                          :class="isDurationValid ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300' : 'bg-red-950/20 border-red-500/30 text-red-300'">
@@ -278,11 +302,19 @@ const successMessage = ref('');
 const clipsList = ref([]);
 let pollTimer = null;
 
+const formatOptions = [
+    { value: 'MP4 1080p', label: 'MP4 (1080p FHD)' },
+    { value: 'MP4 720p', label: 'MP4 (720p HD)' },
+    { value: 'MP3 Audio', label: 'MP3 (320kbps Audio)' },
+    { value: 'GIF 60fps', label: 'GIF Animasi (HQ)' },
+];
+
 const form = ref({
     youtube_url: '',
     title: '',
     start_time: '00:00:00',
     end_time: '00:05:00',
+    format: 'MP4 1080p',
 });
 
 watch(() => props.show, (newVal) => {

@@ -61,6 +61,7 @@ class VideoClipController extends Controller
             'start_time' => 'required',
             'end_time' => 'required',
             'title' => 'nullable|string|max:255',
+            'format' => 'nullable|string|in:MP4 1080p,MP4 720p,MP3 Audio,GIF 60fps',
         ]);
 
         $startSeconds = $this->parseTimestampToSeconds($validated['start_time']);
@@ -97,6 +98,7 @@ class VideoClipController extends Controller
             'start_time' => $startSeconds,
             'end_time' => $endSeconds,
             'duration_seconds' => $durationSeconds,
+            'format' => $validated['format'] ?? 'MP4 1080p',
             'status' => 'pending',
         ]);
 
@@ -145,10 +147,17 @@ class VideoClipController extends Controller
         }
 
         $absolutePath = Storage::disk('public')->path($clip->file_path);
-        $downloadFileName = \Illuminate\Support\Str::slug($clip->title) . '.mp4';
+        $ext = pathinfo($clip->file_path, PATHINFO_EXTENSION) ?: 'mp4';
+        $downloadFileName = \Illuminate\Support\Str::slug($clip->title) . '.' . $ext;
+
+        $contentType = match ($ext) {
+            'mp3' => 'audio/mpeg',
+            'gif' => 'image/gif',
+            default => 'video/mp4',
+        };
 
         return response()->download($absolutePath, $downloadFileName, [
-            'Content-Type' => 'video/mp4',
+            'Content-Type' => $contentType,
             'Accept-Ranges' => 'bytes',
         ]);
     }

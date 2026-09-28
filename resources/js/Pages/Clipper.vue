@@ -446,10 +446,10 @@
                             </p>
 
                             <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1">
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1.5 flex-wrap">
                                     <span>Durasi: {{ formatSeconds(clip.duration_seconds) }}</span>
                                     <span>•</span>
-                                    <span>{{ new Date(clip.created_at).toLocaleDateString('id-ID') }}</span>
+                                    <span class="text-blue-400 font-semibold px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px]">{{ clip.format || 'MP4 1080p' }}</span>
                                 </div>
                                 <span v-if="clip.status === 'completed'" class="text-[10px] text-amber-400 font-sans flex items-center gap-1 bg-slate-950 px-1.5 py-0.5 rounded-md border border-amber-900/50" title="File ini akan dihapus otomatis 1 jam setelah dibuat">
                                     ⏱️ 1 Jam
@@ -462,9 +462,14 @@
                             {{ clip.error_message }}
                         </div>
 
-                        <!-- HTML5 Video Player Preview -->
+                        <!-- HTML5 Video / Audio / Image Preview -->
                         <div v-if="clip.status === 'completed' && clip.download_url" class="space-y-2">
-                            <video controls class="w-full max-h-48 rounded-md bg-black border border-slate-800">
+                            <audio v-if="clip.format === 'MP3 Audio' || clip.download_url.endsWith('.mp3')" controls class="w-full">
+                                <source :src="clip.download_url" type="audio/mpeg">
+                                Browser Anda tidak mendukung HTML5 Audio.
+                            </audio>
+                            <img v-else-if="clip.format === 'GIF 60fps' || clip.download_url.endsWith('.gif')" :src="clip.download_url" alt="Clip GIF" class="w-full max-h-48 object-contain rounded-md bg-black border border-slate-800" />
+                            <video v-else controls class="w-full max-h-48 rounded-md bg-black border border-slate-800">
                                 <source :src="clip.download_url" type="video/mp4">
                                 Browser Anda tidak mendukung HTML5 Video.
                             </video>
@@ -490,7 +495,7 @@
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3m0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                 </svg>
-                                <span>Unduh MP4</span>
+                                <span>{{ clip.format === 'MP3 Audio' ? 'Unduh MP3' : (clip.format === 'GIF 60fps' ? 'Unduh GIF' : 'Unduh Video') }}</span>
                             </a>
                         </div>
 
