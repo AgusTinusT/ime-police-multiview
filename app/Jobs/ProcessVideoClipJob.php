@@ -105,12 +105,12 @@ class ProcessVideoClipJob implements ShouldQueue
                     '--audio-format', 'mp3',
                     '--audio-quality', '0'
                 );
-            } elseif ($formatOption === 'GIF 60fps') {
+            } elseif ($formatOption === 'MP4 360p') {
                 array_push(
                     $command,
-                    '-f', 'bv*[height<=480]/bestvideo[height<=480]/b[height<=480]/best',
-                    '--recode-video', 'gif',
-                    '--postprocessor-args', 'ffmpeg:-vf fps=15,scale=480:-1:flags=lanczos'
+                    '-f', 'bv*[vcodec^=avc1][height<=360]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=360]+ba/b[height<=360]/best',
+                    '--merge-output-format', 'mp4',
+                    '--postprocessor-args', 'ffmpeg:-c copy -movflags +faststart'
                 );
             } elseif ($formatOption === 'MP4 720p') {
                 array_push(

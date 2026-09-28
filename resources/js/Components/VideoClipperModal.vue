@@ -305,8 +305,8 @@ let pollTimer = null;
 const formatOptions = [
     { value: 'MP4 1080p', label: 'MP4 (1080p FHD)' },
     { value: 'MP4 720p', label: 'MP4 (720p HD)' },
+    { value: 'MP4 360p', label: 'MP4 (360p SD)' },
     { value: 'MP3 Audio', label: 'MP3 (320kbps Audio)' },
-    { value: 'GIF 60fps', label: 'GIF Animasi (HQ)' },
 ];
 
 const form = ref({

@@ -495,7 +495,7 @@
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3m0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                 </svg>
-                                <span>{{ clip.format === 'MP3 Audio' ? 'Unduh MP3' : (clip.format === 'GIF 60fps' ? 'Unduh GIF' : 'Unduh Video') }}</span>
+                                <span>{{ clip.format === 'MP3 Audio' ? 'Unduh MP3' : 'Unduh Video' }}</span>
                             </a>
                         </div>
 
@@ -541,8 +541,8 @@ const sampleVideos = [
 const formatOptions = [
     { value: 'MP4 1080p', label: 'MP4 (1080p FHD)' },
     { value: 'MP4 720p', label: 'MP4 (720p HD)' },
+    { value: 'MP4 360p', label: 'MP4 (360p SD)' },
     { value: 'MP3 Audio', label: 'MP3 (320kbps Audio)' },
-    { value: 'GIF 60fps', label: 'GIF Animasi (HQ)' },
 ];
 
 // Backend Form State
