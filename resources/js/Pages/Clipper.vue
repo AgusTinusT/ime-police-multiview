@@ -458,15 +458,7 @@
                             {{ clip.error_message }}
                         </div>
 
-                        <!-- HTML5 Video / Audio / Image Preview (Method 2 Custom Player) -->
-                        <div v-if="clip.status === 'completed' && clip.download_url" class="space-y-2">
-                            <audio v-if="clip.format === 'MP3 Audio' || clip.download_url.endsWith('.mp3')" controls class="w-full">
-                                <source :src="clip.download_url" type="audio/mpeg">
-                                Browser Anda tidak mendukung HTML5 Audio.
-                            </audio>
-                            <img v-else-if="clip.format === 'GIF 60fps' || clip.download_url.endsWith('.gif')" :src="clip.download_url" alt="Clip GIF" class="w-full max-h-48 object-contain rounded-md bg-black border border-slate-800" />
-                            <CustomVideoPlayer v-else :src="clip.download_url" :title="clip.title" class="w-full" />
-                        </div>
+
 
                         <!-- Card Footer Controls -->
                         <div class="flex items-center justify-between pt-2 border-t border-slate-800">

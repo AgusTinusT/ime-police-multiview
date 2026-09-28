@@ -278,15 +278,17 @@ defineExpose({
         @mousemove="handleMouseMove"
         @mouseleave="showControls = false"
     >
-        <!-- YouTube iFrame Background (Native controls disabled) -->
+        <!-- YouTube iFrame Background (Native controls disabled & cropped) -->
         <template v-if="computedYoutubeId">
-            <iframe
-                ref="ytIframeRef"
-                :id="iframeId"
-                :src="`https://www.youtube.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&autoplay=${autoplay ? 1 : 0}`"
-                class="w-full h-full border-0 pointer-events-none scale-[1.02]"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            ></iframe>
+            <div class="absolute inset-0 overflow-hidden flex items-center justify-center pointer-events-none">
+                <iframe
+                    ref="ytIframeRef"
+                    :id="iframeId"
+                    :src="`https://www.youtube-nocookie.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&disablekb=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&fs=0&playsinline=1&autoplay=${autoplay ? 1 : 0}`"
+                    class="w-[125%] h-[125%] max-w-none border-0 pointer-events-none scale-115 transform origin-center select-none"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                ></iframe>
+            </div>
             <!-- Transparent Click Capture Layer over YouTube iframe -->
             <div
                 class="absolute inset-0 z-10 cursor-pointer"
