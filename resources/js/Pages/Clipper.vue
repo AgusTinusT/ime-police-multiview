@@ -159,16 +159,13 @@
                                 ></iframe>
                             </template>
 
-                            <!-- HTML5 Video Player Fallback -->
+                            <!-- HTML5 Video Player Fallback (Method 2 Custom Player) -->
                             <template v-else>
-                                <video
-                                    ref="html5VideoRef"
-                                    class="w-full h-full object-contain"
+                                <CustomVideoPlayer
                                     :src="videoSrc"
-                                    controls
-                                    preload="metadata"
-                                    @timeupdate="onHtml5TimeUpdate"
-                                ></video>
+                                    :title="videoTitle"
+                                    class="w-full h-full"
+                                />
                             </template>
 
                             <!-- Live Time Controls Overlay -->
@@ -473,17 +470,14 @@
                             {{ clip.error_message }}
                         </div>
 
-                        <!-- HTML5 Video / Audio / Image Preview -->
+                        <!-- HTML5 Video / Audio / Image Preview (Method 2 Custom Player) -->
                         <div v-if="clip.status === 'completed' && clip.download_url" class="space-y-2">
                             <audio v-if="clip.format === 'MP3 Audio' || clip.download_url.endsWith('.mp3')" controls class="w-full">
                                 <source :src="clip.download_url" type="audio/mpeg">
                                 Browser Anda tidak mendukung HTML5 Audio.
                             </audio>
                             <img v-else-if="clip.format === 'GIF 60fps' || clip.download_url.endsWith('.gif')" :src="clip.download_url" alt="Clip GIF" class="w-full max-h-48 object-contain rounded-md bg-black border border-slate-800" />
-                            <video v-else controls class="w-full max-h-48 rounded-md bg-black border border-slate-800">
-                                <source :src="clip.download_url" type="video/mp4">
-                                Browser Anda tidak mendukung HTML5 Video.
-                            </video>
+                            <CustomVideoPlayer v-else :src="clip.download_url" :title="clip.title" class="w-full max-h-48" />
                         </div>
 
                         <!-- Card Footer Controls -->
@@ -523,6 +517,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import TacticalLayout from '@/Layouts/TacticalLayout.vue';
+import CustomVideoPlayer from '@/Components/CustomVideoPlayer.vue';
 import axios from 'axios';
 
 import iconDelete from '@/Components/Icons/delete-2-svgrepo-com.svg';
