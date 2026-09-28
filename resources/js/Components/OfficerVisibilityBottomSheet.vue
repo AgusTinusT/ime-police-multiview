@@ -195,7 +195,7 @@ const disableAllOffline = () => {
                         <!-- Panel Header -->
                         <div class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
                             <div class="flex items-center gap-2.5 min-w-0">
-                                <div class="p-2 rounded-md bg-blue-950 border border-blue-800/80 text-blue-400 shrink-0">
+                                <div class="p-2 rounded-md bg-slate-900 border border-slate-800 text-blue-400 shrink-0">
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -235,7 +235,7 @@ const disableAllOffline = () => {
                                         v-model="searchQuery"
                                         type="text"
                                         placeholder="Cari perwira, callsign, departemen..."
-                                        class="w-full bg-slate-950 border border-slate-800 rounded-md pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+                                        class="w-full bg-slate-950 border border-slate-800 rounded-md pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-700 font-mono"
                                     />
                                     <img
                                         :src="iconSearch"
@@ -254,7 +254,7 @@ const disableAllOffline = () => {
                                 <button
                                     v-if="disabledCount > 0"
                                     @click="resetAllFilters"
-                                    class="px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-mono text-[11px] font-semibold transition-colors shrink-0 cursor-pointer flex items-center gap-1"
+                                    class="px-3 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-800 hover:border-slate-700 font-mono text-[11px] font-semibold transition-colors shrink-0 cursor-pointer flex items-center gap-1"
                                     title="Tampilkan Kembali Semua Perwira"
                                 >
                                     <span>↺ Reset</span>
@@ -270,7 +270,7 @@ const disableAllOffline = () => {
                                     :class="[
                                         'px-2.5 py-1 rounded-md border transition-colors cursor-pointer font-medium text-[11px]',
                                         selectedDeptFilter === dept
-                                            ? 'bg-blue-600 text-white border-blue-500 font-bold'
+                                            ? 'bg-slate-800 text-blue-400 border-slate-700 font-bold'
                                             : 'bg-slate-900 text-slate-400 hover:text-slate-200 border-slate-800'
                                     ]"
                                 >
@@ -302,7 +302,7 @@ const disableAllOffline = () => {
                                 <div class="flex items-center gap-2.5 min-w-0 flex-1">
                                     <span
                                         v-if="getOfficerRank(officer.raw) > 0"
-                                        class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500 text-slate-950 shadow shrink-0"
+                                        class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950/80 text-amber-400 border border-amber-800/80 shrink-0"
                                         title="Urutan Prioritas Penayangan Grid"
                                     >
                                         #{{ getOfficerRank(officer.raw) }}
@@ -348,7 +348,7 @@ const disableAllOffline = () => {
                                             class="px-2 py-1 rounded-md text-xs font-mono font-bold border transition cursor-pointer flex items-center justify-center gap-1"
                                             :class="[
                                                 getOfficerRank(officer.raw) > 0
-                                                    ? 'bg-amber-600/90 text-white border-amber-500 shadow'
+                                                    ? 'bg-slate-800 text-amber-400 border-slate-700'
                                                     : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border-slate-800'
                                             ]"
                                             :title="getOfficerRank(officer.raw) > 0 ? 'Lepas dari Prioritas Utama' : 'Pin ke Prioritas Utama (#1, #2, #3...)'"
@@ -387,7 +387,7 @@ const disableAllOffline = () => {
                                         :class="[
                                             isOfficerDisabled(officer.raw)
                                                 ? 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
-                                                : 'bg-emerald-950 text-emerald-300 border-emerald-800/80 hover:bg-emerald-900'
+                                                : 'bg-slate-800 text-emerald-400 border-slate-700 hover:bg-slate-700'
                                         ]"
                                         :title="isOfficerDisabled(officer.raw) ? 'Klik untuk menampilkan perwira' : 'Klik untuk menyembunyikan perwira'"
                                     >
@@ -406,7 +406,7 @@ const disableAllOffline = () => {
                                 <button
                                     v-if="(customStreamOrder || []).length > 0"
                                     @click="emit('reset-priority')"
-                                    class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 hover:border-amber-800 text-[10px] transition-colors cursor-pointer flex items-center gap-1"
+                                    class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 hover:border-slate-700 text-[10px] transition-colors cursor-pointer flex items-center gap-1"
                                     title="Reset seluruh urutan prioritas ke standar"
                                 >
                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -417,7 +417,7 @@ const disableAllOffline = () => {
                             </div>
                             <button
                                 @click="emit('close')"
-                                class="px-4 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700 font-medium transition-colors cursor-pointer"
+                                class="px-4 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold transition-colors cursor-pointer shadow-none"
                             >
                                 Selesai
                             </button>

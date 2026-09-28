@@ -20,6 +20,9 @@ import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import OfficerVisibilityBottomSheet from "@/Components/OfficerVisibilityBottomSheet.vue";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
+import { useAnalytics } from "@/Composables/useAnalytics";
+
+const { trackPageView, trackSelectStream, trackDepartmentChange, trackHeartbeat } = useAnalytics();
 
 const props = defineProps({
     initialStreams: {
@@ -94,6 +97,9 @@ watch(selectedDepartment, (newDept) => {
     } else {
         url.searchParams.delete("dept");
     }
+
+    // GA4 Department Navigation Event & Title Update
+    trackDepartmentChange(newDept);
 
     // Shallow navigation via Inertia: updates address bar & GA4 pageview without reloading page/props
     router.get(
@@ -844,6 +850,32 @@ const handleYouTubeInternalError = (event) => {
     }
 };
 
+// Dynamic Browser Tab Title Computation
+const dynamicPageTitle = computed(() => {
+    if (selectedLayout.value === "focus" && primaryFocusedStream.value) {
+        const officerName =
+            primaryFocusedStream.value.officer?.officer_name ||
+            primaryFocusedStream.value.title ||
+            "Officer";
+        const dept =
+            primaryFocusedStream.value.officer?.department || "UNIT";
+        return `Menonton: ${officerName} (${dept}) – IME RP Multiview`;
+    }
+    if (selectedDepartment.value && selectedDepartment.value !== "ALL") {
+        const deptName =
+            selectedDepartment.value === "PERSONAL"
+                ? "Watchlist Personal"
+                : selectedDepartment.value.replace("_", " ");
+        return `Kategori: ${deptName} – IME RP Multiview`;
+    }
+    if (searchFilter.value && searchFilter.value.trim() !== "") {
+        return `Cari: ${searchFilter.value.trim()} – IME RP Multiview`;
+    }
+    return "Multiview (10-8 Live Officer Feeds) – IME RP Multiview";
+});
+
+let heartbeatTimer = null;
+
 onMounted(() => {
     window.addEventListener("keydown", handleKeyDown);
     document.addEventListener("click", handleGlobalClick);
@@ -859,10 +891,23 @@ onMounted(() => {
         openClipper();
     }
 
+    // Initialize GA4 Pageview & Tab Title
+    trackPageView(dynamicPageTitle.value);
+
     // TAC timer ticker (every 1s), TAC channel polling (every 15s), and Live Streams auto-sync (every 15s)
     tacTimerInterval = setInterval(tickTacTimers, 1000);
     tacPollInterval = setInterval(fetchTacChannels, 15000);
     streamPollInterval = setInterval(fetchLiveStreamsSilently, 15000);
+
+    // Active session telemetry heartbeat for GA4 Realtime watching metrics (every 2 mins)
+    heartbeatTimer = setInterval(() => {
+        trackHeartbeat({
+            activeStreamsCount: visibleStreams.value ? visibleStreams.value.length : 0,
+            focusedStreamId: focusedStreamId.value || primaryFocusedStream.value?.video_id || null,
+            focusedOfficer: primaryFocusedStream.value?.officer?.officer_name || null,
+            selectedDepartment: selectedDepartment.value || "ALL",
+        });
+    }, 120000);
 });
 
 onUnmounted(() => {
@@ -874,6 +919,7 @@ onUnmounted(() => {
     if (tacTimerInterval) clearInterval(tacTimerInterval);
     if (tacPollInterval) clearInterval(tacPollInterval);
     if (streamPollInterval) clearInterval(streamPollInterval);
+    if (heartbeatTimer) clearInterval(heartbeatTimer);
     pausePromoTimer();
 });
 
@@ -2326,6 +2372,9 @@ const playStreamInFocus = (stream) => {
     selectedLayout.value = "focus";
     focusedStreamId.value = stream.video_id || stream.id;
 
+    // GA4 Stream Interaction Tracking & Tab Title Update
+    trackSelectStream(stream);
+
     if (!isDataSaverEnabled.value) {
         toggleGridStreamPlay(stream.video_id);
     }
@@ -2553,8 +2602,14 @@ const setFocusStream = (videoId) => {
         delete players[primaryFocusedStream.value.video_id];
     }
 
-    // 4. Update the focused stream ID
+    // 4. Update the focused stream ID & GA4 telemetry
     focusedStreamId.value = videoId;
+    const targetStream =
+        allActiveStreams.value.find((s) => s.video_id === videoId) ||
+        allCatalogStreams.value.find((s) => s.video_id === videoId);
+    if (targetStream) {
+        trackSelectStream(targetStream);
+    }
 
     // 5. Remove from sidebar active previews if present
     const prevIdx = activePreviewVideoIds.value.indexOf(videoId);
@@ -3126,7 +3181,7 @@ const submitFeedbackForm = async () => {
 </script>
 
 <template>
-    <Head title="IME RP — SASP Police Duty | Live Officer Bodycam & Dispatch" />
+    <Head :title="dynamicPageTitle" />
 
     <div
         class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased"
@@ -3286,19 +3341,19 @@ const submitFeedbackForm = async () => {
             <div class="flex items-center space-x-1.5 shrink-0">
                 <button
                     @click="extendTacTimer(expiringTacChannel.code, 20)"
-                    class="px-2 py-1 bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] rounded-md font-mono"
+                    class="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold text-[10px] rounded-md font-mono transition-colors shadow-none"
                 >
                     +20m
                 </button>
                 <button
                     @click="disbandTacChannel(expiringTacChannel.code)"
-                    class="px-2 py-1 bg-rose-950 hover:bg-rose-900 text-rose-300 text-[10px] rounded-md border border-rose-800 font-mono"
+                    class="px-2.5 py-1 bg-rose-950/60 hover:bg-rose-900/70 text-rose-400 hover:text-rose-300 text-[10px] rounded-md border border-rose-900/80 font-mono transition-colors shadow-none"
                 >
                     Bubarkan
                 </button>
                 <button
                     @click="selectedDepartment = expiringTacChannel.code"
-                    class="px-2 py-1 bg-slate-950 hover:bg-slate-800 text-slate-200 text-[10px] rounded-md border border-slate-800 font-mono"
+                    class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 text-[10px] rounded-md font-mono transition-colors shadow-none"
                 >
                     Buka
                 </button>

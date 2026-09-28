@@ -608,13 +608,13 @@ const getCustomOrderRank = (videoId) => {
                                                     : primaryFocusedStream.video_id,
                                             )
                                         "
-                                        class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 border"
+                                        class="px-2.5 py-1 rounded-md text-xs font-mono font-bold transition flex items-center gap-1.5 border"
                                         :class="
                                             getStreamTac(
                                                 primaryFocusedStream.video_id,
                                             )
-                                                ? 'bg-blue-500 text-black border-blue-400 hover:bg-blue-400'
-                                                : 'bg-slate-900 text-blue-400 hover:bg-blue-950/40 border-blue-500/30'
+                                                ? 'bg-slate-800 text-amber-400 border-slate-700 font-bold'
+                                                : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-800'
                                         "
                                     >
                                         <img
@@ -747,10 +747,10 @@ const getCustomOrderRank = (videoId) => {
                                     :class="
                                         activeAudioVideoId ===
                                         primaryFocusedStream.video_id
-                                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-950/30 font-bold'
-                                            : 'bg-slate-900/60 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border-slate-800'
+                                            ? 'bg-slate-800 text-emerald-400 border-slate-700 font-bold'
+                                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border-slate-800'
                                     "
-                                    class="p-1.5 rounded-lg transition border flex items-center justify-center shrink-0"
+                                    class="p-1.5 rounded-md transition border flex items-center justify-center shrink-0 cursor-pointer"
                                     :title="
                                         activeAudioVideoId ===
                                         primaryFocusedStream.video_id
@@ -781,10 +781,10 @@ const getCustomOrderRank = (videoId) => {
                                         isStreamStopped(
                                             primaryFocusedStream.video_id,
                                         )
-                                            ? 'bg-blue-950/60 text-blue-300 hover:bg-blue-900/80 border-blue-500/40 shadow-sm'
-                                            : 'bg-blue-950/60 text-blue-300 hover:bg-blue-900/80 hover:text-white border-blue-500/40'
+                                            ? 'bg-slate-800 text-amber-400 border-slate-700 font-bold'
+                                            : 'bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white border-slate-800'
                                     "
-                                    class="p-1.5 rounded-lg transition border flex items-center justify-center font-mono text-xs shrink-0"
+                                    class="p-1.5 rounded-md transition border flex items-center justify-center font-mono text-xs shrink-0 cursor-pointer"
                                     :title="
                                         isStreamStopped(
                                             primaryFocusedStream.video_id,
@@ -811,7 +811,7 @@ const getCustomOrderRank = (videoId) => {
                                     @click="
                                         emit('update:selectedLayout', 'auto')
                                     "
-                                    class="p-1.5 rounded-lg transition border flex items-center justify-center font-mono text-xs bg-blue-950/60 text-blue-300 hover:bg-blue-900/80 hover:text-white border-blue-500/40 shadow-sm shrink-0"
+                                    class="p-1.5 rounded-md transition border flex items-center justify-center font-mono text-xs bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white border-slate-800 shrink-0 cursor-pointer"
                                     title="Kembali ke Mode Grid (Tutup Mode Fokus)"
                                 >
                                     <img
@@ -1039,10 +1039,10 @@ const getCustomOrderRank = (videoId) => {
                                             isStreamInfoOpen(
                                                 primaryFocusedStream.video_id,
                                             )
-                                                ? 'bg-blue-600/40 text-blue-200 border-blue-500/50'
-                                                : 'bg-slate-900/80 text-slate-300 hover:bg-slate-800 border-slate-800'
+                                                ? 'bg-slate-800 text-blue-400 border-slate-700'
+                                                : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-800'
                                         "
-                                        class="p-1.5 rounded-lg border transition flex items-center justify-center shrink-0"
+                                        class="p-1.5 rounded-md border transition flex items-center justify-center shrink-0 cursor-pointer"
                                         :title="
                                             isStreamInfoOpen(
                                                 primaryFocusedStream.video_id,
@@ -1063,10 +1063,10 @@ const getCustomOrderRank = (videoId) => {
                                         "
                                         :class="
                                             isRightChatOpen
-                                                ? 'bg-blue-600/30 text-blue-200 border-blue-500/40'
-                                                : 'bg-slate-900/80 text-slate-300 hover:bg-slate-800 border-slate-800'
+                                                ? 'bg-slate-800 text-blue-400 border-slate-700'
+                                                : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-800'
                                         "
-                                        class="p-1.5 rounded-lg border transition flex items-center justify-center shrink-0"
+                                        class="p-1.5 rounded-md border transition flex items-center justify-center shrink-0 cursor-pointer"
                                         :title="
                                             isRightChatOpen
                                                 ? 'Tutup Live Chat'
@@ -1187,8 +1187,8 @@ const getCustomOrderRank = (videoId) => {
                                         :class="
                                             activeAudioVideoId ===
                                             stream.video_id
-                                                ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 font-bold'
-                                                : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800'
+                                                ? 'bg-slate-800 text-emerald-400 border-slate-700 font-bold'
+                                                : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
                                         "
                                         class="px-2 py-1 rounded-md transition font-mono border text-[10px] flex items-center gap-1.5 cursor-pointer"
                                         title="Audio Switch"
@@ -1215,7 +1215,7 @@ const getCustomOrderRank = (videoId) => {
                                                 stream.video_id,
                                             )
                                         "
-                                        class="bg-blue-950/60 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/40 hover:border-blue-400 px-2 py-0.5 rounded-md text-[10px] font-bold shadow transition flex items-center gap-1"
+                                        class="bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 px-2 py-1 rounded-md text-[10px] font-bold transition flex items-center gap-1 cursor-pointer"
                                         title="Fokus"
                                     >
                                         <img
@@ -1256,7 +1256,7 @@ const getCustomOrderRank = (videoId) => {
                                     ></iframe>
                                     <button
                                         @click="toggleStopFeed(stream.video_id)"
-                                        class="absolute top-2 left-2 bg-black/80 hover:bg-red-900/80 text-white text-[10px] px-2 py-0.5 rounded border border-white/20 z-20 font-mono"
+                                        class="absolute top-2 left-2 bg-slate-900/90 hover:bg-rose-950/80 text-rose-400 border border-slate-800 hover:border-rose-900/80 text-[10px] px-2 py-0.5 rounded-md z-20 font-mono transition-colors cursor-pointer"
                                         title="Tutup Video / Stop Feed"
                                     >
                                         ✕ Stop Feed
@@ -1276,11 +1276,11 @@ const getCustomOrderRank = (videoId) => {
                                             @click="
                                                 toggleStopFeed(stream.video_id)
                                             "
-                                            class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                                            class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                                         >
                                             <img
                                                 :src="iconPlayAll"
-                                                class="w-3.5 h-3.5 invert"
+                                                class="w-3.5 h-3.5 invert opacity-90"
                                             />
                                             <span>Play</span>
                                         </button>
@@ -1290,11 +1290,11 @@ const getCustomOrderRank = (videoId) => {
                                                     stream.video_id,
                                                 )
                                             "
-                                            class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                                            class="bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                                         >
                                             <img
                                                 :src="iconFocus"
-                                                class="w-3.5 h-3.5 invert"
+                                                class="w-3.5 h-3.5 invert opacity-90"
                                             />
                                             <span>Fokus</span>
                                         </button>
@@ -1473,7 +1473,7 @@ const getCustomOrderRank = (videoId) => {
                                                         stream.video_id,
                                                     )
                                                 "
-                                                class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5"
+                                                class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                                             >
                                                 <img
                                                     :src="iconPlayAll"
@@ -1487,7 +1487,7 @@ const getCustomOrderRank = (videoId) => {
                                                         stream.video_id,
                                                     )
                                                 "
-                                                class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5"
+                                                class="bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                                             >
                                                 <img
                                                     :src="iconFocus"
@@ -1542,7 +1542,7 @@ const getCustomOrderRank = (videoId) => {
                                                     stream.video_id,
                                                 );
                                             "
-                                            class="p-1 hover:text-blue-400 text-slate-300 rounded hover:bg-slate-800 transition"
+                                            class="p-1 hover:text-blue-400 text-slate-300 rounded hover:bg-slate-800 transition cursor-pointer"
                                             title="Focus"
                                         >
                                             <img
@@ -1557,10 +1557,10 @@ const getCustomOrderRank = (videoId) => {
                                             :class="
                                                 activeChatVideoId ===
                                                 stream.video_id
-                                                    ? 'bg-blue-600 text-white shadow-md'
+                                                    ? 'bg-slate-800 text-blue-400 border border-slate-700'
                                                     : 'text-slate-300 hover:text-blue-400 hover:bg-slate-800'
                                             "
-                                            class="p-1 rounded transition flex items-center justify-center"
+                                            class="p-1 rounded transition flex items-center justify-center cursor-pointer"
                                         >
                                             <img
                                                 :src="
@@ -1973,11 +1973,11 @@ const getCustomOrderRank = (videoId) => {
                 <!-- Home / Beranda Button -->
                 <Link
                     href="/"
-                    class="px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold bg-blue-600 hover:bg-blue-500 text-white border border-blue-400 transition flex items-center gap-1.5 shrink-0 cursor-pointer shadow-md"
+                    class="px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition flex items-center gap-1.5 shrink-0 cursor-pointer"
                     title="Kembali ke Dashboard Utama"
                 >
                     <svg
-                        class="w-3.5 h-3.5"
+                        class="w-3.5 h-3.5 text-slate-400 shrink-0"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -1997,8 +1997,8 @@ const getCustomOrderRank = (videoId) => {
                     :class="[
                         'hidden sm:flex px-3 py-1.5 rounded-md text-xs font-bold border transition items-center gap-1.5 shrink-0 cursor-pointer',
                         isDockCategoryOpen
-                            ? 'bg-blue-600 text-white border-blue-500'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800',
+                            ? 'bg-slate-800 text-blue-400 border-slate-700'
+                            : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800',
                     ]"
                     title="Pilih Kategori / Departemen Kesatuan"
                 >
@@ -2026,8 +2026,8 @@ const getCustomOrderRank = (videoId) => {
                     :class="[
                         'hidden sm:flex px-3 py-1.5 rounded-md text-xs font-bold border transition items-center gap-1.5 shrink-0 cursor-pointer',
                         isDockLayoutOpen
-                            ? 'bg-blue-600 text-white border-blue-500'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-800',
+                            ? 'bg-slate-800 text-blue-400 border-slate-700'
+                            : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800',
                     ]"
                     title="Pilih Tata Letak Kamera (Grid Layout)"
                 >
@@ -2052,7 +2052,7 @@ const getCustomOrderRank = (videoId) => {
                     :class="[
                         'flex p-2 rounded-md border transition shrink-0 relative cursor-pointer',
                         isDockSearchOpen || searchFilter
-                            ? 'bg-slate-900 text-blue-400 border-blue-500'
+                            ? 'bg-slate-800 text-blue-400 border-slate-700'
                             : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800',
                     ]"
                     title="Cari Petugas / Stream"
@@ -2079,11 +2079,11 @@ const getCustomOrderRank = (videoId) => {
                 <!-- Officer Visibility Bottom Sheet Button ([⚙️ Kelola]) -->
                 <button
                     @click="emit('open-officer-visibility')"
-                    class="flex px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-800 transition items-center gap-1.5 shrink-0 cursor-pointer"
+                    class="flex px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition items-center gap-1.5 shrink-0 cursor-pointer"
                     title="Kelola Tampilan / Enable Disable Perwira (Bottom Sheet)"
                 >
                     <svg
-                        class="w-3.5 h-3.5 text-blue-400 shrink-0"
+                        class="w-3.5 h-3.5 text-slate-400 shrink-0"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -2128,7 +2128,7 @@ const getCustomOrderRank = (videoId) => {
                     :class="[
                         'px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer',
                         isDataSaverEnabled
-                            ? 'bg-slate-900 text-amber-400 border-amber-800/60'
+                            ? 'bg-slate-800 text-amber-400 border-slate-700'
                             : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800',
                     ]"
                     :title="
@@ -2156,7 +2156,7 @@ const getCustomOrderRank = (videoId) => {
                     class="hidden sm:flex px-3 py-1.5 rounded-md text-[11px] font-mono font-bold border transition items-center gap-1.5 shrink-0 cursor-pointer"
                     :class="
                         isTheaterMode
-                            ? 'bg-blue-600 text-white border-blue-500'
+                            ? 'bg-slate-800 text-blue-400 border-slate-700'
                             : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
                     "
                     :title="
@@ -2187,7 +2187,7 @@ const getCustomOrderRank = (videoId) => {
                     class="px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer"
                     :class="
                         activeAudioVideoId
-                            ? 'bg-slate-900 text-emerald-400 border-emerald-800/60'
+                            ? 'bg-slate-800 text-emerald-400 border-slate-700'
                             : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
                     "
                     :title="
