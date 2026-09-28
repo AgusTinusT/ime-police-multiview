@@ -93,14 +93,13 @@ class ProcessVideoClipJob implements ShouldQueue
                 '--sleep-requests', '1.5',
                 '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
                 '--js-runtimes', $jsRuntimeSpec,
-                '--extractor-args', 'youtube:player_client=ios,android,web',
                 '--download-sections', $sectionSpec,
             ];
 
             if ($formatOption === 'MP3 Audio') {
                 array_push(
                     $command,
-                    '-f', 'ba/b',
+                    '-f', 'bestaudio/ba',
                     '-x',
                     '--audio-format', 'mp3',
                     '--audio-quality', '0'
@@ -108,23 +107,23 @@ class ProcessVideoClipJob implements ShouldQueue
             } elseif ($formatOption === 'MP4 360p') {
                 array_push(
                     $command,
-                    '-f', 'bv*[vcodec^=avc1][height<=360]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=360]+ba/b[height<=360]/best',
-                    '--merge-output-format', 'mp4',
-                    '--postprocessor-args', 'ffmpeg:-c copy -movflags +faststart'
+                    '-f', 'bestvideo[height<=360]+bestaudio/best[height<=360]/best',
+                    '--recode-video', 'mp4',
+                    '--postprocessor-args', 'ffmpeg:-movflags +faststart'
                 );
             } elseif ($formatOption === 'MP4 720p') {
                 array_push(
                     $command,
-                    '-f', 'bv*[vcodec^=avc1][height<=720]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=720]+ba/b[height<=720]/best',
-                    '--merge-output-format', 'mp4',
-                    '--postprocessor-args', 'ffmpeg:-c copy -movflags +faststart'
+                    '-f', 'bestvideo[height<=720]+bestaudio/best[height<=720]/best',
+                    '--recode-video', 'mp4',
+                    '--postprocessor-args', 'ffmpeg:-movflags +faststart'
                 );
             } else { // Default MP4 1080p
                 array_push(
                     $command,
-                    '-f', 'bv*[vcodec^=avc1][height<=1080]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=1080]+ba/b[height<=1080]/best',
-                    '--merge-output-format', 'mp4',
-                    '--postprocessor-args', 'ffmpeg:-c copy -movflags +faststart'
+                    '-f', 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best',
+                    '--recode-video', 'mp4',
+                    '--postprocessor-args', 'ffmpeg:-movflags +faststart'
                 );
             }
 
