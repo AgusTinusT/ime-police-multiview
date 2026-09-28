@@ -256,9 +256,12 @@ const scrollToUnitsGrid = () => {
 </script>
 
 <template>
-    <Head
-        title="IME RP — SASP Police Duty | Live Officer Bodycam & Discovery Hub"
-    />
+    <Head title="IME RP — SASP Police Duty | Live Officer Bodycam & Discovery Hub">
+        <meta name="description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay (LSPD, BCSO, SASP, SAPR). Pantau seluruh siaran langsung perwira patroli secara multiview interaktif." />
+        <meta property="og:title" content="IME RP — SASP Police Duty | Live Officer Bodycam & Discovery Hub" />
+        <meta property="og:description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay." />
+        <meta property="og:type" content="website" />
+    </Head>
 
     <div
         class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased relative overflow-hidden"
@@ -288,8 +291,10 @@ const scrollToUnitsGrid = () => {
                 >
                     <img
                         src="/images/hero-fallback.jpg"
+                        loading="eager"
+                        fetchpriority="high"
                         class="w-full h-full object-cover grayscale mix-blend-luminosity"
-                        alt="IME Police Duty Hero"
+                        alt="IME Police Duty Hero Backdrop"
                     />
                     <div class="absolute inset-0 bg-slate-950/40"></div>
                 </div>

@@ -84,15 +84,19 @@ class SyncOfficerStreamsJob implements ShouldQueue
                     );
 
                     $lastDuty = $officer->last_duty_at;
-                    $minutesToAdd = 5;
-                    if ($lastDuty) {
-                        $diffMins = intval(now()->diffInMinutes($lastDuty));
-                        if ($diffMins >= 1 && $diffMins <= 180) {
-                            $minutesToAdd = $diffMins;
+                    $currentTime = now();
+
+                    if (!$lastDuty || $lastDuty->diffInMinutes($currentTime) > 15) {
+                        // Sesi patroli live baru atau kembali live setelah jeda > 15 menit
+                        $officer->update(['last_duty_at' => $currentTime]);
+                    } else {
+                        // Perwira sedang live terus-menerus. Akumulasi hanya menit presisi yang benar-benar berlalu
+                        $diffMins = intval($lastDuty->diffInMinutes($currentTime));
+                        if ($diffMins >= 1) {
+                            $officer->increment('monthly_duty_minutes', $diffMins);
+                            $officer->update(['last_duty_at' => $lastDuty->copy()->addMinutes($diffMins)]);
                         }
                     }
-                    $officer->increment('monthly_duty_minutes', $minutesToAdd);
-                    $officer->update(['last_duty_at' => now()]);
 
                     // Mark other previous streams of this officer as ended
                     ActiveStream::where('channel_id', $channelId)

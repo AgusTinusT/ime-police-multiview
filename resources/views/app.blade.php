@@ -7,6 +7,17 @@
 
         <title inertia>IME RP — SASP Police Duty</title>
 
+        <!-- SEO Meta Tags -->
+        <meta name="description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay (LSPD, BCSO, SASP, SAPR). Pantau seluruh siaran langsung perwira patroli secara multiview interaktif.">
+        <meta name="keywords" content="IME RP, Police Duty, SASP, LSPD, BCSO, SAPR, Multiview, FiveM, GTA V Roleplay">
+        <meta name="robots" content="index, follow">
+
+        <!-- OpenGraph Social Media Meta Tags -->
+        <meta property="og:title" content="IME RP — SASP Police Duty | Live Officer Bodycam">
+        <meta property="og:description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay.">
+        <meta property="og:type" content="website">
+        <meta property="og:image" content="/images/icons/icon-512x512.png">
+
         <!-- Favicon / Browser Icon (With Cache Buster) -->
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ filemtime(public_path('favicon.ico')) }}">
         <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ filemtime(public_path('favicon.ico')) }}">
@@ -19,9 +30,13 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="IME Police">
 
-        <!-- Fonts: Rajdhani (Header/Title), Plus Jakarta Sans (Body UI), JetBrains Mono (Badge & Data Unit) -->
+        <!-- Preconnect Fast Network Origins (Fonts & YouTube Assets) -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="preconnect" href="https://i.ytimg.com">
+        <link rel="preconnect" href="https://www.youtube.com">
+
+        <!-- Fonts: Rajdhani, Plus Jakarta Sans, JetBrains Mono (With display=swap for high FCP/LCP performance) -->
         <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
