@@ -57,6 +57,11 @@ const showToast = (message, type = 'success') => {
 };
 
 // Modal State: Officer
+const showModal = ref(false);
+const isEditMode = ref(false);
+const showDeleteConfirm = ref(false);
+const officerToDelete = ref(null);
+
 // Duty Time Adjustment Modal State
 const showDutyModal = ref(false);
 const dutyOfficer = ref(null);
@@ -1025,33 +1030,48 @@ onMounted(() => {
             <div class="flex items-center space-x-2 border-b border-slate-800 pb-2 overflow-x-auto">
                 <button 
                     @click="activeTab = 'officers'" 
-                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'officers' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
+                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5', activeTab === 'officers' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
                 >
-                    🚔 Officers Roster
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Officers Roster</span>
                 </button>
                 <button 
                     @click="activeTab = 'agencies'" 
-                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'agencies' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
+                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5', activeTab === 'agencies' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
                 >
-                    🏛️ Agencies & Ranks Structure
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0h4m-4 0H9m4 0V7m0 0h-4" />
+                    </svg>
+                    <span>Agencies & Ranks Structure</span>
                 </button>
                 <button 
                     @click="activeTab = 'certifications'" 
-                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'certifications' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
+                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5', activeTab === 'certifications' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
                 >
-                    🎖️ Tactical Certifications
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4m6 12v4m-2-2h4m4-14v4m-2-2h4M5 15h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                    </svg>
+                    <span>Tactical Certifications</span>
                 </button>
                 <button 
                     @click="activeTab = 'announcements'" 
-                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap', activeTab === 'announcements' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
+                    :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5', activeTab === 'announcements' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
                 >
-                    📢 Promotions & Alerts
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.684A1.761 1.761 0 013 12c0-.624.324-1.173.816-1.494l5.436-3.649 font-mono" />
+                    </svg>
+                    <span>Promotions & Alerts</span>
                 </button>
                 <button 
                     @click="activeTab = 'users'" 
                     :class="['px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5', activeTab === 'users' ? 'bg-blue-600 text-white' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900']"
                 >
-                    <span>👥 Member Accounts</span>
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>Member Accounts</span>
                     <span class="px-1.5 py-0.2 text-[10px] bg-slate-900 text-slate-200 rounded-md font-mono border border-slate-800">{{ usersList.length }}</span>
                 </button>
             </div>
@@ -1252,9 +1272,12 @@ onMounted(() => {
                                             <span 
                                                 v-for="cert in officer.certifications" 
                                                 :key="cert.id"
-                                                class="px-1.5 py-0.2 rounded-md bg-slate-950 text-blue-300 text-[9px] border border-slate-800"
+                                                class="px-1.5 py-0.5 rounded-md bg-slate-950 text-blue-300 text-[9px] border border-slate-800 flex items-center gap-1 inline-flex"
                                             >
-                                                🎖️ {{ cert.cert_type }}
+                                                <svg class="w-2.5 h-2.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4m6 12v4m-2-2h4m4-14v4m-2-2h4M5 15h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                                                </svg>
+                                                <span>{{ cert.cert_type }}</span>
                                             </span>
                                         </div>
                                         <span v-else class="text-[10px] text-slate-500 italic">No certs</span>
@@ -1263,13 +1286,21 @@ onMounted(() => {
                                     <!-- Akumulasi Duty & Hashtag Bypass -->
                                     <td class="py-3.5 px-4 font-mono">
                                         <div class="flex items-center space-x-1.5 mb-1">
-                                            <span class="text-amber-400 font-bold text-[11px]">⏱️ {{ formatDutyHours(officer.monthly_duty_minutes) }}</span>
+                                            <span class="text-amber-400 font-bold text-[11px] flex items-center gap-1">
+                                                <svg class="w-3 h-3 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <span>{{ formatDutyHours(officer.monthly_duty_minutes) }}</span>
+                                            </span>
                                             <button 
                                                 @click="openDutyModal(officer)"
                                                 title="Kelola/Sesuaikan Waktu Jam Patroli"
-                                                class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] border border-slate-700 transition"
+                                                class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] border border-slate-700 transition flex items-center gap-1"
                                             >
-                                                ✏️ Adjust
+                                                <svg class="w-2.5 h-2.5 text-amber-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                                <span>Adjust</span>
                                             </button>
                                         </div>
                                         <div class="mt-1">
@@ -1537,8 +1568,11 @@ onMounted(() => {
                                     </span>
                                 </td>
                                 <td class="p-3.5">
-                                    <button @click="selectedUserWatchlistModal = u" class="text-blue-400 hover:underline">
-                                        ⭐ {{ u.watchlists_count || 0 }} Stream
+                                    <button @click="selectedUserWatchlistModal = u" class="text-blue-400 hover:underline flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <span>{{ u.watchlists_count || 0 }} Stream</span>
                                     </button>
                                 </td>
                                 <td class="p-3.5 text-right space-x-1.5">
@@ -1883,7 +1917,9 @@ onMounted(() => {
                 <div class="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-100 font-sans space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                         <div class="flex items-center space-x-2">
-                            <span class="text-xl">⭐</span>
+                            <svg class="w-5 h-5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
                             <div>
                                 <h3 class="text-sm font-bold font-mono text-white">Cloud Watchlist Member</h3>
                                 <p class="text-xs text-slate-400">{{ selectedUserWatchlistModal.name }} ({{ selectedUserWatchlistModal.email }})</p>
@@ -1978,9 +2014,9 @@ onMounted(() => {
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold">Jenis Penyesuaian</label>
                             <select v-model="dutyAction" class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2">
-                                <option value="add">➕ Tambah Waktu (Menit)</option>
-                                <option value="subtract">➖ Kurangi Waktu (Menit)</option>
-                                <option value="set">📌 Set Total Menit Langsung</option>
+                                <option value="add">Tambah Waktu (Menit)</option>
+                                <option value="subtract">Kurangi Waktu (Menit)</option>
+                                <option value="set">Set Total Menit Langsung</option>
                             </select>
                         </div>
 
