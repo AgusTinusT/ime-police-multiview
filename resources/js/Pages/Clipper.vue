@@ -68,7 +68,11 @@
                         </svg>
                         <span>{{ formError }}</span>
                     </div>
-                    <button @click="formError = ''" class="text-red-400 hover:text-white text-xs">✕</button>
+                    <button @click="formError = ''" class="text-red-400 hover:text-white transition p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
             </transition>
 
@@ -80,7 +84,11 @@
                         </svg>
                         <span>{{ successMessage }}</span>
                     </div>
-                    <button @click="successMessage = ''" class="text-emerald-400 hover:text-white text-xs">✕</button>
+                    <button @click="successMessage = ''" class="text-emerald-400 hover:text-white transition p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
             </transition>
 
@@ -452,7 +460,10 @@
                                     <span class="text-blue-400 font-semibold px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px]">{{ clip.format || 'MP4 1080p' }}</span>
                                 </div>
                                 <span v-if="clip.status === 'completed'" class="text-[10px] text-amber-400 font-sans flex items-center gap-1 bg-slate-950 px-1.5 py-0.5 rounded-md border border-amber-900/50" title="File ini akan dihapus otomatis 1 jam setelah dibuat">
-                                    ⏱️ 1 Jam
+                                    <svg class="w-3 h-3 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>1 Jam</span>
                                 </span>
                             </div>
                         </div>

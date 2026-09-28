@@ -254,7 +254,10 @@
                                 </video>
                                 <div class="flex items-center justify-between pt-1">
                                     <span class="text-[10px] text-amber-400 font-mono flex items-center gap-1">
-                                        ⏱️ Otomatis dihapus dlm 1 jam
+                                        <svg class="w-3 h-3 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>Otomatis dihapus dlm 1 jam</span>
                                     </span>
                                     <a 
                                         :href="clip.download_url" 
