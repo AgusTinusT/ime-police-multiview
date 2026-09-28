@@ -3,7 +3,7 @@ import { ref, computed } from "vue";
 import { Link } from "@inertiajs/vue3";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 
-const { toggleOfficerStatus } = useOfficerFilter();
+const { toggleOfficerStatus, getOfficerKey } = useOfficerFilter();
 
 // SVG Icon Assets & Branding Logos
 import iconLspd from "@/Components/Icons/LSPD_HD.svg";
@@ -456,17 +456,25 @@ const getStreamTac = (videoId) => {
     return null;
 };
 
-const getCustomOrderRank = (videoId) => {
-    if (!videoId || !props.customOrderMap) return 0;
-    const strId = String(videoId).trim();
+const getCustomOrderRank = (item) => {
+    if (!item || !props.customOrderMap) return 0;
+    const key = getOfficerKey(item) || (typeof item === "string" ? item.trim() : (item.video_id ? String(item.video_id).trim() : ""));
+    if (!key) return 0;
+
     if (Array.isArray(props.customOrderMap)) {
-        const idx = props.customOrderMap.indexOf(strId);
-        return idx !== -1 ? idx + 1 : 0;
+        const idx = props.customOrderMap.indexOf(key);
+        if (idx !== -1) return idx + 1;
+        if (typeof item === "object" && item.video_id) {
+            const vKey = String(item.video_id).trim();
+            const vIdx = props.customOrderMap.indexOf(vKey);
+            if (vIdx !== -1) return vIdx + 1;
+        }
+        return 0;
     }
     if (typeof props.customOrderMap === "function") {
-        return props.customOrderMap(strId);
+        return props.customOrderMap(key);
     }
-    return props.customOrderMap[strId] || 0;
+    return props.customOrderMap[key] || 0;
 };
 </script>
 
@@ -1329,7 +1337,7 @@ const getCustomOrderRank = (videoId) => {
                             v-for="stream in displayedGridStreams"
                             :key="`grid-card-${stream.video_id}`"
                             :class="[
-                                getCustomOrderRank(stream.video_id) > 0
+                                getCustomOrderRank(stream) > 0
                                     ? 'border-amber-500/40 shadow-md shadow-amber-950/20'
                                     : 'border-slate-800/80 hover:border-slate-700',
                                 activeChatVideoId === stream.video_id
@@ -2178,30 +2186,39 @@ const getCustomOrderRank = (videoId) => {
                     @click="
                         emit(
                             'toggle-audio',
-                            activeAudioVideoId ||
-                                (visibleStreams[0]
-                                    ? visibleStreams[0].video_id
-                                    : null),
+                            selectedLayout === 'focus' && primaryFocusedStream
+                                ? primaryFocusedStream.video_id
+                                : (activeAudioVideoId || (visibleStreams[0] ? visibleStreams[0].video_id : null)),
                         )
                     "
                     class="px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer"
                     :class="
-                        activeAudioVideoId
+                        (selectedLayout === 'focus' && primaryFocusedStream && activeAudioVideoId === primaryFocusedStream.video_id) ||
+                        (selectedLayout !== 'focus' && activeAudioVideoId)
                             ? 'bg-slate-800 text-emerald-400 border-slate-700'
                             : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
                     "
                     :title="
-                        activeAudioVideoId
-                            ? 'Suara Aktif (Mute)'
+                        (selectedLayout === 'focus' && primaryFocusedStream && activeAudioVideoId === primaryFocusedStream.video_id) ||
+                        (selectedLayout !== 'focus' && activeAudioVideoId)
+                            ? 'Suara Aktif (Klik untuk Mute)'
                             : 'Aktivasi Suara Feed'
                     "
                 >
                     <img
-                        :src="activeAudioVideoId ? iconUnmute : iconMute"
+                        :src="
+                            (selectedLayout === 'focus' && primaryFocusedStream && activeAudioVideoId === primaryFocusedStream.video_id) ||
+                            (selectedLayout !== 'focus' && activeAudioVideoId)
+                                ? iconUnmute
+                                : iconMute
+                        "
                         class="w-3.5 h-3.5 invert opacity-90"
                     />
                     <span>{{
-                        activeAudioVideoId ? "Audio ON" : "Audio OFF"
+                        (selectedLayout === 'focus' && primaryFocusedStream && activeAudioVideoId === primaryFocusedStream.video_id) ||
+                        (selectedLayout !== 'focus' && activeAudioVideoId)
+                            ? "Audio ON"
+                            : "Audio OFF"
                     }}</span>
                 </button>
 

@@ -144,6 +144,7 @@ export function useYouTubePlayer() {
                 }
             } catch (e) {
                 console.warn("YT.Player instance call failed for " + videoId, e);
+                delete players[videoId];
             }
         }
     };

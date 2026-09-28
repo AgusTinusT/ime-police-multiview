@@ -1797,7 +1797,36 @@ const filteredOfflineOfficers = computed(() => {
 });
 
 // Custom Grid Sequence Ordering System (#1, #2, #3...)
-const customStreamOrder = ref([]); // Array of video_id strings in priority sequence
+// Custom Grid Sequence Ordering System (#1, #2, #3...)
+const CUSTOM_ORDER_STORAGE_KEY = "ime_custom_stream_order";
+const customStreamOrder = ref([]); // Array of officer key / video_id strings in priority sequence
+
+onMounted(() => {
+    if (typeof window !== "undefined") {
+        try {
+            const savedOrder = localStorage.getItem(CUSTOM_ORDER_STORAGE_KEY);
+            if (savedOrder) {
+                customStreamOrder.value = JSON.parse(savedOrder);
+            }
+        } catch (e) {
+            console.error("Gagal memuat custom stream order dari localStorage:", e);
+        }
+    }
+});
+
+watch(
+    customStreamOrder,
+    (newVal) => {
+        if (typeof window !== "undefined") {
+            try {
+                localStorage.setItem(CUSTOM_ORDER_STORAGE_KEY, JSON.stringify(newVal));
+            } catch (e) {
+                console.error("Gagal menyimpan custom stream order ke localStorage:", e);
+            }
+        }
+    },
+    { deep: true }
+);
 
 const getCustomOrderRank = (item) => {
     if (!item) return 0;
@@ -1884,16 +1913,52 @@ const toggleStreamVisibility = (videoId) => {
     }
 };
 
+const promoteStreamToFirst = (item) => {
+    if (!item) return;
+    const targetStream =
+        typeof item === "object"
+            ? item
+            : (allActiveStreams.value || []).find((s) => s.video_id === item) ||
+              (allCatalogStreams.value || []).find((s) => s.video_id === item);
+    const key =
+        getOfficerKey(targetStream || item) ||
+        (typeof item === "string"
+            ? item.trim()
+            : targetStream?.video_id
+            ? String(targetStream.video_id).trim()
+            : "");
+    if (!key) return;
+
+    const idx = customStreamOrder.value.indexOf(key);
+    if (idx !== -1) {
+        customStreamOrder.value.splice(idx, 1);
+    }
+    customStreamOrder.value.unshift(key);
+};
+
 const visibleStreams = computed(() => {
     const list = filteredStreams.value.filter(
         (s) => !hiddenStreamVideoIds.value.includes(s.video_id),
     );
 
-    if (customStreamOrder.value.length === 0) return list;
+    if (customStreamOrder.value.length === 0) {
+        if (focusedStreamId.value) {
+            const focusIdx = list.findIndex(
+                (s) => s.video_id === focusedStreamId.value,
+            );
+            if (focusIdx > 0) {
+                const copy = [...list];
+                const [focusedItem] = copy.splice(focusIdx, 1);
+                copy.unshift(focusedItem);
+                return copy;
+            }
+        }
+        return list;
+    }
 
     return [...list].sort((a, b) => {
-        const rankA = getCustomOrderRank(a.video_id);
-        const rankB = getCustomOrderRank(b.video_id);
+        const rankA = getCustomOrderRank(a);
+        const rankB = getCustomOrderRank(b);
 
         if (rankA > 0 && rankB > 0) return rankA - rankB;
         if (rankA > 0) return -1;
@@ -2371,6 +2436,7 @@ const playStreamInFocus = (stream) => {
     }
     selectedLayout.value = "focus";
     focusedStreamId.value = stream.video_id || stream.id;
+    promoteStreamToFirst(stream);
 
     // GA4 Stream Interaction Tracking & Tab Title Update
     trackSelectStream(stream);
@@ -2534,24 +2600,8 @@ const layoutGridClass = computed(() => {
     return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5";
 });
 
-// Prioritize Personal Streams in Focus Mode (Personal units appear first)
-const sortedFocusStreams = computed(() => {
-    const list = [...visibleStreams.value];
-    return list.sort((a, b) => {
-        const aIsPersonal = isPersonalStream(a.video_id);
-        const bIsPersonal = isPersonalStream(b.video_id);
-        if (aIsPersonal && !bIsPersonal) return -1;
-        if (!aIsPersonal && bIsPersonal) return 1;
-        if (aIsPersonal && bIsPersonal) {
-            const aIdx = personalVideoIds.value.indexOf(a.video_id);
-            const bIdx = personalVideoIds.value.indexOf(b.video_id);
-            if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-            if (aIdx !== -1) return -1;
-            if (bIdx !== -1) return 1;
-        }
-        return 0;
-    });
-});
+// Focus Mode & Grid Mode Shared Stream Sequence (Ensures 100% layout state consistency)
+const sortedFocusStreams = computed(() => visibleStreams.value);
 
 // Focus mode stream selector
 const primaryFocusedStream = computed(() => {
@@ -2604,6 +2654,7 @@ const setFocusStream = (videoId) => {
 
     // 4. Update the focused stream ID & GA4 telemetry
     focusedStreamId.value = videoId;
+    promoteStreamToFirst(videoId);
     const targetStream =
         allActiveStreams.value.find((s) => s.video_id === videoId) ||
         allCatalogStreams.value.find((s) => s.video_id === videoId);
