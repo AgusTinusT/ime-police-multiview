@@ -145,31 +145,19 @@
                     <!-- LEFT COLUMN: VIDEO PLAYER & PREVIEW (8 cols) -->
                     <div class="lg:col-span-8 space-y-4">
                         
-                        <!-- Video Canvas / Player Container -->
-                        <div class="relative aspect-video rounded-xl overflow-hidden bg-black border border-slate-800 group flex items-center justify-center">
-                            
-                            <!-- YouTube Embed Player Iframe -->
-                            <template v-if="activeVideoId">
-                                <iframe
-                                    id="youtube-preview-player"
-                                    :src="`https://www.youtube.com/embed/${activeVideoId}?enablejsapi=1&autoplay=1&rel=0`"
-                                    class="w-full h-full border-0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen
-                                ></iframe>
-                            </template>
+                        <!-- Video Canvas / Player Container (Method 2 Custom Player UI) -->
+                        <div class="space-y-3">
+                            <CustomVideoPlayer
+                                ref="mainPlayerRef"
+                                :src="form.youtube_url || videoSrc"
+                                :youtube-id="activeVideoId"
+                                :title="videoTitle"
+                                @timeupdate="onMainPlayerTimeUpdate"
+                                class="w-full h-full"
+                            />
 
-                            <!-- HTML5 Video Player Fallback (Method 2 Custom Player) -->
-                            <template v-else>
-                                <CustomVideoPlayer
-                                    :src="videoSrc"
-                                    :title="videoTitle"
-                                    class="w-full h-full"
-                                />
-                            </template>
-
-                            <!-- Live Time Controls Overlay -->
-                            <div class="absolute bottom-3 left-3 right-3 p-2.5 rounded-md bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 text-xs">
+                            <!-- Live Time Controls & Marker Capture Bar -->
+                            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
                                 
                                 <div class="flex items-center space-x-1.5 font-mono">
                                     <span class="text-slate-400 text-[11px]">Waktu Pemutar:</span>
@@ -180,16 +168,16 @@
 
                                 <!-- Seek Controls -->
                                 <div class="flex items-center gap-1 font-mono">
-                                    <button @click="seekPlayer(-30)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
+                                    <button @click="seekPlayer(-30)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer">
                                         -30s
                                     </button>
-                                    <button @click="seekPlayer(-10)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
+                                    <button @click="seekPlayer(-10)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer">
                                         -10s
                                     </button>
-                                    <button @click="seekPlayer(10)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
+                                    <button @click="seekPlayer(10)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer">
                                         +10s
                                     </button>
-                                    <button @click="seekPlayer(30)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px]">
+                                    <button @click="seekPlayer(30)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer">
                                         +30s
                                     </button>
                                 </div>
@@ -198,13 +186,13 @@
                                 <div class="flex items-center gap-1.5">
                                     <button
                                         @click="captureStartTime"
-                                        class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition flex items-center gap-1 font-mono"
+                                        class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition flex items-center gap-1 font-mono cursor-pointer"
                                     >
                                         <span>Set Start (IN)</span>
                                     </button>
                                     <button
                                         @click="captureEndTime"
-                                        class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition flex items-center gap-1 font-mono"
+                                        class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition flex items-center gap-1 font-mono cursor-pointer"
                                     >
                                         <span>Set End (OUT)</span>
                                     </button>
@@ -477,7 +465,7 @@
                                 Browser Anda tidak mendukung HTML5 Audio.
                             </audio>
                             <img v-else-if="clip.format === 'GIF 60fps' || clip.download_url.endsWith('.gif')" :src="clip.download_url" alt="Clip GIF" class="w-full max-h-48 object-contain rounded-md bg-black border border-slate-800" />
-                            <CustomVideoPlayer v-else :src="clip.download_url" :title="clip.title" class="w-full max-h-48" />
+                            <CustomVideoPlayer v-else :src="clip.download_url" :title="clip.title" class="w-full" />
                         </div>
 
                         <!-- Card Footer Controls -->
@@ -567,7 +555,7 @@ const successMessage = ref('');
 const clipsList = ref([]);
 const playerCurrentSeconds = ref(0);
 const videoDurationSec = ref(214);
-const html5VideoRef = ref(null);
+const mainPlayerRef = ref(null);
 let pollTimer = null;
 let ytTimeTimer = null;
 
@@ -696,20 +684,13 @@ function formatSeconds(secs) {
 
 // Player controls
 function seekPlayer(secondsDelta) {
-    const targetTime = Math.max(0, playerCurrentSeconds.value + secondsDelta);
-    if (activeVideoId.value) {
-        const iframe = document.getElementById('youtube-preview-player');
-        if (iframe && iframe.contentWindow) {
-            iframe.contentWindow.postMessage(JSON.stringify({
-                event: 'command',
-                func: 'seekTo',
-                args: [targetTime, true]
-            }), '*');
-        }
-    } else if (html5VideoRef.value) {
-        html5VideoRef.value.currentTime = targetTime;
+    if (mainPlayerRef.value) {
+        mainPlayerRef.value.seekRelative(secondsDelta);
     }
-    playerCurrentSeconds.value = targetTime;
+}
+
+function onMainPlayerTimeUpdate(sec) {
+    playerCurrentSeconds.value = Math.floor(sec);
 }
 
 function captureStartTime() {

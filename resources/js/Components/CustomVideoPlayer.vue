@@ -4,7 +4,11 @@ import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 const props = defineProps({
     src: {
         type: String,
-        required: true,
+        default: "",
+    },
+    youtubeId: {
+        type: String,
+        default: "",
     },
     poster: {
         type: String,
@@ -20,8 +24,11 @@ const props = defineProps({
     },
 });
 
+const emit = defineEmits(["timeupdate", "ended"]);
+
 const videoRef = ref(null);
 const containerRef = ref(null);
+const ytIframeRef = ref(null);
 
 const isPlaying = ref(false);
 const currentTime = ref(0);
@@ -33,10 +40,21 @@ const isFullscreen = ref(false);
 const showControls = ref(true);
 
 let controlsTimeout = null;
+let ytPollTimer = null;
+const iframeId = `yt-custom-player-${Math.random().toString(36).substring(2, 9)}`;
+
+// Extract YouTube ID if src is a YouTube URL
+const computedYoutubeId = computed(() => {
+    if (props.youtubeId) return props.youtubeId;
+    if (!props.src) return "";
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = props.src.match(regExp);
+    return match && match[2].length === 11 ? match[2] : "";
+});
 
 // Format seconds into HH:MM:SS or MM:SS
 const formatTime = (sec) => {
-    if (isNaN(sec) || sec === null) return "00:00";
+    if (isNaN(sec) || sec === null || sec < 0) return "00:00";
     const h = Math.floor(sec / 3600);
     const m = Math.floor((sec % 3600) / 60);
     const s = Math.floor(sec % 60);
@@ -49,12 +67,33 @@ const formatTime = (sec) => {
     return `${pad(m)}:${pad(s)}`;
 };
 
-const progressPercentage = computed(() => {
-    if (!duration.value) return 0;
-    return (currentTime.value / duration.value) * 100;
-});
+const sendYTCommand = (func, args = []) => {
+    if (ytIframeRef.value && ytIframeRef.value.contentWindow) {
+        try {
+            ytIframeRef.value.contentWindow.postMessage(
+                JSON.stringify({
+                    event: "command",
+                    func: func,
+                    args: args,
+                }),
+                "*"
+            );
+        } catch (e) {}
+    }
+};
 
 const togglePlay = () => {
+    if (computedYoutubeId.value) {
+        if (isPlaying.value) {
+            sendYTCommand("pauseVideo");
+            isPlaying.value = false;
+        } else {
+            sendYTCommand("playVideo");
+            isPlaying.value = true;
+        }
+        return;
+    }
+
     if (!videoRef.value) return;
     if (videoRef.value.paused) {
         videoRef.value.play();
@@ -74,6 +113,7 @@ const onPause = () => {
 const onTimeUpdate = () => {
     if (videoRef.value) {
         currentTime.value = videoRef.value.currentTime;
+        emit("timeupdate", currentTime.value);
     }
 };
 
@@ -84,36 +124,49 @@ const onLoadedMetadata = () => {
 };
 
 const seek = (seconds) => {
-    if (videoRef.value) {
-        videoRef.value.currentTime = Math.max(
-            0,
-            Math.min(seconds, duration.value)
-        );
+    const target = Math.max(0, Math.min(seconds, duration.value || 999999));
+    currentTime.value = target;
+    emit("timeupdate", target);
+
+    if (computedYoutubeId.value) {
+        sendYTCommand("seekTo", [target, true]);
+    } else if (videoRef.value) {
+        videoRef.value.currentTime = target;
     }
 };
 
 const seekRelative = (delta) => {
-    if (videoRef.value) {
-        seek(videoRef.value.currentTime + delta);
-    }
+    seek(currentTime.value + delta);
 };
 
 const toggleMute = () => {
-    if (!videoRef.value) return;
-    videoRef.value.muted = !videoRef.value.muted;
-    isMuted.value = videoRef.value.muted;
+    isMuted.value = !isMuted.value;
+    if (computedYoutubeId.value) {
+        sendYTCommand(isMuted.value ? "mute" : "unMute");
+    } else if (videoRef.value) {
+        videoRef.value.muted = isMuted.value;
+    }
 };
 
 const setVolume = (val) => {
-    if (!videoRef.value) return;
     volume.value = parseFloat(val);
-    videoRef.value.volume = volume.value;
     isMuted.value = volume.value === 0;
+
+    if (computedYoutubeId.value) {
+        sendYTCommand("setVolume", [volume.value * 100]);
+        if (volume.value === 0) sendYTCommand("mute");
+        else sendYTCommand("unMute");
+    } else if (videoRef.value) {
+        videoRef.value.volume = volume.value;
+        videoRef.value.muted = isMuted.value;
+    }
 };
 
 const setPlaybackRate = (rate) => {
     playbackRate.value = rate;
-    if (videoRef.value) {
+    if (computedYoutubeId.value) {
+        sendYTCommand("setPlaybackRate", [rate]);
+    } else if (videoRef.value) {
         videoRef.value.playbackRate = rate;
     }
 };
@@ -145,8 +198,49 @@ const handleMouseMove = () => {
     }
 };
 
+const handleYTMessage = (event) => {
+    if (!event.data) return;
+    let data = event.data;
+    if (typeof data === "string") {
+        try {
+            data = JSON.parse(data);
+        } catch (e) {
+            return;
+        }
+    }
+    if (data && (data.event === "infoDelivery" || data.info)) {
+        const info = data.info || data;
+        if (info && typeof info.currentTime === "number") {
+            currentTime.value = info.currentTime;
+            emit("timeupdate", currentTime.value);
+        }
+        if (info && typeof info.duration === "number" && info.duration > 0) {
+            duration.value = info.duration;
+        }
+        if (info && typeof info.playerState === "number") {
+            if (info.playerState === 1) isPlaying.value = true;
+            else if (info.playerState === 2 || info.playerState === 0) isPlaying.value = false;
+        }
+    }
+};
+
 onMounted(() => {
     document.addEventListener("fullscreenchange", handleFullscreenChange);
+    window.addEventListener("message", handleYTMessage);
+
+    ytPollTimer = setInterval(() => {
+        if (computedYoutubeId.value && ytIframeRef.value) {
+            try {
+                ytIframeRef.value.contentWindow.postMessage(
+                    JSON.stringify({ event: "listening", id: 1, channel: "widget" }),
+                    "*"
+                );
+                sendYTCommand("getCurrentTime");
+                sendYTCommand("getDuration");
+            } catch (e) {}
+        }
+    }, 350);
+
     if (props.autoplay && videoRef.value) {
         videoRef.value.play().catch(() => {});
     }
@@ -154,16 +248,27 @@ onMounted(() => {
 
 onUnmounted(() => {
     document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    window.removeEventListener("message", handleYTMessage);
+    clearInterval(ytPollTimer);
     clearTimeout(controlsTimeout);
 });
 
 watch(
-    () => props.src,
+    () => [props.src, props.youtubeId],
     () => {
         currentTime.value = 0;
         isPlaying.value = false;
     }
 );
+
+defineExpose({
+    seek,
+    seekRelative,
+    togglePlay,
+    currentTime,
+    duration,
+    isPlaying,
+});
 </script>
 
 <template>
@@ -173,26 +278,44 @@ watch(
         @mousemove="handleMouseMove"
         @mouseleave="showControls = false"
     >
-        <!-- HTML5 Video Tag (Native Controls Hidden) -->
-        <video
-            ref="videoRef"
-            :src="src"
-            :poster="poster"
-            class="w-full h-full object-contain cursor-pointer"
-            @click="togglePlay"
-            @play="onPlay"
-            @pause="onPause"
-            @timeupdate="onTimeUpdate"
-            @loadedmetadata="onLoadedMetadata"
-            @ended="isPlaying = false"
-            playsinline
-        ></video>
+        <!-- YouTube iFrame Background (Native controls disabled) -->
+        <template v-if="computedYoutubeId">
+            <iframe
+                ref="ytIframeRef"
+                :id="iframeId"
+                :src="`https://www.youtube.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&autoplay=${autoplay ? 1 : 0}`"
+                class="w-full h-full border-0 pointer-events-none scale-[1.02]"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            ></iframe>
+            <!-- Transparent Click Capture Layer over YouTube iframe -->
+            <div
+                class="absolute inset-0 z-10 cursor-pointer"
+                @click="togglePlay"
+            ></div>
+        </template>
+
+        <!-- HTML5 Native Video Tag fallback for MP4 -->
+        <template v-else>
+            <video
+                ref="videoRef"
+                :src="src"
+                :poster="poster"
+                class="w-full h-full object-contain cursor-pointer"
+                @click="togglePlay"
+                @play="onPlay"
+                @pause="onPause"
+                @timeupdate="onTimeUpdate"
+                @loadedmetadata="onLoadedMetadata"
+                @ended="$emit('ended')"
+                playsinline
+            ></video>
+        </template>
 
         <!-- Big Center Play Button Overlay (Visible when paused) -->
         <div
             v-if="!isPlaying"
             @click="togglePlay"
-            class="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-opacity cursor-pointer z-10"
+            class="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-opacity cursor-pointer z-15"
         >
             <button
                 class="w-16 h-16 rounded-full bg-blue-600/90 hover:bg-blue-500 text-white flex items-center justify-center shadow-2xl shadow-blue-500/50 transform transition hover:scale-110 active:scale-95 cursor-pointer border border-blue-400/40"
