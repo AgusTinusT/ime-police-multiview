@@ -109,22 +109,25 @@ class ProcessVideoClipJob implements ShouldQueue
             } elseif ($formatOption === 'MP4 360p') {
                 array_push(
                     $command,
-                    '-f', 'bestvideo[ext=mp4][height<=360]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=360]+bestaudio/best[height<=360]/best',
+                    '-f', 'bv*[height<=360]+ba/b[height<=360]/best',
                     '--merge-output-format', 'mp4',
+                    '--force-keyframes-at-cuts',
                     '--postprocessor-args', 'ffmpeg:-movflags +faststart'
                 );
             } elseif ($formatOption === 'MP4 720p') {
                 array_push(
                     $command,
-                    '-f', 'bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=720]+bestaudio/best[height<=720]/best',
+                    '-f', 'bv*[height<=720]+ba/b[height<=720]/best',
                     '--merge-output-format', 'mp4',
+                    '--force-keyframes-at-cuts',
                     '--postprocessor-args', 'ffmpeg:-movflags +faststart'
                 );
             } else { // Default MP4 1080p
                 array_push(
                     $command,
-                    '-f', 'bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=1080]+bestaudio/best[height<=1080]/best',
+                    '-f', 'bv*[height<=1080]+ba/b[height<=1080]/best',
                     '--merge-output-format', 'mp4',
+                    '--force-keyframes-at-cuts',
                     '--postprocessor-args', 'ffmpeg:-movflags +faststart'
                 );
             }
