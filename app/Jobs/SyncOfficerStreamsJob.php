@@ -15,12 +15,15 @@ class SyncOfficerStreamsJob implements ShouldQueue
 {
     use Queueable;
 
+    public int $timeout = 180; // 3 minutes timeout for stream syncing
+    public string $queue = 'sync';
+
     /**
      * Create a new job instance.
      */
     public function __construct()
     {
-        //
+        $this->onQueue('sync');
     }
 
     /**
