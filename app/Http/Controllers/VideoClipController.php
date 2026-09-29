@@ -103,7 +103,7 @@ class VideoClipController extends Controller
         ]);
 
         // Dispatch processing job asynchronously to Supervisor Queue Worker
-        ProcessVideoClipJob::dispatch($clip);
+        ProcessVideoClipJob::dispatch($clip)->onQueue('clipper');
 
         return response()->json([
             'message' => 'Proses pemotongan video telah dimasukkan ke dalam antrean.',

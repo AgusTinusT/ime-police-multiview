@@ -15,12 +15,14 @@ class ProcessVideoClipJob implements ShouldQueue
     use Queueable;
 
     public int $timeout = 600; // 10 minutes timeout for execution
+    public string $queue = 'clipper';
 
     /**
      * Create a new job instance.
      */
     public function __construct(public VideoClip $videoClip)
     {
+        $this->onQueue('clipper');
     }
 
     /**
