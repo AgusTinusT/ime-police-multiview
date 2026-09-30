@@ -343,7 +343,7 @@
                                                 {{ fmt.badge }}
                                             </span>
                                         </div>
-                                        <span class="text-[10px] text-slate-400 block mt-1 leading-tight truncate">
+                                        <span class="text-[10px] text-slate-400 block mt-1 leading-tight">
                                             {{ fmt.desc }}
                                         </span>
                                     </div>
@@ -547,8 +547,8 @@ const sampleVideos = [
 ];
 
 const formatOptions = [
-    { value: 'MP4 720p', name: 'MP4 720p HD', desc: 'Rekomendasi Mobile & CapCut', badge: 'Populer' },
-    { value: 'MP4 1080p', name: 'MP4 1080p FHD', desc: 'Kualitas Maksimal (Desktop)' },
+    { value: 'MP4 720p', name: 'MP4 720p HD', desc: 'Rekomendasi CapCut & Mobile', badge: 'Populer' },
+    { value: 'MP4 1080p', name: 'MP4 1080p FHD', desc: 'Kualitas Tinggi (Desktop)' },
     { value: 'MP4 360p', name: 'MP4 360p SD', desc: 'Sangat Hemat Kuota Data' },
     { value: 'MP3 Audio', name: 'MP3 Audio', desc: 'Ekstrak Suara / Soundbite' },
 ];
