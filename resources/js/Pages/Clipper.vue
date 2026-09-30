@@ -637,6 +637,7 @@ const isLoadingClips = ref(false);
 const isCheckingUrl = ref(false);
 const urlCheckResult = ref(null);
 let checkUrlDebounceTimer = null;
+let currentCheckRequestId = 0;
 const submitCooldownSec = ref(0);
 let cooldownTimer = null;
 const formError = ref('');
@@ -649,11 +650,13 @@ let pollTimer = null;
 let ytTimeTimer = null;
 
 async function checkYoutubeUrl(urlToTest) {
-    const targetUrl = urlToTest || form.value.youtube_url;
-    if (!targetUrl || targetUrl.trim().length < 10) {
+    const targetUrl = (urlToTest || form.value.youtube_url || '').trim();
+    if (!targetUrl || targetUrl.length < 10) {
         urlCheckResult.value = null;
         return;
     }
+
+    const requestId = ++currentCheckRequestId;
 
     if (targetUrl.includes('/live/')) {
         urlCheckResult.value = {
@@ -670,9 +673,14 @@ async function checkYoutubeUrl(urlToTest) {
     isCheckingUrl.value = true;
     try {
         const response = await axios.post('/api/v1/clips/check-url', { url: targetUrl });
+        // Guard against out-of-order asynchronous responses
+        if (requestId !== currentCheckRequestId || targetUrl !== form.value.youtube_url?.trim()) {
+            return;
+        }
+
         if (response.data && response.data.valid) {
             urlCheckResult.value = response.data;
-            if (!form.value.title && response.data.title) {
+            if (response.data.title) {
                 form.value.title = response.data.title;
             }
         } else {
@@ -682,12 +690,17 @@ async function checkYoutubeUrl(urlToTest) {
             };
         }
     } catch (err) {
+        if (requestId !== currentCheckRequestId || targetUrl !== form.value.youtube_url?.trim()) {
+            return;
+        }
         urlCheckResult.value = {
             valid: false,
             message: err.response?.data?.message || 'Gagal memvalidasi link YouTube.',
         };
     } finally {
-        isCheckingUrl.value = false;
+        if (requestId === currentCheckRequestId) {
+            isCheckingUrl.value = false;
+        }
     }
 }
 
@@ -705,6 +718,9 @@ function startSubmitCooldown(seconds = 5) {
 }
 
 const videoTitle = computed(() => {
+    if (urlCheckResult.value?.title) {
+        return urlCheckResult.value.title;
+    }
     if (activeVideoId.value) {
         return `YouTube Video Stream [${activeVideoId.value}]`;
     }
@@ -712,10 +728,16 @@ const videoTitle = computed(() => {
 });
 
 const videoChannel = computed(() => {
+    if (urlCheckResult.value?.channel_name) {
+        return urlCheckResult.value.channel_name;
+    }
     return activeVideoId.value ? 'YouTube Live Embed' : 'Local Reference';
 });
 
 const videoThumb = computed(() => {
+    if (urlCheckResult.value?.thumbnail_url) {
+        return urlCheckResult.value.thumbnail_url;
+    }
     if (activeVideoId.value) {
         return `https://img.youtube.com/vi/${activeVideoId.value}/hqdefault.jpg`;
     }
@@ -783,15 +805,17 @@ watch(activeVideoId, (newId) => {
     }
 });
 
-watch(() => form.value.youtube_url, (newUrl) => {
+watch(() => form.value.youtube_url, (newUrl, oldUrl) => {
     if (checkUrlDebounceTimer) clearTimeout(checkUrlDebounceTimer);
-    if (!newUrl || newUrl.trim().length < 10) {
+    if (newUrl !== oldUrl) {
         urlCheckResult.value = null;
+    }
+    if (!newUrl || newUrl.trim().length < 10) {
         return;
     }
     checkUrlDebounceTimer = setTimeout(() => {
         checkYoutubeUrl(newUrl);
-    }, 600);
+    }, 400);
 }, { immediate: true });
 
 function parseTimeToSeconds(val) {
