@@ -716,8 +716,27 @@ function captureEndTime() {
 }
 
 function setPresetDuration(secondsOffset) {
+    formError.value = '';
     const startSecs = parseTimeToSeconds(form.value.start_time);
-    form.value.end_time = formatSecondsToTimestamp(startSecs + secondsOffset);
+    let targetEndSecs = startSecs + secondsOffset;
+
+    if (videoDurationSec.value && videoDurationSec.value > 0) {
+        if (startSecs >= videoDurationSec.value) {
+            formError.value = `Waktu mulai (${formatSecondsToTimestamp(startSecs)}) sudah melebihi durasi total video (${formatSecondsToTimestamp(videoDurationSec.value)})!`;
+            return;
+        }
+
+        if (targetEndSecs > videoDurationSec.value) {
+            targetEndSecs = videoDurationSec.value;
+            successMessage.value = `Durasi otomatis disesuaikan hingga akhir video (${formatSecondsToTimestamp(videoDurationSec.value)}) karena total durasi video kurang dari +${Math.floor(secondsOffset / 60)}m.`;
+        } else {
+            successMessage.value = '';
+        }
+    } else {
+        successMessage.value = '';
+    }
+
+    form.value.end_time = formatSecondsToTimestamp(targetEndSecs);
 }
 
 function onHtml5TimeUpdate() {
@@ -736,6 +755,9 @@ function setSampleVideo(idx) {
     form.value.title = sample.title;
     form.value.start_time = '00:00:10';
     form.value.end_time = '00:00:40';
+    if (sample.durationSec) {
+        videoDurationSec.value = sample.durationSec;
+    }
 }
 
 function loadVideoFromInput() {
