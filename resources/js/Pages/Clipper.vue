@@ -509,18 +509,18 @@ const props = defineProps({
 // Demo Sample Streams
 const sampleVideos = [
     {
-        shortLabel: 'Big Buck Bunny (Demo)',
-        title: 'Big Buck Bunny (Official 4K Reference Video)',
-        youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        channel: 'Blender Animation Foundation',
-        durationSec: 214,
+        shortLabel: 'Motionlife 1800 Slot',
+        title: 'Motionlife Roleplay Upgrade 1800 Slot! Menuju 2000 kah.... #motionliferp',
+        youtubeUrl: 'https://www.youtube.com/watch?v=3UfzPC8I5Gk',
+        channel: 'Motionlife Roleplay',
+        durationSec: 3600,
     },
     {
-        shortLabel: 'LSPD Highway Patrol',
-        title: 'LSPD Tactical Code 3 Highway Pursuit Clip',
-        youtubeUrl: 'https://www.youtube.com/watch?v=jNQXAC9IVRw',
-        channel: 'LSPD TAC Monitoring',
-        durationSec: 360,
+        shortLabel: 'Police Duty Clipper',
+        title: 'Feature potong youtube police duty untuk clipper #imepolice',
+        youtubeUrl: 'https://www.youtube.com/watch?v=YBXh-xEJVZg',
+        channel: 'IME Police Duty',
+        durationSec: 600,
     },
 ];
 
@@ -797,7 +797,7 @@ onMounted(() => {
     if (props.initialUrl) {
         form.value.youtube_url = props.initialUrl;
     } else {
-        form.value.youtube_url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+        form.value.youtube_url = 'https://www.youtube.com/watch?v=3UfzPC8I5Gk';
     }
     initYTMessageListener();
     if (activeVideoId.value) {
