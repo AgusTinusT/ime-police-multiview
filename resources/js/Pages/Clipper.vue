@@ -157,45 +157,73 @@
                             />
 
                             <!-- Live Time Controls & Marker Capture Bar -->
-                            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
-                                
-                                <div class="flex items-center space-x-1.5 font-mono">
-                                    <span class="text-slate-400 text-[11px]">Waktu Pemutar:</span>
-                                    <span class="font-bold text-white bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-md font-mono">
-                                        {{ formatSecondsToTimestamp(playerCurrentSeconds) }}
-                                    </span>
+                            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                                <!-- Top Control Row -->
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <div class="flex items-center space-x-1.5 font-mono">
+                                        <span class="text-slate-400 text-[11px]">Waktu Pemutar:</span>
+                                        <span class="font-bold text-white bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-md font-mono">
+                                            {{ formatSecondsToTimestamp(playerCurrentSeconds) }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Seek Controls -->
+                                    <div class="flex items-center gap-1 font-mono">
+                                        <button @click="seekPlayer(-30)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer" title="Mundur 30 detik">
+                                            -30s
+                                        </button>
+                                        <button @click="seekPlayer(-10)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer" title="Mundur 10 detik">
+                                            -10s
+                                        </button>
+                                        <button @click="seekPlayer(10)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer" title="Maju 10 detik">
+                                            +10s
+                                        </button>
+                                        <button @click="seekPlayer(30)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer" title="Maju 30 detik">
+                                            +30s
+                                        </button>
+                                    </div>
+
+                                    <!-- Quick Capture Timestamp Triggers -->
+                                    <div class="flex items-center gap-1.5">
+                                        <button
+                                            @click="captureStartTime"
+                                            class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition flex items-center gap-1 font-mono cursor-pointer shadow-sm"
+                                            title="Tentukan Waktu Mulai (IN) dari pemutar video"
+                                        >
+                                            <span>Set Start (IN)</span>
+                                        </button>
+                                        <button
+                                            @click="captureEndTime"
+                                            class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition flex items-center gap-1 font-mono cursor-pointer shadow-sm"
+                                            title="Tentukan Waktu Selesai (OUT) dari pemutar video"
+                                        >
+                                            <span>Set End (OUT)</span>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <!-- Seek Controls -->
-                                <div class="flex items-center gap-1 font-mono">
-                                    <button @click="seekPlayer(-30)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer">
-                                        -30s
-                                    </button>
-                                    <button @click="seekPlayer(-10)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer">
-                                        -10s
-                                    </button>
-                                    <button @click="seekPlayer(10)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer">
-                                        +10s
-                                    </button>
-                                    <button @click="seekPlayer(30)" class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition text-[11px] cursor-pointer">
-                                        +30s
-                                    </button>
-                                </div>
-
-                                <!-- Quick Capture Timestamp Triggers -->
-                                <div class="flex items-center gap-1.5">
-                                    <button
-                                        @click="captureStartTime"
-                                        class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition flex items-center gap-1 font-mono cursor-pointer"
-                                    >
-                                        <span>Set Start (IN)</span>
-                                    </button>
-                                    <button
-                                        @click="captureEndTime"
-                                        class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition flex items-center gap-1 font-mono cursor-pointer"
-                                    >
-                                        <span>Set End (OUT)</span>
-                                    </button>
+                                <!-- Bottom Row: Quick Duration Presets (+1m, +3m, +5m, +10m) -->
+                                <div class="pt-2 border-t border-slate-900 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
+                                    <div class="flex items-center gap-1.5 text-slate-400">
+                                        <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                        <span>Durasi Cepat dari Waktu Mulai (IN):</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <button @click="setPresetDuration(60)" class="px-2.5 py-1 rounded-md bg-slate-900 hover:bg-blue-900/40 hover:border-blue-700 text-slate-300 hover:text-blue-300 border border-slate-800 text-[11px] font-bold transition cursor-pointer">
+                                            +1m
+                                        </button>
+                                        <button @click="setPresetDuration(180)" class="px-2.5 py-1 rounded-md bg-slate-900 hover:bg-blue-900/40 hover:border-blue-700 text-slate-300 hover:text-blue-300 border border-slate-800 text-[11px] font-bold transition cursor-pointer">
+                                            +3m
+                                        </button>
+                                        <button @click="setPresetDuration(300)" class="px-2.5 py-1 rounded-md bg-slate-900 hover:bg-blue-900/40 hover:border-blue-700 text-slate-300 hover:text-blue-300 border border-slate-800 text-[11px] font-bold transition cursor-pointer">
+                                            +5m
+                                        </button>
+                                        <button @click="setPresetDuration(600)" class="px-2.5 py-1 rounded-md bg-slate-900 hover:bg-blue-900/40 hover:border-blue-700 text-slate-300 hover:text-blue-300 border border-slate-800 text-[11px] font-bold transition cursor-pointer">
+                                            +10m
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -265,22 +293,6 @@
                                     class="w-full bg-slate-900 border border-slate-800 rounded-md px-2.5 py-2 text-xs font-mono text-white text-center focus:border-blue-500 font-bold"
                                 />
                                 <span class="text-[10px] text-slate-500 block mt-0.5">Format: HH:MM:SS</span>
-                            </div>
-                        </div>
-
-                        <!-- Preset Duration Quick Helpers -->
-                        <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-0.5">
-                            <span>Durasi Cepat dari Mulai:</span>
-                            <div class="flex items-center gap-1.5">
-                                <button @click="setPresetDuration(60)" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[10px]">
-                                    +1m
-                                </button>
-                                <button @click="setPresetDuration(180)" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[10px]">
-                                    +3m
-                                </button>
-                                <button @click="setPresetDuration(300)" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[10px]">
-                                    +5m
-                                </button>
                             </div>
                         </div>
 
