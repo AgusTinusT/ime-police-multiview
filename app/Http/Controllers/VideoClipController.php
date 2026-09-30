@@ -226,7 +226,7 @@ class VideoClipController extends Controller
         $telemetryMap = $scraper->getBatchStreamsTelemetry([$videoId]);
         $telemetry = $telemetryMap[$videoId] ?? null;
 
-        $isLive = $this->isLiveStream($videoId, $scraper);
+        $isLive = $this->isLiveStream($videoId, $scraper, $rawUrl);
         $videoType = $isLive ? 'LIVE' : 'VOD';
         $typeLabel = $isLive ? '🔴 Siaran Langsung (LIVE Stream)' : '🎬 Video Rekaman (VOD)';
 
@@ -273,39 +273,53 @@ class VideoClipController extends Controller
     /**
      * Bulletproof check if a YouTube Video ID is an active live stream.
      */
-    private function isLiveStream(string $videoId, YouTubeScraperService $scraper): bool
+    private function isLiveStream(string $videoId, YouTubeScraperService $scraper, string $rawUrl = ''): bool
     {
-        // Tier 1: YouTubeScraperService Telemetry Check
-        $telemetryMap = $scraper->getBatchStreamsTelemetry([$videoId]);
-        $telemetry = $telemetryMap[$videoId] ?? null;
-        if ($telemetry && ($telemetry['status'] ?? '') === 'LIVE') {
+        // Check 0: URL format explicitly /live/
+        if (!empty($rawUrl) && str_contains($rawUrl, '/live/')) {
             return true;
         }
 
-        // Tier 2: Direct HTTP Scraping with Browser Headers
+        // Check 1: Direct HTML Scraping with Browser Headers
         try {
             $url = 'https://www.youtube.com/watch?v=' . $videoId;
-            $res = Http::withHeaders(YouTubeScraperService::getBrowserHeaders())->timeout(4)->get($url);
+            $res = Http::withHeaders(YouTubeScraperService::getBrowserHeaders())->timeout(5)->get($url);
             if ($res->successful()) {
                 $html = $res->body();
-                $hasLive = str_contains($html, '"isLive":true') || str_contains($html, '"isLive": true') || str_contains($html, 'liveBroadcastDetails');
+                $hasLiveMarker = str_contains($html, '"isLive":true') 
+                    || str_contains($html, '"isLive": true') 
+                    || str_contains($html, 'liveBroadcastDetails')
+                    || str_contains($html, 'yt_live_broadcast')
+                    || str_contains($html, 'hlsManifestUrl');
+                
                 $isOffline = str_contains($html, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($html, '"status": "LIVE_STREAM_OFFLINE"');
                 $isUpcoming = str_contains($html, '"isUpcoming":true') || str_contains($html, '"status":"UPCOMING"');
 
-                if ($hasLive && !$isOffline && !$isUpcoming) {
+                if ($hasLiveMarker && !$isOffline && !$isUpcoming) {
                     return true;
                 }
             }
         } catch (\Throwable $e) {
-            // Fallthrough to Tier 3
+            // Silently fallback
         }
 
-        // Tier 3: yt-dlp CLI --dump-json fallback (Bulletproof on VPS Datacenter IPs)
+        // Check 2: YouTubeScraperService Telemetry Check
+        try {
+            $telemetryMap = $scraper->getBatchStreamsTelemetry([$videoId]);
+            $telemetry = $telemetryMap[$videoId] ?? null;
+            if ($telemetry && ($telemetry['status'] ?? '') === 'LIVE') {
+                return true;
+            }
+        } catch (\Throwable $e) {
+            // Silently fallback
+        }
+
+        // Check 3: yt-dlp CLI --dump-json fallback (Bulletproof on VPS Datacenter IPs)
         try {
             $binDir = storage_path('app/bin');
             $ytDlpBin = file_exists($binDir . '/yt-dlp.exe') 
                 ? $binDir . '/yt-dlp.exe' 
-                : (file_exists($binDir . '/yt-dlp') ? $binDir . '/yt-dlp' : 'yt-dlp');
+                : (file_exists($binDir . '/yt-dlp') ? $binDir . '/yt-dlp' : (file_exists('/usr/local/bin/yt-dlp') ? '/usr/local/bin/yt-dlp' : 'yt-dlp'));
 
             $process = new \Symfony\Component\Process\Process([
                 $ytDlpBin,
@@ -314,7 +328,7 @@ class VideoClipController extends Controller
                 '--skip-download',
                 'https://www.youtube.com/watch?v=' . $videoId
             ]);
-            $process->setTimeout(5);
+            $process->setTimeout(6);
             $process->run();
             if ($process->isSuccessful()) {
                 $json = json_decode($process->getOutput(), true);

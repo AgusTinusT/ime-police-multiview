@@ -655,6 +655,18 @@ async function checkYoutubeUrl(urlToTest) {
         return;
     }
 
+    if (targetUrl.includes('/live/')) {
+        urlCheckResult.value = {
+            valid: true,
+            is_live: true,
+            can_trim: false,
+            type_label: '🔴 Siaran Langsung (LIVE Stream)',
+            channel_name: 'YouTube Live',
+            message: '⚠️ Siaran Langsung (LIVE Stream) belum didukung. Fitur Clipper saat ini khusus untuk Video VOD / Rekaman YouTube.'
+        };
+        return;
+    }
+
     isCheckingUrl.value = true;
     try {
         const response = await axios.post('/api/v1/clips/check-url', { url: targetUrl });
