@@ -96,9 +96,7 @@ class VideoClipController extends Controller
 
         if ($videoId) {
             $scraper = app(YouTubeScraperService::class);
-            $telemetryMap = $scraper->getBatchStreamsTelemetry([$videoId]);
-            $telemetry = $telemetryMap[$videoId] ?? null;
-            if ($telemetry && ($telemetry['status'] ?? '') === 'LIVE') {
+            if ($this->isLiveStream($videoId, $scraper)) {
                 throw ValidationException::withMessages([
                     'youtube_url' => 'Fitur Clipper saat ini belum mendukung pemotongan Siaran Langsung (LIVE Stream) yang sedang berlangsung. Silakan gunakan Video VOD / Rekaman YouTube.'
                 ]);
@@ -224,11 +222,11 @@ class VideoClipController extends Controller
 
         $cleanUrl = 'https://www.youtube.com/watch?v=' . $videoId;
 
-        // Fetch live telemetry status via YouTubeScraperService
+        // Fetch live telemetry status via multi-tier isLiveStream check
         $telemetryMap = $scraper->getBatchStreamsTelemetry([$videoId]);
         $telemetry = $telemetryMap[$videoId] ?? null;
 
-        $isLive = ($telemetry && ($telemetry['status'] ?? '') === 'LIVE');
+        $isLive = $this->isLiveStream($videoId, $scraper);
         $videoType = $isLive ? 'LIVE' : 'VOD';
         $typeLabel = $isLive ? '🔴 Siaran Langsung (LIVE Stream)' : '🎬 Video Rekaman (VOD)';
 
@@ -270,6 +268,65 @@ class VideoClipController extends Controller
                 ? '⚠️ Siaran Langsung (LIVE Stream) belum didukung. Fitur Clipper saat ini khusus untuk Video VOD / Rekaman YouTube. Silakan tunggu hingga siaran selesai.'
                 : 'Terseteksi: Link ini adalah Video Rekaman (VOD). Pemotongan presisi siap diproses.',
         ]);
+    }
+
+    /**
+     * Bulletproof check if a YouTube Video ID is an active live stream.
+     */
+    private function isLiveStream(string $videoId, YouTubeScraperService $scraper): bool
+    {
+        // Tier 1: YouTubeScraperService Telemetry Check
+        $telemetryMap = $scraper->getBatchStreamsTelemetry([$videoId]);
+        $telemetry = $telemetryMap[$videoId] ?? null;
+        if ($telemetry && ($telemetry['status'] ?? '') === 'LIVE') {
+            return true;
+        }
+
+        // Tier 2: Direct HTTP Scraping with Browser Headers
+        try {
+            $url = 'https://www.youtube.com/watch?v=' . $videoId;
+            $res = Http::withHeaders(YouTubeScraperService::getBrowserHeaders())->timeout(4)->get($url);
+            if ($res->successful()) {
+                $html = $res->body();
+                $hasLive = str_contains($html, '"isLive":true') || str_contains($html, '"isLive": true') || str_contains($html, 'liveBroadcastDetails');
+                $isOffline = str_contains($html, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($html, '"status": "LIVE_STREAM_OFFLINE"');
+                $isUpcoming = str_contains($html, '"isUpcoming":true') || str_contains($html, '"status":"UPCOMING"');
+
+                if ($hasLive && !$isOffline && !$isUpcoming) {
+                    return true;
+                }
+            }
+        } catch (\Throwable $e) {
+            // Fallthrough to Tier 3
+        }
+
+        // Tier 3: yt-dlp CLI --dump-json fallback (Bulletproof on VPS Datacenter IPs)
+        try {
+            $binDir = storage_path('app/bin');
+            $ytDlpBin = file_exists($binDir . '/yt-dlp.exe') 
+                ? $binDir . '/yt-dlp.exe' 
+                : (file_exists($binDir . '/yt-dlp') ? $binDir . '/yt-dlp' : 'yt-dlp');
+
+            $process = new \Symfony\Component\Process\Process([
+                $ytDlpBin,
+                '--dump-json',
+                '--no-warnings',
+                '--skip-download',
+                'https://www.youtube.com/watch?v=' . $videoId
+            ]);
+            $process->setTimeout(5);
+            $process->run();
+            if ($process->isSuccessful()) {
+                $json = json_decode($process->getOutput(), true);
+                if ($json && (!empty($json['is_live']) || ($json['live_status'] ?? '') === 'is_live')) {
+                    return true;
+                }
+            }
+        } catch (\Throwable $e) {
+            // Silently fallback
+        }
+
+        return false;
     }
 
     /**

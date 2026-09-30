@@ -313,10 +313,10 @@ class YouTubeScraperService
                 if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
                     $body = $res->body();
                     // MUST be strictly isLive:true (isLiveContent:true alone indicates a past/ended stream VOD)
-                    $isLive = str_contains($body, '"isLive":true');
-                    $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, 'STREAM_OFFLINE');
-                    $isUpcoming = str_contains($body, '"isUpcoming":true') || str_contains($body, '"status":"UPCOMING"');
-                    $isPlayable = str_contains($body, '"playabilityStatus":{"status":"OK"');
+                    $isLive = str_contains($body, '"isLive":true') || str_contains($body, '"isLive": true') || str_contains($body, 'liveBroadcastDetails');
+                    $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, '"status": "LIVE_STREAM_OFFLINE"');
+                    $isUpcoming = str_contains($body, '"isUpcoming":true') || str_contains($body, '"isUpcoming": true') || str_contains($body, '"status":"UPCOMING"');
+                    $isPlayable = !str_contains($body, '"playabilityStatus":{"status":"UNPLAYABLE"');
                     $viewersCount = $this->extractViewersCount($body);
 
                     $isLiveNow = ($isLive && $isPlayable && !$isOffline && !$isUpcoming);
