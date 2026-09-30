@@ -525,10 +525,10 @@ const sampleVideos = [
 ];
 
 const formatOptions = [
-    { value: 'MP4 1080p', label: 'MP4 (1080p FHD)' },
-    { value: 'MP4 720p', label: 'MP4 (720p HD)' },
-    { value: 'MP4 360p', label: 'MP4 (360p SD)' },
-    { value: 'MP3 Audio', label: 'MP3 (320kbps Audio)' },
+    { value: 'MP4 720p', label: 'MP4 720p HD (Rekomendasi Mobile / CapCut - Cepat & Ringan)' },
+    { value: 'MP4 1080p', label: 'MP4 1080p Full HD (Kualitas Maksimal / Desktop)' },
+    { value: 'MP4 360p', label: 'MP4 360p SD (Sangat Hemat Kuota Data)' },
+    { value: 'MP3 Audio', label: 'MP3 Audio (Suara / Soundbite Saja)' },
 ];
 
 // Backend Form State
@@ -537,7 +537,7 @@ const form = ref({
     title: '',
     start_time: '00:00:10',
     end_time: '00:00:40',
-    format: 'MP4 1080p',
+    format: 'MP4 720p',
 });
 
 const isSubmitting = ref(false);
