@@ -102,6 +102,7 @@ Route::middleware(['auth', 'can_trim'])->group(function () {
 
     Route::prefix('api/v1/clips')->group(function () {
         Route::get('/', [VideoClipController::class, 'index']);
+        Route::post('/check-url', [VideoClipController::class, 'checkUrl']);
         Route::post('/trim', [VideoClipController::class, 'store']);
         Route::get('/{id}/download', [VideoClipController::class, 'download'])->name('clips.download');
         Route::delete('/{id}', [VideoClipController::class, 'destroy']);

@@ -95,46 +95,104 @@
             <!-- INTERACTIVE TRIMMER WORKSPACE -->
             <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-7 space-y-6">
                 
-                <!-- Video Details Header Bar -->
-                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-5 border-b border-slate-800">
-                    <div class="flex items-start space-x-4">
-                        <div class="relative w-20 h-14 sm:w-28 sm:h-16 rounded-md overflow-hidden bg-black shrink-0 border border-slate-800">
-                            <img
-                                :src="videoThumb"
-                                alt="Video thumbnail"
-                                class="w-full h-full object-cover"
-                            />
-                            <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-sm bg-black/80 text-[10px] font-mono text-white font-semibold">
-                                {{ formatSecondsToTimestamp(videoDurationSec).split('.')[0] }}
-                            </span>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-950 text-blue-400 border border-slate-800 font-mono">
-                                    {{ activeVideoId ? `YOUTUBE ID: ${activeVideoId}` : 'DEMO SOURCE' }}
-                                </span>
-                                <span class="text-xs text-slate-400 font-mono">
-                                    {{ videoChannel }}
+                <!-- Video Details & Stream Status Header Bar (Redesigned) -->
+                <div class="space-y-4 pb-5 border-b border-slate-800">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <!-- Left: Thumbnail & Meta Info -->
+                        <div class="flex items-start space-x-3.5">
+                            <!-- Video Thumbnail Box -->
+                            <div class="relative w-24 h-16 sm:w-32 sm:h-20 rounded-lg overflow-hidden bg-black shrink-0 border border-slate-800 shadow-md">
+                                <img
+                                    :src="urlCheckResult?.thumbnail_url || videoThumb"
+                                    alt="Video thumbnail"
+                                    class="w-full h-full object-cover"
+                                />
+                                <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white font-semibold">
+                                    {{ formatSecondsToTimestamp(videoDurationSec).split('.')[0] }}
                                 </span>
                             </div>
-                            <h2 class="text-base sm:text-lg font-bold text-white tracking-tight mt-1 line-clamp-1 font-tactical uppercase">
-                                {{ videoTitle }}
-                            </h2>
-                            <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-3 font-mono">
-                                <span>Status Pemutar: <strong class="text-emerald-400 font-bold">{{ activeVideoId ? 'YouTube Embed Live' : 'HTML5 Demo' }}</strong></span>
-                                <span>•</span>
-                                <span>Batas Maksimal: <strong class="text-slate-200">10 Menit (600s)</strong></span>
-                            </p>
+
+                            <!-- Meta Titles & Badges -->
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2 flex-wrap text-xs">
+                                    <span class="px-2 py-0.5 rounded bg-slate-950 text-blue-400 border border-slate-800 font-mono text-[10px] font-bold uppercase">
+                                        {{ activeVideoId ? `ID: ${activeVideoId}` : 'DEMO SOURCE' }}
+                                    </span>
+                                    <span v-if="urlCheckResult?.channel_name" class="px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800 font-mono text-[10px] font-semibold">
+                                        📺 {{ urlCheckResult.channel_name }}
+                                    </span>
+                                    <span v-else class="text-xs text-slate-400 font-mono">
+                                        {{ videoChannel }}
+                                    </span>
+                                </div>
+
+                                <h2 class="text-base sm:text-lg font-bold text-white tracking-tight line-clamp-1 font-tactical uppercase">
+                                    {{ urlCheckResult?.title || videoTitle }}
+                                </h2>
+
+                                <div class="flex items-center gap-3 text-xs text-slate-400 font-mono flex-wrap">
+                                    <span>Batas Maksimal: <strong class="text-slate-200">10 Menit (600s)</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Dynamic Duration Badge -->
+                        <div class="flex items-center gap-2 font-mono shrink-0">
+                            <div class="px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs shadow-inner">
+                                <span class="text-slate-400 uppercase text-[10px] tracking-wider font-semibold block">Durasi Potongan:</span>
+                                <strong class="text-blue-400 font-bold text-sm">
+                                    {{ formattedDuration }}
+                                </strong>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Clip Range Badge -->
-                    <div class="flex items-center gap-2 sm:self-center font-mono">
-                        <div class="px-3.5 py-2 rounded-md bg-slate-950 border border-slate-800 text-xs">
-                            <span class="text-slate-400">Durasi Potongan:</span>
-                            <strong class="text-blue-400 font-bold ml-1.5">
-                                {{ formattedDuration }}
-                            </strong>
+                    <!-- Dynamic Live Stream vs VOD Status Card (Prominently Placed Above Player) -->
+                    <div v-if="urlCheckResult">
+                        <!-- LIVE STREAM WARNING CARD -->
+                        <div v-if="urlCheckResult.valid && urlCheckResult.is_live" class="p-3 rounded-lg bg-amber-950/60 border border-amber-800/80 text-amber-200 flex items-start gap-3 shadow-md">
+                            <div class="p-1.5 rounded-md bg-amber-900/80 text-amber-300 shrink-0 mt-0.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div class="space-y-0.5">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="bg-amber-500 text-slate-950 px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wider uppercase font-mono">⚠️ LIVE STREAM TIDAK DIDUKUNG</span>
+                                    <span class="font-bold text-xs text-white">{{ urlCheckResult.channel_name || 'YouTube Live' }}</span>
+                                </div>
+                                <p class="text-xs text-amber-200/90 leading-relaxed">
+                                    Fitur Clipper belum mendukung Siaran Langsung (LIVE Stream) yang sedang berjalan. Silakan gunakan Video VOD / Rekaman YouTube.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- VOD READY STATUS CARD -->
+                        <div v-else-if="urlCheckResult.valid && !urlCheckResult.is_live" class="p-3 rounded-lg bg-blue-950/40 border border-blue-800/60 text-blue-300 flex items-center justify-between gap-3 shadow-md">
+                            <div class="flex items-center gap-3">
+                                <div class="p-1.5 rounded-md bg-blue-900/60 text-blue-400 shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="space-y-0.5">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wider uppercase font-mono">🎬 VIDEO VOD</span>
+                                        <span class="font-bold text-xs text-white">{{ urlCheckResult.channel_name || 'Rekaman YouTube' }}</span>
+                                    </div>
+                                    <p class="text-xs text-blue-200/90">
+                                        Video rekaman (VOD) terseteksi. Pemotongan presisi siap diproses.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- INVALID URL WARNING CARD -->
+                        <div v-else class="p-3 rounded-lg bg-amber-950/40 border border-amber-800/60 text-amber-300 flex items-center gap-2.5 text-xs">
+                            <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <span>{{ urlCheckResult.message }}</span>
                         </div>
                     </div>
                 </div>
@@ -243,9 +301,18 @@
 
                         <!-- YouTube URL Input -->
                         <div>
-                            <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300 mb-1">
-                                URL Video YouTube <span class="text-blue-400">*</span>
-                            </label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+                                    URL Video YouTube <span class="text-blue-400">*</span>
+                                </label>
+                                <span v-if="isCheckingUrl" class="text-[10px] text-blue-400 font-mono flex items-center gap-1">
+                                    <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Memeriksa link...
+                                </span>
+                            </div>
                             <input 
                                 v-model="form.youtube_url"
                                 type="text"
@@ -354,13 +421,15 @@
                         <!-- Submit Action Button -->
                         <button
                             @click="submitTrim"
-                            :disabled="isSubmitting || !isDurationValid || submitCooldownSec > 0"
-                            class="w-full py-3 px-4 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-tactical"
+                            :disabled="isSubmitting || !isDurationValid || submitCooldownSec > 0 || (urlCheckResult && urlCheckResult.is_live)"
+                            class="w-full py-3 px-4 rounded-md text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-tactical cursor-pointer"
+                            :class="(urlCheckResult && urlCheckResult.is_live) ? 'bg-slate-800 text-slate-400' : 'bg-blue-600 hover:bg-blue-500'"
                         >
                             <svg v-if="isSubmitting" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
+                            <span v-else-if="urlCheckResult && urlCheckResult.is_live" class="font-sans font-bold">🔴 Live Stream Tidak Didukung</span>
                             <span v-else-if="submitCooldownSec > 0" class="font-mono">Tunggu Cooldown ({{ submitCooldownSec }}s)...</span>
                             <template v-else>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -565,6 +634,9 @@ const form = ref({
 
 const isSubmitting = ref(false);
 const isLoadingClips = ref(false);
+const isCheckingUrl = ref(false);
+const urlCheckResult = ref(null);
+let checkUrlDebounceTimer = null;
 const submitCooldownSec = ref(0);
 let cooldownTimer = null;
 const formError = ref('');
@@ -575,6 +647,37 @@ const videoDurationSec = ref(214);
 const mainPlayerRef = ref(null);
 let pollTimer = null;
 let ytTimeTimer = null;
+
+async function checkYoutubeUrl(urlToTest) {
+    const targetUrl = urlToTest || form.value.youtube_url;
+    if (!targetUrl || targetUrl.trim().length < 10) {
+        urlCheckResult.value = null;
+        return;
+    }
+
+    isCheckingUrl.value = true;
+    try {
+        const response = await axios.post('/api/v1/clips/check-url', { url: targetUrl });
+        if (response.data && response.data.valid) {
+            urlCheckResult.value = response.data;
+            if (!form.value.title && response.data.title) {
+                form.value.title = response.data.title;
+            }
+        } else {
+            urlCheckResult.value = {
+                valid: false,
+                message: response.data.message || 'URL YouTube tidak valid.',
+            };
+        }
+    } catch (err) {
+        urlCheckResult.value = {
+            valid: false,
+            message: err.response?.data?.message || 'Gagal memvalidasi link YouTube.',
+        };
+    } finally {
+        isCheckingUrl.value = false;
+    }
+}
 
 function startSubmitCooldown(seconds = 5) {
     submitCooldownSec.value = seconds;
@@ -667,6 +770,17 @@ watch(activeVideoId, (newId) => {
         stopYTTimePolling();
     }
 });
+
+watch(() => form.value.youtube_url, (newUrl) => {
+    if (checkUrlDebounceTimer) clearTimeout(checkUrlDebounceTimer);
+    if (!newUrl || newUrl.trim().length < 10) {
+        urlCheckResult.value = null;
+        return;
+    }
+    checkUrlDebounceTimer = setTimeout(() => {
+        checkYoutubeUrl(newUrl);
+    }, 600);
+}, { immediate: true });
 
 function parseTimeToSeconds(val) {
     if (!val) return 0;
@@ -774,6 +888,7 @@ function setSampleVideo(idx) {
     if (sample.durationSec) {
         videoDurationSec.value = sample.durationSec;
     }
+    checkYoutubeUrl(sample.youtubeUrl);
 }
 
 function loadVideoFromInput() {

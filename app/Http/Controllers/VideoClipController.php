@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ProcessVideoClipJob;
 use App\Models\VideoClip;
+use App\Services\YouTubeScraperService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -88,8 +90,20 @@ class VideoClipController extends Controller
             ]);
         }
 
-        // Clean YouTube URL
+        // Clean YouTube URL & Block active live streams
         $cleanUrl = $this->cleanYoutubeUrl($validated['youtube_url']);
+        $videoId = $this->extractVideoId($cleanUrl);
+
+        if ($videoId) {
+            $scraper = app(YouTubeScraperService::class);
+            $telemetryMap = $scraper->getBatchStreamsTelemetry([$videoId]);
+            $telemetry = $telemetryMap[$videoId] ?? null;
+            if ($telemetry && ($telemetry['status'] ?? '') === 'LIVE') {
+                throw ValidationException::withMessages([
+                    'youtube_url' => 'Fitur Clipper saat ini belum mendukung pemotongan Siaran Langsung (LIVE Stream) yang sedang berlangsung. Silakan gunakan Video VOD / Rekaman YouTube.'
+                ]);
+            }
+        }
 
         $clip = VideoClip::create([
             'user_id' => $request->user()->id,
@@ -190,14 +204,91 @@ class VideoClipController extends Controller
     }
 
     /**
+     * Validate YouTube URL and detect whether it is a VOD or Live Stream.
+     */
+    public function checkUrl(Request $request, YouTubeScraperService $scraper)
+    {
+        $validated = $request->validate([
+            'url' => 'required|string',
+        ]);
+
+        $rawUrl = trim($validated['url']);
+        $videoId = $this->extractVideoId($rawUrl);
+
+        if (!$videoId) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'URL YouTube tidak valid. Mohon masukkan URL video atau live stream yang sah.',
+            ], 422);
+        }
+
+        $cleanUrl = 'https://www.youtube.com/watch?v=' . $videoId;
+
+        // Fetch live telemetry status via YouTubeScraperService
+        $telemetryMap = $scraper->getBatchStreamsTelemetry([$videoId]);
+        $telemetry = $telemetryMap[$videoId] ?? null;
+
+        $isLive = ($telemetry && ($telemetry['status'] ?? '') === 'LIVE');
+        $videoType = $isLive ? 'LIVE' : 'VOD';
+        $typeLabel = $isLive ? '🔴 Siaran Langsung (LIVE Stream)' : '🎬 Video Rekaman (VOD)';
+
+        $title = $telemetry['title'] ?? null;
+        $author = null;
+        $thumbnailUrl = "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg";
+
+        // Fetch oEmbed metadata for accurate title and author name
+        try {
+            $oembedRes = Http::timeout(4)->get('https://www.youtube.com/oembed', [
+                'url' => $cleanUrl,
+                'format' => 'json',
+            ]);
+            if ($oembedRes->successful()) {
+                $oembedData = $oembedRes->json();
+                if (empty($title)) {
+                    $title = $oembedData['title'] ?? null;
+                }
+                $author = $oembedData['author_name'] ?? null;
+                $thumbnailUrl = $oembedData['thumbnail_url'] ?? $thumbnailUrl;
+            }
+        } catch (\Throwable $e) {
+            // Silently fallback if oEmbed fails
+        }
+
+        return response()->json([
+            'valid' => true,
+            'can_trim' => !$isLive,
+            'video_id' => $videoId,
+            'clean_url' => $cleanUrl,
+            'is_live' => $isLive,
+            'video_type' => $videoType,
+            'type_label' => $typeLabel,
+            'title' => $title ?: "YouTube Video Stream [{$videoId}]",
+            'channel_name' => $author ?: 'YouTube Channel',
+            'thumbnail_url' => $thumbnailUrl,
+            'viewers_count' => $telemetry['viewers_count'] ?? 0,
+            'message' => $isLive
+                ? '⚠️ Siaran Langsung (LIVE Stream) belum didukung. Fitur Clipper saat ini khusus untuk Video VOD / Rekaman YouTube. Silakan tunggu hingga siaran selesai.'
+                : 'Terseteksi: Link ini adalah Video Rekaman (VOD). Pemotongan presisi siap diproses.',
+        ]);
+    }
+
+    /**
+     * Helper to extract 11-character YouTube Video ID from any format.
+     */
+    private function extractVideoId(string $url): ?string
+    {
+        if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i', $url, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    /**
      * Helper to clean YouTube URL.
      */
     private function cleanYoutubeUrl(string $url): string
     {
-        // Simple extraction for standard YouTube links
-        if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $url, $matches)) {
-            return 'https://www.youtube.com/watch?v=' . $matches[1];
-        }
-        return $url;
+        $id = $this->extractVideoId($url);
+        return $id ? 'https://www.youtube.com/watch?v=' . $id : $url;
     }
 }
