@@ -318,25 +318,35 @@
                         </div>
 
                         <!-- Format Selector -->
-                        <div class="space-y-1.5">
+                        <div class="space-y-2">
                             <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300">
-                                Format & Quality Output
+                                Format & Kualitas Video
                             </label>
-                            <div class="grid grid-cols-2 gap-1.5 text-xs">
+                            <div class="grid grid-cols-2 gap-2">
                                 <label
                                     v-for="fmt in formatOptions"
                                     :key="fmt.value"
-                                    class="flex items-center space-x-2 p-2 rounded-md bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700 transition"
-                                    :class="form.format === fmt.value ? 'border-blue-500 bg-slate-950' : ''"
+                                    class="relative flex items-start space-x-2.5 p-2.5 rounded-lg bg-slate-900 border border-slate-800 cursor-pointer hover:border-slate-700 transition"
+                                    :class="form.format === fmt.value ? 'border-blue-500 bg-slate-950 ring-1 ring-blue-500/50' : ''"
                                 >
                                     <input
                                         type="radio"
                                         name="formatOption"
                                         :value="fmt.value"
                                         v-model="form.format"
-                                        class="text-blue-500 focus:ring-0 bg-slate-950 border-slate-700"
+                                        class="mt-0.5 text-blue-500 focus:ring-0 bg-slate-950 border-slate-700"
                                     />
-                                    <span class="font-medium text-white text-[11px]">{{ fmt.label }}</span>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between gap-1">
+                                            <span class="font-bold text-white text-xs leading-none">{{ fmt.name }}</span>
+                                            <span v-if="fmt.badge" class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-blue-950 text-blue-300 border border-blue-800/60 font-mono">
+                                                {{ fmt.badge }}
+                                            </span>
+                                        </div>
+                                        <span class="text-[10px] text-slate-400 block mt-1 leading-tight truncate">
+                                            {{ fmt.desc }}
+                                        </span>
+                                    </div>
                                 </label>
                             </div>
                         </div>
@@ -537,10 +547,10 @@ const sampleVideos = [
 ];
 
 const formatOptions = [
-    { value: 'MP4 720p', label: 'MP4 720p HD (Rekomendasi Mobile / CapCut - Cepat & Ringan)' },
-    { value: 'MP4 1080p', label: 'MP4 1080p Full HD (Kualitas Maksimal / Desktop)' },
-    { value: 'MP4 360p', label: 'MP4 360p SD (Sangat Hemat Kuota Data)' },
-    { value: 'MP3 Audio', label: 'MP3 Audio (Suara / Soundbite Saja)' },
+    { value: 'MP4 720p', name: 'MP4 720p HD', desc: 'Rekomendasi Mobile & CapCut', badge: 'Populer' },
+    { value: 'MP4 1080p', name: 'MP4 1080p FHD', desc: 'Kualitas Maksimal (Desktop)' },
+    { value: 'MP4 360p', name: 'MP4 360p SD', desc: 'Sangat Hemat Kuota Data' },
+    { value: 'MP3 Audio', name: 'MP3 Audio', desc: 'Ekstrak Suara / Soundbite' },
 ];
 
 // Backend Form State
