@@ -354,13 +354,14 @@
                         <!-- Submit Action Button -->
                         <button
                             @click="submitTrim"
-                            :disabled="isSubmitting || !isDurationValid"
+                            :disabled="isSubmitting || !isDurationValid || submitCooldownSec > 0"
                             class="w-full py-3 px-4 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-tactical"
                         >
                             <svg v-if="isSubmitting" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
+                            <span v-else-if="submitCooldownSec > 0" class="font-mono">Tunggu Cooldown ({{ submitCooldownSec }}s)...</span>
                             <template v-else>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L4 4m5.121 5.121L4 14.121" />
@@ -564,6 +565,8 @@ const form = ref({
 
 const isSubmitting = ref(false);
 const isLoadingClips = ref(false);
+const submitCooldownSec = ref(0);
+let cooldownTimer = null;
 const formError = ref('');
 const successMessage = ref('');
 const clipsList = ref([]);
@@ -572,6 +575,19 @@ const videoDurationSec = ref(214);
 const mainPlayerRef = ref(null);
 let pollTimer = null;
 let ytTimeTimer = null;
+
+function startSubmitCooldown(seconds = 5) {
+    submitCooldownSec.value = seconds;
+    if (cooldownTimer) clearInterval(cooldownTimer);
+    cooldownTimer = setInterval(() => {
+        if (submitCooldownSec.value > 0) {
+            submitCooldownSec.value--;
+        } else {
+            clearInterval(cooldownTimer);
+            cooldownTimer = null;
+        }
+    }, 1000);
+}
 
 const videoTitle = computed(() => {
     if (activeVideoId.value) {
@@ -770,8 +786,27 @@ function loadVideoFromInput() {
 
 // Submit Trim Job to Laravel API
 async function submitTrim() {
+    if (submitCooldownSec.value > 0) return;
+
     if (!isDurationValid.value) {
         formError.value = 'Durasi pemotongan tidak valid atau melebihi batas 10 menit (600 detik).';
+        return;
+    }
+
+    // Anti-Spam: Check if an identical clip is already being processed in queue
+    const startSecs = parseTimeToSeconds(form.value.start_time);
+    const endSecs = parseTimeToSeconds(form.value.end_time);
+
+    const isDuplicatePending = clipsList.value.some(c => {
+        const matchUrl = c.youtube_url === form.value.youtube_url || (activeVideoId.value && c.youtube_url.includes(activeVideoId.value));
+        const matchStart = Number(c.start_time) === startSecs;
+        const matchEnd = Number(c.end_time) === endSecs;
+        const isPending = c.status === 'pending' || c.status === 'processing';
+        return matchUrl && matchStart && matchEnd && isPending;
+    });
+
+    if (isDuplicatePending) {
+        formError.value = 'Permintaan klip dengan URL dan rentang waktu yang sama sedang diproses di antrean server!';
         return;
     }
 
@@ -782,7 +817,14 @@ async function submitTrim() {
     try {
         const response = await axios.post('/api/v1/clips/trim', form.value);
         successMessage.value = response.data.message || 'Proses pemotongan video telah dimasukkan ke dalam antrean server!';
+        startSubmitCooldown(5);
         await fetchClips();
+
+        // Smooth scroll to clips library section so user sees the progress indicator
+        const libraryEl = document.getElementById('library-section');
+        if (libraryEl) {
+            libraryEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     } catch (err) {
         if (err.response && err.response.data && err.response.data.message) {
             formError.value = err.response.data.message;
