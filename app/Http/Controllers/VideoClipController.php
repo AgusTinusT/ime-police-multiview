@@ -271,6 +271,27 @@ class VideoClipController extends Controller
     }
 
     /**
+     * Resolve yt-dlp binary path on Windows or Ubuntu Linux.
+     */
+    private function resolveYtDlpBinary(): string
+    {
+        $binDir = storage_path('app/bin');
+        if (file_exists($binDir . '/yt-dlp.exe')) {
+            return $binDir . '/yt-dlp.exe';
+        }
+        if (file_exists($binDir . '/yt-dlp') && is_executable($binDir . '/yt-dlp')) {
+            return $binDir . '/yt-dlp';
+        }
+        if (file_exists('/usr/local/bin/yt-dlp')) {
+            return '/usr/local/bin/yt-dlp';
+        }
+        if (file_exists('/usr/bin/yt-dlp')) {
+            return '/usr/bin/yt-dlp';
+        }
+        return 'yt-dlp';
+    }
+
+    /**
      * Bulletproof check if a YouTube Video ID is an active live stream.
      */
     private function isLiveStream(string $videoId, YouTubeScraperService $scraper, string $rawUrl = ''): bool
@@ -280,9 +301,37 @@ class VideoClipController extends Controller
             return true;
         }
 
-        // Check 1: Direct HTML Scraping with Browser Headers
+        $url = 'https://www.youtube.com/watch?v=' . $videoId;
+
+        // Check 1: yt-dlp CLI --dump-json (100% Bulletproof on Ubuntu VPS Datacenter IPs)
         try {
-            $url = 'https://www.youtube.com/watch?v=' . $videoId;
+            $ytDlpBin = $this->resolveYtDlpBinary();
+            $process = new \Symfony\Component\Process\Process([
+                $ytDlpBin,
+                '--dump-json',
+                '--no-warnings',
+                '--skip-download',
+                $url
+            ]);
+            $process->setTimeout(6);
+            $process->run();
+            if ($process->isSuccessful()) {
+                $json = json_decode($process->getOutput(), true);
+                if ($json) {
+                    $isLiveFlag = !empty($json['is_live']) 
+                        || ($json['live_status'] ?? '') === 'is_live'
+                        || ($json['live_status'] ?? '') === 'is_upcoming';
+                    if ($isLiveFlag) {
+                        return true;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("yt-dlp isLiveStream check failed: " . $e->getMessage());
+        }
+
+        // Check 2: Direct HTML Scraping with Browser Headers
+        try {
             $res = Http::withHeaders(YouTubeScraperService::getBrowserHeaders())->timeout(5)->get($url);
             if ($res->successful()) {
                 $html = $res->body();
@@ -293,9 +342,8 @@ class VideoClipController extends Controller
                     || str_contains($html, 'hlsManifestUrl');
                 
                 $isOffline = str_contains($html, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($html, '"status": "LIVE_STREAM_OFFLINE"');
-                $isUpcoming = str_contains($html, '"isUpcoming":true') || str_contains($html, '"status":"UPCOMING"');
 
-                if ($hasLiveMarker && !$isOffline && !$isUpcoming) {
+                if ($hasLiveMarker && !$isOffline) {
                     return true;
                 }
             }
@@ -303,38 +351,12 @@ class VideoClipController extends Controller
             // Silently fallback
         }
 
-        // Check 2: YouTubeScraperService Telemetry Check
+        // Check 3: YouTubeScraperService Telemetry Check
         try {
             $telemetryMap = $scraper->getBatchStreamsTelemetry([$videoId]);
             $telemetry = $telemetryMap[$videoId] ?? null;
             if ($telemetry && ($telemetry['status'] ?? '') === 'LIVE') {
                 return true;
-            }
-        } catch (\Throwable $e) {
-            // Silently fallback
-        }
-
-        // Check 3: yt-dlp CLI --dump-json fallback (Bulletproof on VPS Datacenter IPs)
-        try {
-            $binDir = storage_path('app/bin');
-            $ytDlpBin = file_exists($binDir . '/yt-dlp.exe') 
-                ? $binDir . '/yt-dlp.exe' 
-                : (file_exists($binDir . '/yt-dlp') ? $binDir . '/yt-dlp' : (file_exists('/usr/local/bin/yt-dlp') ? '/usr/local/bin/yt-dlp' : 'yt-dlp'));
-
-            $process = new \Symfony\Component\Process\Process([
-                $ytDlpBin,
-                '--dump-json',
-                '--no-warnings',
-                '--skip-download',
-                'https://www.youtube.com/watch?v=' . $videoId
-            ]);
-            $process->setTimeout(6);
-            $process->run();
-            if ($process->isSuccessful()) {
-                $json = json_decode($process->getOutput(), true);
-                if ($json && (!empty($json['is_live']) || ($json['live_status'] ?? '') === 'is_live')) {
-                    return true;
-                }
             }
         } catch (\Throwable $e) {
             // Silently fallback

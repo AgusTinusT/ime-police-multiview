@@ -57,7 +57,7 @@ class ProcessVideoClipJob implements ShouldQueue
             $binDir = storage_path('app/bin');
             $ytDlpBin = file_exists($binDir . '/yt-dlp.exe') 
                 ? $binDir . '/yt-dlp.exe' 
-                : (file_exists($binDir . '/yt-dlp') ? $binDir . '/yt-dlp' : 'yt-dlp');
+                : (file_exists($binDir . '/yt-dlp') && is_executable($binDir . '/yt-dlp') ? $binDir . '/yt-dlp' : (file_exists('/usr/local/bin/yt-dlp') ? '/usr/local/bin/yt-dlp' : (file_exists('/usr/bin/yt-dlp') ? '/usr/bin/yt-dlp' : 'yt-dlp')));
 
             // Resolve ffmpeg location
             $ffmpegLocation = null;
