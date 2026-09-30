@@ -109,24 +109,21 @@ class ProcessVideoClipJob implements ShouldQueue
                     $command,
                     '-f', 'bv*[height<=360]+ba/b[height<=360]/best',
                     '--merge-output-format', 'mp4',
-                    '--force-keyframes-at-cuts',
-                    '--postprocessor-args', 'ffmpeg:-movflags +faststart'
+                    '--downloader-args', 'ffmpeg:-c copy -movflags +faststart'
                 );
             } elseif ($formatOption === 'MP4 720p') {
                 array_push(
                     $command,
                     '-f', 'bv*[height<=720]+ba/b[height<=720]/best',
                     '--merge-output-format', 'mp4',
-                    '--force-keyframes-at-cuts',
-                    '--postprocessor-args', 'ffmpeg:-movflags +faststart'
+                    '--downloader-args', 'ffmpeg:-c copy -movflags +faststart'
                 );
             } else { // Default MP4 1080p
                 array_push(
                     $command,
                     '-f', 'bv*[height<=1080]+ba/b[height<=1080]/best',
                     '--merge-output-format', 'mp4',
-                    '--force-keyframes-at-cuts',
-                    '--postprocessor-args', 'ffmpeg:-movflags +faststart'
+                    '--downloader-args', 'ffmpeg:-c copy -movflags +faststart'
                 );
             }
 
