@@ -71,8 +71,8 @@ class YouTubeScraperService
             $channelId = trim($officer->channel_id ?? '');
 
             foreach ($hashtagLiveStreams as $videoId => $stream) {
-                // If video already claimed by another officer in this cycle, skip
-                if (isset($claimedVideoIds[$videoId])) {
+                // If video already claimed by another officer in this cycle or blacklisted, skip
+                if (isset($claimedVideoIds[$videoId]) || $this->isBlacklistedStream($stream)) {
                     continue;
                 }
 
@@ -103,10 +103,12 @@ class YouTubeScraperService
                     break;
                 }
 
-                // Match Priority 4: Exact Callsign in title (only for specific unique callsigns of length >= 6)
+                // Match Priority 4: Exact Callsign in title (ONLY if stream handle is empty OR matches officer handle)
                 if (!empty($callsign) && strlen($callsign) >= 6 && preg_match('/\b' . preg_quote($callsign, '/') . '\b/i', $title)) {
-                    $matchedStream = $stream;
-                    break;
+                    if (empty($streamHandle) || $streamHandle === $cleanHandle) {
+                        $matchedStream = $stream;
+                        break;
+                    }
                 }
             }
 
@@ -1330,6 +1332,46 @@ class YouTubeScraperService
 
         // Must have explicit police duty signal in title
         return $hasPoliceSignal;
+    }
+
+    /**
+     * List of blacklisted YouTube channel IDs / handles that must NEVER be synced or matched.
+     */
+    public static array $blacklistedChannels = [
+        'UCfWJd57ZpsLB9skmiDmFlQQ', // @falldie24 / Kanata (Memories RP)
+        '@falldie24',
+        'falldie24',
+    ];
+
+    /**
+     * Check if a YouTube stream or channel is blacklisted.
+     */
+    public function isBlacklistedStream(array|string $streamOrHandle): bool
+    {
+        $channelId = '';
+        $handle = '';
+
+        if (is_array($streamOrHandle)) {
+            $channelId = trim($streamOrHandle['channel_id'] ?? '');
+            $handle = strtolower(ltrim(trim($streamOrHandle['handle'] ?? ''), '@'));
+        } elseif (is_string($streamOrHandle)) {
+            $handle = strtolower(ltrim(trim($streamOrHandle), '@'));
+            if (str_starts_with($streamOrHandle, 'UC')) {
+                $channelId = trim($streamOrHandle);
+            }
+        }
+
+        foreach (self::$blacklistedChannels as $blocked) {
+            $cleanBlocked = strtolower(ltrim(trim($blocked), '@'));
+            if (!empty($channelId) && $channelId === $blocked) {
+                return true;
+            }
+            if (!empty($handle) && $handle === $cleanBlocked) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

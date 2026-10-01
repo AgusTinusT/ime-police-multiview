@@ -45,8 +45,8 @@ class SyncOfficerStreamsJob implements ShouldQueue
             $liveData = $liveMap[$officer->id] ?? null;
 
             if ($liveData && !empty($liveData['video_id'])) {
-                // If officer missing channel_id, auto-save detected YouTube channel ID
-                if ((empty($officer->channel_id) || str_starts_with($officer->channel_id, 'custom-')) && !empty($liveData['channel_id'])) {
+                // If officer missing channel_id, auto-save detected YouTube channel ID ONLY for direct handle/RSS detection
+                if ((empty($officer->channel_id) || str_starts_with($officer->channel_id, 'custom-')) && !empty($liveData['channel_id']) && in_array($liveData['detection_method'] ?? '', ['DIRECT_HANDLE', 'RSS_FEED'])) {
                     $officer->update(['channel_id' => $liveData['channel_id']]);
                 }
 
