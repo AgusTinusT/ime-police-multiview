@@ -132,6 +132,25 @@ class YouTubeScraperService
             }
         }
 
+        // Verify Tier 1 candidate streams via batch telemetry to reject offline streams & get exact live viewers
+        if (!empty($claimedVideoIds)) {
+            $matchedVids = array_keys($claimedVideoIds);
+            $telemetryMap = $this->getBatchStreamsTelemetry($matchedVids);
+
+            foreach ($claimedVideoIds as $vId => $officerId) {
+                $t = $telemetryMap[$vId] ?? null;
+                if ($t && ($t['status'] ?? '') === 'LIVE') {
+                    $results[$officerId]['viewers_count'] = $t['viewers_count'] ?? $results[$officerId]['viewers_count'];
+                } else {
+                    unset($results[$officerId]);
+                    $targetOfficer = $officerList->firstWhere('id', $officerId);
+                    if ($targetOfficer) {
+                        $unmatchedOfficers->push($targetOfficer);
+                    }
+                }
+            }
+        }
+
         // --- TIER 2: Zero-Quota RSS XML Feeds (Bulletproof on VPS Datacenter IPs) ---
         $rssOfficers = $unmatchedOfficers->filter(fn($o) => !empty($o->channel_id) && str_starts_with($o->channel_id, 'UC'));
         if ($rssOfficers->isNotEmpty()) {
