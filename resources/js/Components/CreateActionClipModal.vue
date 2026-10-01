@@ -1,5 +1,30 @@
 <script setup>
+/**
+ * ==============================================================================
+ * SPESIFIKASI DATA & CONTRACT INTEGRASI - ACTION CLIP CREATION MODAL
+ * ==============================================================================
+ * 
+ * 1. PROPS DIBUTUHKAN:
+ *    - isOpen: Boolean (Toggle modal terbuka/tertutup)
+ *    - stream: Object (Data siaran aktif, memuat video_id & title)
+ *    - currentTime: Number (Posisi detik playback terkini dari player)
+ * 
+ * 2. EMIT EVENTS & PAYLOAD (POST /api/clips):
+ *    - @submit: {
+ *        title: String (Judul Klip Aksi),
+ *        startTime: String (Format MM:SS),
+ *        endTime: String (Format MM:SS),
+ *        authorName: String (Nama Penanda Klip)
+ *      }
+ * 
+ * ==============================================================================
+ * CATATAN INTEGRASI:
+ * Jika modal ini sudah terhubung penuh dengan endpoint simpan klip backend,
+ * HAPUS BLOK KOMENTAR INI.
+ * ==============================================================================
+ */
 import { ref } from "vue";
+import { router } from "@inertiajs/vue3";
 
 const props = defineProps({
     isOpen: { type: Boolean, default: false },
@@ -10,28 +35,30 @@ const props = defineProps({
 const emit = defineEmits(["close", "submit"]);
 
 const title = ref("");
-const category = ref("PURSUIT_1080");
 const startTime = ref("00:00");
 const endTime = ref("00:30");
 const authorName = ref("");
 
-const setStartFromCurrent = () => {
-    if (props.currentTime > 0) {
-        const m = Math.floor(props.currentTime / 60);
-        const s = Math.floor(props.currentTime % 60);
-        startTime.value = `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-    } else {
-        startTime.value = "10:15";
+const durationPreset = ref(30);
+
+const setDurationPreset = (seconds) => {
+    durationPreset.value = seconds;
+    const parts = startTime.value.split(":");
+    let totalSecs = 0;
+    if (parts.length === 2) {
+        totalSecs = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
     }
+    const endSecs = totalSecs + seconds;
+    const em = Math.floor(endSecs / 60);
+    const es = Math.floor(endSecs % 60);
+    endTime.value = `${em.toString().padStart(2, "0")}:${es.toString().padStart(2, "0")}`;
 };
 
-const setEndFromCurrent = () => {
-    if (props.currentTime > 0) {
-        const m = Math.floor((props.currentTime + 30) / 60);
-        const s = Math.floor((props.currentTime + 30) % 60);
-        endTime.value = `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-    } else {
-        endTime.value = "10:45";
+const openStudioClipper = () => {
+    if (props.stream?.video_id) {
+        const targetUrl = `https://www.youtube.com/watch?v=${props.stream.video_id}`;
+        router.visit(`/clipper?url=${encodeURIComponent(targetUrl)}`);
+        emit("close");
     }
 };
 
@@ -43,7 +70,6 @@ const handleSubmit = () => {
 
     emit("submit", {
         title: title.value,
-        category: category.value,
         startTime: startTime.value,
         endTime: endTime.value,
         authorName: authorName.value || "Penonton Komunitas",
@@ -55,8 +81,8 @@ const handleSubmit = () => {
 </script>
 
 <template>
-    <div v-if="isOpen" class="fixed inset-0 z-50 bg-slate-950/80 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-5 space-y-4">
+    <div v-if="isOpen" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-5 space-y-4 shadow-2xl">
             <!-- MODAL HEADER -->
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div class="flex items-center space-x-2">
@@ -65,10 +91,25 @@ const handleSubmit = () => {
                     </svg>
                     <div>
                         <h3 class="text-xs font-semibold text-slate-100 font-mono">Tandai Momen Aksi Baru</h3>
-                        <p class="text-[10px] text-slate-400 font-mono">Bookmark & Bagikan Klip Siaran Taktis</p>
+                        <p class="text-[10px] text-slate-400 font-mono">Pratinjau Video & Bookmark Klip Siaran</p>
                     </div>
                 </div>
-                <button @click="emit('close')" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded bg-slate-800">✕</button>
+                <button @click="emit('close')" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded bg-slate-800 cursor-pointer">✕</button>
+            </div>
+
+            <!-- EMBEDDED MINI PREVIEW PLAYER -->
+            <div v-if="stream?.video_id" class="space-y-2">
+                <div class="relative w-full aspect-video bg-slate-950 rounded-lg overflow-hidden border border-slate-800">
+                    <iframe
+                        :src="`https://www.youtube.com/embed/${stream.video_id}?autoplay=1&controls=1&rel=0`"
+                        class="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                    ></iframe>
+                </div>
+                <p class="text-[10px] text-slate-400 font-mono italic text-center">
+                    Gunakan pemutar video di atas untuk melihat & memastikan stempel waktu klip secara langsung.
+                </p>
             </div>
 
             <!-- FORM BODY -->
@@ -78,47 +119,55 @@ const handleSubmit = () => {
                     <input
                         v-model="title"
                         type="text"
-                        placeholder="Judul klip momen..."
+                        placeholder="Misal: PIT Maneuver di Highway 68..."
                         class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs"
                     />
                 </div>
 
+                <!-- PRESET DURATION BUTTONS -->
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Kategori Momen Aksi</label>
-                    <select
-                        v-model="category"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs cursor-pointer"
-                    >
-                        <option value="PURSUIT_1080">Kejaran Taktis (10-80 Pursuit)</option>
-                        <option value="SHOOTOUT_1099">Baku Tembak (10-99 Shootout)</option>
-                        <option value="FUNNY">Momen Lucu / Funny RP</option>
-                        <option value="ARREST">Penghentian & Penangkapan</option>
-                        <option value="TACTICAL_OPS">Operasi Khusus (Air/Water/Tactical)</option>
-                    </select>
+                    <label class="block text-slate-300 font-medium mb-1">Durasi Klip Cepat</label>
+                    <div class="flex items-center gap-2">
+                        <button
+                            @click="setDurationPreset(30)"
+                            :class="durationPreset === 30 ? 'bg-slate-800 text-slate-100 border-slate-700 font-bold' : 'bg-slate-950 text-slate-400 border-slate-800'"
+                            class="px-2.5 py-1 rounded border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
+                        >
+                            30 Detik
+                        </button>
+                        <button
+                            @click="setDurationPreset(60)"
+                            :class="durationPreset === 60 ? 'bg-slate-800 text-slate-100 border-slate-700 font-bold' : 'bg-slate-950 text-slate-400 border-slate-800'"
+                            class="px-2.5 py-1 rounded border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
+                        >
+                            60 Detik
+                        </button>
+                        <button
+                            @click="setDurationPreset(90)"
+                            :class="durationPreset === 90 ? 'bg-slate-800 text-slate-100 border-slate-700 font-bold' : 'bg-slate-950 text-slate-400 border-slate-800'"
+                            class="px-2.5 py-1 rounded border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
+                        >
+                            90 Detik
+                        </button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="text-slate-300 font-medium">Waktu Mulai (MM:SS)</label>
-                            <button @click="setStartFromCurrent" class="text-[10px] text-blue-400 hover:underline">Ambil Detik Ini</button>
-                        </div>
+                        <label class="block text-slate-300 font-medium mb-1">Waktu Mulai (MM:SS)</label>
                         <input
                             v-model="startTime"
                             type="text"
-                            placeholder="10:15"
+                            placeholder="00:00"
                             class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs text-center font-semibold"
                         />
                     </div>
                     <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="text-slate-300 font-medium">Waktu Selesai (MM:SS)</label>
-                            <button @click="setEndFromCurrent" class="text-[10px] text-blue-400 hover:underline">+30 Detik</button>
-                        </div>
+                        <label class="block text-slate-300 font-medium mb-1">Waktu Selesai (MM:SS)</label>
                         <input
                             v-model="endTime"
                             type="text"
-                            placeholder="10:45"
+                            placeholder="00:30"
                             class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs text-center font-semibold"
                         />
                     </div>
@@ -135,9 +184,19 @@ const handleSubmit = () => {
                 </div>
             </div>
 
+            <!-- ALTERNATIVE METHOD: STUDIO CLIPPER LINK -->
+            <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+                <button
+                    @click="openStudioClipper"
+                    class="text-[11px] font-mono text-blue-400 hover:text-blue-300 underline flex items-center gap-1 cursor-pointer"
+                >
+                    <span>Buka Pembuat Klip Pro (Studio Clipper) &rarr;</span>
+                </button>
+            </div>
+
             <!-- MODAL FOOTER -->
-            <div class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-2">
-                <button @click="emit('close')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono font-medium rounded-md transition-colors">
+            <div class="pt-2 border-t border-slate-800 flex items-center justify-end space-x-2">
+                <button @click="emit('close')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono font-medium rounded-md transition-colors cursor-pointer">
                     Batal
                 </button>
                 <button @click="handleSubmit" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-mono font-semibold rounded-md transition-colors cursor-pointer">
