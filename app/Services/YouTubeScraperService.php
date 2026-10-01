@@ -312,14 +312,8 @@ class YouTubeScraperService
                 $res = $responses[$id] ?? null;
                 if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
                     $body = $res->body();
-                    // MUST be strictly isLive:true (isLiveContent:true alone indicates a past/ended stream VOD)
-                    $isLive = str_contains($body, '"isLive":true') || str_contains($body, '"isLive": true') || str_contains($body, 'liveBroadcastDetails');
-                    $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, '"status": "LIVE_STREAM_OFFLINE"');
-                    $isUpcoming = str_contains($body, '"isUpcoming":true') || str_contains($body, '"isUpcoming": true') || str_contains($body, '"status":"UPCOMING"');
-                    $isPlayable = !str_contains($body, '"playabilityStatus":{"status":"UNPLAYABLE"');
-                    $viewersCount = $this->extractViewersCount($body);
-
-                    $isLiveNow = ($isLive && $isPlayable && !$isOffline && !$isUpcoming);
+                    $isLiveNow = $this->isHtmlCurrentlyLive($body);
+                    $viewersCount = $isLiveNow ? $this->extractViewersCount($body) : 0;
 
                     $telemetry = [
                         'video_id' => $id,
@@ -346,6 +340,44 @@ class YouTubeScraperService
         }
 
         return $results;
+    }
+
+    /**
+     * Determine strictly if YouTube video HTML/JSON represents an active live stream right now.
+     * Rejects ended streams (VODs), upcoming streams, and regular offline videos.
+     */
+    public function isHtmlCurrentlyLive(string $body): bool
+    {
+        if (empty($body)) {
+            return false;
+        }
+
+        // 1. Check JSON structure from ytInitialPlayerResponse
+        if (preg_match('/ytInitialPlayerResponse\s*=\s*({.+?});/s', $body, $m)) {
+            $playerJson = json_decode($m[1], true);
+            if ($playerJson) {
+                $videoDetails = $playerJson['videoDetails'] ?? [];
+                $micro = $playerJson['microformat']['playerMicroformatRenderer'] ?? [];
+                $liveDetails = $micro['liveBroadcastDetails'] ?? [];
+
+                $isLiveNow = (!empty($liveDetails['isLiveNow']) || !empty($videoDetails['isLive']));
+                $hasEndedTimestamp = !empty($liveDetails['endTimestamp']);
+                $isUpcoming = !empty($videoDetails['isUpcoming']);
+
+                if ($isLiveNow && !$hasEndedTimestamp && !$isUpcoming) {
+                    return true;
+                }
+            }
+        }
+
+        // 2. Fallback regex checks
+        $hasLiveNow = (str_contains($body, '"isLiveNow":true') || str_contains($body, '"isLiveNow": true') || str_contains($body, '"isLive":true') || str_contains($body, '"isLive": true'));
+        $hasEndTimestamp = str_contains($body, '"endTimestamp":');
+        $isEnded = (str_contains($body, '"isEnded":true') || str_contains($body, '"isEnded": true'));
+        $isOffline = (str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, 'LIVE_STREAM_OFFLINE'));
+        $isUpcoming = (str_contains($body, '"isUpcoming":true') || str_contains($body, '"status":"UPCOMING"'));
+
+        return ($hasLiveNow && !$hasEndTimestamp && !$isEnded && !$isOffline && !$isUpcoming);
     }
 
     /**
@@ -386,13 +418,8 @@ class YouTubeScraperService
                 return null; // Not live
             }
 
-            // Strictly require "isLive":true (reject past streams/VODs)
-            $isLive = str_contains($body, '"isLive":true');
-            $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, 'STREAM_OFFLINE');
-            $isUpcoming = str_contains($body, '"isUpcoming":true') || str_contains($body, '"status":"UPCOMING"');
-            $isPlayableNow = str_contains($body, '"playabilityStatus":{"status":"OK"');
-
-            if ($isLive && $isPlayableNow && !$isOffline && !$isUpcoming) {
+            // Strictly verify if stream is currently live now
+            if ($this->isHtmlCurrentlyLive($body)) {
                 $title = $this->extractTitle($body) ?? ($handle . " Police Patrol Live Feed");
                 $description = $this->extractDescription($body);
                 $viewersCount = $this->extractViewersCount($body);
@@ -463,13 +490,8 @@ class YouTubeScraperService
                         continue; // Not live
                     }
 
-                    // Strictly require "isLive":true (reject past streams/VODs)
-                    $isLive = str_contains($body, '"isLive":true');
-                    $isOffline = str_contains($body, '"status":"LIVE_STREAM_OFFLINE"') || str_contains($body, 'STREAM_OFFLINE');
-                    $isUpcoming = str_contains($body, '"isUpcoming":true') || str_contains($body, '"status":"UPCOMING"');
-                    $isPlayableNow = str_contains($body, '"playabilityStatus":{"status":"OK"');
-
-                    if ($isLive && $isPlayableNow && !$isOffline && !$isUpcoming) {
+                    // Strictly verify if stream is currently live now
+                    if ($this->isHtmlCurrentlyLive($body)) {
                         $title = $this->extractTitle($body) ?? ($handle . " Police Patrol");
                         $description = $this->extractDescription($body);
                         $viewersCount = $this->extractViewersCount($body);
@@ -579,7 +601,7 @@ class YouTubeScraperService
                                 $handle = ltrim($canonical, '/');
                             }
 
-                            // Extract viewers count
+                            // Extract viewers count safely
                             $viewers = 'Live';
                             if (isset($v['viewCountText']['runs']) && is_array($v['viewCountText']['runs'])) {
                                 $viewers = trim(implode('', array_column($v['viewCountText']['runs'], 'text')));
@@ -589,7 +611,12 @@ class YouTubeScraperService
                                 $viewers = trim($v['shortViewCountText']['simpleText']);
                             }
 
-                            $viewersCount = (int) preg_replace('/[^\d]/', '', $viewers);
+                            $viewersCount = 0;
+                            if (preg_match('/(\d[\d.,]*)\s*(?:menonton|watching)/iu', $viewers, $vm)) {
+                                $viewersCount = (int) preg_replace('/[^\d]/', '', $vm[1]);
+                            } elseif (str_contains(strtolower($viewers), 'menonton') || str_contains(strtolower($viewers), 'watching')) {
+                                $viewersCount = (int) preg_replace('/[^\d]/', '', $viewers);
+                            }
 
                             // Extract description snippet
                             $description = '';
@@ -725,25 +752,54 @@ class YouTubeScraperService
     }
 
     /**
-     * Extract viewers count from YouTube HTML.
+     * Extract live concurrent viewers count from YouTube HTML.
      */
-    private function extractViewersCount(string $html): int
+    public function extractViewersCount(string $html): int
     {
-        if (preg_match('/"viewCount":\s*\{\s*"videoViewCountRenderer":\s*\{\s*"viewCount":\s*\{\s*"runs":\s*\[\s*\{\s*"text":\s*"([^"]+)"/i', $html, $matches)) {
+        if (empty($html)) {
+            return 0;
+        }
+
+        // Method 1: Parse ytInitialData JSON for live videoPrimaryInfoRenderer
+        if (preg_match('/ytInitialData\s*=\s*({.+?});/s', $html, $m)) {
+            $data = json_decode($m[1], true);
+            if ($data) {
+                $contents = $data['contents']['twoColumnWatchNextResults']['results']['results']['contents'] ?? [];
+                foreach ($contents as $c) {
+                    if (isset($c['videoPrimaryInfoRenderer']['viewCount']['videoViewCountRenderer'])) {
+                        $vv = $c['videoPrimaryInfoRenderer']['viewCount']['videoViewCountRenderer'];
+                        $runsJson = json_encode($vv['viewCount']['runs'] ?? []);
+                        if (!empty($vv['isLive']) || str_contains($runsJson, 'menonton') || str_contains($runsJson, 'watching')) {
+                            if (isset($vv['originalViewCount']) && is_numeric($vv['originalViewCount'])) {
+                                return (int) $vv['originalViewCount'];
+                            }
+                            if (isset($vv['viewCount']['runs']) && is_array($vv['viewCount']['runs'])) {
+                                $fullText = implode('', array_column($vv['viewCount']['runs'], 'text'));
+                                if (preg_match('/(\d[\d.,]*)/', $fullText, $num)) {
+                                    return (int) preg_replace('/[^\d]/', '', $num[1]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Method 2: Match videoViewCountRenderer with watching / menonton
+        if (preg_match('/"videoViewCountRenderer":\{"viewCount":\{"runs":\[\{"text":"([^"]+)"\},\{"text":"[^"]*(?:menonton|watching|live)[^"]*"\}/iu', $html, $matches)) {
             return (int) preg_replace('/[^\d]/', '', $matches[1]);
         }
-        if (preg_match('/"viewCount":\s*\{\s*"videoViewCountRenderer":\s*\{\s*"viewCount":\s*\{\s*"simpleText":\s*"([^"]+)"/i', $html, $matches)) {
+
+        // Method 3: Match concurrentViewers JSON field
+        if (preg_match('/"concurrentViewers":"(\d+)"/', $html, $matches)) {
+            return (int) $matches[1];
+        }
+
+        // Method 4: Match videoViewCountRenderer with originalViewCount if isLive is true
+        if (preg_match('/"videoViewCountRenderer":\{"viewCount":\{"runs":\[\{"text":"([^"]+)"\}\],"isLive":true/i', $html, $matches)) {
             return (int) preg_replace('/[^\d]/', '', $matches[1]);
         }
-        if (preg_match('/"videoDetails":\s*\{.*?"viewCount":\s*"(\d+)"/s', $html, $matches)) {
-            return (int) $matches[1];
-        }
-        if (preg_match('/"viewCount":"(\d+)"/', $html, $matches)) {
-            return (int) $matches[1];
-        }
-        if (preg_match('/"originalViewCount":"(\d+)"/', $html, $matches)) {
-            return (int) $matches[1];
-        }
+
         return 0;
     }
 
