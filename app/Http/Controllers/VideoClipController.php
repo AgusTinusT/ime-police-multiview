@@ -94,14 +94,7 @@ class VideoClipController extends Controller
         $cleanUrl = $this->cleanYoutubeUrl($validated['youtube_url']);
         $videoId = $this->extractVideoId($cleanUrl);
 
-        if ($videoId) {
-            $scraper = app(YouTubeScraperService::class);
-            if ($this->isLiveStream($videoId, $scraper)) {
-                throw ValidationException::withMessages([
-                    'youtube_url' => 'Fitur Clipper saat ini belum mendukung pemotongan Siaran Langsung (LIVE Stream) yang sedang berlangsung. Silakan gunakan Video VOD / Rekaman YouTube.'
-                ]);
-            }
-        }
+
 
         $clip = VideoClip::create([
             'user_id' => $request->user()->id,
@@ -279,19 +272,17 @@ class VideoClipController extends Controller
 
         return response()->json([
             'valid' => true,
-            'can_trim' => !$isLive,
+            'can_trim' => true,
             'video_id' => $videoId,
             'clean_url' => $cleanUrl,
-            'is_live' => $isLive,
-            'video_type' => $videoType,
-            'type_label' => $typeLabel,
+            'is_live' => false,
+            'video_type' => 'VIDEO',
+            'type_label' => '🎬 Video YouTube',
             'title' => $title ?: "YouTube Video Stream [{$videoId}]",
             'channel_name' => $author ?: 'YouTube Channel',
             'thumbnail_url' => $thumbnailUrl,
-            'viewers_count' => $telemetry['viewers_count'] ?? 0,
-            'message' => $isLive
-                ? '⚠️ Siaran Langsung (LIVE Stream) belum didukung. Fitur Clipper saat ini khusus untuk Video VOD / Rekaman YouTube. Silakan tunggu hingga siaran selesai.'
-                : 'Terseteksi: Link ini adalah Video Rekaman (VOD). Pemotongan presisi siap diproses.',
+            'viewers_count' => 0,
+            'message' => 'Link YouTube terverifikasi. Pemotongan presisi siap diproses.',
         ]);
     }
 

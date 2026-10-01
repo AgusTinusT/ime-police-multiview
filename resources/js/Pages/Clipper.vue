@@ -56,6 +56,14 @@
                             {{ sample.shortLabel }}
                         </button>
                     </div>
+
+                    <!-- YouTube Live Informative Note -->
+                    <div class="mt-3 p-2.5 rounded-lg bg-slate-950/90 border border-amber-900/40 text-amber-300/90 text-xs flex items-center justify-center gap-2 max-w-2xl mx-auto shadow-sm">
+                        <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span><strong>Catatan:</strong> Pemotongan Siaran Langsung (YouTube Live) yang sedang berlangsung belum didukung secara penuh dan berpotensi tidak sesuai dengan hasil yang diinginkan.</span>
+                    </div>
                 </div>
             </section>
 
@@ -98,20 +106,8 @@
                 <!-- Video Details & Stream Status Header Bar (Redesigned) -->
                 <div class="space-y-4 pb-5 border-b border-slate-800">
                     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                        <!-- Left: Thumbnail & Meta Info -->
+                        <!-- Left: Meta Info -->
                         <div class="flex items-start space-x-3.5">
-                            <!-- Video Thumbnail Box -->
-                            <div class="relative w-24 h-16 sm:w-32 sm:h-20 rounded-lg overflow-hidden bg-black shrink-0 border border-slate-800 shadow-md">
-                                <img
-                                    :src="urlCheckResult?.thumbnail_url || videoThumb"
-                                    alt="Video thumbnail"
-                                    class="w-full h-full object-cover"
-                                />
-                                <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white font-semibold">
-                                    {{ formatSecondsToTimestamp(videoDurationSec).split('.')[0] }}
-                                </span>
-                            </div>
-
                             <!-- Meta Titles & Badges -->
                             <div class="space-y-1">
                                 <div class="flex items-center gap-2 flex-wrap text-xs">
@@ -131,7 +127,7 @@
                                 </h2>
 
                                 <div class="flex items-center gap-3 text-xs text-slate-400 font-mono flex-wrap">
-                                    <span>Batas Maksimal: <strong class="text-slate-200">10 Menit (600s)</strong></span>
+                                    <span>Durasi Video: <strong class="text-slate-200">{{ formatSecondsToTimestamp(videoDurationSec) }}</strong></span>
                                 </div>
                             </div>
                         </div>
@@ -139,61 +135,20 @@
                         <!-- Right: Dynamic Duration Badge -->
                         <div class="flex items-center gap-2 font-mono shrink-0">
                             <div class="px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs shadow-inner">
-                                <span class="text-slate-400 uppercase text-[10px] tracking-wider font-semibold block">Durasi Potongan:</span>
+                                <span class="text-slate-400 uppercase text-[10px] tracking-wider font-semibold block">Durasi Maksimal:</span>
                                 <strong class="text-blue-400 font-bold text-sm">
-                                    {{ formattedDuration }}
+                                    10 Menit (600s)
                                 </strong>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Dynamic Live Stream vs VOD Status Card (Prominently Placed Above Player) -->
-                    <div v-if="urlCheckResult">
-                        <!-- LIVE STREAM WARNING CARD -->
-                        <div v-if="urlCheckResult.valid && urlCheckResult.is_live" class="p-3 rounded-lg bg-amber-950/60 border border-amber-800/80 text-amber-200 flex items-start gap-3 shadow-md">
-                            <div class="p-1.5 rounded-md bg-amber-900/80 text-amber-300 shrink-0 mt-0.5">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                            </div>
-                            <div class="space-y-0.5">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="bg-amber-500 text-slate-950 px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wider uppercase font-mono">⚠️ LIVE STREAM TIDAK DIDUKUNG</span>
-                                    <span class="font-bold text-xs text-white">{{ urlCheckResult.channel_name || 'YouTube Live' }}</span>
-                                </div>
-                                <p class="text-xs text-amber-200/90 leading-relaxed">
-                                    Fitur Clipper belum mendukung Siaran Langsung (LIVE Stream) yang sedang berjalan. Silakan gunakan Video VOD / Rekaman YouTube.
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- VOD READY STATUS CARD -->
-                        <div v-else-if="urlCheckResult.valid && !urlCheckResult.is_live" class="p-3 rounded-lg bg-blue-950/40 border border-blue-800/60 text-blue-300 flex items-center justify-between gap-3 shadow-md">
-                            <div class="flex items-center gap-3">
-                                <div class="p-1.5 rounded-md bg-blue-900/60 text-blue-400 shrink-0">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <div class="space-y-0.5">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wider uppercase font-mono">🎬 VIDEO VOD</span>
-                                        <span class="font-bold text-xs text-white">{{ urlCheckResult.channel_name || 'Rekaman YouTube' }}</span>
-                                    </div>
-                                    <p class="text-xs text-blue-200/90">
-                                        Video rekaman (VOD) terseteksi. Pemotongan presisi siap diproses.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- INVALID URL WARNING CARD -->
-                        <div v-else class="p-3 rounded-lg bg-amber-950/40 border border-amber-800/60 text-amber-300 flex items-center gap-2.5 text-xs">
-                            <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            <span>{{ urlCheckResult.message }}</span>
-                        </div>
+                    <!-- Invalid URL Warning Banner -->
+                    <div v-if="urlCheckResult && !urlCheckResult.valid" class="p-3 rounded-lg bg-amber-950/40 border border-amber-800/60 text-amber-300 flex items-center gap-2.5 text-xs">
+                        <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span>{{ urlCheckResult.message }}</span>
                     </div>
                 </div>
 
@@ -305,13 +260,7 @@
                                 <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300">
                                     URL Video YouTube <span class="text-blue-400">*</span>
                                 </label>
-                                <span v-if="isCheckingUrl" class="text-[10px] text-blue-400 font-mono flex items-center gap-1">
-                                    <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Memeriksa link...
-                                </span>
+
                             </div>
                             <input 
                                 v-model="form.youtube_url"
@@ -658,17 +607,7 @@ async function checkYoutubeUrl(urlToTest) {
 
     const requestId = ++currentCheckRequestId;
 
-    if (targetUrl.includes('/live/')) {
-        urlCheckResult.value = {
-            valid: true,
-            is_live: true,
-            can_trim: false,
-            type_label: '🔴 Siaran Langsung (LIVE Stream)',
-            channel_name: 'YouTube Live',
-            message: '⚠️ Siaran Langsung (LIVE Stream) belum didukung. Fitur Clipper saat ini khusus untuk Video VOD / Rekaman YouTube.'
-        };
-        return;
-    }
+
 
     isCheckingUrl.value = true;
     try {
@@ -805,18 +744,7 @@ watch(activeVideoId, (newId) => {
     }
 });
 
-watch(() => form.value.youtube_url, (newUrl, oldUrl) => {
-    if (checkUrlDebounceTimer) clearTimeout(checkUrlDebounceTimer);
-    if (newUrl !== oldUrl) {
-        urlCheckResult.value = null;
-    }
-    if (!newUrl || newUrl.trim().length < 10) {
-        return;
-    }
-    checkUrlDebounceTimer = setTimeout(() => {
-        checkYoutubeUrl(newUrl);
-    }, 400);
-}, { immediate: true });
+
 
 function parseTimeToSeconds(val) {
     if (!val) return 0;
@@ -1034,7 +962,7 @@ onMounted(() => {
     if (props.initialUrl) {
         form.value.youtube_url = props.initialUrl;
     } else {
-        form.value.youtube_url = 'https://www.youtube.com/watch?v=3UfzPC8I5Gk';
+        form.value.youtube_url = '';
     }
     initYTMessageListener();
     if (activeVideoId.value) {
