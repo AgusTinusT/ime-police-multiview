@@ -1,4 +1,26 @@
 <script setup>
+/**
+ * ==============================================================================
+ * SPESIFIKASI DATA & CONTRACT INTEGRASI - TACTICAL STREAM GRID & FOCUS MODE
+ * ==============================================================================
+ * 
+ * 1. STATE & PROPS MODE FOKUS (FocusModePlayer):
+ *    - focusStream: Object (Stream perwira aktif yang sedang dalam Mode Fokus)
+ *    - visibleStreams / allActiveStreams: Array (Daftar stream aktif dari YouTube Scraper)
+ *    - activeTacChannel: String (Channel Radio TAC aktif, misal 'TAC_1')
+ *    - isTheaterMode: Boolean (Status tampilan bioskop)
+ *    - isRightChatOpen: Boolean (Status panel Live Chat)
+ * 
+ * 2. ENDPOINT & DOKUMEN SCRAPER YOUTUBE:
+ *    - GET /api/streams/live             : Mengambil seluruh siaran live patroli aktif
+ *    - GET /api/streams/description/{id} : Mengambil deskripsi lengkap streamer jika tidak ada di feed awal
+ * 
+ * ==============================================================================
+ * CATATAN INTEGRASI:
+ * Jika integrasi data stream real-time & controller ini sudah selesai dikerjakan,
+ * HAPUS BLOK KOMENTAR INI.
+ * ==============================================================================
+ */
 import { ref, computed } from "vue";
 import { Link } from "@inertiajs/vue3";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
@@ -33,6 +55,7 @@ import iconTheater from "@/Components/Icons/rectangle-o-svgrepo-com.svg";
 
 import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
 import TacChannelToolbar from "@/Components/TacChannelToolbar.vue";
+import FocusModePlayer from "@/Components/FocusModePlayer.vue";
 
 const props = defineProps({
     mode: { type: String, default: "gmeet" }, // 'gmeet' (Multiview Grid) or 'netflix' (Dashboard Swimlane Discovery)
@@ -569,543 +592,25 @@ const getCustomOrderRank = (item) => {
                     "
                     class="space-y-3"
                 >
-                    <div
+                    <FocusModePlayer
                         v-if="primaryFocusedStream"
-                        class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800"
-                    >
-                        <!-- Player Header & Action HUD -->
-                        <div
-                            class="bg-slate-900 px-4 py-2 flex flex-wrap items-center justify-between border-b border-slate-800 gap-2"
-                        >
-                            <div class="flex items-center space-x-2.5 min-w-0">
-                                <span
-                                    class="px-2 py-0.5 text-xs font-black rounded border tracking-wider shrink-0"
-                                    :class="
-                                        getDeptBadgeClass(
-                                            primaryFocusedStream.officer
-                                                ?.department,
-                                        )
-                                    "
-                                >
-                                    {{
-                                        primaryFocusedStream.officer
-                                            ?.department || "UNIT"
-                                    }}
-                                </span>
-                                <div class="truncate">
-                                    <h3
-                                        class="text-sm font-bold text-slate-100 flex items-center gap-2 truncate"
-                                    >
-                                        <span class="truncate">{{
-                                            primaryFocusedStream.officer
-                                                ?.officer_name || "Officer"
-                                        }}</span>
-                                    </h3>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-2 shrink-0">
-                                <!-- TAC Channel Dispatch Selector -->
-                                <div class="hidden sm:block relative">
-                                    <button
-                                        @click.stop="
-                                            emit(
-                                                'update:activeTacPopoverVideoId',
-                                                activeTacPopoverVideoId ===
-                                                    primaryFocusedStream.video_id
-                                                    ? null
-                                                    : primaryFocusedStream.video_id,
-                                            )
-                                        "
-                                        class="px-2.5 py-1 rounded-md text-xs font-mono font-bold transition flex items-center gap-1.5 border"
-                                        :class="
-                                            getStreamTac(
-                                                primaryFocusedStream.video_id,
-                                            )
-                                                ? 'bg-slate-800 text-amber-400 border-slate-700 font-bold'
-                                                : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-800'
-                                        "
-                                    >
-                                        <img
-                                            :src="iconRadio"
-                                            class="w-5 h-5"
-                                            :class="
-                                                getStreamTac(
-                                                    primaryFocusedStream.video_id,
-                                                )
-                                                    ? ''
-                                                    : 'invert'
-                                            "
-                                        />
-                                        <span>{{
-                                            getStreamTac(
-                                                primaryFocusedStream.video_id,
-                                            )
-                                                ? getStreamTac(
-                                                      primaryFocusedStream.video_id,
-                                                  ).replace("_", " ")
-                                                : "TAC"
-                                        }}</span>
-                                    </button>
-                                    <!-- TAC Popover Menu -->
-                                    <div
-                                        v-if="
-                                            activeTacPopoverVideoId ===
-                                            primaryFocusedStream.video_id
-                                        "
-                                        class="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-md p-2.5 z-50 animate-in fade-in zoom-in-95 duration-150"
-                                        @click.stop
-                                    >
-                                        <div
-                                            class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs font-bold text-blue-300 font-mono"
-                                        >
-                                            <span
-                                                >ASSIGN RADIO TAC CHANNEL:</span
-                                            >
-                                            <button
-                                                @click="
-                                                    emit(
-                                                        'update:activeTacPopoverVideoId',
-                                                        null,
-                                                    )
-                                                "
-                                                class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 text-[10px]"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-                                        <div
-                                            class="grid grid-cols-5 gap-1.5 mb-2"
-                                        >
-                                            <button
-                                                v-for="t in [
-                                                    1, 2, 3, 4, 5, 6, 7, 8, 9,
-                                                    10,
-                                                ]"
-                                                :key="t"
-                                                @click.stop="
-                                                    emit(
-                                                        'assign-stream-to-tac',
-                                                        `TAC_${t}`,
-                                                        primaryFocusedStream.video_id,
-                                                    );
-                                                    emit(
-                                                        'update:activeTacPopoverVideoId',
-                                                        null,
-                                                    );
-                                                "
-                                                class="py-1.5 rounded-lg font-mono text-center font-bold text-xs transition border flex flex-col items-center justify-center gap-0.5"
-                                                :class="
-                                                    getStreamTac(
-                                                        primaryFocusedStream.video_id,
-                                                    ) === `TAC_${t}`
-                                                        ? 'bg-blue-500 text-black border-blue-300 shadow-lg shadow-blue-500/30'
-                                                        : 'bg-slate-900 text-slate-200 hover:bg-blue-950/60 hover:text-blue-300 hover:border-blue-500/50 border-slate-800'
-                                                "
-                                            >
-                                                <span
-                                                    class="text-[8px] text-slate-400 leading-none"
-                                                    >TAC</span
-                                                >
-                                                <span class="leading-none">{{
-                                                    t
-                                                }}</span>
-                                            </button>
-                                        </div>
-                                        <div
-                                            v-if="
-                                                getStreamTac(
-                                                    primaryFocusedStream.video_id,
-                                                )
-                                            "
-                                            class="pt-1.5 border-t border-slate-800/80"
-                                        >
-                                            <button
-                                                @click.stop="
-                                                    emit(
-                                                        'remove-stream-from-tac',
-                                                        primaryFocusedStream.video_id,
-                                                    );
-                                                    emit(
-                                                        'update:activeTacPopoverVideoId',
-                                                        null,
-                                                    );
-                                                "
-                                                class="w-full py-1.5 px-2 text-[10px] rounded-lg bg-red-950/60 text-red-300 hover:bg-red-900/80 border border-red-500/40 text-center transition flex items-center justify-center gap-1 font-mono"
-                                            >
-                                                <span
-                                                    >✕ Lepas dari
-                                                    {{
-                                                        getStreamTac(
-                                                            primaryFocusedStream.video_id,
-                                                        ).replace("_", " ")
-                                                    }}</span
-                                                >
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Live Audio Toggle Button -->
-                                <button
-                                    @click="
-                                        emit(
-                                            'toggle-audio',
-                                            primaryFocusedStream.video_id,
-                                        )
-                                    "
-                                    :class="
-                                        activeAudioVideoId ===
-                                        primaryFocusedStream.video_id
-                                            ? 'bg-slate-800 text-emerald-400 border-slate-700 font-bold'
-                                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border-slate-800'
-                                    "
-                                    class="p-1.5 rounded-md transition border flex items-center justify-center shrink-0 cursor-pointer"
-                                    :title="
-                                        activeAudioVideoId ===
-                                        primaryFocusedStream.video_id
-                                            ? 'Status Audio: LIVE AUDIO (Klik untuk Mute)'
-                                            : 'Status Audio: MUTED (Klik untuk Mengaktifkan Audio Live)'
-                                    "
-                                >
-                                    <img
-                                        :src="
-                                            activeAudioVideoId ===
-                                            primaryFocusedStream.video_id
-                                                ? iconUnmute
-                                                : iconMute
-                                        "
-                                        class="w-4 h-4 invert opacity-90"
-                                        alt=""
-                                    />
-                                </button>
-
-                                <!-- Stop Feed / Tutup Video Toggle Button -->
-                                <button
-                                    @click="
-                                        toggleStopFeed(
-                                            primaryFocusedStream.video_id,
-                                        )
-                                    "
-                                    :class="
-                                        isStreamStopped(
-                                            primaryFocusedStream.video_id,
-                                        )
-                                            ? 'bg-slate-800 text-amber-400 border-slate-700 font-bold'
-                                            : 'bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white border-slate-800'
-                                    "
-                                    class="p-1.5 rounded-md transition border flex items-center justify-center font-mono text-xs shrink-0 cursor-pointer"
-                                    :title="
-                                        isStreamStopped(
-                                            primaryFocusedStream.video_id,
-                                        )
-                                            ? 'Putar Video (Aktifkan Kembali Feed)'
-                                            : 'Pause Video (Stop Feed Sementara)'
-                                    "
-                                >
-                                    <img
-                                        :src="
-                                            isStreamStopped(
-                                                primaryFocusedStream.video_id,
-                                            )
-                                                ? iconPlayAll
-                                                : iconPause
-                                        "
-                                        class="w-3.5 h-3.5 invert opacity-80"
-                                        alt="Play/Pause Feed"
-                                    />
-                                </button>
-
-                                <!-- Exit Focus / Kembali ke Mode Grid Button -->
-                                <button
-                                    @click="
-                                        emit('update:selectedLayout', 'auto')
-                                    "
-                                    class="p-1.5 rounded-md transition border flex items-center justify-center font-mono text-xs bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white border-slate-800 shrink-0 cursor-pointer"
-                                    title="Kembali ke Mode Grid (Tutup Mode Fokus)"
-                                >
-                                    <img
-                                        :src="iconCloseBold"
-                                        class="w-3.5 h-3.5 invert opacity-90"
-                                        alt="Kembali ke Mode Grid"
-                                    />
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Big Video Player Container with Floating Hover Overlay Bar -->
-                        <div
-                            class="relative w-full aspect-video bg-black overflow-hidden group/thumb min-w-[320px] min-h-[200px]"
-                        >
-                            <template
-                                v-if="
-                                    !isStreamStopped(
-                                        primaryFocusedStream.video_id,
-                                    )
-                                "
-                            >
-                                <iframe
-                                    :key="`primary-player-${primaryFocusedStream.video_id}`"
-                                    :id="`yt-bodycam-${primaryFocusedStream.video_id}`"
-                                    class="w-full h-full border-0 pointer-events-auto"
-                                    :src="`https://www.youtube.com/embed/${primaryFocusedStream.video_id}?enablejsapi=1&autoplay=1&mute=1&controls=1&rel=0&playsinline=1&vq=hd1080&origin=${originUrl}`"
-                                    allow="
-                                        accelerometer;
-                                        autoplay;
-                                        clipboard-write;
-                                        encrypted-media;
-                                        gyroscope;
-                                        picture-in-picture;
-                                        web-share;
-                                    "
-                                    allowfullscreen
-                                ></iframe>
-                            </template>
-                            <template v-else>
-                                <img
-                                    :src="`https://i.ytimg.com/vi/${primaryFocusedStream.video_id}/hqdefault.jpg`"
-                                    :alt="primaryFocusedStream.title"
-                                    class="w-full h-full object-cover opacity-85 group-hover/thumb:opacity-100 transition duration-300"
-                                    loading="lazy"
-                                />
-                                <div
-                                    class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/50 flex flex-col items-center justify-center p-4 z-10"
-                                >
-                                    <div
-                                        class="absolute top-3 left-3 flex items-center space-x-1.5 font-mono text-[10px] text-red-400 bg-black/75 backdrop-blur-sm px-2.5 py-1 rounded-md border border-red-500/30"
-                                    >
-                                        <span
-                                            class="w-2 h-2 rounded-full bg-red-500 animate-ping"
-                                        ></span>
-                                        <span>MODE STOP FEED</span>
-                                    </div>
-                                    <div
-                                        class="flex items-center space-x-3 transition-all duration-300 transform scale-95 group-hover/thumb:scale-100"
-                                    >
-                                        <button
-                                            @click="
-                                                toggleStopFeed(
-                                                    primaryFocusedStream.video_id,
-                                                )
-                                            "
-                                            class="bg-emerald-600/90 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-xl transition flex items-center gap-2 border border-emerald-400/30"
-                                        >
-                                            <img
-                                                :src="iconPlayAll"
-                                                class="w-4 h-4 invert opacity-90"
-                                            />
-                                            <span>Putar Video</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-                            <!-- Floating Stream Description & Title Popover Overlay -->
-                            <div
-                                v-if="
-                                    isStreamInfoOpen(
-                                        primaryFocusedStream.video_id,
-                                    )
-                                "
-                                class="absolute bottom-16 left-3 right-3 sm:left-auto sm:right-3 sm:max-w-md bg-slate-900 p-3.5 rounded-xl border border-slate-800 z-30 animate-in fade-in zoom-in-95 duration-150 flex flex-col gap-2 pointer-events-auto"
-                                @click.stop
-                            >
-                                <div
-                                    class="flex items-center justify-between pb-2 border-b border-slate-800 text-xs font-bold text-blue-300 gap-2"
-                                >
-                                    <div
-                                        class="flex items-center gap-1.5 min-w-0 truncate"
-                                    >
-                                        <img
-                                            :src="iconRadio"
-                                            class="w-3.5 h-3.5 invert opacity-80 shrink-0"
-                                        />
-                                        <span
-                                            class="truncate"
-                                            :title="primaryFocusedStream.title"
-                                        >
-                                            {{ primaryFocusedStream.title }}
-                                        </span>
-                                    </div>
-                                    <button
-                                        @click="
-                                            toggleStreamInfo(
-                                                primaryFocusedStream.video_id,
-                                            )
-                                        "
-                                        class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 text-xs font-mono shrink-0"
-                                        title="Tutup Deskripsi"
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                                <div
-                                    v-if="
-                                        getStreamDescription(
-                                            primaryFocusedStream,
-                                        )
-                                    "
-                                    class="text-[11px] text-slate-300 font-mono whitespace-pre-wrap break-words leading-relaxed max-h-56 overflow-y-auto scrollbar-thin pr-1 select-text"
-                                    v-html="
-                                        formatDescriptionWithLinks(
-                                            getStreamDescription(
-                                                primaryFocusedStream,
-                                            ),
-                                        )
-                                    "
-                                ></div>
-                                <div
-                                    v-else
-                                    class="text-[11px] text-slate-500 font-mono italic"
-                                >
-                                    Tidak ada deskripsi tambahan dari streamer.
-                                </div>
-                            </div>
-
-                            <!-- Floating Hover Overlay Bar -->
-                            <div
-                                class="absolute bottom-3 left-3 right-3 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 bg-slate-900 px-3 sm:px-4 py-2 rounded-md border border-slate-800 flex flex-wrap sm:flex-nowrap items-center justify-between text-xs text-slate-300 gap-2 z-20 pointer-events-auto"
-                            >
-                                <!-- Left Officer Metadata -->
-                                <div
-                                    class="flex items-center space-x-2.5 min-w-0 flex-1 truncate"
-                                >
-                                    <div
-                                        class="flex items-center gap-1.5 shrink-0"
-                                    >
-                                        <span
-                                            v-if="
-                                                primaryFocusedStream.officer
-                                                    ?.callsign
-                                            "
-                                            class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-800/90 text-slate-300 border border-slate-700/60 font-mono text-[10px] font-semibold tracking-wider shrink-0"
-                                        >
-                                            {{
-                                                primaryFocusedStream.officer
-                                                    .callsign
-                                            }}
-                                        </span>
-                                    </div>
-                                    <div
-                                        class="flex items-center space-x-2 min-w-0 truncate text-slate-300"
-                                    >
-                                        <span
-                                            v-if="
-                                                primaryFocusedStream.officer
-                                                    ?.rank
-                                            "
-                                            class="font-mono text-xs text-slate-300 truncate"
-                                        >
-                                            {{
-                                                primaryFocusedStream.officer
-                                                    .rank
-                                            }}
-                                        </span>
-                                        <span
-                                            v-if="
-                                                primaryFocusedStream.officer
-                                                    ?.badge_number
-                                            "
-                                            class="text-slate-600 hidden sm:inline"
-                                            >•</span
-                                        >
-                                        <span
-                                            v-if="
-                                                primaryFocusedStream.officer
-                                                    ?.badge_number
-                                            "
-                                            class="font-mono text-[11px] text-slate-400 truncate hidden sm:inline"
-                                        >
-                                            #{{
-                                                primaryFocusedStream.officer
-                                                    .badge_number
-                                            }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Right Action Buttons -->
-                                <div
-                                    class="flex items-center space-x-1.5 shrink-0"
-                                >
-                                    <button
-                                        @click.stop="
-                                            toggleOfficerStatus(
-                                                primaryFocusedStream,
-                                            )
-                                        "
-                                        class="bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 font-mono font-semibold px-2.5 py-1 rounded-lg text-[11px] transition shrink-0 flex items-center gap-1 cursor-pointer"
-                                        title="Sembunyikan perwira ini dari grid"
-                                    >
-                                        <span>Sembunyikan</span>
-                                    </button>
-                                    <!-- Stream Info / Description Popover Toggle Button -->
-                                    <button
-                                        @click.stop="
-                                            toggleStreamInfo(
-                                                primaryFocusedStream.video_id,
-                                            )
-                                        "
-                                        :class="
-                                            isStreamInfoOpen(
-                                                primaryFocusedStream.video_id,
-                                            )
-                                                ? 'bg-slate-800 text-blue-400 border-slate-700'
-                                                : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-800'
-                                        "
-                                        class="p-1.5 rounded-md border transition flex items-center justify-center shrink-0 cursor-pointer"
-                                        :title="
-                                            isStreamInfoOpen(
-                                                primaryFocusedStream.video_id,
-                                            )
-                                                ? 'Tutup Deskripsi Stream'
-                                                : 'Lihat Deskripsi Stream & Judul YouTube'
-                                        "
-                                    >
-                                        <img
-                                            :src="iconDoc"
-                                            class="w-3.5 h-3.5 invert opacity-80"
-                                            alt="Description"
-                                        />
-                                    </button>
-                                    <button
-                                        @click="
-                                            isRightChatOpen = !isRightChatOpen
-                                        "
-                                        :class="
-                                            isRightChatOpen
-                                                ? 'bg-slate-800 text-blue-400 border-slate-700'
-                                                : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border-slate-800'
-                                        "
-                                        class="p-1.5 rounded-md border transition flex items-center justify-center shrink-0 cursor-pointer"
-                                        :title="
-                                            isRightChatOpen
-                                                ? 'Tutup Live Chat'
-                                                : 'Buka Live Chat'
-                                        "
-                                    >
-                                        <img
-                                            :src="
-                                                isRightChatOpen
-                                                    ? iconChatRemove
-                                                    : iconChat
-                                            "
-                                            class="w-3.5 h-3.5 invert opacity-80"
-                                            alt=""
-                                        />
-                                    </button>
-                                    <a
-                                        :href="`https://www.youtube.com/watch?v=${primaryFocusedStream.video_id}`"
-                                        target="_blank"
-                                        class="p-1.5 text-slate-400 hover:text-white bg-slate-900/80 hover:bg-slate-800 rounded-lg border border-slate-800 transition flex items-center justify-center"
-                                        title="Buka di YouTube"
-                                    >
-                                        <img
-                                            :src="iconExternal"
-                                            class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100"
-                                        />
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        :stream="primaryFocusedStream"
+                        :originUrl="originUrl"
+                        :activeAudioVideoId="activeAudioVideoId"
+                        :isStreamStopped="isStreamStopped(primaryFocusedStream.video_id)"
+                        :isRightChatOpen="isRightChatOpen"
+                        :isTheaterMode="isTheaterMode"
+                        :activeTacChannel="getStreamTac(primaryFocusedStream.video_id)"
+                        :isPersonalStream="isPersonalStream(primaryFocusedStream.officer?.handle || primaryFocusedStream.video_id)"
+                        :fetchedDescription="getStreamDescription(primaryFocusedStream)"
+                        @toggle-audio="emit('toggle-audio', primaryFocusedStream.video_id)"
+                        @toggle-stop-feed="toggleStopFeed(primaryFocusedStream.video_id)"
+                        @toggle-right-chat="isRightChatOpen = !isRightChatOpen"
+                        @toggle-theater-mode="emit('toggle-theater-mode')"
+                        @toggle-tac-popover="emit('update:activeTacPopoverVideoId', activeTacPopoverVideoId === primaryFocusedStream.video_id ? null : primaryFocusedStream.video_id)"
+                        @toggle-personal-stream="emit('toggle-personal-stream', primaryFocusedStream.officer?.handle || primaryFocusedStream.video_id)"
+                        @close-focus="emit('update:selectedLayout', 'auto')"
+                    />
                 </div>
 
                 <!-- RIGHT COLUMN: LIVE CHAT & SUPPORTING UNITS -->
