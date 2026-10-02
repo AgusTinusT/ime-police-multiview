@@ -608,6 +608,8 @@ const getCustomOrderRank = (item) => {
                         @toggle-right-chat="isRightChatOpen = !isRightChatOpen"
                         @toggle-theater-mode="emit('toggle-theater-mode')"
                         @toggle-tac-popover="emit('update:activeTacPopoverVideoId', activeTacPopoverVideoId === primaryFocusedStream.video_id ? null : primaryFocusedStream.video_id)"
+                        @assign-tac="(tacCode) => emit('assign-stream-to-tac', tacCode, primaryFocusedStream.video_id)"
+                        @remove-tac="emit('remove-stream-from-tac', primaryFocusedStream.video_id)"
                         @toggle-personal-stream="emit('toggle-personal-stream', primaryFocusedStream.officer?.handle || primaryFocusedStream.video_id)"
                         @close-focus="emit('update:selectedLayout', 'auto')"
                     />
@@ -1154,6 +1156,7 @@ const getCustomOrderRank = (item) => {
 
         <!-- GOOGLE MEET BOTTOM STICKY CONTROL BAR -->
         <div
+            v-if="selectedLayout !== 'focus'"
             class="fixed bottom-0 inset-x-0 z-50 flex flex-col items-center pointer-events-none"
         >
             <!-- Popover 1: Department & Category Selector Menu -->

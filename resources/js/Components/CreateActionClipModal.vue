@@ -23,8 +23,8 @@
  * HAPUS BLOK KOMENTAR INI.
  * ==============================================================================
  */
-import { ref } from "vue";
-import { router } from "@inertiajs/vue3";
+import { ref, computed, watch } from "vue";
+import { router, usePage } from "@inertiajs/vue3";
 
 const props = defineProps({
     isOpen: { type: Boolean, default: false },
@@ -34,24 +34,62 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "submit"]);
 
+const page = usePage();
+const authUser = computed(() => page.props.auth?.user);
+
 const title = ref("");
 const startTime = ref("00:00");
 const endTime = ref("00:30");
-const authorName = ref("");
+const authorName = ref(authUser.value?.name || "");
+
+watch(
+    () => authUser.value?.name,
+    (newName) => {
+        if (newName && !authorName.value) {
+            authorName.value = newName;
+        }
+    },
+    { immediate: true }
+);
 
 const durationPreset = ref(30);
 
+const formatTimeHelper = (seconds) => {
+    if (isNaN(seconds) || seconds === null || seconds < 0) return "00:00";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const pad = (num) => String(num).padStart(2, "0");
+    if (h > 0) {
+        return `${h}:${pad(m)}:${pad(s)}`;
+    }
+    return `${pad(m)}:${pad(s)}`;
+};
+
+const parseTimestamp = (str) => {
+    if (!str) return 0;
+    const parts = String(str).trim().split(":");
+    if (parts.length === 3) {
+        return (
+            (parseInt(parts[0], 10) || 0) * 3600 +
+            (parseInt(parts[1], 10) || 0) * 60 +
+            (parseInt(parts[2], 10) || 0)
+        );
+    }
+    if (parts.length === 2) {
+        return (
+            (parseInt(parts[0], 10) || 0) * 60 +
+            (parseInt(parts[1], 10) || 0)
+        );
+    }
+    return parseInt(str, 10) || 0;
+};
+
 const setDurationPreset = (seconds) => {
     durationPreset.value = seconds;
-    const parts = startTime.value.split(":");
-    let totalSecs = 0;
-    if (parts.length === 2) {
-        totalSecs = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-    }
+    const totalSecs = parseTimestamp(startTime.value);
     const endSecs = totalSecs + seconds;
-    const em = Math.floor(endSecs / 60);
-    const es = Math.floor(endSecs % 60);
-    endTime.value = `${em.toString().padStart(2, "0")}:${es.toString().padStart(2, "0")}`;
+    endTime.value = formatTimeHelper(endSecs);
 };
 
 const openStudioClipper = () => {
@@ -72,10 +110,12 @@ const handleSubmit = () => {
         title: title.value,
         startTime: startTime.value,
         endTime: endTime.value,
-        authorName: authorName.value || "Penonton Komunitas",
+        authorName: authorName.value.trim() || authUser.value?.name || "Penonton Komunitas",
+        user_id: authUser.value?.id || null,
     });
 
     title.value = "";
+    authorName.value = authUser.value?.name || "";
     emit("close");
 };
 </script>
@@ -154,20 +194,20 @@ const handleSubmit = () => {
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-slate-300 font-medium mb-1">Waktu Mulai (MM:SS)</label>
+                        <label class="block text-slate-300 font-medium mb-1">Waktu Mulai (HH:MM:SS)</label>
                         <input
                             v-model="startTime"
                             type="text"
-                            placeholder="00:00"
+                            placeholder="00:00:00"
                             class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs text-center font-semibold"
                         />
                     </div>
                     <div>
-                        <label class="block text-slate-300 font-medium mb-1">Waktu Selesai (MM:SS)</label>
+                        <label class="block text-slate-300 font-medium mb-1">Waktu Selesai (HH:MM:SS)</label>
                         <input
                             v-model="endTime"
                             type="text"
-                            placeholder="00:30"
+                            placeholder="00:00:30"
                             class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs text-center font-semibold"
                         />
                     </div>

@@ -184,12 +184,38 @@ const faqs = [
             "Mengapa Super Chat atau Membership tidak muncul di Live Chat?",
         answer: 'Aturan resmi Google & YouTube melarang transaksi keuangan (Super Chat, Gift Membership) di pemutar situs luar untuk menjaga keamanan pembayaran.<br/><br/>Untuk mengirimkan Super Chat atau bergabung menjadi Member, silakan klik tombol <strong class="text-slate-200 font-mono font-semibold">"Buka di YouTube"</strong> pada kartu siaran.',
     },
+    // Category: KLIP AKSI & STUDIO CLIPPER
+    {
+        id: 12,
+        code: "SOP-CLIP-01",
+        category: "CLIPS",
+        categoryLabel: "Klip Aksi & Studio Pro",
+        question: "Apa itu Fitur Kumpulan Klip Aksi dan bagaimana cara membuatnya?",
+        answer: 'Fitur Kumpulan Klip Aksi memungkinkan penonton untuk menyimpan dan membagikan momen-momen seru dari siaran perwira (seperti momen kejaran, pengepungan, atau aksi lucu).<br/><br/>Saat menonton siaran di <strong class="text-blue-400 font-mono">Mode Fokus</strong>, Anda dapat mengisi judul klip serta menit & detik momen menarik di panel kanan bawah. Klip yang Anda tandai akan langsung muncul di tab <strong class="text-blue-400 font-mono">Kumpulan Klip Aksi</strong> untuk dinikmati oleh seluruh penonton.',
+    },
+    {
+        id: 13,
+        code: "SOP-CLIP-02",
+        category: "CLIPS",
+        categoryLabel: "Klip Aksi & Studio Pro",
+        question: "Apa itu Studio Clipper Pro dan apa kegunaannya?",
+        answer: '<strong class="text-blue-400 font-mono">Studio Clipper Pro</strong> adalah studio khusus yang dirancang bagi perwira dan editor resmi untuk memotong, mengedit, serta memproses cuplikan video siaran YouTube secara presisi.<br/><br/>Melalui studio ini, tim media dapat mengolah cuplikan momen patroli menjadi konten berkualitas tinggi untuk publikasi komunitas.',
+    },
+    {
+        id: 14,
+        code: "SOP-CLIP-03",
+        category: "CLIPS",
+        categoryLabel: "Klip Aksi & Studio Pro",
+        question: "Mengapa tombol Akses Studio Clipper bertanda gembok (🔒) dan terkunci?",
+        answer: 'Untuk menjaga kualitas dan keamanan operasional, akses penuh ke fitur Studio Clipper Pro **dibatasi khusus untuk akun berizin (Role Clipper / Admin)**.<br/><br/>Jika Anda belum memiliki role yang diizinkan, tombol akan menampilkan tanda gembok <code class="bg-slate-950 px-1.5 py-0.5 rounded text-amber-400 border border-amber-900/60 font-mono">🔒</code>. Jika Anda adalah editor konten atau perwira yang berminat menjadi Clipper resmi IME Police, Anda dapat mengajukan permohonan role melalui halaman <a href="/feedback" class="text-blue-400 font-mono underline font-semibold hover:text-blue-300 transition">Feedback & Support</a>.',
+    },
 ];
 
 // Categories configuration with dedicated SVG icons
 const categories = [
     { id: "ALL", name: "Semua Kategori", code: "ALL", icon: "grid" },
     { id: "MULTIVIEW", name: "Multiview & Fitur", code: "MV", icon: "video" },
+    { id: "CLIPS", name: "Klip Aksi & Studio Pro", code: "CLIP", icon: "cut" },
     { id: "TAC", name: "Radio Taktis (TAC)", code: "TAC", icon: "radio" },
     {
         id: "OFFICERS",
@@ -337,16 +363,22 @@ const highlightKeyword = (text) => {
                             # Focus Mode
                         </button>
                         <button
+                            @click="setSearchKeyword('Klip')"
+                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
+                        >
+                            # Klip Aksi
+                        </button>
+                        <button
+                            @click="setSearchKeyword('Studio Clipper')"
+                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
+                        >
+                            # Studio Clipper
+                        </button>
+                        <button
                             @click="setSearchKeyword('TAC')"
                             class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
                         >
                             # TAC Radio
-                        </button>
-                        <button
-                            @click="setSearchKeyword('Sync')"
-                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
-                        >
-                            # Sync Error
                         </button>
                     </div>
                 </div>
@@ -668,6 +700,21 @@ const highlightKeyword = (text) => {
                                             stroke-linejoin="round"
                                             stroke-width="2"
                                             d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                        />
+                                    </svg>
+                                    <svg
+                                        v-else-if="cat.icon === 'cut'"
+                                        class="w-4 h-4 shrink-0"
+                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L4 4m5.121 5.121L4 14"
                                         />
                                     </svg>
                                     <svg

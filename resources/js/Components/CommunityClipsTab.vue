@@ -1,36 +1,6 @@
 <script setup>
-/**
- * ==============================================================================
- * SPESIFIKASI DATA & CONTRACT INTEGRASI - KUMPULAN AKSI & SHORTS TAB
- * ==============================================================================
- * 
- * 1. DATA API DB DIBUTUHKAN (GET /api/streams/{video_id}/clips atau GET /api/clips):
- *    Array dari objek klip dengan struktur schema berikut:
- *    clips: [
- *      {
- *        id: Number/String (ID unik klip di database),
- *        video_id: String (ID Video YouTube terkait),
- *        title: String (Judul Klip Momen Aksi),
- *        start_seconds: Number (Detik mulai tayangan),
- *        end_seconds: Number (Detik selesai tayangan),
- *        duration_seconds: Number (Total durasi klip dalam detik),
- *        creator_name: String (Nama Pembuat Klip / Officer / Viewer),
- *        created_at: String (Format relatif / Waktu pembuatan, misal '3 jam lalu')
- *      }
- *    ]
- * 
- * 2. ENDPOINT API YANG DIPERLUKAN:
- *    - GET /api/streams/{video_id}/clips  : Mengambil daftar klip aksi untuk siaran ini
- *    - POST /api/clips                    : Menyimpan klip aksi baru dari form Focus Mode
- *    - DELETE /api/clips/{id}             : Menghapus klip aksi (Admin / Author)
- * 
- * ==============================================================================
- * CATATAN INTEGRASI:
- * Jika integrasi API Backend (Laravel Controller + Migration DB Clips) ini 
- * sudah selesai dikerjakan, HAPUS BLOK KOMENTAR INI.
- * ==============================================================================
- */
-import { ref } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps({
     officer: {
@@ -41,67 +11,185 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    customClips: {
+        type: Array,
+        default: null,
+    },
 });
 
-const emit = defineEmits(["open-create-clip", "play-clip"]);
+const emit = defineEmits(["open-create-clip", "play-clip", "delete-clip"]);
 
-// Mock initial community action clips
-const clips = ref([
-    {
-        id: 1,
-        title: "PIT Maneuver Sempurna Saat Kejaran Supercar di Highway 68",
-        start_seconds: 615,
-        end_seconds: 660,
-        duration_seconds: 45,
-        thumbnail_url: null,
-        video_id: props.stream?.video_id || "dQw4w9WgXcQ",
-        creator_name: "ClipMaster_RP",
-        created_at: "3 jam lalu",
-    },
-    {
-        id: 2,
-        title: "Baku Tembak Sengit di Paleto Bank - Respon Cepat Unit SAS",
-        start_seconds: 1200,
-        end_seconds: 1290,
-        duration_seconds: 90,
-        thumbnail_url: null,
-        video_id: props.stream?.video_id || "dQw4w9WgXcQ",
-        creator_name: "TacticalLover",
-        created_at: "6 jam lalu",
-    },
-    {
-        id: 3,
-        title: "Kucing Nyangkut di Mobil Patroli & Dialog Suspek",
-        start_seconds: 3400,
-        end_seconds: 3450,
-        duration_seconds: 50,
-        thumbnail_url: null,
-        video_id: props.stream?.video_id || "dQw4w9WgXcQ",
-        creator_name: "FunnyMoments_GTA",
-        created_at: "1 hari lalu",
-    },
-    {
-        id: 4,
-        title: "Pendaratan Darurat Helikopter SASP Saat Operasi Badai",
-        start_seconds: 2150,
-        end_seconds: 2210,
-        duration_seconds: 60,
-        thumbnail_url: null,
-        video_id: props.stream?.video_id || "dQw4w9WgXcQ",
-        creator_name: "AirSupportFan",
-        created_at: "2 hari lalu",
-    },
-]);
+const page = usePage();
+const authUser = computed(() => page.props.auth?.user);
+
+// Initial community action clips fallback (Empty list, no mock/sample clips)
+const defaultClips = ref([]);
+
+const clips = computed(() => {
+    return props.customClips !== null ? props.customClips : defaultClips.value;
+});
+
+// Active Filter Scope: 'officer' (Semua Klip Officer) vs 'stream' (Siaran Ini)
+const clipScopeFilter = ref("officer");
+
+// Search Filter
+const searchQuery = ref("");
+
+// Pagination / Lazy Loading State
+const visibleCount = ref(12);
+
+const loadMore = () => {
+    visibleCount.value += 12;
+};
+
+// Reset pagination when filter or search changes
+watch([clipScopeFilter, searchQuery], () => {
+    visibleCount.value = 12;
+});
+
+const currentVideoId = computed(() => {
+    return (props.stream?.video_id || props.officer?.video_id || "").toString().trim();
+});
+
+const currentOfficerId = computed(() => {
+    return (props.officer?.id || props.officer?.officer_id || props.stream?.officer?.id || props.stream?.officer_id || "").toString().trim();
+});
+
+const currentOfficerName = computed(() => {
+    return (props.officer?.officer_name || props.officer?.name || props.stream?.officer?.officer_name || props.stream?.officer?.name || "").toString().trim().toLowerCase();
+});
+
+const currentOfficerHandle = computed(() => {
+    const h = (props.officer?.handle || props.stream?.officer?.handle || "").toString().trim().toLowerCase();
+    return h.startsWith("@") ? h.slice(1) : h;
+});
+
+const isClipMatchingOfficer = (c) => {
+    if (currentVideoId.value && c.video_id && String(c.video_id).trim() === currentVideoId.value) {
+        return true;
+    }
+    if (currentOfficerId.value && c.officer_id && String(c.officer_id).trim() === currentOfficerId.value) {
+        return true;
+    }
+    if (currentOfficerName.value && c.officer_name && String(c.officer_name).trim().toLowerCase() === currentOfficerName.value) {
+        return true;
+    }
+    if (currentOfficerHandle.value && c.officer_handle && String(c.officer_handle).trim().toLowerCase().replace(/^@/, '') === currentOfficerHandle.value) {
+        return true;
+    }
+    // Fallback: if clip has no specific video_id or officer_id attached
+    if (!c.video_id && !c.officer_id) {
+        return true;
+    }
+    return false;
+};
+
+const isClipMatchingStream = (c) => {
+    return !!(currentVideoId.value && c.video_id && String(c.video_id).trim() === currentVideoId.value);
+};
+
+const streamClipsCount = computed(() => {
+    if (!currentVideoId.value) return 0;
+    return clips.value.filter(isClipMatchingStream).length;
+});
+
+const officerClipsCount = computed(() => {
+    return clips.value.filter(isClipMatchingOfficer).length;
+});
+
+const filteredClips = computed(() => {
+    let list = clips.value;
+
+    if (clipScopeFilter.value === "stream") {
+        list = list.filter(isClipMatchingStream);
+    } else {
+        list = list.filter(isClipMatchingOfficer);
+    }
+
+    if (searchQuery.value.trim()) {
+        const q = searchQuery.value.toLowerCase().trim();
+        list = list.filter(
+            (c) =>
+                (c.title || "").toLowerCase().includes(q) ||
+                (c.creator_name || "").toLowerCase().includes(q)
+        );
+    }
+
+    return list;
+});
+
+const paginatedClips = computed(() => {
+    return filteredClips.value.slice(0, visibleCount.value);
+});
+
+const hasMoreClips = computed(() => {
+    return visibleCount.value < filteredClips.value.length;
+});
+
+// IntersectionObserver for automatic lazy loading on scroll
+const sentinelRef = ref(null);
+let observer = null;
+
+onMounted(() => {
+    if ("IntersectionObserver" in window) {
+        observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMoreClips.value) {
+                    loadMore();
+                }
+            },
+            { rootMargin: "250px" }
+        );
+        if (sentinelRef.value) {
+            observer.observe(sentinelRef.value);
+        }
+    }
+});
+
+onUnmounted(() => {
+    if (observer) {
+        observer.disconnect();
+    }
+});
 
 const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    if (isNaN(seconds) || seconds === null || seconds < 0) return "00:00";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const pad = (num) => String(num).padStart(2, "0");
+    if (h > 0) {
+        return `${h}:${pad(m)}:${pad(s)}`;
+    }
+    return `${pad(m)}:${pad(s)}`;
+};
+
+const canDeleteClip = (clip) => {
+    if (!authUser.value) return false;
+    const isUserAdmin = authUser.value.role === "admin" || !!authUser.value.is_admin;
+    if (isUserAdmin) return true;
+    if (clip.user_id && clip.user_id === authUser.value.id) return true;
+    if (
+        clip.creator_name &&
+        authUser.value.name &&
+        clip.creator_name.trim().toLowerCase() === authUser.value.name.trim().toLowerCase()
+    ) {
+        return true;
+    }
+    return false;
 };
 
 const deleteClip = (clipId) => {
+    const clipTarget = clips.value.find((c) => c.id === clipId);
+    if (clipTarget && !canDeleteClip(clipTarget)) {
+        alert("Anda tidak memiliki izin untuk menghapus klip ini!");
+        return;
+    }
     if (confirm("Apakah Anda yakin ingin menghapus klip momen aksi ini?")) {
-        clips.value = clips.value.filter((c) => c.id !== clipId);
+        emit("delete-clip", clipId);
+        if (props.customClips === null) {
+            defaultClips.value = defaultClips.value.filter((c) => c.id !== clipId);
+        }
     }
 };
 
@@ -117,85 +205,140 @@ const playClipModal = (clip) => {
     <div class="space-y-4 font-sans">
         <!-- HEADER & TOOLBAR -->
         <div class="flex items-center justify-between flex-wrap gap-3 border-b border-slate-800 pb-3">
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-2 flex-wrap gap-y-2">
                 <h3 class="text-xs font-medium text-slate-200 uppercase tracking-tight font-mono flex items-center gap-2">
-                    <span>Kumpulan Aksi & Shorts</span>
+                    <span>Kumpulan Klip Aksi</span>
                     <span class="px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800 font-mono text-[10px]">
-                        {{ clips.length }} Klip
+                        {{ filteredClips.length }} Klip
                     </span>
                 </h3>
+
+                <!-- FILTER SCOPE TOGGLE BUTTONS (OFFICER VS SIARAN INI) -->
+                <div class="flex items-center bg-slate-950 border border-slate-800 rounded-md p-0.5 font-mono text-[11px]">
+                    <button
+                        @click="clipScopeFilter = 'officer'"
+                        :class="clipScopeFilter === 'officer' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-2.5 py-1 rounded transition-colors cursor-pointer flex items-center gap-1"
+                        title="Tampilkan semua klip dari officer ini (seluruh riwayat video)"
+                    >
+                        <span>Semua Klip Officer</span>
+                        <span class="text-[10px] opacity-80">({{ officerClipsCount }})</span>
+                    </button>
+                    <button
+                        @click="clipScopeFilter = 'stream'"
+                        :class="clipScopeFilter === 'stream' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-2.5 py-1 rounded transition-colors cursor-pointer flex items-center gap-1"
+                        title="Hanya tampilkan klip dari siaran video yang sedang diputar"
+                    >
+                        <span>Siaran Ini</span>
+                        <span class="text-[10px] opacity-80">({{ streamClipsCount }})</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- TANDAI AKSI / CREATE CLIP BUTTON -->
-            <button
-                @click="emit('open-create-clip')"
-                class="px-2.5 py-1 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 rounded-md text-xs font-mono transition-colors flex items-center gap-1.5 cursor-pointer"
-            >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                <span>Tambah Klip Baru</span>
-            </button>
+            <!-- SEARCH INPUT & TANDAI AKSI / CREATE CLIP BUTTON -->
+            <div class="flex items-center space-x-2 w-full sm:w-auto">
+                <input
+                    v-model="searchQuery"
+                    type="text"
+                    maxlength="50"
+                    placeholder="Cari klip atau pembuat..."
+                    class="bg-slate-950 border border-slate-800 rounded-md px-2.5 py-1 text-slate-200 text-xs placeholder:text-slate-500 outline-none focus:border-blue-500 transition-colors w-full sm:w-44"
+                />
+
+                <button
+                    @click="emit('open-create-clip')"
+                    class="px-2.5 py-1 bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 rounded-md text-xs font-mono transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>Tambah Klip Baru</span>
+                </button>
+            </div>
         </div>
 
         <!-- ACTION CLIPS GRID (SHOW IF CLIPS EXIST) -->
-        <div v-if="clips.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            <div
-                v-for="clip in clips"
-                :key="clip.id"
-                class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl overflow-hidden transition-colors flex flex-col group"
-            >
-                <!-- THUMBNAIL AREA -->
-                <div class="relative aspect-video bg-slate-950 overflow-hidden cursor-pointer" @click="playClipModal(clip)">
-                    <img
-                        :src="`https://i.ytimg.com/vi/${clip.video_id}/hqdefault.jpg`"
-                        :alt="clip.title"
-                        class="w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-opacity"
-                    />
+        <div v-if="filteredClips.length > 0" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div
+                    v-for="clip in paginatedClips"
+                    :key="clip.id"
+                    class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl overflow-hidden transition-colors flex flex-col group"
+                >
+                    <!-- THUMBNAIL AREA -->
+                    <div class="relative aspect-video bg-slate-950 overflow-hidden cursor-pointer" @click="playClipModal(clip)">
+                        <img
+                            :src="`https://i.ytimg.com/vi/${clip.video_id}/hqdefault.jpg`"
+                            :alt="clip.title"
+                            class="w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-opacity"
+                        />
 
-                    <!-- ADMIN DELETE CLIP BUTTON -->
-                    <div class="absolute top-2 right-2 z-20">
-                        <button
-                            @click.stop="deleteClip(clip.id)"
-                            class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-400 hover:text-red-400 bg-slate-950/90 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors flex items-center gap-1 cursor-pointer"
-                            title="Hapus Klip"
-                        >
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                            <span>Hapus</span>
-                        </button>
+                        <!-- DELETE CLIP BUTTON (ONLY VISIBLE IF AUTHORIZED: OWNER OR ADMIN) -->
+                        <div v-if="canDeleteClip(clip)" class="absolute top-2 right-2 z-20">
+                            <button
+                                @click.stop="deleteClip(clip.id)"
+                                class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-400 hover:text-red-400 bg-slate-950/90 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors flex items-center gap-1 cursor-pointer"
+                                title="Hapus Klip"
+                            >
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                <span>Hapus</span>
+                            </button>
+                        </div>
+
+                        <!-- DURATION OVERLAY -->
+                        <div class="absolute bottom-2 right-2 bg-slate-950/90 px-2 py-0.5 rounded font-mono text-[10px] text-slate-300 border border-slate-800 z-10">
+                            {{ formatTime(clip.start_seconds) }} - {{ formatTime(clip.end_seconds) }}
+                        </div>
+
+                        <!-- PLAY BUTTON OVERLAY -->
+                        <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
+                            <div class="w-9 h-9 rounded bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center">
+                                <svg class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- DURATION OVERLAY -->
-                    <div class="absolute bottom-2 right-2 bg-slate-950/90 px-2 py-0.5 rounded font-mono text-[10px] text-slate-300 border border-slate-800 z-10">
-                        {{ formatTime(clip.start_seconds) }} - {{ formatTime(clip.end_seconds) }}
-                    </div>
+                    <!-- CONTENT DETAILS -->
+                    <div class="p-3.5 flex flex-col justify-between flex-1 space-y-2.5">
+                        <div>
+                            <h4
+                                class="text-xs font-medium text-slate-200 group-hover:text-slate-100 transition-colors line-clamp-2 leading-relaxed cursor-pointer break-words"
+                                @click="playClipModal(clip)"
+                                :title="clip.title"
+                            >
+                                {{ clip.title }}
+                            </h4>
+                        </div>
 
-                    <!-- PLAY BUTTON OVERLAY -->
-                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
-                        <div class="w-9 h-9 rounded bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center">
-                            <svg class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z"/>
-                            </svg>
+                        <!-- CLEAN FOOTER: CREATOR & CREATED AT -->
+                        <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                            <span class="truncate max-w-[130px] sm:max-w-[160px]" :title="`Ditandai oleh: ${clip.creator_name}`">
+                                Ditandai oleh: <strong class="text-slate-300 font-semibold">{{ clip.creator_name }}</strong>
+                            </span>
+                            <span class="shrink-0 ml-1">{{ clip.created_at }}</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- CONTENT DETAILS -->
-                <div class="p-3.5 flex flex-col justify-between flex-1 space-y-2.5">
-                    <div>
-                        <h4 class="text-xs font-medium text-slate-200 group-hover:text-slate-100 transition-colors line-clamp-2 leading-relaxed cursor-pointer" @click="playClipModal(clip)">
-                            {{ clip.title }}
-                        </h4>
-                    </div>
-
-                    <!-- CLEAN FOOTER: CREATOR & CREATED AT -->
-                    <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-400">
-                        <span>Ditandai oleh: <strong class="text-slate-300 font-semibold">{{ clip.creator_name }}</strong></span>
-                        <span>{{ clip.created_at }}</span>
-                    </div>
-                </div>
+            <!-- LAZY LOADING SENTINEL & LOAD MORE BUTTON -->
+            <div v-if="hasMoreClips" class="pt-4 flex flex-col items-center justify-center space-y-2">
+                <button
+                    @click="loadMore"
+                    class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 rounded-lg text-xs font-mono transition-colors flex items-center gap-2 cursor-pointer shadow"
+                >
+                    <svg class="w-3.5 h-3.5 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Muat Lebih Banyak Klip (+12 — Tersisa {{ filteredClips.length - visibleCount }})</span>
+                </button>
+                <div ref="sentinelRef" class="h-4 w-full"></div>
             </div>
         </div>
 
@@ -209,7 +352,7 @@ const playClipModal = (clip) => {
             <div class="space-y-1">
                 <h4 class="text-sm font-bold text-slate-200 font-mono">BELUM ADA KLIP MOMEN AKSI</h4>
                 <p class="text-xs text-slate-400 max-w-sm leading-relaxed">
-                    Belum ada klip momen aksi yang ditandai untuk siaran ini. Mulai tandai momen menarik atau kejadian taktis sekarang.
+                    {{ searchQuery ? 'Tidak ada klip yang cocok dengan kata kunci pencarian Anda.' : (clipScopeFilter === 'stream' ? 'Belum ada klip momen aksi yang ditandai khusus untuk siaran ini.' : 'Belum ada klip momen aksi yang ditandai untuk perwira ini.') }}
                 </p>
             </div>
             <button
@@ -228,7 +371,9 @@ const playClipModal = (clip) => {
             <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-3xl w-full p-4 space-y-3">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <div class="flex items-center space-x-2 truncate">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-300 bg-slate-950 border border-slate-800">CLIP</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-300 bg-slate-950 border border-slate-800">
+                            CLIP
+                        </span>
                         <h3 class="text-xs font-medium text-slate-200 truncate font-mono">{{ activePlayingClip.title }}</h3>
                     </div>
                     <button @click="activePlayingClip = null" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded bg-slate-800 cursor-pointer">✕ Close</button>

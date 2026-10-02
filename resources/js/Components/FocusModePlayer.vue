@@ -1,39 +1,6 @@
 <script setup>
-/**
- * ==============================================================================
- * SPESIFIKASI DATA & CONTRACT INTEGRASI - FOCUS MODE PLAYER
- * ==============================================================================
- * 
- * 1. PROPS DIBUTUHKAN DARI PARENT / BACKEND (Inertia Props):
- *    - stream: {
- *        video_id: String (Wajib - ID Video YouTube, misal 'dQw4w9WgXcQ'),
- *        title: String (Judul Siaran Patroli / Live Stream),
- *        description: String (Deskripsi Resmi Streamer dari Scraper/API),
- *        officer: {
- *          name / officer_name: String (Nama Perwira),
- *          department: String ('LSPD' | 'BCSO' | 'LSCSD' | 'SASP' | 'SAPR'),
- *          handle: String (YouTube Handle, misal '@officer_name')
- *        }
- *      }
- *    - originUrl: String (Origin URL aplikasi untuk YouTube Embed API)
- *    - fetchedDescription: String (Fallback/Lazy-fetched stream description)
- *    - activeAudioVideoId / isStreamStopped / isRightChatOpen / isTheaterMode / activeTacChannel
- * 
- * 2. PAYLOAD UNTUK FORM PENANDAAN KLIP BARU (POST /api/clips):
- *    - video_id: String (ID YouTube stream)
- *    - title: String (Judul Klip Aksi / Kejadian Taktis)
- *    - start_seconds: Number (Waktu Mulai dalam Detik, konversi dari MM:SS)
- *    - end_seconds: Number (Waktu Selesai dalam Detik, konversi dari MM:SS)
- *    - creator_name: String (Nama Penanda Klip / Optional)
- * 
- * ==============================================================================
- * CATATAN INTEGRASI:
- * Setelah integrasi API backend (POST /api/clips & GET /api/streams/{id}) 
- * ini sudah selesai dikerjakan, HAPUS BLOK KOMENTAR INI.
- * ==============================================================================
- */
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { router } from "@inertiajs/vue3";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { router, usePage } from "@inertiajs/vue3";
 
 import CommunityClipsTab from "@/Components/CommunityClipsTab.vue";
 
@@ -72,27 +39,117 @@ const emit = defineEmits([
     "toggle-right-chat",
     "toggle-theater-mode",
     "toggle-tac-popover",
+    "assign-tac",
+    "remove-tac",
     "close-focus",
 ]);
 
+// Inertia Page User Permission & Auth State
+const page = usePage();
+const authUser = computed(() => page.props.auth?.user);
+
 // Active Tab in Focus Mode: 'description' (Primary / Default), 'clips' (Kumpulan Aksi), 'create-clip' (Form Input Klip Baru)
 const activeFocusTab = ref("description");
+
+// Radio TAC Popover State & Methods
+const isTacPopoverOpen = ref(false);
+
+const selectTacChannel = (tacCode) => {
+    emit("assign-tac", tacCode);
+    isTacPopoverOpen.value = false;
+};
+
+const removeTacChannel = () => {
+    emit("remove-tac");
+    isTacPopoverOpen.value = false;
+};
 
 // Inline Clip Creation Form State
 const newClipTitle = ref("");
 const newClipStartTime = ref("00:00");
 const newClipEndTime = ref("01:00");
-const newClipAuthor = ref("");
+const newClipAuthor = ref(authUser.value?.name || "");
 const newClipDurationPreset = ref(60);
+
+watch(
+    () => authUser.value?.name,
+    (newName) => {
+        if (newName && !newClipAuthor.value) {
+            newClipAuthor.value = newName;
+        }
+    },
+    { immediate: true }
+);
+
+// Clips list state for Focus Mode (Persisted in localStorage across page refreshes)
+const STORAGE_KEY = "ime_focus_community_clips";
+
+const loadCustomClips = () => {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        return [];
+    }
+};
+
+const saveCustomClips = () => {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(customClipsList.value));
+    } catch (e) {
+        // Silently handle storage errors
+    }
+};
+
+const customClipsList = ref(loadCustomClips());
+
+const handleDeleteClip = (clipId) => {
+    customClipsList.value = customClipsList.value.filter(
+        (c) => c.id !== clipId,
+    );
+    saveCustomClips();
+};
+
+// Stream Availability State (Deleted / Private / Members-Only YouTube video handling)
+const isStreamUnavailable = ref(false);
+const streamErrorCode = ref(null);
 
 // Live Stream Playback Time Tracking via YouTube postMessage API
 const currentPlaybackTime = ref(0);
 
+const formatTimeHelper = (seconds) => {
+    if (isNaN(seconds) || seconds === null || seconds < 0) return "00:00";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const pad = (num) => String(num).padStart(2, "0");
+    if (h > 0) {
+        return `${h}:${pad(m)}:${pad(s)}`;
+    }
+    return `${pad(m)}:${pad(s)}`;
+};
+
+const parseTimestamp = (str) => {
+    if (!str) return 0;
+    const parts = String(str).trim().split(":");
+    if (parts.length === 3) {
+        return (
+            (parseInt(parts[0], 10) || 0) * 3600 +
+            (parseInt(parts[1], 10) || 0) * 60 +
+            (parseInt(parts[2], 10) || 0)
+        );
+    }
+    if (parts.length === 2) {
+        return (
+            (parseInt(parts[0], 10) || 0) * 60 +
+            (parseInt(parts[1], 10) || 0)
+        );
+    }
+    return parseInt(str, 10) || 0;
+};
+
 const formattedCurrentPlaybackTime = computed(() => {
-    const sec = Math.floor(currentPlaybackTime.value || 0);
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    return formatTimeHelper(Math.floor(currentPlaybackTime.value || 0));
 });
 
 const handleYTMessage = (event) => {
@@ -105,6 +162,19 @@ const handleYTMessage = (event) => {
             return;
         }
     }
+
+    // YouTube Error Event Code Handling (100 = deleted/not found, 101/150 = members-only/private embed restricted)
+    if (
+        data &&
+        (data.event === "onError" ||
+            data.info === 100 ||
+            data.info === 101 ||
+            data.info === 150)
+    ) {
+        isStreamUnavailable.value = true;
+        streamErrorCode.value = data.info || data.data || 100;
+    }
+
     if (data && (data.event === "infoDelivery" || data.info)) {
         const info = data.info || data;
         if (info && typeof info.currentTime === "number") {
@@ -151,30 +221,20 @@ onUnmounted(() => {
 
 const setClipPreset = (seconds) => {
     newClipDurationPreset.value = seconds;
-    const parts = newClipStartTime.value.split(":");
-    let totalSecs = 0;
-    if (parts.length === 2) {
-        totalSecs = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-    }
+    const totalSecs = parseTimestamp(newClipStartTime.value);
     const endSecs = totalSecs + seconds;
-    const em = Math.floor(endSecs / 60);
-    const es = Math.floor(endSecs % 60);
-    newClipEndTime.value = `${em.toString().padStart(2, "0")}:${es.toString().padStart(2, "0")}`;
+    newClipEndTime.value = formatTimeHelper(endSecs);
 };
 
 const setStartFromCurrentTime = () => {
     const sec = Math.floor(currentPlaybackTime.value || 0);
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    newClipStartTime.value = `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    newClipStartTime.value = formatTimeHelper(sec);
     setClipPreset(newClipDurationPreset.value);
 };
 
 const setEndFromCurrentTime = () => {
     const sec = Math.floor(currentPlaybackTime.value || 0);
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    newClipEndTime.value = `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    newClipEndTime.value = formatTimeHelper(sec);
 };
 
 const handleCreateClipSubmit = () => {
@@ -183,16 +243,64 @@ const handleCreateClipSubmit = () => {
         return;
     }
 
-    alert(
-        `Klip Momen Aksi "${newClipTitle.value}" (${newClipStartTime.value} - ${newClipEndTime.value}) berhasil ditandai.`,
-    );
+    const startSec = parseTimestamp(newClipStartTime.value);
+    const endSec = parseTimestamp(newClipEndTime.value);
+    const durSec = Math.max(1, endSec - startSec);
+
+    const authorNameFinal =
+        newClipAuthor.value.trim() ||
+        authUser.value?.name ||
+        "Penonton Komunitas";
+
+    const createdClip = {
+        id: Date.now(),
+        title: newClipTitle.value.trim(),
+        start_seconds: startSec,
+        end_seconds: endSec,
+        duration_seconds: durSec,
+        thumbnail_url: null,
+        video_id: props.stream?.video_id || null,
+        officer_id: props.stream?.officer?.id || props.stream?.officer_id || null,
+        officer_name: props.stream?.officer?.officer_name || props.stream?.officer?.name || null,
+        officer_handle: props.stream?.officer?.handle || null,
+        creator_name: authorNameFinal,
+        user_id: authUser.value?.id || null,
+        created_at: "Baru saja",
+    };
+
+    customClipsList.value.unshift(createdClip);
+    saveCustomClips();
 
     // Reset & switch to clips tab
     newClipTitle.value = "";
+    newClipAuthor.value = authUser.value?.name || "";
     activeFocusTab.value = "clips";
 };
 
+// Inertia Page User Permission State
+const canTrimVideo = computed(() => {
+    if (!authUser.value) return false;
+    return (
+        !!authUser.value.can_trim_video ||
+        ["admin", "clipper"].includes(authUser.value.role)
+    );
+});
+
 const openStudioClipper = () => {
+    if (!authUser.value) {
+        alert(
+            "🔒 Akses Studio Clipper Terbatas!\n\nFitur Studio Clipper Pro khusus untuk Perwira dan Official Clipper IME Police. Silakan login terlebih dahulu untuk mengakses studio pemotong video.",
+        );
+        return;
+    }
+
+    if (!canTrimVideo.value) {
+        alert(
+            `🔒 Akses Studio Clipper Terbatas!\n\nAkun Anda (${authUser.value.name}) belum memiliki hak akses Studio Clipper Pro (Diperlukan Role: Clipper atau Admin).\n\nSilakan hubungi Administrator untuk meminta role Clipper.`,
+        );
+        return;
+    }
+
     if (props.stream?.video_id) {
         const targetUrl = `https://www.youtube.com/watch?v=${props.stream.video_id}`;
         router.visit(`/clipper?url=${encodeURIComponent(targetUrl)}`);
@@ -224,14 +332,14 @@ const getDeptIcon = (dept) => {
 const getDeptBadgeClass = (dept) => {
     const d = (dept || "").toUpperCase();
     if (d.includes("LSPD"))
-        return "bg-blue-950/80 text-blue-300 border-blue-800/80";
+        return "bg-blue-600/30 text-blue-300 border-blue-500/50";
     if (d.includes("BCSO") || d.includes("LSCSD"))
-        return "bg-amber-950/80 text-amber-300 border-amber-800/80";
+        return "bg-amber-600/30 text-amber-300 border-amber-500/50";
     if (d.includes("SASP"))
-        return "bg-teal-950/80 text-teal-300 border-teal-800/80";
+        return "bg-teal-600/30 text-teal-300 border-teal-500/50";
     if (d.includes("SAPR") || d.includes("RANGER"))
-        return "bg-emerald-950/80 text-emerald-300 border-emerald-800/80";
-    return "bg-slate-900 text-slate-300 border-slate-800";
+        return "bg-green-600/30 text-green-300 border-green-500/50";
+    return "bg-slate-700/40 text-slate-300 border-slate-600";
 };
 
 const officerName = computed(() => {
@@ -246,11 +354,31 @@ const officerDepartment = computed(() => {
     return props.stream?.officer?.department || "UNIT";
 });
 
+const officerCallsign = computed(() => {
+    return props.stream?.officer?.callsign || "";
+});
+
+const officerBadge = computed(() => {
+    return props.stream?.officer?.badge_number || "";
+});
+
+const officerRank = computed(() => {
+    return props.stream?.officer?.rank || "";
+});
+
+const officerAvatar = computed(() => {
+    return props.stream?.officer?.avatar_url || "";
+});
+
 const youtubeHandle = computed(() => {
     const h = props.stream?.officer?.handle;
     if (!h) return null;
     return h.startsWith("@") ? h : `@${h}`;
 });
+
+const handleAvatarError = (e) => {
+    e.target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(officerCallsign.value || officerName.value || "officer")}`;
+};
 </script>
 
 <template>
@@ -272,8 +400,8 @@ const youtubeHandle = computed(() => {
                 </span>
 
                 <h1
-                    class="text-xs sm:text-sm font-medium text-slate-200 truncate"
-                    :title="stream?.title"
+                    class="text-xs sm:text-sm font-medium text-slate-200 truncate max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl"
+                    :title="stream?.title || 'Siaran Patroli Taktis'"
                 >
                     {{ stream?.title || "Siaran Patroli Taktis" }}
                 </h1>
@@ -281,28 +409,93 @@ const youtubeHandle = computed(() => {
 
             <!-- RIGHT SIDE BUTTONS (FROM RIGHT TO LEFT: GRID, PAUSE, AUDIO, TAC) -->
             <div class="flex items-center space-x-1.5 shrink-0">
-                <!-- TAC BUTTON (4th from right / 1st from left of group) -->
-                <button
-                    @click="emit('toggle-tac-popover')"
-                    :class="
-                        activeTacChannel
-                            ? 'bg-slate-800 text-slate-100 border-slate-700'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
-                    "
-                    class="px-2.5 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 cursor-pointer text-xs font-mono"
-                    title="Radio TAC Channel"
-                >
-                    <img
-                        :src="iconRadio"
-                        class="w-3.5 h-3.5 invert opacity-70"
-                        alt="TAC"
-                    />
-                    <span class="hidden sm:inline">{{
-                        activeTacChannel
-                            ? activeTacChannel.replace("_", " ")
-                            : "Radio TAC"
-                    }}</span>
-                </button>
+                <!-- TAC BUTTON WITH INTERACTIVE DROPDOWN POPOVER -->
+                <div class="relative">
+                    <button
+                        @click="isTacPopoverOpen = !isTacPopoverOpen"
+                        :class="
+                            activeTacChannel
+                                ? 'bg-blue-950/90 text-blue-300 border-blue-700/80 font-bold'
+                                : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
+                        "
+                        class="px-2.5 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 cursor-pointer text-xs font-mono"
+                        title="Pilih / Kelola Saluran Radio TAC"
+                    >
+                        <img
+                            :src="iconRadio"
+                            class="w-3.5 h-3.5 invert opacity-70"
+                            alt="TAC"
+                        />
+                        <span class="hidden sm:inline">{{
+                            activeTacChannel
+                                ? activeTacChannel.replace("_", " ")
+                                : "Radio TAC"
+                        }}</span>
+                    </button>
+
+                    <!-- TAC CHANNEL SELECTION DROPDOWN POPOVER -->
+                    <div
+                        v-if="isTacPopoverOpen"
+                        class="absolute right-0 mt-2 w-72 sm:w-80 bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-2xl z-50 space-y-3 font-sans text-xs animate-in fade-in zoom-in-95 duration-150"
+                    >
+                        <div
+                            class="flex items-center justify-between border-b border-slate-800 pb-2"
+                        >
+                            <div class="flex items-center space-x-1.5">
+                                <span
+                                    class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
+                                ></span>
+                                <span
+                                    class="font-semibold text-slate-200 font-mono text-[11px]"
+                                    >Radio Taktis TAC</span
+                                >
+                            </div>
+                            <button
+                                @click="isTacPopoverOpen = false"
+                                class="text-slate-400 hover:text-slate-200 text-xs font-mono px-1.5 py-0.5 rounded bg-slate-800 cursor-pointer"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <p class="text-[11px] text-slate-400 leading-snug">
+                            Pilih saluran radio TAC 1 - 10 untuk menghubungkan
+                            stream perwira ini:
+                        </p>
+
+                        <!-- 10 TAC CHANNELS GRID (2 ROWS X 5 COLS: TAC 1 - TAC 10) -->
+                        <div class="grid grid-cols-5 gap-1.5 font-mono text-xs">
+                            <button
+                                v-for="i in 10"
+                                :key="`tac-opt-${i}`"
+                                @click="selectTacChannel(`TAC_${i}`)"
+                                :class="
+                                    activeTacChannel === `TAC_${i}`
+                                        ? 'bg-blue-600 text-white border-blue-500 font-bold shadow'
+                                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+                                "
+                                class="px-1 py-1.5 rounded border transition-colors cursor-pointer flex flex-col items-center justify-center leading-none gap-0.5"
+                                :title="`Alokasikan ke Radio TAC ${i}`"
+                            >
+                                <span class="text-[9px] font-bold tracking-tight opacity-75">TAC</span>
+                                <span class="text-xs sm:text-sm font-extrabold font-mono">{{ i }}</span>
+                            </button>
+                        </div>
+
+                        <!-- UNASSIGN / REMOVE TAC BUTTON -->
+                        <div
+                            v-if="activeTacChannel"
+                            class="pt-2 border-t border-slate-800"
+                        >
+                            <button
+                                @click="removeTacChannel"
+                                class="w-full py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/80 rounded-md font-mono text-[11px] font-semibold transition-colors text-center cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                                <span>✕ Lepas dari Radio TAC</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- AUDIO BUTTON (3rd from right) -->
                 <button
@@ -331,15 +524,15 @@ const youtubeHandle = computed(() => {
                     }}</span>
                 </button>
 
-                <!-- PAUSE BUTTON (2nd from right) -->
+                <!-- PAUSE / PLAY ICON BUTTON (2nd from right) -->
                 <button
                     @click="emit('toggle-stop-feed')"
                     :class="
                         isStreamStopped
-                            ? 'bg-slate-800 text-amber-400 border-slate-700 font-bold'
+                            ? 'bg-slate-800 text-amber-400 border-slate-700'
                             : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border-slate-800'
                     "
-                    class="px-2.5 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 cursor-pointer text-xs font-mono"
+                    class="p-1.5 rounded-md border transition-colors flex items-center justify-center shrink-0 cursor-pointer"
                     :title="
                         isStreamStopped
                             ? 'Putar Video (Play)'
@@ -348,12 +541,9 @@ const youtubeHandle = computed(() => {
                 >
                     <img
                         :src="isStreamStopped ? iconPlayAll : iconPause"
-                        class="w-3.5 h-3.5 invert opacity-70"
-                        alt="Pause"
+                        class="w-3.5 h-3.5 invert opacity-75 hover:opacity-100"
+                        :alt="isStreamStopped ? 'Play' : 'Pause'"
                     />
-                    <span class="hidden sm:inline">{{
-                        isStreamStopped ? "Play" : "Pause"
-                    }}</span>
                 </button>
 
                 <!-- GRID BUTTON (1st / Rightmost) -->
@@ -373,7 +563,7 @@ const youtubeHandle = computed(() => {
 
         <!-- 2. PEMUTAR VIDEO UTAMA -->
         <div class="relative w-full aspect-video bg-slate-950 overflow-hidden">
-            <template v-if="!isStreamStopped">
+            <template v-if="!isStreamStopped && !isStreamUnavailable">
                 <iframe
                     :key="`primary-focus-player-${stream.video_id}`"
                     :id="`yt-bodycam-${stream.video_id}`"
@@ -390,6 +580,93 @@ const youtubeHandle = computed(() => {
                     "
                     allowfullscreen
                 ></iframe>
+            </template>
+            <template v-else-if="isStreamUnavailable">
+                <img
+                    :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`"
+                    :alt="stream.title"
+                    class="w-full h-full object-cover opacity-20 blur-sm"
+                />
+                <div
+                    class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 z-10 space-y-3.5 text-center"
+                >
+                    <div
+                        class="w-12 h-12 rounded-full bg-rose-950/80 border border-rose-800/80 flex items-center justify-center text-rose-400"
+                    >
+                        <svg
+                            class="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                            />
+                        </svg>
+                    </div>
+
+                    <div class="space-y-1 max-w-md">
+                        <span
+                            class="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider"
+                        >
+                            {{
+                                streamErrorCode === 101 ||
+                                streamErrorCode === 150
+                                    ? "🔒 SIARAN MEMBERS-ONLY / PRIVAT"
+                                    : "🔴 SIARAN TIDAK TERSEDIA"
+                            }}
+                        </span>
+                        <h3 class="text-sm font-bold text-slate-100 font-mono">
+                            {{
+                                streamErrorCode === 101 ||
+                                streamErrorCode === 150
+                                    ? "Akses Terbatas Khusus Anggota Channel"
+                                    : "Video YouTube Telah Dihapus atau Tidak Dapat Dimuat"
+                            }}
+                        </h3>
+                        <p
+                            class="text-xs text-slate-400 leading-relaxed font-sans"
+                        >
+                            {{
+                                streamErrorCode === 101 ||
+                                streamErrorCode === 150
+                                    ? "Siaran ini disetting khusus Anggota (Members-Only) oleh streamer. Anda harus membuka langsung di YouTube dengan akun terdaftar keanggotaan."
+                                    : "Siaran patroli ini tidak lagi tersedia di YouTube (mungkin telah diakhiri, dihapus, atau dibatasi untuk pemutar embed)."
+                            }}
+                        </p>
+                    </div>
+
+                    <div
+                        class="flex items-center gap-2 pt-2 flex-wrap justify-center font-mono text-xs"
+                    >
+                        <a
+                            :href="`https://www.youtube.com/watch?v=${stream.video_id}`"
+                            target="_blank"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <span>Buka Langsung di YouTube</span>
+                            <img
+                                :src="iconExternal"
+                                class="w-3.5 h-3.5 invert opacity-90"
+                            />
+                        </a>
+                        <button
+                            @click="isStreamUnavailable = false"
+                            class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md transition-colors cursor-pointer"
+                        >
+                            Muat Ulang
+                        </button>
+                        <button
+                            @click="emit('close-focus')"
+                            class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md transition-colors cursor-pointer"
+                        >
+                            Kembali ke Grid
+                        </button>
+                    </div>
+                </div>
             </template>
             <template v-else>
                 <img
@@ -423,34 +700,44 @@ const youtubeHandle = computed(() => {
         <div
             class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between flex-wrap gap-3"
         >
-            <!-- LEFT SIDE: PROFILE ICON, OFFICER NAME, YOUTUBE HANDLE ONLY -->
-            <div class="flex items-center space-x-3 min-w-0">
-                <!-- Profile / Department Icon -->
-                <div
-                    class="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0 p-1.5"
-                >
-                    <img
-                        :src="getDeptIcon(officerDepartment)"
-                        class="w-full h-full object-contain invert opacity-90"
-                        :alt="officerDepartment"
-                    />
-                </div>
+            <!-- LEFT SIDE: PROFILE FOTO, NAMA OFFICER, YOUTUBE HANDLE & CALLSIGN ONLY -->
+            <div class="flex items-center space-x-3 min-w-0 flex-1">
+                <!-- Foto Profile Avatar -->
+                <img
+                    :src="
+                        officerAvatar ||
+                        `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(officerCallsign || officerName || 'officer')}`
+                    "
+                    :alt="officerName"
+                    referrerpolicy="no-referrer"
+                    @error="handleAvatarError"
+                    class="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-slate-700 shrink-0"
+                />
 
-                <!-- Officer Name & YouTube Handle -->
+                <!-- Info Block: Nama Officer, Callsign & YouTube Handle -->
                 <div class="min-w-0 flex-1">
                     <h2
-                        class="text-sm font-bold text-slate-100 truncate tracking-tight leading-none"
+                        class="text-sm sm:text-base font-bold text-slate-100 truncate tracking-tight leading-snug"
+                        :title="officerName"
                     >
                         {{ officerName }}
                     </h2>
+
                     <div
-                        v-if="youtubeHandle"
-                        class="text-xs text-slate-400 mt-1 font-mono truncate"
+                        class="flex items-center space-x-2 text-xs font-mono mt-0.5 truncate"
                     >
+                        <span
+                            v-if="officerCallsign"
+                            class="px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-300 bg-slate-900 border border-slate-800 rounded shrink-0"
+                        >
+                            {{ officerCallsign }}
+                        </span>
                         <a
+                            v-if="youtubeHandle"
                             :href="`https://www.youtube.com/${youtubeHandle}`"
                             target="_blank"
                             class="text-blue-400 hover:text-blue-300 hover:underline truncate"
+                            :title="youtubeHandle"
                         >
                             {{ youtubeHandle }}
                         </a>
@@ -597,7 +884,7 @@ const youtubeHandle = computed(() => {
                             d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
                         />
                     </svg>
-                    <span>Kumpulan Aksi & Shorts</span>
+                    <span>Kumpulan Klip Aksi</span>
                 </button>
             </div>
 
@@ -637,6 +924,8 @@ const youtubeHandle = computed(() => {
                     v-else-if="activeFocusTab === 'clips'"
                     :officer="stream.officer"
                     :stream="stream"
+                    :customClips="customClipsList"
+                    @delete-clip="handleDeleteClip"
                     @open-create-clip="activeFocusTab = 'create-clip'"
                 />
 
@@ -699,23 +988,38 @@ const youtubeHandle = computed(() => {
                                     <h4
                                         class="text-xs font-bold text-slate-100 tracking-tight"
                                     >
-                                        Tertarik Jadi Official Clipper?
+                                        Tertarik Jadi Clipper IME Police?
                                     </h4>
                                     <p
                                         class="text-[11px] text-slate-400 mt-1 leading-relaxed"
                                     >
-                                        Buka fitur pemotong video presisi
-                                        tinggi, tambahkan efek taktis, dan
-                                        kompilasi momen siaran terbaik di studio
-                                        khusus.
+                                        Buka fitur pemotong video dengan pilihan
+                                        resolusi hingga 1080p dan maksimal 10
+                                        menit yang khusus untuk officer dan
+                                        clipper IME Police.
                                     </p>
                                 </div>
                             </div>
 
                             <button
                                 @click="openStudioClipper"
-                                class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-semibold transition-colors cursor-pointer"
+                                :class="
+                                    canTrimVideo
+                                        ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white'
+                                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+                                "
+                                class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer"
+                                :title="
+                                    canTrimVideo
+                                        ? 'Buka Studio Clipper Pro'
+                                        : 'Akses Terbatas (Diperlukan Role Clipper / Admin)'
+                                "
                             >
+                                <span
+                                    v-if="!canTrimVideo"
+                                    class="text-amber-400"
+                                    >🔒</span
+                                >
                                 <span>Akses Studio Clipper</span>
                                 <svg
                                     class="w-3.5 h-3.5"
@@ -739,13 +1043,22 @@ const youtubeHandle = computed(() => {
                         >
                             <!-- ROW 1: JUDUL MOMEN AKSI -->
                             <div>
-                                <label
-                                    class="block text-slate-300 font-medium mb-1 text-xs"
-                                    >Judul Momen Aksi / Kejadian *</label
+                                <div
+                                    class="flex items-center justify-between mb-1"
                                 >
+                                    <label
+                                        class="block text-slate-300 font-medium text-xs"
+                                        >Judul Momen Aksi / Kejadian *</label
+                                    >
+                                    <span
+                                        class="text-[10px] font-mono text-slate-500"
+                                        >{{ newClipTitle.length }}/100</span
+                                    >
+                                </div>
                                 <input
                                     v-model="newClipTitle"
                                     type="text"
+                                    maxlength="100"
                                     placeholder="Contoh: High Speed Pursuit di Freeway & PIT Maneuver"
                                     class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs transition-colors"
                                 />
@@ -852,7 +1165,7 @@ const youtubeHandle = computed(() => {
                                         >
                                             <label
                                                 class="text-slate-400 text-[11px] font-mono"
-                                                >Mulai (MM:SS)</label
+                                                >Mulai (HH:MM:SS)</label
                                             >
                                             <button
                                                 @click="setStartFromCurrentTime"
@@ -865,7 +1178,7 @@ const youtubeHandle = computed(() => {
                                         <input
                                             v-model="newClipStartTime"
                                             type="text"
-                                            placeholder="00:00"
+                                            placeholder="00:00:00"
                                             class="w-full bg-slate-950 border border-slate-800 rounded-md px-2 py-1 text-slate-100 focus:border-blue-500 text-center font-mono font-semibold text-xs transition-colors"
                                         />
                                     </div>
@@ -876,7 +1189,7 @@ const youtubeHandle = computed(() => {
                                         >
                                             <label
                                                 class="text-slate-400 text-[11px] font-mono"
-                                                >Selesai (MM:SS)</label
+                                                >Selesai (HH:MM:SS)</label
                                             >
                                             <button
                                                 @click="setEndFromCurrentTime"
@@ -889,7 +1202,7 @@ const youtubeHandle = computed(() => {
                                         <input
                                             v-model="newClipEndTime"
                                             type="text"
-                                            placeholder="00:30"
+                                            placeholder="00:01:00"
                                             class="w-full bg-slate-950 border border-slate-800 rounded-md px-2 py-1 text-slate-100 focus:border-blue-500 text-center font-mono font-semibold text-xs transition-colors"
                                         />
                                     </div>
@@ -904,7 +1217,8 @@ const youtubeHandle = computed(() => {
                                     <input
                                         v-model="newClipAuthor"
                                         type="text"
-                                        placeholder="Panggilan Anda (Opsional)"
+                                        maxlength="30"
+                                        placeholder="Panggilan Anda (Opsional, Maks 30 Karakter)"
                                         class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 text-xs focus:border-blue-500 outline-none transition-colors"
                                     />
                                 </div>
