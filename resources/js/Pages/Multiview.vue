@@ -126,6 +126,17 @@ const getInitialLayout = () => {
     return "auto";
 };
 
+const getInitialFocusedStreamId = () => {
+    if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const focusParam = params.get("focus");
+        if (focusParam && focusParam.trim()) {
+            return focusParam.trim();
+        }
+    }
+    return null;
+};
+
 const selectedLayout = ref(getInitialLayout());
 const searchFilter = ref("");
 
@@ -155,6 +166,12 @@ const {
     openSubscribePopup,
     toggleBrowserFullscreen,
 } = useYouTubePlayer();
+
+// Sync focusedStreamId from URL query parameter 'focus'
+const initialFocusId = getInitialFocusedStreamId();
+if (initialFocusId) {
+    focusedStreamId.value = initialFocusId;
+}
 
 // Dedicated Clipper Navigation
 const page = usePage();
@@ -2606,15 +2623,52 @@ const sortedFocusStreams = computed(() => visibleStreams.value);
 // Focus mode stream selector
 const primaryFocusedStream = computed(() => {
     if (focusedStreamId.value) {
-        const foundInCatalog = allCatalogStreams.value.find(
-            (s) => s.video_id === focusedStreamId.value,
-        );
-        if (foundInCatalog) return foundInCatalog;
+        const targetId = String(focusedStreamId.value).trim();
 
-        const found = sortedFocusStreams.value.find(
-            (s) => s.video_id === focusedStreamId.value,
+        // 1. Check in active live streams
+        const active = (allActiveStreams.value || []).find(
+            (s) => String(s.video_id).trim() === targetId,
         );
-        if (found) return found;
+        if (active) return active;
+
+        // 2. Check in recent replays / VOD recordings
+        const replay = (recentReplays.value || []).find(
+            (r) => String(r.video_id).trim() === targetId,
+        );
+        if (replay) return replay;
+
+        // 3. Check in all catalog streams (combined live + replays)
+        const catalog = (allCatalogStreams.value || []).find(
+            (s) => String(s.video_id).trim() === targetId,
+        );
+        if (catalog) return catalog;
+
+        // 4. Check in raw active streams / custom streams
+        const raw = (rawActiveStreams.value || []).find(
+            (s) => String(s.video_id).trim() === targetId,
+        );
+        if (raw) return raw;
+
+        // 5. Fallback stream object if targetId is specified in URL but not in state array
+        return {
+            id: `replay-${targetId}`,
+            video_id: targetId,
+            title: "Rekaman Patroli",
+            thumbnail: `https://i.ytimg.com/vi/${targetId}/hqdefault.jpg`,
+            status: "REPLAY",
+            incident_code: "10-7 Patrol Replay",
+            description: "Rekaman patroli perwira.",
+            viewers_count: 0,
+            officer: {
+                id: 0,
+                officer_name: "Patrol Officer",
+                department: selectedDepartment.value !== "ALL" ? selectedDepartment.value : "LSPD",
+                callsign: "REPLAY",
+                badge_number: "#VOD",
+                rank: "Officer",
+                avatar_url: null,
+            },
+        };
     }
     if (!sortedFocusStreams.value.length) return null;
     return sortedFocusStreams.value[0];
@@ -2623,7 +2677,7 @@ const primaryFocusedStream = computed(() => {
 const secondaryStreams = computed(() => {
     if (!primaryFocusedStream.value) return [];
     return sortedFocusStreams.value.filter(
-        (s) => s.video_id !== primaryFocusedStream.value.video_id,
+        (s) => String(s.video_id).trim() !== String(primaryFocusedStream.value.video_id).trim(),
     );
 });
 

@@ -1107,7 +1107,55 @@ class YouTubeScraperService
             }
         }
 
-        return array_values(array_slice($results, 0, $limit));
+        $sortedResults = array_values($results);
+        usort($sortedResults, function ($a, $b) {
+            $timeA = self::parseRelativeTimeToSeconds($a['streamed_at'] ?? $a['incident_code'] ?? '');
+            $timeB = self::parseRelativeTimeToSeconds($b['streamed_at'] ?? $b['incident_code'] ?? '');
+            return $timeA <=> $timeB;
+        });
+
+        return array_slice($sortedResults, 0, $limit);
+    }
+
+    /**
+     * Parse relative time string (e.g. "2 jam yang lalu", "1 hari yang lalu", "30 mins ago") to estimated seconds ago.
+     */
+    public static function parseRelativeTimeToSeconds(?string $str): int
+    {
+        if (empty($str)) {
+            return 999999999;
+        }
+        $text = mb_strtolower(trim($str), 'UTF-8');
+        if (str_contains($text, 'baru saja') || str_contains($text, 'just now') || str_contains($text, 'sedang tayang')) {
+            return 0;
+        }
+
+        if (preg_match('/(\d+)/', $text, $matches)) {
+            $num = (int) $matches[1];
+            if (str_contains($text, 'tahun') || str_contains($text, 'year') || str_contains($text, 'thn')) {
+                return $num * 31536000;
+            }
+            if (str_contains($text, 'bulan') || str_contains($text, 'month') || str_contains($text, 'bln')) {
+                return $num * 2592000;
+            }
+            if (str_contains($text, 'minggu') || str_contains($text, 'week') || str_contains($text, 'mgg')) {
+                return $num * 604800;
+            }
+            if (str_contains($text, 'hari') || str_contains($text, 'day') || str_contains($text, 'hr')) {
+                return $num * 86400;
+            }
+            if (str_contains($text, 'jam') || str_contains($text, 'hour') || str_contains($text, 'j')) {
+                return $num * 3600;
+            }
+            if (str_contains($text, 'menit') || str_contains($text, 'min') || str_contains($text, 'm')) {
+                return $num * 60;
+            }
+            if (str_contains($text, 'detik') || str_contains($text, 'sec') || str_contains($text, 's')) {
+                return $num;
+            }
+        }
+
+        return 999999999;
     }
 
     /**

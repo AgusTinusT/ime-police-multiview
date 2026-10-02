@@ -98,8 +98,8 @@ class PoliceCommandController extends Controller
                 ];
             });
 
-        // 3. Get Recent Offline Patrol Videos / VODs for Cinema Hub (Served instantly from background cache)
-        $recentReplays = Cache::get('cinema_hub_replays_cache', []);
+        // 3. Get Recent Offline Patrol Videos / VODs for Cinema Hub (Served instantly from background cache, sorted newest first)
+        $recentReplays = $this->getSortedRecentReplays();
 
         // 4. Department Unit Breakdown Stats
         $deptStats = [
@@ -232,7 +232,7 @@ class PoliceCommandController extends Controller
                 ];
             });
 
-        $recentReplays = Cache::get('cinema_hub_replays_cache', []);
+        $recentReplays = $this->getSortedRecentReplays();
 
         $deptStats = [
             'total_officers' => Officer::where('is_active', true)->count(),
@@ -353,8 +353,8 @@ class PoliceCommandController extends Controller
                 ];
             });
 
-        // 3. Offline Officer VODs / Patrol Replays (Served instantly from background cache)
-        $recentReplays = Cache::get('cinema_hub_replays_cache', []);
+        // 3. Offline Officer VODs / Patrol Replays (Served instantly from background cache, sorted newest first)
+        $recentReplays = $this->getSortedRecentReplays();
 
         // 4. Department Unit Breakdown Stats
         $deptStats = [
@@ -381,21 +381,39 @@ class PoliceCommandController extends Controller
     }
 
     /**
+     * Get sorted recent replays from cache (newest first).
+     */
+    private function getSortedRecentReplays(): array
+    {
+        $recentReplays = Cache::get('cinema_hub_replays_cache', []);
+        if (is_array($recentReplays) && !empty($recentReplays)) {
+            usort($recentReplays, function ($a, $b) {
+                $timeA = \App\Services\YouTubeScraperService::parseRelativeTimeToSeconds($a['streamed_at'] ?? $a['incident_code'] ?? '');
+                $timeB = \App\Services\YouTubeScraperService::parseRelativeTimeToSeconds($b['streamed_at'] ?? $b['incident_code'] ?? '');
+                return $timeA <=> $timeB;
+            });
+            return array_values($recentReplays);
+        }
+        return [];
+    }
+
+    /**
      * API: Trigger manual sync
      */
-    public function apiSync()
+    public function apiSync(Request $request)
     {
         try {
             $job = new SyncOfficerStreamsJob();
             app()->call([$job, 'handle']);
 
             $liveCount = ActiveStream::where('status', 'LIVE')->count();
+            $streamsData = $this->apiStreams($request)->getData(true);
 
-            return response()->json([
+            return response()->json(array_merge([
                 'status' => 'success',
                 'message' => 'Sync completed successfully',
                 'active_units' => $liveCount,
-            ]);
+            ], $streamsData));
         } catch (\Throwable $e) {
             return response()->json([
                 'status' => 'error',
