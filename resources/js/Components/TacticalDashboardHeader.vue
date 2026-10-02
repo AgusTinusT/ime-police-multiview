@@ -85,9 +85,7 @@ const isUrlActive = (path) => {
                 <div class="h-5 w-px bg-slate-800 hidden md:block"></div>
 
                 <!-- Page Navigation Links with Dynamic Active State -->
-                <nav
-                    class="hidden md:flex items-center space-x-1 shrink-0"
-                >
+                <nav class="hidden md:flex items-center space-x-1 shrink-0">
                     <Link
                         href="/"
                         :class="[
@@ -112,6 +110,20 @@ const isUrlActive = (path) => {
                         title="Stand-alone Multiview Stage"
                     >
                         <span>Multiview</span>
+                    </Link>
+
+                    <Link
+                        href="/action-clips"
+                        :class="[
+                            'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
+                            isUrlActive('/action-clips') ||
+                            isUrlActive('/clips')
+                                ? 'text-white bg-blue-600 font-bold'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
+                        ]"
+                        title="TacClips — Kumpulan Klip Momen Aksi Kepolisian"
+                    >
+                        <span>TacClips</span>
                     </Link>
 
                     <Link

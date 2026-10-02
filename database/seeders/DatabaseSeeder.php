@@ -462,6 +462,9 @@ class DatabaseSeeder extends Seeder
 
         // Run Agencies, Ranks, Divisions & Link Officers
         $this->call(AgenciesRanksDivisionsSeeder::class);
+
+        // Automatically fetch real YouTube channel avatars & subscriber counts for officers
+        $this->call(\App\Console\Commands\SyncOfficerSubscribersCommand::class);
     }
 }
 

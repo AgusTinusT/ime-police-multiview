@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Officer;
 use App\Models\ActiveStream;
 use App\Models\TacChannel;
+use App\Models\TacClip;
 use App\Jobs\SyncOfficerStreamsJob;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
@@ -538,6 +539,215 @@ class PoliceCommandController extends Controller
             'deptStats' => $deptStats,
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
+    }
+
+    /**
+     * Dedicated Standalone Page: Community Action Clips Gallery (`/clips`).
+     */
+    public function clipsPage(Request $request)
+    {
+        $allOfficers = Officer::where('is_active', true)
+            ->orderBy('department')
+            ->orderBy('rank')
+            ->get()
+            ->map(function ($officer) {
+                return [
+                    'id' => $officer->id,
+                    'channel_id' => $officer->channel_id,
+                    'handle' => $officer->handle,
+                    'streamer_name' => $officer->streamer_name,
+                    'officer_name' => $officer->officer_name,
+                    'callsign' => $officer->callsign,
+                    'badge_number' => $officer->badge_number,
+                    'department' => $officer->department,
+                    'rank' => $officer->rank,
+                    'avatar_url' => $officer->avatar_url,
+                ];
+            });
+
+        $dbClips = TacClip::with('officer:id,officer_name,streamer_name,handle,avatar_url,department,callsign')
+            ->where('is_approved', true)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($clip) {
+                $officer = $clip->officer;
+                $avatarUrl = $officer ? $officer->avatar_url : null;
+                return [
+                    'id' => $clip->id,
+                    'video_id' => $clip->video_id,
+                    'title' => $clip->title,
+                    'start_seconds' => (int) $clip->start_seconds,
+                    'end_seconds' => (int) $clip->end_seconds,
+                    'officer_id' => $clip->officer_id,
+                    'officer_name' => $clip->officer_name ?: ($officer ? $officer->officer_name : 'Patrol Unit'),
+                    'officer_handle' => $clip->officer_handle ?: ($officer ? $officer->handle : '@PatrolUnit'),
+                    'creator_name' => $clip->creator_name ?: 'Guest',
+                    'likes_count' => (int) $clip->likes_count,
+                    'views_count' => (int) $clip->views_count,
+                    'avatar_url' => $avatarUrl,
+                    'user_id' => $clip->user_id,
+                    'created_at' => $clip->created_at ? $clip->created_at->toIso8601String() : null,
+                ];
+            });
+
+        return Inertia::render('Clips', [
+            'officers' => $allOfficers->values(),
+            'initialClips' => $dbClips->values(),
+            'lastSyncedAt' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * API: Get all active community TacClips.
+     */
+    public function getTacClips(Request $request)
+    {
+        $dbClips = TacClip::with('officer:id,officer_name,streamer_name,handle,avatar_url,department,callsign')
+            ->where('is_approved', true)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($clip) {
+                $officer = $clip->officer;
+                return [
+                    'id' => $clip->id,
+                    'video_id' => $clip->video_id,
+                    'title' => $clip->title,
+                    'start_seconds' => (int) $clip->start_seconds,
+                    'end_seconds' => (int) $clip->end_seconds,
+                    'officer_id' => $clip->officer_id,
+                    'officer_name' => $clip->officer_name ?: ($officer ? $officer->officer_name : 'Patrol Unit'),
+                    'officer_handle' => $clip->officer_handle ?: ($officer ? $officer->handle : '@PatrolUnit'),
+                    'creator_name' => $clip->creator_name ?: 'Guest',
+                    'likes_count' => (int) $clip->likes_count,
+                    'views_count' => (int) $clip->views_count,
+                    'avatar_url' => $officer ? $officer->avatar_url : null,
+                    'user_id' => $clip->user_id,
+                    'created_at' => $clip->created_at ? $clip->created_at->toIso8601String() : null,
+                ];
+            });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $dbClips->values(),
+        ]);
+    }
+
+    /**
+     * API: Store a new community TacClip into MySQL.
+     */
+    public function storeTacClip(Request $request)
+    {
+        $validated = $request->validate([
+            'youtube_url' => 'nullable|string',
+            'video_id' => 'nullable|string|max:11',
+            'title' => 'required|string|max:255',
+            'start_seconds' => 'required|integer|min:0',
+            'end_seconds' => 'required|integer|gt:start_seconds',
+            'officer_id' => 'nullable|integer',
+            'officer_name' => 'nullable|string|max:255',
+            'officer_handle' => 'nullable|string|max:255',
+            'creator_name' => 'nullable|string|max:255',
+        ]);
+
+        $videoId = $validated['video_id'] ?? null;
+        if (!$videoId && !empty($validated['youtube_url'])) {
+            if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i', $validated['youtube_url'], $matches)) {
+                $videoId = $matches[1];
+            }
+        }
+
+        if (!$videoId || strlen($videoId) !== 11) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'URL atau Video ID YouTube tidak valid.',
+            ], 422);
+        }
+
+        $duration = $validated['end_seconds'] - $validated['start_seconds'];
+        if ($duration > 600) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Durasi klip maksimal 10 menit (600 detik).',
+            ], 422);
+        }
+
+        $officer = null;
+        if (!empty($validated['officer_id'])) {
+            $officer = Officer::find($validated['officer_id']);
+        } elseif (!empty($validated['officer_name']) || !empty($validated['officer_handle'])) {
+            $officer = Officer::where('officer_name', $validated['officer_name'])
+                ->orWhere('handle', $validated['officer_handle'])
+                ->first();
+        }
+
+        $user = $request->user();
+        $creatorName = $user ? $user->name : (!empty($validated['creator_name']) ? trim($validated['creator_name']) : 'Guest');
+
+        $clip = TacClip::create([
+            'user_id' => $user ? $user->id : null,
+            'officer_id' => $officer ? $officer->id : null,
+            'video_id' => $videoId,
+            'title' => trim($validated['title']),
+            'start_seconds' => (int) $validated['start_seconds'],
+            'end_seconds' => (int) $validated['end_seconds'],
+            'officer_name' => $officer ? $officer->officer_name : ($validated['officer_name'] ?? 'Patrol Unit'),
+            'officer_handle' => $officer ? $officer->handle : ($validated['officer_handle'] ?? '@PatrolUnit'),
+            'creator_name' => $creatorName,
+            'likes_count' => 0,
+            'views_count' => 0,
+            'is_approved' => true,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'TacClip momen aksi berhasil ditambahkan dan dapat dilihat oleh seluruh komunitas!',
+            'clip' => [
+                'id' => $clip->id,
+                'video_id' => $clip->video_id,
+                'title' => $clip->title,
+                'start_seconds' => (int) $clip->start_seconds,
+                'end_seconds' => (int) $clip->end_seconds,
+                'officer_id' => $clip->officer_id,
+                'officer_name' => $clip->officer_name,
+                'officer_handle' => $clip->officer_handle,
+                'creator_name' => $clip->creator_name,
+                'likes_count' => 0,
+                'views_count' => 0,
+                'avatar_url' => $officer ? $officer->avatar_url : null,
+                'user_id' => $clip->user_id,
+                'created_at' => $clip->created_at->toIso8601String(),
+            ],
+        ], 201);
+    }
+
+    /**
+     * API: Like/Unlike a TacClip.
+     */
+    public function likeTacClip(Request $request, $id)
+    {
+        $clip = TacClip::findOrFail($id);
+        $clip->increment('likes_count');
+        return response()->json([
+            'status' => 'success',
+            'likes_count' => (int) $clip->likes_count,
+        ]);
+    }
+
+    /**
+     * API: Delete a TacClip.
+     */
+    public function destroyTacClip(Request $request, $id)
+    {
+        $clip = TacClip::findOrFail($id);
+        $user = $request->user();
+
+        if ($user && ($user->isAdmin() || $clip->user_id === $user->id)) {
+            $clip->delete();
+            return response()->json(['status' => 'success', 'message' => 'Klip berhasil dihapus.']);
+        }
+
+        $clip->delete();
+        return response()->json(['status' => 'success', 'message' => 'Klip berhasil dihapus.']);
     }
 
     /**

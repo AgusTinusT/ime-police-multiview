@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { usePage } from "@inertiajs/vue3";
+import axios from "axios";
 
 const props = defineProps({
     officer: {
@@ -22,8 +23,16 @@ const emit = defineEmits(["open-create-clip", "play-clip", "delete-clip"]);
 const page = usePage();
 const authUser = computed(() => page.props.auth?.user);
 
-// Initial community action clips fallback (Empty list, no mock/sample clips)
 const defaultClips = ref([]);
+
+const fetchCommunityClips = async () => {
+    try {
+        const response = await axios.get("/api/v1/tac-clips");
+        if (response.data && response.data.data) {
+            defaultClips.value = response.data.data;
+        }
+    } catch (e) {}
+};
 
 const clips = computed(() => {
     return props.customClips !== null ? props.customClips : defaultClips.value;
@@ -131,6 +140,7 @@ const sentinelRef = ref(null);
 let observer = null;
 
 onMounted(() => {
+    fetchCommunityClips();
     if ("IntersectionObserver" in window) {
         observer = new IntersectionObserver(
             (entries) => {

@@ -22,6 +22,14 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    startSeconds: {
+        type: Number,
+        default: 0,
+    },
+    endSeconds: {
+        type: Number,
+        default: 0,
+    },
 });
 
 const emit = defineEmits(["timeupdate", "ended"]);
@@ -47,10 +55,53 @@ const iframeId = `yt-custom-player-${Math.random().toString(36).substring(2, 9)}
 const computedYoutubeId = computed(() => {
     if (props.youtubeId) return props.youtubeId;
     if (!props.src) return "";
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp =
+        /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = props.src.match(regExp);
     return match && match[2].length === 11 ? match[2] : "";
 });
+
+const effectiveStart = computed(() => props.startSeconds || 0);
+
+const isSegmentMode = computed(() => {
+    return props.endSeconds > 0 && props.endSeconds > effectiveStart.value;
+});
+
+const segmentDuration = computed(() => {
+    if (isSegmentMode.value) {
+        return Math.max(1, props.endSeconds - effectiveStart.value);
+    }
+    return duration.value || 0;
+});
+
+const displayCurrentTime = computed(() => {
+    if (isSegmentMode.value) {
+        return Math.max(
+            0,
+            Math.min(
+                currentTime.value - effectiveStart.value,
+                segmentDuration.value,
+            ),
+        );
+    }
+    return currentTime.value;
+});
+
+const displayDuration = computed(() => {
+    if (isSegmentMode.value) {
+        return segmentDuration.value;
+    }
+    return duration.value;
+});
+
+const handleScrubInput = (val) => {
+    if (isSegmentMode.value) {
+        const targetAbs = effectiveStart.value + parseFloat(val);
+        seek(targetAbs);
+    } else {
+        seek(parseFloat(val));
+    }
+};
 
 // Format seconds into HH:MM:SS or MM:SS
 const formatTime = (sec) => {
@@ -76,7 +127,7 @@ const sendYTCommand = (func, args = []) => {
                     func: func,
                     args: args,
                 }),
-                "*"
+                "*",
             );
         } catch (e) {}
     }
@@ -213,13 +264,22 @@ const handleYTMessage = (event) => {
         if (info && typeof info.currentTime === "number") {
             currentTime.value = info.currentTime;
             emit("timeupdate", currentTime.value);
+            if (
+                isSegmentMode.value &&
+                props.endSeconds &&
+                currentTime.value >= props.endSeconds - 0.2
+            ) {
+                seek(effectiveStart.value);
+                if (computedYoutubeId.value) sendYTCommand("playVideo");
+            }
         }
         if (info && typeof info.duration === "number" && info.duration > 0) {
             duration.value = info.duration;
         }
         if (info && typeof info.playerState === "number") {
             if (info.playerState === 1) isPlaying.value = true;
-            else if (info.playerState === 2 || info.playerState === 0) isPlaying.value = false;
+            else if (info.playerState === 2 || info.playerState === 0)
+                isPlaying.value = false;
         }
     }
 };
@@ -232,8 +292,12 @@ onMounted(() => {
         if (computedYoutubeId.value && ytIframeRef.value) {
             try {
                 ytIframeRef.value.contentWindow.postMessage(
-                    JSON.stringify({ event: "listening", id: 1, channel: "widget" }),
-                    "*"
+                    JSON.stringify({
+                        event: "listening",
+                        id: 1,
+                        channel: "widget",
+                    }),
+                    "*",
                 );
                 sendYTCommand("getCurrentTime");
                 sendYTCommand("getDuration");
@@ -258,7 +322,7 @@ watch(
     () => {
         currentTime.value = 0;
         isPlaying.value = false;
-    }
+    },
 );
 
 defineExpose({
@@ -280,13 +344,22 @@ defineExpose({
     >
         <!-- YouTube iFrame Background (Native controls disabled & cropped) -->
         <template v-if="computedYoutubeId">
-            <div class="absolute inset-0 overflow-hidden flex items-center justify-center pointer-events-none">
+            <div
+                class="absolute inset-0 overflow-hidden flex items-center justify-center pointer-events-none"
+            >
                 <iframe
                     ref="ytIframeRef"
                     :id="iframeId"
-                    :src="`https://www.youtube-nocookie.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&disablekb=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&fs=0&playsinline=1&autoplay=${autoplay ? 1 : 0}`"
+                    :src="`https://www.youtube-nocookie.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&disablekb=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&fs=0&playsinline=1&autoplay=${autoplay ? 1 : 0}${startSeconds ? '&start=' + startSeconds : ''}${endSeconds ? '&end=' + endSeconds : ''}`"
                     class="w-[125%] h-[125%] max-w-none border-0 pointer-events-none scale-115 transform origin-center select-none"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="
+                        accelerometer;
+                        autoplay;
+                        clipboard-write;
+                        encrypted-media;
+                        gyroscope;
+                        picture-in-picture;
+                    "
                 ></iframe>
             </div>
             <!-- Transparent Click Capture Layer over YouTube iframe -->
@@ -331,24 +404,32 @@ defineExpose({
         <!-- Custom Player Controls Bar (Method 2 Custom Player UI) -->
         <div
             class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent p-3 pt-6 space-y-2 transition-opacity duration-300 z-20"
-            :class="showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+            :class="
+                showControls || !isPlaying
+                    ? 'opacity-100'
+                    : 'opacity-0 pointer-events-none'
+            "
             @click.stop
         >
             <!-- Custom Scrubber Progress Bar -->
-            <div class="relative w-full h-2 flex items-center cursor-pointer group/slider">
+            <div
+                class="relative w-full h-2 flex items-center cursor-pointer group/slider"
+            >
                 <input
                     type="range"
                     min="0"
-                    :max="duration || 100"
+                    :max="displayDuration || 100"
                     step="0.1"
-                    :value="currentTime"
-                    @input="seek(parseFloat($event.target.value))"
+                    :value="displayCurrentTime"
+                    @input="handleScrubInput($event.target.value)"
                     class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer focus:outline-none accent-blue-500"
                 />
             </div>
 
             <!-- Controls Row: Play/Pause, Rewind, Fast Forward, Time Display, Volume, Speed, Fullscreen -->
-            <div class="flex items-center justify-between text-xs font-mono text-slate-200 flex-wrap gap-2">
+            <div
+                class="flex items-center justify-between text-xs font-mono text-slate-200 flex-wrap gap-2"
+            >
                 <!-- Left Action Controls -->
                 <div class="flex items-center gap-2">
                     <button
@@ -356,37 +437,31 @@ defineExpose({
                         class="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 transition cursor-pointer"
                         :title="isPlaying ? 'Pause' : 'Play'"
                     >
-                        <svg v-if="isPlaying" class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <svg
+                            v-if="isPlaying"
+                            class="w-4 h-4 fill-current"
+                            viewBox="0 0 24 24"
+                        >
                             <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                         </svg>
-                        <svg v-else class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24">
+                        <svg
+                            v-else
+                            class="w-4 h-4 fill-current ml-0.5"
+                            viewBox="0 0 24 24"
+                        >
                             <path d="M8 5v14l11-7z" />
                         </svg>
                     </button>
 
-                    <!-- -10s Rewind -->
-                    <button
-                        @click="seekRelative(-10)"
-                        class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[11px] transition cursor-pointer"
-                        title="Mundur 10 Detik"
-                    >
-                        -10s
-                    </button>
 
-                    <!-- +10s Fast Forward -->
-                    <button
-                        @click="seekRelative(10)"
-                        class="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[11px] transition cursor-pointer"
-                        title="Maju 10 Detik"
-                    >
-                        +10s
-                    </button>
 
                     <!-- Time Counter -->
                     <span class="text-[11px] text-slate-400 font-mono ml-1">
-                        <span class="text-slate-100 font-bold">{{ formatTime(currentTime) }}</span>
+                        <span class="text-slate-100 font-bold">{{
+                            formatTime(displayCurrentTime)
+                        }}</span>
                         <span> / </span>
-                        <span>{{ formatTime(duration) }}</span>
+                        <span>{{ formatTime(displayDuration) }}</span>
                     </span>
                 </div>
 
@@ -399,11 +474,23 @@ defineExpose({
                             class="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition cursor-pointer"
                             :title="isMuted ? 'Unmute' : 'Mute'"
                         >
-                            <svg v-if="isMuted || volume === 0" class="w-4 h-4 fill-current text-rose-400" viewBox="0 0 24 24">
-                                <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                            <svg
+                                v-if="isMuted || volume === 0"
+                                class="w-4 h-4 fill-current text-rose-400"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"
+                                />
                             </svg>
-                            <svg v-else class="w-4 h-4 fill-current text-emerald-400" viewBox="0 0 24 24">
-                                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                            <svg
+                                v-else
+                                class="w-4 h-4 fill-current text-emerald-400"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
+                                />
                             </svg>
                         </button>
                         <input
@@ -420,12 +507,14 @@ defineExpose({
                     <!-- Playback Speed Selector -->
                     <select
                         :value="playbackRate"
-                        @change="setPlaybackRate(parseFloat($event.target.value))"
+                        @change="
+                            setPlaybackRate(parseFloat($event.target.value))
+                        "
                         class="bg-slate-900 text-slate-300 border border-slate-800 text-[11px] font-mono rounded-md px-1.5 py-1 focus:outline-none cursor-pointer"
                         title="Kecepatan Putar (Playback Speed)"
                     >
                         <option :value="0.5">0.5x</option>
-                        <option :value="1">1.0x (Normal)</option>
+                        <option :value="1">1.0x</option>
                         <option :value="1.25">1.25x</option>
                         <option :value="1.5">1.5x</option>
                         <option :value="2">2.0x</option>
@@ -438,7 +527,9 @@ defineExpose({
                         title="Layar Penuh (Fullscreen)"
                     >
                         <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+                            <path
+                                d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
+                            />
                         </svg>
                     </button>
                 </div>

@@ -959,12 +959,44 @@ function stopPolling() {
 }
 
 onMounted(() => {
-    if (props.initialUrl) {
+    if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryUrl = urlParams.get('url');
+        const queryStart = urlParams.get('start');
+        const queryEnd = urlParams.get('end');
+        const queryTitle = urlParams.get('title');
+
+        if (queryUrl) {
+            form.value.youtube_url = queryUrl;
+        } else if (props.initialUrl) {
+            form.value.youtube_url = props.initialUrl;
+        }
+
+        if (queryTitle) {
+            form.value.title = queryTitle;
+        }
+
+        if (queryStart !== null && queryStart !== undefined && queryStart !== '') {
+            const startSec = parseInt(queryStart, 10);
+            if (!isNaN(startSec)) {
+                form.value.start_time = formatSecondsToTimestamp(startSec);
+            }
+        }
+
+        if (queryEnd !== null && queryEnd !== undefined && queryEnd !== '') {
+            const endSec = parseInt(queryEnd, 10);
+            if (!isNaN(endSec)) {
+                form.value.end_time = formatSecondsToTimestamp(endSec);
+            }
+        }
+    } else if (props.initialUrl) {
         form.value.youtube_url = props.initialUrl;
-    } else {
-        form.value.youtube_url = '';
     }
+
     initYTMessageListener();
+    if (form.value.youtube_url) {
+        checkYoutubeUrl(form.value.youtube_url);
+    }
     if (activeVideoId.value) {
         startYTTimePolling();
     }

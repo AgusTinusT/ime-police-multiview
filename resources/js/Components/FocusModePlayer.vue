@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
+import axios from "axios";
 
 import CommunityClipsTab from "@/Components/CommunityClipsTab.vue";
 
@@ -82,32 +83,29 @@ watch(
 );
 
 // Clips list state for Focus Mode (Persisted in localStorage across page refreshes)
-const STORAGE_KEY = "ime_focus_community_clips";
+// Clips list state for Focus Mode (Fetched from MySQL database via API)
+const customClipsList = ref([]);
 
-const loadCustomClips = () => {
+const fetchCommunityClips = async () => {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? JSON.parse(stored) : [];
+        const response = await axios.get("/api/v1/tac-clips");
+        if (response.data && response.data.data) {
+            customClipsList.value = response.data.data;
+        }
     } catch (e) {
-        return [];
+        // Silently fallback if API fetch fails
     }
 };
 
-const saveCustomClips = () => {
+const handleDeleteClip = async (clipId) => {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(customClipsList.value));
+        await axios.delete(`/api/v1/tac-clips/${clipId}`);
     } catch (e) {
-        // Silently handle storage errors
+        // Silently handle backend delete
     }
-};
-
-const customClipsList = ref(loadCustomClips());
-
-const handleDeleteClip = (clipId) => {
     customClipsList.value = customClipsList.value.filter(
         (c) => c.id !== clipId,
     );
-    saveCustomClips();
 };
 
 // Stream Availability State (Deleted / Private / Members-Only YouTube video handling)
@@ -186,6 +184,7 @@ const handleYTMessage = (event) => {
 let ytTimePollInterval = null;
 
 onMounted(() => {
+    fetchCommunityClips();
     window.addEventListener("message", handleYTMessage);
     ytTimePollInterval = setInterval(() => {
         const iframe = document.getElementById(
@@ -237,7 +236,7 @@ const setEndFromCurrentTime = () => {
     newClipEndTime.value = formatTimeHelper(sec);
 };
 
-const handleCreateClipSubmit = () => {
+const handleCreateClipSubmit = async () => {
     if (!newClipTitle.value.trim()) {
         alert("Harap masukkan judul klip momen aksi!");
         return;
@@ -245,31 +244,36 @@ const handleCreateClipSubmit = () => {
 
     const startSec = parseTimestamp(newClipStartTime.value);
     const endSec = parseTimestamp(newClipEndTime.value);
-    const durSec = Math.max(1, endSec - startSec);
+
+    if (endSec <= startSec) {
+        alert("Waktu Selesai harus lebih besar dari Waktu Mulai.");
+        return;
+    }
 
     const authorNameFinal =
         newClipAuthor.value.trim() ||
         authUser.value?.name ||
         "Penonton Komunitas";
 
-    const createdClip = {
-        id: Date.now(),
-        title: newClipTitle.value.trim(),
-        start_seconds: startSec,
-        end_seconds: endSec,
-        duration_seconds: durSec,
-        thumbnail_url: null,
-        video_id: props.stream?.video_id || null,
-        officer_id: props.stream?.officer?.id || props.stream?.officer_id || null,
-        officer_name: props.stream?.officer?.officer_name || props.stream?.officer?.name || null,
-        officer_handle: props.stream?.officer?.handle || null,
-        creator_name: authorNameFinal,
-        user_id: authUser.value?.id || null,
-        created_at: "Baru saja",
-    };
+    try {
+        const response = await axios.post("/api/v1/tac-clips", {
+            video_id: props.stream?.video_id || null,
+            title: newClipTitle.value.trim(),
+            start_seconds: startSec,
+            end_seconds: endSec,
+            officer_id: props.stream?.officer?.id || props.stream?.officer_id || null,
+            officer_name: props.stream?.officer?.officer_name || props.stream?.officer?.name || null,
+            officer_handle: props.stream?.officer?.handle || null,
+            creator_name: authorNameFinal,
+        });
 
-    customClipsList.value.unshift(createdClip);
-    saveCustomClips();
+        if (response.data && response.data.clip) {
+            customClipsList.value.unshift(response.data.clip);
+        }
+    } catch (err) {
+        alert(err.response?.data?.message || "Gagal menyimpan klip momen aksi ke database.");
+        return;
+    }
 
     // Reset & switch to clips tab
     newClipTitle.value = "";

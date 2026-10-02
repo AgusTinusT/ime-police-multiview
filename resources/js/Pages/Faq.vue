@@ -184,28 +184,44 @@ const faqs = [
             "Mengapa Super Chat atau Membership tidak muncul di Live Chat?",
         answer: 'Aturan resmi Google & YouTube melarang transaksi keuangan (Super Chat, Gift Membership) di pemutar situs luar untuk menjaga keamanan pembayaran.<br/><br/>Untuk mengirimkan Super Chat atau bergabung menjadi Member, silakan klik tombol <strong class="text-slate-200 font-mono font-semibold">"Buka di YouTube"</strong> pada kartu siaran.',
     },
-    // Category: KLIP AKSI & STUDIO CLIPPER
+    // Category: TACCLIPS & STUDIO CLIPPER
     {
         id: 12,
         code: "SOP-CLIP-01",
         category: "CLIPS",
-        categoryLabel: "Klip Aksi & Studio Pro",
-        question: "Apa itu Fitur Kumpulan Klip Aksi dan bagaimana cara membuatnya?",
-        answer: 'Fitur Kumpulan Klip Aksi memungkinkan penonton untuk menyimpan dan membagikan momen-momen seru dari siaran perwira (seperti momen kejaran, pengepungan, atau aksi lucu).<br/><br/>Saat menonton siaran di <strong class="text-blue-400 font-mono">Mode Fokus</strong>, Anda dapat mengisi judul klip serta menit & detik momen menarik di panel kanan bawah. Klip yang Anda tandai akan langsung muncul di tab <strong class="text-blue-400 font-mono">Kumpulan Klip Aksi</strong> untuk dinikmati oleh seluruh penonton.',
+        categoryLabel: "TacClips & Studio Pro",
+        question: "Apa itu fitur TacClips dan bagaimana cara menikmatinya?",
+        answer: '<strong>TacClips</strong> adalah galeri pemutar video sinematik 16:9 yang menampilkan momen-momen aksi terbaik kepolisian (seperti pengejaran kendaraan Code 3, negosiasi, taktis penggerebekan, dan momen unik perwira).<br/><br/>Anda dapat melakukan navigasi antar klip secara mudah menggunakan tombol panah atas/bawah, scroll mouse, menyukai klip, memutar ulang (replay), atau menyalin tautan untuk dibagikan ke teman.',
     },
     {
         id: 13,
         code: "SOP-CLIP-02",
         category: "CLIPS",
-        categoryLabel: "Klip Aksi & Studio Pro",
-        question: "Apa itu Studio Clipper Pro dan apa kegunaannya?",
-        answer: '<strong class="text-blue-400 font-mono">Studio Clipper Pro</strong> adalah studio khusus yang dirancang bagi perwira dan editor resmi untuk memotong, mengedit, serta memproses cuplikan video siaran YouTube secara presisi.<br/><br/>Melalui studio ini, tim media dapat mengolah cuplikan momen patroli menjadi konten berkualitas tinggi untuk publikasi komunitas.',
+        categoryLabel: "TacClips & Studio Pro",
+        question: "Mengapa video klip muncul pesan Error atau Video Tidak Ditemukan (Unavailable)?",
+        answer: 'Pesan <strong class="text-amber-400 font-mono">"Video Tidak Ditemukan / Unavailable"</strong> biasanya disebabkan oleh beberapa faktor bawaan kebijakan YouTube:<br/><br/>' +
+            '<ul class="list-disc list-inside space-y-1.5 text-slate-300 font-sans">' +
+            '<li><strong class="text-slate-100">Video Khusus Member (YouTube Membership):</strong> Video YouTube disetel oleh pemilik channel khusus untuk Member berlangganan. Pemutar luar (embed) tidak diizinkan memutar video berbayar/khusus member.</li>' +
+            '<li><strong class="text-slate-100">Video Dihapus atau Diset Private/Unlisted:</strong> Pemilik channel atau YouTube telah menghapus video asli atau mengubah aksesnya menjadi Pribadi (Private).</li>' +
+            '<li><strong class="text-slate-100">Pembatasan Penanaman (Embedding Disabled):</strong> Pemilik channel mematikan opsi <em>"Allow embedding"</em> pada pengaturan YouTube Studio.</li>' +
+            '<li><strong class="text-slate-100">Pembatasan Usia (Age-Restricted Video):</strong> Video mengandung pembatasan usia yang mewajibkan penonton melakukan verifikasi usia langsung di situs resmi YouTube.</li>' +
+            '<li><strong class="text-slate-100">Siaran Live Belum Selesai Diproses:</strong> Klip yang diambil dari siaran langsung (YouTube Live) yang baru saja berakhir membutuhkan waktu beberapa menit bagi server YouTube untuk memproses arsip video resmi (VOD).</li>' +
+            '</ul><br/>' +
+            '<em>Solusi: Klik tombol <strong class="text-blue-400 font-mono">"Full (Buka di YouTube)"</strong> di panel samping untuk menonton video langsung di situs YouTube resmi.</em>',
     },
     {
         id: 14,
         code: "SOP-CLIP-03",
         category: "CLIPS",
-        categoryLabel: "Klip Aksi & Studio Pro",
+        categoryLabel: "TacClips & Studio Pro",
+        question: "Apa itu Studio Clipper Pro dan apa kegunaannya?",
+        answer: '<strong class="text-blue-400 font-mono">Studio Clipper Pro</strong> adalah studio khusus yang dirancang bagi perwira dan editor resmi untuk memotong, mengedit, serta memproses cuplikan video siaran YouTube secara presisi.<br/><br/>Melalui studio ini, tim media dapat mengolah cuplikan momen patroli menjadi konten berkualitas tinggi untuk publikasi komunitas.',
+    },
+    {
+        id: 15,
+        code: "SOP-CLIP-04",
+        category: "CLIPS",
+        categoryLabel: "TacClips & Studio Pro",
         question: "Mengapa tombol Akses Studio Clipper bertanda gembok (🔒) dan terkunci?",
         answer: 'Untuk menjaga kualitas dan keamanan operasional, akses penuh ke fitur Studio Clipper Pro **dibatasi khusus untuk akun berizin (Role Clipper / Admin)**.<br/><br/>Jika Anda belum memiliki role yang diizinkan, tombol akan menampilkan tanda gembok <code class="bg-slate-950 px-1.5 py-0.5 rounded text-amber-400 border border-amber-900/60 font-mono">🔒</code>. Jika Anda adalah editor konten atau perwira yang berminat menjadi Clipper resmi IME Police, Anda dapat mengajukan permohonan role melalui halaman <a href="/feedback" class="text-blue-400 font-mono underline font-semibold hover:text-blue-300 transition">Feedback & Support</a>.',
     },
@@ -215,7 +231,7 @@ const faqs = [
 const categories = [
     { id: "ALL", name: "Semua Kategori", code: "ALL", icon: "grid" },
     { id: "MULTIVIEW", name: "Multiview & Fitur", code: "MV", icon: "video" },
-    { id: "CLIPS", name: "Klip Aksi & Studio Pro", code: "CLIP", icon: "cut" },
+    { id: "CLIPS", name: "TacClips & Studio Pro", code: "CLIP", icon: "cut" },
     { id: "TAC", name: "Radio Taktis (TAC)", code: "TAC", icon: "radio" },
     {
         id: "OFFICERS",

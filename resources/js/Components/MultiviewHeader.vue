@@ -208,6 +208,16 @@ const getDeptCount = (deptId) => {
 
             <!-- RIGHT AREA: Action Controls & User Avatar -->
             <div class="flex items-center space-x-2 shrink-0">
+                <Link
+                    href="/action-clips"
+                    class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    title="Buka TacClips — Galeri Momen Aksi Kepolisian"
+                >
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span class="hidden sm:inline">TacClips</span>
+                </Link>
                 <UserAccountMenu />
             </div>
         </div>

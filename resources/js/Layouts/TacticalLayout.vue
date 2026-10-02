@@ -5,6 +5,12 @@ import { ref, onMounted, onUnmounted } from "vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
+defineProps({
+    showFooter: {
+        type: Boolean,
+        default: true,
+    },
+});
 
 const isFullscreen = ref(false);
 
@@ -45,7 +51,7 @@ onUnmounted(() => {
         </main>
 
         <!-- Standardized Tactical Footer -->
-        <TacticalFooter />
+        <TacticalFooter v-if="showFooter" />
 
         <!-- Floating Tactical Community Chat -->
         <TacticalChatDrawer />

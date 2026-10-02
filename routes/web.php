@@ -15,6 +15,10 @@ Route::get('/multiview', [PoliceCommandController::class, 'multiview'])->name('m
 
 // Dedicated Standalone Pages
 Route::get('/officers', [PoliceCommandController::class, 'officers'])->name('officers.index');
+Route::get('/action-clips', [PoliceCommandController::class, 'clipsPage'])->name('clips');
+Route::get('/clips', function () {
+    return redirect()->route('clips');
+});
 Route::get('/about', [PoliceCommandController::class, 'about'])->name('about');
 Route::get('/faq', [PoliceCommandController::class, 'faqPage'])->name('faq');
 Route::get('/qna', function () {
@@ -53,6 +57,14 @@ Route::prefix('api/v1')->group(function () {
     Route::match(['get', 'post'], '/telemetry', [PoliceCommandController::class, 'apiTelemetry'])->middleware('throttle:60,1');
     Route::post('/feedback', [FeedbackController::class, 'submit'])->middleware('throttle:5,1');
     
+    // TacClips Community Momen Aksi API
+    Route::prefix('tac-clips')->group(function () {
+        Route::get('/', [PoliceCommandController::class, 'getTacClips']);
+        Route::post('/', [PoliceCommandController::class, 'storeTacClip']);
+        Route::post('/{id}/like', [PoliceCommandController::class, 'likeTacClip']);
+        Route::delete('/{id}', [PoliceCommandController::class, 'destroyTacClip']);
+    });
+
     // TAC Tactical Radio Channels
     Route::prefix('tac')->group(function () {
         Route::get('/', [TacChannelController::class, 'index']);
