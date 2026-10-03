@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import CustomVideoPlayer from "@/Components/CustomVideoPlayer.vue";
+import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 import axios from "axios";
 import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
 
@@ -680,6 +681,13 @@ const handleTouchStart = (e) => {
     }
 };
 
+const handleTouchMove = (e) => {
+    if (viewMode.value !== "shorts") return;
+    if (e.cancelable) {
+        e.preventDefault();
+    }
+};
+
 const handleTouchEnd = (e) => {
     if (viewMode.value !== "shorts") return;
     if (e.changedTouches && e.changedTouches.length > 0) {
@@ -703,11 +711,19 @@ const handleSwipeGesture = () => {
 
 onMounted(() => {
     window.addEventListener("keydown", handleKeydown);
+    if (typeof document !== "undefined") {
+        document.body.style.overscrollBehavior = "none";
+        document.documentElement.style.overscrollBehavior = "none";
+    }
 });
 
 onUnmounted(() => {
     window.removeEventListener("keydown", handleKeydown);
     if (progressInterval) clearInterval(progressInterval);
+    if (typeof document !== "undefined") {
+        document.body.style.overscrollBehavior = "";
+        document.documentElement.style.overscrollBehavior = "";
+    }
 });
 </script>
 
@@ -718,8 +734,10 @@ onUnmounted(() => {
     <div
         @wheel="handleWheel"
         @touchstart="handleTouchStart"
+        @touchmove.prevent="handleTouchMove"
         @touchend="handleTouchEnd"
-        class="relative w-screen h-screen h-dvh bg-slate-950 text-slate-100 font-sans overflow-hidden flex items-center justify-center p-0 m-0 select-none"
+        class="relative w-screen h-screen h-dvh bg-slate-950 text-slate-100 font-sans overflow-hidden flex items-center justify-center p-0 m-0 select-none overscroll-none touch-none"
+        style="touch-action: none; overscroll-behavior: none;"
     >
         <!-- FLOATING TOP-LEFT HOME ICON BUTTON -->
         <Link
@@ -803,7 +821,7 @@ onUnmounted(() => {
         <!-- MAIN STAGE AREA (NO OVERLAYS ON VIDEO) -->
         <div
             v-if="filteredClips.length > 0"
-            class="relative w-full h-full flex flex-col items-center justify-between sm:justify-center p-2 sm:p-4 pt-12 sm:pt-4 pb-3 landscape:pl-12 sm:landscape:pl-16 max-w-[1600px] mx-auto space-y-2 min-h-0"
+            class="relative w-full h-full flex flex-col items-center justify-between sm:justify-center p-2 sm:p-4 pt-12 sm:pt-4 pb-16 sm:pb-3 landscape:pl-12 sm:landscape:pl-16 max-w-[1600px] mx-auto space-y-2 min-h-0"
         >
             <!-- TOP / MIDDLE ROW: VIDEO & DETAILS COLUMN + SIDE ACTIONS COLUMN -->
             <div class="flex items-center justify-center gap-3 sm:gap-5 w-full min-h-0 my-auto">
@@ -1201,4 +1219,7 @@ onUnmounted(() => {
             </div>
         </div>
     </Teleport>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR & BOTTOM SHEET DRAWER -->
+    <TacticalMobileBottomNav />
 </template>

@@ -13,6 +13,7 @@ import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
 
 // Sub-components
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
+import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 
 const props = defineProps({
     selectedDepartment: {
@@ -339,4 +340,7 @@ const getDeptCount = (deptId) => {
             </button>
         </div>
     </header>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR & BOTTOM SHEET DRAWER -->
+    <TacticalMobileBottomNav />
 </template>
