@@ -74,6 +74,36 @@ const segmentDuration = computed(() => {
     return duration.value || 0;
 });
 
+const displayCurrentTime = computed(() => {
+    if (isSegmentMode.value) {
+        return Math.max(
+            0,
+            Math.min(
+                currentTime.value - effectiveStart.value,
+                segmentDuration.value,
+            ),
+        );
+    }
+    return currentTime.value;
+});
+
+const displayDuration = computed(() => {
+    if (isSegmentMode.value) {
+        return segmentDuration.value;
+    }
+    return duration.value;
+});
+
+const handleScrubInput = (val) => {
+    const scrubVal = parseFloat(val) || 0;
+    if (isSegmentMode.value) {
+        const targetAbs = effectiveStart.value + scrubVal;
+        seek(targetAbs);
+    } else {
+        seek(scrubVal);
+    }
+};
+
 // Format seconds into HH:MM:SS or MM:SS
 const formatTime = (sec) => {
     if (isNaN(sec) || sec === null || sec < 0) return "00:00";
@@ -238,7 +268,7 @@ const handleYTMessage = (event) => {
             if (
                 isSegmentMode.value &&
                 props.endSeconds &&
-                currentTime.value >= props.endSeconds - 0.2
+                currentTime.value >= props.endSeconds - 0.5
             ) {
                 seek(effectiveStart.value);
                 if (computedYoutubeId.value) sendYTCommand("playVideo");
@@ -248,9 +278,15 @@ const handleYTMessage = (event) => {
             duration.value = info.duration;
         }
         if (info && typeof info.playerState === "number") {
-            if (info.playerState === 1) isPlaying.value = true;
-            else if (info.playerState === 2 || info.playerState === 0)
+            if (info.playerState === 1) {
+                isPlaying.value = true;
+            } else if (info.playerState === 2 || info.playerState === 0) {
                 isPlaying.value = false;
+                if (isSegmentMode.value && info.playerState === 0) {
+                    seek(effectiveStart.value);
+                    if (computedYoutubeId.value) sendYTCommand("playVideo");
+                }
+            }
         }
     }
 };
@@ -323,6 +359,7 @@ defineExpose({
                     :id="iframeId"
                     :src="`https://www.youtube-nocookie.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&disablekb=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&fs=0&playsinline=1&autoplay=${autoplay ? 1 : 0}&mute=1${startSeconds ? '&start=' + startSeconds : ''}${endSeconds ? '&end=' + endSeconds : ''}`"
                     class="w-[220%] h-[220%] max-w-none scale-150 origin-center sm:w-full sm:h-full sm:max-w-full sm:scale-100 border-0 pointer-events-none select-none transition-all duration-300"
+                    style="pointer-events: none !important; touch-action: none;"
                     allow="
                         accelerometer;
                         autoplay;
@@ -390,10 +427,10 @@ defineExpose({
                 <input
                     type="range"
                     min="0"
-                    :max="duration || 100"
+                    :max="displayDuration || 100"
                     step="0.1"
-                    :value="currentTime"
-                    @input="seek(parseFloat($event.target.value))"
+                    :value="displayCurrentTime"
+                    @input="handleScrubInput($event.target.value)"
                     class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer focus:outline-none accent-blue-500"
                 />
             </div>
@@ -428,10 +465,10 @@ defineExpose({
                     <!-- Time Counter -->
                     <span class="text-[11px] text-slate-400 font-mono ml-1">
                         <span class="text-slate-100 font-bold">{{
-                            formatTime(currentTime)
+                            formatTime(displayCurrentTime)
                         }}</span>
                         <span> / </span>
-                        <span>{{ formatTime(duration) }}</span>
+                        <span>{{ formatTime(displayDuration) }}</span>
                     </span>
                 </div>
 
