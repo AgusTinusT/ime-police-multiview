@@ -810,7 +810,7 @@ const handleAvatarError = (e) => {
                     @click="emit('toggle-right-chat')"
                     :class="
                         isRightChatOpen
-                            ? 'bg-blue-950 text-blue-300 border-blue-800 font-semibold'
+                            ? 'bg-slate-800 text-slate-100 border-slate-700 font-semibold'
                             : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
                     "
                     class="px-2.5 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 cursor-pointer font-mono text-xs"
