@@ -197,12 +197,27 @@ const isStreamStopped = (videoId) => {
     return stoppedVideoIds.value.includes(videoId);
 };
 
+const isVideoPlaying = (videoId) => {
+    if (!videoId) return false;
+    if (stoppedVideoIds.value.includes(videoId)) return false;
+    if (props.isDataSaverEnabled) {
+        return (
+            (props.activeGridVideoIds && props.activeGridVideoIds.includes(videoId)) ||
+            (props.activePreviewVideoIds && props.activePreviewVideoIds.includes(videoId)) ||
+            props.activeAudioVideoId === videoId
+        );
+    }
+    return true;
+};
+
 const toggleStopFeed = (videoId) => {
     if (!videoId) return;
-    const idx = stoppedVideoIds.value.indexOf(videoId);
-    if (idx === -1) {
-        // Close / Stop video feed -> Return to Stop Feed mode (Thumbnail)
-        stoppedVideoIds.value.push(videoId);
+    const playing = isVideoPlaying(videoId);
+    if (playing) {
+        // Currently playing -> Stop / Close video feed (Return to poster thumbnail)
+        if (!stoppedVideoIds.value.includes(videoId)) {
+            stoppedVideoIds.value.push(videoId);
+        }
         if (
             props.activeGridVideoIds &&
             props.activeGridVideoIds.includes(videoId)
@@ -219,21 +234,22 @@ const toggleStopFeed = (videoId) => {
             emit("toggle-audio", videoId);
         }
     } else {
-        // Resume / Play video feed
-        stoppedVideoIds.value.splice(idx, 1);
-        if (props.isDataSaverEnabled) {
-            if (
-                props.activeGridVideoIds &&
-                !props.activeGridVideoIds.includes(videoId)
-            ) {
-                emit("toggle-grid-stream-play", videoId);
-            }
-            if (
-                props.activePreviewVideoIds &&
-                !props.activePreviewVideoIds.includes(videoId)
-            ) {
-                emit("toggle-sidebar-preview", videoId);
-            }
+        // Currently stopped / showing poster thumbnail -> Resume / Start video feed
+        const idx = stoppedVideoIds.value.indexOf(videoId);
+        if (idx !== -1) {
+            stoppedVideoIds.value.splice(idx, 1);
+        }
+        if (
+            props.activeGridVideoIds &&
+            !props.activeGridVideoIds.includes(videoId)
+        ) {
+            emit("toggle-grid-stream-play", videoId);
+        }
+        if (
+            props.activePreviewVideoIds &&
+            !props.activePreviewVideoIds.includes(videoId)
+        ) {
+            emit("toggle-sidebar-preview", videoId);
         }
     }
 };
@@ -379,7 +395,7 @@ const layoutGridClass = computed(() => {
     if (layout === "grid-3x3")
         return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3";
     if (layout === "grid-4x4")
-        return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5";
+        return "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3";
 
     // Auto GMeet Mode scaling based on stream count
     if (count <= 1) return "grid grid-cols-1 gap-3 sm:gap-4";
@@ -387,7 +403,7 @@ const layoutGridClass = computed(() => {
     if (count <= 4) return "grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4";
     if (count <= 9)
         return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3";
-    return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5";
+    return "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3";
 });
 
 // Horizontal Scroll Helper for Netflix Swimlanes
@@ -742,17 +758,9 @@ const getCustomOrderRank = (item) => {
                                 </div>
                             </div>
                             <div
-                                class="relative w-full aspect-video bg-black overflow-hidden group/thumb min-w-[320px] min-h-[200px]"
+                                class="relative w-full aspect-video bg-black overflow-hidden group/thumb"
                             >
-                                <template
-                                    v-if="
-                                        !isStreamStopped(stream.video_id) &&
-                                        (activePreviewVideoIds.includes(
-                                            stream.video_id,
-                                        ) ||
-                                            !isDataSaverEnabled)
-                                    "
-                                >
+                                <template v-if="isVideoPlaying(stream.video_id)">
                                     <iframe
                                         :key="`support-iframe-${stream.video_id}`"
                                         :id="`yt-bodycam-${stream.video_id}`"
@@ -781,40 +789,96 @@ const getCustomOrderRank = (item) => {
                                     <img
                                         :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`"
                                         :alt="stream.title"
-                                        class="w-full h-full object-cover opacity-90 group-hover/thumb:opacity-100 transition duration-300"
+                                        class="w-full h-full object-cover opacity-90 group-hover/thumb:opacity-100 transition duration-300 cursor-pointer"
                                         loading="lazy"
+                                        @click="handleSetFocusStream(stream.video_id)"
                                     />
                                     <div
-                                        class="absolute inset-0 bg-slate-950/80 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 flex items-center justify-center gap-2 p-3 z-10"
+                                        class="absolute inset-0 bg-slate-950/70 flex flex-col items-center justify-center p-3 pointer-events-none"
                                     >
-                                        <button
-                                            @click="
-                                                toggleStopFeed(stream.video_id)
-                                            "
-                                            class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                                        <div
+                                            class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800"
                                         >
-                                            <img
-                                                :src="iconPlayAll"
-                                                class="w-3.5 h-3.5 invert opacity-90"
-                                            />
-                                            <span>Play</span>
-                                        </button>
-                                        <button
-                                            @click="
-                                                handleSetFocusStream(
-                                                    stream.video_id,
-                                                )
-                                            "
-                                            class="bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+                                            <span>10-8 LIVE</span>
+                                        </div>
+
+                                        <!-- Desktop Hover Overlay Controls (Hidden on Mobile) -->
+                                        <div
+                                            class="hidden sm:flex items-center space-x-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 transform scale-95 group-hover/thumb:scale-100 pointer-events-auto"
                                         >
-                                            <img
-                                                :src="iconFocus"
-                                                class="w-3.5 h-3.5 invert opacity-90"
-                                            />
-                                            <span>Fokus</span>
-                                        </button>
+                                            <button
+                                                @click.stop="toggleStopFeed(stream.video_id)"
+                                                :class="isVideoPlaying(stream.video_id) ? 'text-amber-400 border-slate-700' : 'text-emerald-400 border-slate-700'"
+                                                class="bg-slate-800 hover:bg-slate-700 border px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                                            >
+                                                <img :src="isVideoPlaying(stream.video_id) ? iconPause : iconPlayAll" class="w-3.5 h-3.5 invert opacity-90" />
+                                                <span>{{ isVideoPlaying(stream.video_id) ? 'Stop' : 'Play' }}</span>
+                                            </button>
+                                            <button
+                                                @click.stop="handleSetFocusStream(stream.video_id)"
+                                                class="bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                                            >
+                                                <img :src="iconFocus" class="w-3.5 h-3.5 invert opacity-90" />
+                                                <span>Fokus</span>
+                                            </button>
+                                        </div>
+
+                                        <!-- Mobile Direct Tap Focus Badge (< sm) -->
+                                        <div
+                                            @click.stop="handleSetFocusStream(stream.video_id)"
+                                            class="sm:hidden flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600/90 hover:bg-blue-500 text-white font-bold text-xs shadow-xl border border-blue-400/40 cursor-pointer pointer-events-auto animate-pulse"
+                                        >
+                                            <img :src="iconFocus" class="w-3.5 h-3.5 invert" alt="" />
+                                            <span>Ketuk untuk Fokus</span>
+                                        </div>
                                     </div>
                                 </template>
+                            </div>
+
+                            <!-- PERMANENT MOBILE ACTION CARD FOOTER (sm:hidden) - OPTION 1 -->
+                            <div class="sm:hidden bg-slate-900 border-t border-slate-800/80 px-3 py-2 flex items-center justify-between gap-2 z-10">
+                                <div class="flex items-center space-x-1.5 min-w-0 flex-1">
+                                    <span
+                                        v-if="stream.officer?.callsign"
+                                        class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/60 font-mono text-[10px] font-semibold shrink-0"
+                                    >
+                                        {{ stream.officer.callsign }}
+                                    </span>
+                                    <span class="font-mono text-xs text-slate-300 truncate">
+                                        {{ stream.officer?.rank || stream.officer?.officer_name || stream.title }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center space-x-1.5 shrink-0">
+                                    <!-- Play / Stop Toggle Button -->
+                                    <button
+                                        @click.stop="toggleStopFeed(stream.video_id)"
+                                        :class="isVideoPlaying(stream.video_id) ? 'text-amber-400 border-slate-700' : 'text-emerald-400 border-slate-700'"
+                                        class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border rounded-md text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
+                                    >
+                                        <img :src="isVideoPlaying(stream.video_id) ? iconPause : iconPlayAll" class="w-3 h-3 invert" />
+                                        <span>{{ isVideoPlaying(stream.video_id) ? 'Stop' : 'Play' }}</span>
+                                    </button>
+
+                                    <!-- Focus Button -->
+                                    <button
+                                        @click.stop="handleSetFocusStream(stream.video_id)"
+                                        class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                                    >
+                                        <img :src="iconFocus" class="w-3.5 h-3.5 invert" />
+                                        <span>Fokus</span>
+                                    </button>
+
+                                    <!-- Chat Button -->
+                                    <button
+                                        @click.stop="handleChatClick(stream.video_id)"
+                                        :class="activeChatVideoId === stream.video_id ? 'bg-amber-600 text-white border-amber-500' : 'bg-slate-800 text-slate-300 border-slate-700'"
+                                        class="p-1.5 rounded-md border transition flex items-center justify-center cursor-pointer active:scale-95"
+                                        title="Live Chat"
+                                    >
+                                        <img :src="iconChat" class="w-3.5 h-3.5 invert" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -924,19 +988,9 @@ const getCustomOrderRank = (item) => {
                             </div>
                             <!-- VIDEO DISPLAY: IFRAME OR POSTER THUMBNAIL -->
                             <div
-                                class="relative w-full aspect-video bg-black overflow-hidden flex-1 group/thumb min-w-[320px] min-h-[200px]"
+                                class="relative w-full aspect-video bg-black overflow-hidden flex-1 group/thumb"
                             >
-                                <template
-                                    v-if="
-                                        !isStreamStopped(stream.video_id) &&
-                                        (!isDataSaverEnabled ||
-                                            activeGridVideoIds.includes(
-                                                stream.video_id,
-                                            ) ||
-                                            activeAudioVideoId ===
-                                                stream.video_id)
-                                    "
-                                >
+                                <template v-if="isVideoPlaying(stream.video_id)">
                                     <iframe
                                         :key="`grid-iframe-${stream.video_id}`"
                                         :id="`yt-bodycam-${stream.video_id}`"
@@ -955,7 +1009,7 @@ const getCustomOrderRank = (item) => {
                                     ></iframe>
                                     <button
                                         @click="toggleStopFeed(stream.video_id)"
-                                        class="absolute top-2 left-2 bg-black/80 hover:bg-red-900/80 text-white text-[10px] px-2 py-0.5 rounded border border-white/20 z-20 font-mono"
+                                        class="absolute top-2 left-2 bg-black/80 hover:bg-red-900/80 text-white text-[10px] px-2 py-0.5 rounded border border-white/20 z-20 font-mono cursor-pointer"
                                         title="Tutup Video / Stop Feed"
                                     >
                                         ✕ Stop Feed
@@ -965,11 +1019,12 @@ const getCustomOrderRank = (item) => {
                                     <img
                                         :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`"
                                         :alt="stream.title"
-                                        class="w-full h-full object-cover opacity-85 group-hover/thumb:opacity-100 transition duration-300"
+                                        class="w-full h-full object-cover opacity-85 group-hover/thumb:opacity-100 transition duration-300 cursor-pointer"
                                         loading="lazy"
+                                        @click="handleSetFocusStream(stream.video_id)"
                                     />
                                     <div
-                                        class="absolute inset-0 bg-slate-950/70 flex flex-col items-center justify-center p-3"
+                                        class="absolute inset-0 bg-slate-950/70 flex flex-col items-center justify-center p-3 pointer-events-none"
                                     >
                                         <div
                                             class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800"
@@ -979,44 +1034,42 @@ const getCustomOrderRank = (item) => {
                                             ></span>
                                             <span>10-8 LIVE</span>
                                         </div>
+
+                                        <!-- Desktop Hover Overlay Controls (Hidden on Mobile) -->
                                         <div
-                                            class="flex items-center space-x-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 transform scale-95 group-hover/thumb:scale-100"
+                                            class="hidden sm:flex items-center space-x-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 transform scale-95 group-hover/thumb:scale-100 pointer-events-auto"
                                         >
                                             <button
-                                                @click="
-                                                    toggleStopFeed(
-                                                        stream.video_id,
-                                                    )
-                                                "
-                                                class="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                                                @click.stop="toggleStopFeed(stream.video_id)"
+                                                :class="isVideoPlaying(stream.video_id) ? 'text-amber-400 border-slate-700' : 'text-emerald-400 border-slate-700'"
+                                                class="bg-slate-800 hover:bg-slate-700 border px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                                             >
-                                                <img
-                                                    :src="iconPlayAll"
-                                                    class="w-3.5 h-3.5 invert opacity-90"
-                                                />
-                                                <span>Play</span>
+                                                <img :src="isVideoPlaying(stream.video_id) ? iconPause : iconPlayAll" class="w-3.5 h-3.5 invert opacity-90" />
+                                                <span>{{ isVideoPlaying(stream.video_id) ? 'Stop' : 'Play' }}</span>
                                             </button>
                                             <button
-                                                @click="
-                                                    handleSetFocusStream(
-                                                        stream.video_id,
-                                                    )
-                                                "
+                                                @click.stop="handleSetFocusStream(stream.video_id)"
                                                 class="bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                                             >
-                                                <img
-                                                    :src="iconFocus"
-                                                    class="w-3.5 h-3.5 invert opacity-90"
-                                                />
+                                                <img :src="iconFocus" class="w-3.5 h-3.5 invert opacity-90" />
                                                 <span>Focus</span>
                                             </button>
+                                        </div>
+
+                                        <!-- Mobile Direct Tap Focus Badge (< sm) -->
+                                        <div
+                                            @click.stop="handleSetFocusStream(stream.video_id)"
+                                            class="sm:hidden flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600/90 hover:bg-blue-500 text-white font-bold text-xs shadow-xl border border-blue-400/40 cursor-pointer pointer-events-auto animate-pulse"
+                                        >
+                                            <img :src="iconFocus" class="w-3.5 h-3.5 invert" alt="" />
+                                            <span>Ketuk untuk Fokus</span>
                                         </div>
                                     </div>
                                 </template>
 
-                                <!-- Floating Hover Overlay Bar -->
+                                 <!-- Desktop Floating Hover Overlay Bar (Hidden on mobile) -->
                                 <div
-                                    class="absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-200 bg-slate-900 px-2.5 py-1.5 rounded-md border border-slate-800 flex items-center justify-between z-20 pointer-events-auto text-[11px] text-slate-300 gap-1.5"
+                                    class="hidden sm:flex absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-200 bg-slate-900 px-2.5 py-1.5 rounded-md border border-slate-800 items-center justify-between z-20 pointer-events-auto text-[11px] text-slate-300 gap-1.5"
                                 >
                                     <div
                                         class="flex items-center space-x-1.5 min-w-0 flex-1 truncate"
@@ -1098,6 +1151,51 @@ const getCustomOrderRank = (item) => {
                                             />
                                         </a>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- PERMANENT MOBILE ACTION CARD FOOTER (sm:hidden) - OPTION 1 -->
+                            <div class="sm:hidden bg-slate-900 border-t border-slate-800/80 px-3 py-2 flex items-center justify-between gap-2 z-10">
+                                <div class="flex items-center space-x-1.5 min-w-0 flex-1">
+                                    <span
+                                        v-if="stream.officer?.callsign"
+                                        class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/60 font-mono text-[10px] font-semibold shrink-0"
+                                    >
+                                        {{ stream.officer.callsign }}
+                                    </span>
+                                    <span class="font-mono text-xs text-slate-300 truncate">
+                                        {{ stream.officer?.rank || stream.officer?.officer_name || stream.title }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center space-x-1.5 shrink-0">
+                                    <!-- Play / Stop Toggle Button -->
+                                    <button
+                                        @click.stop="toggleStopFeed(stream.video_id)"
+                                        :class="isVideoPlaying(stream.video_id) ? 'text-amber-400 border-slate-700' : 'text-emerald-400 border-slate-700'"
+                                        class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border rounded-md text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
+                                    >
+                                        <img :src="isVideoPlaying(stream.video_id) ? iconPause : iconPlayAll" class="w-3 h-3 invert" />
+                                        <span>{{ isVideoPlaying(stream.video_id) ? 'Stop' : 'Play' }}</span>
+                                    </button>
+
+                                    <!-- Focus Button -->
+                                    <button
+                                        @click.stop="handleSetFocusStream(stream.video_id)"
+                                        class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                                    >
+                                        <img :src="iconFocus" class="w-3 h-3 invert" />
+                                        <span>Fokus</span>
+                                    </button>
+
+                                    <!-- Chat Button -->
+                                    <button
+                                        @click.stop="handleChatClick(stream.video_id)"
+                                        :class="activeChatVideoId === stream.video_id ? 'bg-amber-600 text-white border-amber-500' : 'bg-slate-800 text-slate-300 border-slate-700'"
+                                        class="p-1.5 rounded-md border transition flex items-center justify-center cursor-pointer active:scale-95"
+                                        title="Live Chat"
+                                    >
+                                        <img :src="iconChat" class="w-3.5 h-3.5 invert" />
+                                    </button>
                                 </div>
                             </div>
                         </div>

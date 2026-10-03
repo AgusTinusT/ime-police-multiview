@@ -80,12 +80,25 @@ const toggleTheaterMode = (forceState = null) => {
     }
 };
 
-const handleScrollTrigger = () => {
+// Mobile Landscape Immersive Mode State & Touch Controls
+const isMobileLandscape = ref(false);
+const showLandscapeControls = ref(false);
+let landscapeTimer = null;
+
+const checkMobileLandscape = () => {
     if (typeof window === "undefined") return;
-    const isMobile = window.innerWidth < 640;
-    if (isMobile && window.scrollY > 30 && !isTheaterMode.value) {
-        isTheaterMode.value = true;
-    }
+    const isMobileSize = window.innerWidth <= 1024;
+    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+    isMobileLandscape.value = isMobileSize && isLandscape;
+};
+
+const handleLandscapeTap = () => {
+    if (!isMobileLandscape.value) return;
+    showLandscapeControls.value = true;
+    if (landscapeTimer) clearTimeout(landscapeTimer);
+    landscapeTimer = setTimeout(() => {
+        showLandscapeControls.value = false;
+    }, 3500);
 };
 
 watch(selectedDepartment, (newDept) => {
@@ -897,6 +910,9 @@ const dynamicPageTitle = computed(() => {
 let heartbeatTimer = null;
 
 onMounted(() => {
+    checkMobileLandscape();
+    window.addEventListener("resize", checkMobileLandscape);
+    window.addEventListener("orientationchange", checkMobileLandscape);
     window.addEventListener("keydown", handleKeyDown);
     document.addEventListener("click", handleGlobalClick);
     window.addEventListener("error", handleYouTubeInternalError, true);
@@ -930,6 +946,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    window.removeEventListener("resize", checkMobileLandscape);
+    window.removeEventListener("orientationchange", checkMobileLandscape);
+    if (landscapeTimer) clearTimeout(landscapeTimer);
     window.removeEventListener("keydown", handleKeyDown);
     document.removeEventListener("click", handleGlobalClick);
     window.removeEventListener("error", handleYouTubeInternalError, true);
@@ -3292,9 +3311,9 @@ const submitFeedbackForm = async () => {
     <div
         class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased"
     >
-        <!-- Dedicated Multiview Master Header Component (Hidden when Theater Mode is active) -->
+        <!-- Dedicated Multiview Master Header Component (Hidden when Theater Mode or Mobile Landscape is active) -->
         <MultiviewHeader
-            v-if="!isTheaterMode"
+            v-if="!isTheaterMode && !isMobileLandscape"
             v-model:selectedDepartment="selectedDepartment"
             :all-active-streams="allActiveStreams"
             :active-personal-streams="activePersonalStreams"
@@ -3308,13 +3327,16 @@ const submitFeedbackForm = async () => {
             @toggle-fullscreen="toggleBrowserFullscreen"
         />
 
-        <!-- Main Content Area -->
+        <!-- Main Content Area (Dynamic Immersive Fullscreen on Mobile Landscape) -->
         <main
-            :class="
-                isTheaterMode
-                    ? 'flex-1 w-full px-2 sm:px-4 pt-3 sm:pt-4 pb-6 relative transition-all duration-300'
-                    : 'flex-1 w-full max-w-screen-2xl mx-auto p-2 sm:p-4 pb-6 relative transition-all duration-300'
-            "
+            :class="[
+                isMobileLandscape
+                    ? 'fixed inset-0 z-50 bg-black w-screen h-[100dvh] p-0 overflow-hidden flex flex-col justify-center'
+                    : isTheaterMode
+                        ? 'flex-1 w-full px-2 sm:px-4 pt-3 sm:pt-4 pb-6 relative transition-all duration-300'
+                        : 'flex-1 w-full max-w-screen-2xl mx-auto p-2 sm:p-4 pb-6 relative transition-all duration-300'
+            ]"
+            @click="handleLandscapeTap"
         >
             <!-- Refactored Tactical Stream Grid Component (Option B Clean Code) -->
             <TacticalStreamGrid
@@ -3495,6 +3517,23 @@ const submitFeedbackForm = async () => {
             @move-priority-down="moveCustomOrderDown"
             @reset-priority="resetCustomStreamOrder"
         />
+
+        <!-- Floating Immersive Overlay Controls for Mobile Landscape -->
+        <Teleport to="body">
+            <div
+                v-if="isMobileLandscape && showLandscapeControls"
+                class="fixed top-3 right-3 z-[100] flex items-center gap-2 bg-slate-950/85 backdrop-blur-md border border-slate-800 rounded-full px-3.5 py-1.5 shadow-2xl text-xs font-mono text-slate-200 animate-in fade-in duration-200"
+            >
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[10px] font-bold text-slate-300">LANDSCAPE MODE</span>
+                <button
+                    @click.stop="toggleBrowserFullscreen"
+                    class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] rounded-full transition cursor-pointer shadow-sm"
+                >
+                    {{ isFullscreen ? 'Keluar Fullscreen' : 'Fullscreen' }}
+                </button>
+            </div>
+        </Teleport>
     </div>
 </template>
 

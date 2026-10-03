@@ -310,8 +310,17 @@ export function useYouTubePlayer() {
     /**
      * Staggered Sequential Activation Queue (No Mass Scripted Play)
      * Replaces simultaneous playVideo calls with smooth 600ms interval queueing.
+     * Enforces single stream playback policy on mobile devices (< 640px) to prevent thermal throttling.
      */
     const disableDataSaverAndPlayAll = (allActiveStreams = [], onPlayAllCallback = null) => {
+        if (typeof window !== "undefined" && window.innerWidth < 640) {
+            isDataSaverEnabled.value = true;
+            if (typeof onPlayAllCallback === "function") {
+                onPlayAllCallback();
+            }
+            return;
+        }
+
         isDataSaverEnabled.value = false;
         activeGridVideoIds.value = [];
         activePreviewVideoIds.value = [];
