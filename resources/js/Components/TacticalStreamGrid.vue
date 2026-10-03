@@ -1481,9 +1481,9 @@ const getCustomOrderRank = (item) => {
                 </div>
             </div>
 
-            <!-- BOTTOM STICKY CONTROL BAR -->
+            <!-- BOTTOM STICKY CONTROL BAR (DESKTOP ONLY, HIDDEN ON MOBILE TO PREVENT UI CLUTTER) -->
             <div
-                class="pointer-events-auto w-full bg-slate-950/95 sm:bg-slate-950 backdrop-blur-md sm:backdrop-blur-none border-t border-slate-800/90 px-3 sm:px-4 pt-2.5 pb-8 sm:py-2.5 flex items-center justify-center gap-2 sm:gap-3 text-xs text-slate-200 animate-in fade-in slide-in-from-bottom-2 duration-200 overflow-x-auto scrollbar-none shadow-2xl sm:shadow-none"
+                class="hidden sm:flex pointer-events-auto w-full bg-slate-950 border-t border-slate-800 px-4 py-2.5 items-center justify-center gap-3 text-xs text-slate-200 overflow-x-auto scrollbar-none"
                 @click.stop
             >
                 <!-- Home / Beranda Button -->

@@ -105,104 +105,125 @@ const getDeptCount = (deptId) => {
                 </div>
             </Link>
 
-            <!-- CENTER CATEGORIES (Title Text Style) -->
+            <!-- CENTER CATEGORIES (Primary Button Selected + Clean Inactive) -->
             <nav class="hidden md:flex items-center space-x-2 overflow-x-auto scrollbar-none px-1 py-0.5">
                 <button
                     @click="emit('update:selectedDepartment', 'ALL')"
                     :class="[
-                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
+                        'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border',
                         selectedDepartment === 'ALL'
-                            ? 'text-blue-400 border-blue-500'
-                            : 'text-slate-400 border-transparent hover:text-slate-200'
+                            ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                            : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-slate-800/80 hover:bg-slate-800'
                     ]"
                 >
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>All Units</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('ALL') }}</span>
+                    <span
+                        v-if="selectedDepartment === 'ALL'"
+                        class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount('ALL') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', 'LSPD')"
                     :class="[
-                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
+                        'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border',
                         selectedDepartment === 'LSPD'
-                            ? 'text-blue-400 border-blue-500'
-                            : 'text-slate-400 border-transparent hover:text-slate-200'
+                            ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                            : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-slate-800/80 hover:bg-slate-800'
                     ]"
                 >
                     <img :src="iconLspd" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
                     <span>LSPD</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('LSPD') }}</span>
+                    <span
+                        v-if="selectedDepartment === 'LSPD'"
+                        class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount('LSPD') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', 'BCSO')"
                     :class="[
-                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
+                        'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border',
                         selectedDepartment === 'BCSO'
-                            ? 'text-blue-400 border-blue-500'
-                            : 'text-slate-400 border-transparent hover:text-slate-200'
+                            ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                            : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-slate-800/80 hover:bg-slate-800'
                     ]"
                 >
                     <img :src="iconBcso" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
                     <span>BCSO</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('BCSO') }}</span>
+                    <span
+                        v-if="selectedDepartment === 'BCSO'"
+                        class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount('BCSO') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', 'SASP')"
                     :class="[
-                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
+                        'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border',
                         selectedDepartment === 'SASP'
-                            ? 'text-blue-400 border-blue-500'
-                            : 'text-slate-400 border-transparent hover:text-slate-200'
+                            ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                            : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-slate-800/80 hover:bg-slate-800'
                     ]"
                 >
                     <img :src="iconSasp" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
                     <span>SASP</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('SASP') }}</span>
+                    <span
+                        v-if="selectedDepartment === 'SASP'"
+                        class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount('SASP') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', 'SAPR')"
                     :class="[
-                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
+                        'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border',
                         selectedDepartment === 'SAPR'
-                            ? 'text-blue-400 border-blue-500'
-                            : 'text-slate-400 border-transparent hover:text-slate-200'
+                            ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                            : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-slate-800/80 hover:bg-slate-800'
                     ]"
                 >
                     <img :src="iconSapr" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
                     <span>SAPR</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('SAPR') }}</span>
+                    <span
+                        v-if="selectedDepartment === 'SAPR'"
+                        class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount('SAPR') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', selectedDepartment.startsWith('TAC_') ? 'ALL' : 'TAC_1')"
                     :class="[
-                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
+                        'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border',
                         selectedDepartment.startsWith('TAC_')
-                            ? 'text-blue-400 border-blue-500'
-                            : 'text-slate-400 border-transparent hover:text-slate-200'
+                            ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                            : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-slate-800/80 hover:bg-slate-800'
                     ]"
                 >
                     <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" />
                     <span>{{ selectedDepartment.startsWith('TAC_') ? selectedDepartment.replace('_', ' ') : 'TAC' }}</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('TAC') }}</span>
+                    <span
+                        v-if="selectedDepartment.startsWith('TAC_')"
+                        class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount('TAC') }}</span>
                 </button>
 
                 <button
                     @click="emit('update:selectedDepartment', 'PERSONAL')"
                     :class="[
-                        'px-2.5 py-1 text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer border-b-2 font-mono uppercase tracking-wider',
+                        'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border',
                         selectedDepartment === 'PERSONAL'
-                            ? 'text-blue-400 border-blue-500'
-                            : 'text-slate-400 border-transparent hover:text-slate-200'
+                            ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                            : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-slate-800/80 hover:bg-slate-800'
                     ]"
                 >
                     <img :src="iconPersonal" class="w-3.5 h-3.5 invert opacity-90" />
                     <span>Watchlist</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 font-mono">{{ getDeptCount('PERSONAL') }}</span>
+                    <span
+                        v-if="selectedDepartment === 'PERSONAL'"
+                        class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount('PERSONAL') }}</span>
                 </button>
             </nav>
 
@@ -224,61 +245,97 @@ const getDeptCount = (deptId) => {
 
         <!-- MOBILE SECONDARY NAV RIBBON (< md) -->
         <div
-            class="hidden max-w-screen-2xl mx-auto w-full px-3 pt-2 items-center space-x-3 overflow-x-auto scrollbar-none border-t border-slate-800 mt-2"
+            class="flex md:hidden max-w-screen-2xl mx-auto w-full px-3 py-2 items-center space-x-2 overflow-x-auto scrollbar-none border-t border-slate-800/80 mt-2 bg-slate-950/95"
         >
             <button
                 @click="emit('update:selectedDepartment', 'ALL')"
                 :class="[
-                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
-                    selectedDepartment === 'ALL' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
+                    'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
+                    selectedDepartment === 'ALL'
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
                 ]"
             >
-                ALL ({{ getDeptCount('ALL') }})
+                <span>ALL</span>
+                <span v-if="selectedDepartment === 'ALL'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('ALL') }}</span>
             </button>
+
             <button
                 @click="emit('update:selectedDepartment', 'LSPD')"
                 :class="[
-                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
-                    selectedDepartment === 'LSPD' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
+                    'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
+                    selectedDepartment === 'LSPD'
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
                 ]"
             >
-                LSPD ({{ getDeptCount('LSPD') }})
+                <span>LSPD</span>
+                <span v-if="selectedDepartment === 'LSPD'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('LSPD') }}</span>
             </button>
+
             <button
                 @click="emit('update:selectedDepartment', 'BCSO')"
                 :class="[
-                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
-                    selectedDepartment === 'BCSO' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
+                    'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
+                    selectedDepartment === 'BCSO'
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
                 ]"
             >
-                BCSO ({{ getDeptCount('BCSO') }})
+                <span>BCSO</span>
+                <span v-if="selectedDepartment === 'BCSO'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('BCSO') }}</span>
             </button>
+
             <button
                 @click="emit('update:selectedDepartment', 'SASP')"
                 :class="[
-                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
-                    selectedDepartment === 'SASP' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
+                    'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
+                    selectedDepartment === 'SASP'
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
                 ]"
             >
-                SASP ({{ getDeptCount('SASP') }})
+                <span>SASP</span>
+                <span v-if="selectedDepartment === 'SASP'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('SASP') }}</span>
             </button>
+
             <button
                 @click="emit('update:selectedDepartment', 'SAPR')"
                 :class="[
-                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
-                    selectedDepartment === 'SAPR' ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
+                    'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
+                    selectedDepartment === 'SAPR'
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
                 ]"
             >
-                SAPR ({{ getDeptCount('SAPR') }})
+                <span>SAPR</span>
+                <span v-if="selectedDepartment === 'SAPR'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('SAPR') }}</span>
             </button>
+
             <button
                 @click="emit('update:selectedDepartment', selectedDepartment.startsWith('TAC_') ? 'ALL' : 'TAC_1')"
                 :class="[
-                    'pb-1 text-xs font-bold font-mono transition shrink-0 cursor-pointer border-b-2 uppercase tracking-wider',
-                    selectedDepartment.startsWith('TAC_') ? 'text-blue-400 border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200'
+                    'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
+                    selectedDepartment.startsWith('TAC_')
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
                 ]"
             >
-                TAC
+                <span>TAC</span>
+                <span v-if="selectedDepartment.startsWith('TAC_')" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('TAC') }}</span>
+            </button>
+
+            <button
+                @click="emit('update:selectedDepartment', 'PERSONAL')"
+                :class="[
+                    'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
+                    selectedDepartment === 'PERSONAL'
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
+                ]"
+            >
+                <span>WATCHLIST</span>
+                <span v-if="selectedDepartment === 'PERSONAL'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('PERSONAL') }}</span>
             </button>
         </div>
     </header>

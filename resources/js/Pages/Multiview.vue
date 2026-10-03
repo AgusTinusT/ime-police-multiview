@@ -122,6 +122,9 @@ const getInitialLayout = () => {
         if (params.has("focus")) {
             return "focus";
         }
+        if (window.innerWidth < 640) {
+            return "focus";
+        }
     }
     return "auto";
 };
@@ -898,7 +901,6 @@ onMounted(() => {
     document.addEventListener("click", handleGlobalClick);
     window.addEventListener("error", handleYouTubeInternalError, true);
     window.addEventListener("open-clipper-modal", handleOpenClipperEvent);
-    window.addEventListener("scroll", handleScrollTrigger, { passive: true });
     loadPersonalStreamsFromStorage();
     syncCloudWatchlist();
     fetchAnnouncements();
@@ -932,7 +934,6 @@ onUnmounted(() => {
     document.removeEventListener("click", handleGlobalClick);
     window.removeEventListener("error", handleYouTubeInternalError, true);
     window.removeEventListener("open-clipper-modal", handleOpenClipperEvent);
-    window.removeEventListener("scroll", handleScrollTrigger);
     if (tacTimerInterval) clearInterval(tacTimerInterval);
     if (tacPollInterval) clearInterval(tacPollInterval);
     if (streamPollInterval) clearInterval(streamPollInterval);
@@ -3418,7 +3419,7 @@ const submitFeedbackForm = async () => {
         <!-- Global Expiring TAC Channel Alert Prompt (When viewing other tabs) -->
         <div
             v-if="expiringTacChannel"
-            class="fixed bottom-4 left-4 z-50 bg-slate-900 border border-amber-800 rounded-lg p-3 shadow-lg flex items-center space-x-3 text-xs animate-in slide-in-from-bottom duration-300 max-w-lg"
+            class="fixed bottom-20 md:bottom-4 left-4 z-50 bg-slate-900 border border-amber-800 rounded-lg p-3 shadow-lg flex items-center space-x-3 text-xs animate-in slide-in-from-bottom duration-300 max-w-lg"
         >
             <div
                 class="w-8 h-8 rounded bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0"
@@ -3468,7 +3469,7 @@ const submitFeedbackForm = async () => {
         <!-- Floating Tactical Action Toast -->
         <div
             v-if="tacticalToast"
-            class="fixed bottom-16 md:bottom-16 right-4 z-[60] bg-slate-900 border border-amber-800 rounded-md px-4 py-2.5 flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200 pointer-events-auto"
+            class="fixed bottom-20 md:bottom-16 right-4 z-[60] bg-slate-900 border border-amber-800 rounded-md px-4 py-2.5 flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200 pointer-events-auto"
         >
             <img
                 :src="iconRadio"
