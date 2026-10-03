@@ -351,7 +351,7 @@ defineExpose({
                     ref="ytIframeRef"
                     :id="iframeId"
                     :src="`https://www.youtube-nocookie.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&disablekb=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&fs=0&playsinline=1&autoplay=${autoplay ? 1 : 0}${startSeconds ? '&start=' + startSeconds : ''}${endSeconds ? '&end=' + endSeconds : ''}`"
-                    class="w-[125%] h-[125%] max-w-none border-0 pointer-events-none scale-115 transform origin-center select-none"
+                    class="w-full h-full border-0 pointer-events-none select-none sm:w-[125%] sm:h-[125%] sm:max-w-none sm:scale-115 sm:transform sm:origin-center"
                     allow="
                         accelerometer;
                         autoplay;
@@ -452,8 +452,6 @@ defineExpose({
                             <path d="M8 5v14l11-7z" />
                         </svg>
                     </button>
-
-
 
                     <!-- Time Counter -->
                     <span class="text-[11px] text-slate-400 font-mono ml-1">

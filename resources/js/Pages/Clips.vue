@@ -669,6 +669,38 @@ const handleWheel = (e) => {
     }, 600);
 };
 
+// TOUCH SWIPE GESTURES FOR MOBILE (SWIPE UP / DOWN)
+let touchStartY = 0;
+let touchEndY = 0;
+
+const handleTouchStart = (e) => {
+    if (viewMode.value !== "shorts") return;
+    if (e.touches && e.touches.length > 0) {
+        touchStartY = e.touches[0].clientY;
+    }
+};
+
+const handleTouchEnd = (e) => {
+    if (viewMode.value !== "shorts") return;
+    if (e.changedTouches && e.changedTouches.length > 0) {
+        touchEndY = e.changedTouches[0].clientY;
+        handleSwipeGesture();
+    }
+};
+
+const handleSwipeGesture = () => {
+    const swipeThreshold = 50;
+    const diffY = touchStartY - touchEndY;
+
+    if (Math.abs(diffY) > swipeThreshold) {
+        if (diffY > 0) {
+            nextShort();
+        } else {
+            prevShort();
+        }
+    }
+};
+
 onMounted(() => {
     window.addEventListener("keydown", handleKeydown);
 });
@@ -685,12 +717,14 @@ onUnmounted(() => {
     <!-- MINIMALIST FULLSCREEN CINEMA FEED CONTAINER -->
     <div
         @wheel="handleWheel"
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
         class="relative w-screen h-screen h-dvh bg-slate-950 text-slate-100 font-sans overflow-hidden flex items-center justify-center p-0 m-0 select-none"
     >
         <!-- FLOATING TOP-LEFT HOME ICON BUTTON -->
         <Link
             href="/"
-            class="fixed top-4 left-4 z-50 w-10 h-10 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition duration-200 shadow-lg cursor-pointer"
+            class="fixed top-3 left-3 sm:top-4 sm:left-4 z-50 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition duration-200 shadow-lg cursor-pointer landscape:top-2 landscape:left-2"
             title="Kembali ke Beranda"
         >
             <svg
@@ -708,10 +742,10 @@ onUnmounted(() => {
             </svg>
         </Link>
 
-        <!-- FLOATING MIDDLE-RIGHT SCROLL CONTROL BUTTONS -->
+        <!-- FLOATING MIDDLE-RIGHT SCROLL CONTROL BUTTONS (DESKTOP ONLY) -->
         <div
             v-if="filteredClips.length > 0"
-            class="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2.5 items-center"
+            class="hidden sm:flex fixed right-4 top-1/2 -translate-y-1/2 z-50 flex-col gap-2.5 items-center"
         >
             <button
                 @click="prevShort"
@@ -769,17 +803,17 @@ onUnmounted(() => {
         <!-- MAIN STAGE AREA (NO OVERLAYS ON VIDEO) -->
         <div
             v-if="filteredClips.length > 0"
-            class="relative w-full h-full flex flex-col items-center justify-center p-2 sm:p-4 max-w-[1600px] mx-auto space-y-2.5"
+            class="relative w-full h-full flex flex-col items-center justify-between sm:justify-center p-2 sm:p-4 pt-12 sm:pt-4 pb-3 landscape:pl-12 sm:landscape:pl-16 max-w-[1600px] mx-auto space-y-2 min-h-0"
         >
             <!-- TOP / MIDDLE ROW: VIDEO & DETAILS COLUMN + SIDE ACTIONS COLUMN -->
-            <div class="flex items-center justify-center gap-3 sm:gap-5 w-full">
+            <div class="flex items-center justify-center gap-3 sm:gap-5 w-full min-h-0 my-auto">
                 <!-- VIDEO & DETAILS COLUMN (PERFECTLY ALIGNED WITH VIDEO FRAME EDGES) -->
                 <div
-                    class="flex-1 max-w-[1380px] w-full flex flex-col gap-2 min-w-0"
+                    class="flex-1 max-w-[1380px] w-full flex flex-col gap-1.5 sm:gap-2 min-w-0"
                 >
                     <!-- 16:9 CLEAN VIDEO FRAME CONTAINER -->
                     <div
-                        class="relative w-full aspect-video max-h-[calc(100vh-105px)] max-h-[calc(100dvh-105px)] rounded-xl border border-slate-800/80 shadow-2xl overflow-hidden bg-black flex items-center justify-center"
+                        class="relative w-full aspect-video max-h-[calc(100dvh-185px)] sm:max-h-[calc(100dvh-105px)] landscape:max-h-[calc(100dvh-60px)] rounded-xl border border-slate-800/80 shadow-2xl overflow-hidden bg-black flex items-center justify-center"
                     >
                         <!-- CUSTOM VIDEO PLAYER (MATCHING CLIPPER.VUE CUSTOM PLAYER UI) -->
                         <CustomVideoPlayer
@@ -797,12 +831,12 @@ onUnmounted(() => {
                     <!-- BOTTOM DETAILS ROW (ALIGNED EXACTLY WITH VIDEO FRAME EDGES) -->
                     <div
                         v-if="currentShortClip"
-                        class="w-full flex items-center justify-between gap-4 px-0.5 text-left font-sans"
+                        class="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 px-0.5 text-left font-sans shrink-0"
                     >
-                        <div class="flex items-center gap-3 min-w-0">
+                        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
                             <!-- Profile Photo Avatar (Matching OfficerDirectory.vue) -->
                             <div
-                                class="w-9 h-9 rounded-full border border-slate-800 overflow-hidden bg-slate-900 shrink-0 flex items-center justify-center"
+                                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-slate-800 overflow-hidden bg-slate-900 shrink-0 flex items-center justify-center"
                             >
                                 <img
                                     :src="currentClipAvatar"
@@ -814,8 +848,8 @@ onUnmounted(() => {
                             </div>
 
                             <!-- Details: Officer, Title, Creator -->
-                            <div class="flex flex-col min-w-0">
-                                <div class="flex items-center gap-2 flex-wrap">
+                            <div class="flex flex-col min-w-0 flex-1">
+                                <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                                     <span
                                         class="text-xs font-semibold text-slate-200 font-mono"
                                     >
@@ -826,7 +860,7 @@ onUnmounted(() => {
                                         }}
                                     </span>
                                     <span
-                                        class="text-[10px] text-slate-500 font-mono"
+                                        class="text-[10px] text-slate-500 font-mono truncate"
                                     >
                                         • Ditandai oleh
                                         <span class="text-slate-400">{{
@@ -836,17 +870,51 @@ onUnmounted(() => {
                                     </span>
                                 </div>
                                 <h2
-                                    class="text-xs sm:text-sm font-medium text-slate-100 truncate leading-snug"
+                                    class="text-xs sm:text-sm font-medium text-slate-100 line-clamp-2 leading-snug"
                                 >
                                     {{ currentShortClip.title }}
                                 </h2>
                             </div>
                         </div>
 
-                        <!-- Tags / Timestamp -->
+                        <!-- MOBILE ACTIONS & TAGS / TIMESTAMP -->
                         <div
-                            class="flex items-center gap-2 shrink-0 font-mono text-[10px]"
+                            class="flex items-center justify-between sm:justify-end gap-2 shrink-0 font-mono text-[10px]"
                         >
+                            <!-- ACTION BUTTONS INLINE FOR MOBILE ONLY (< sm) -->
+                            <div class="flex sm:hidden items-center gap-1.5 border-r border-slate-800 pr-2">
+                                <button
+                                    v-if="canAccessClipper"
+                                    @click="openInClipper(currentShortClip)"
+                                    class="p-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 hover:text-white cursor-pointer"
+                                    title="ClipStudio"
+                                >
+                                    <img :src="iconCut" class="w-3.5 h-3.5 invert opacity-75" alt="Cut" />
+                                </button>
+
+                                <a
+                                    :href="`https://www.youtube.com/watch?v=${currentShortClip.video_id}&t=${currentShortClip.start_seconds}s`"
+                                    target="_blank"
+                                    class="p-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 hover:text-white cursor-pointer"
+                                    title="YouTube"
+                                >
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
+
+                                <button
+                                    v-if="canDeleteClip(currentShortClip)"
+                                    @click="deleteClip(currentShortClip.id)"
+                                    class="p-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 cursor-pointer"
+                                    title="Hapus"
+                                >
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+
                             <span
                                 class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400"
                             >
@@ -871,10 +939,10 @@ onUnmounted(() => {
                     </div>
                 </div>
 
-                <!-- SIDE ACTIONS COLUMN (OUTSIDE VIDEO FRAME, ON THE RIGHT) -->
+                <!-- SIDE ACTIONS COLUMN (DESKTOP ONLY) -->
                 <div
                     v-if="currentShortClip"
-                    class="flex flex-col items-center gap-3 shrink-0 font-mono py-1 self-center"
+                    class="hidden sm:flex flex-col items-center gap-3 shrink-0 font-mono py-1 self-center"
                 >
                     <!-- OPEN & CUT IN CLIPPER (FOR CLIPS ROLE OR ADMIN) -->
                     <div
