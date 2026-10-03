@@ -534,34 +534,28 @@ const currentClipAvatar = computed(() => {
     const clip = currentShortClip.value;
     if (!clip) return "";
 
-    // 1. Look up matching officer in props.officers database array passed from controller
+    const clipName = (clip.officer_name || "").trim();
+    const clipHandle = (clip.officer_handle || clip.handle || "").trim();
+    const clipNameLower = clipName.toLowerCase();
+    const clipHandleLower = clipHandle.toLowerCase().replace("@", "");
+    const isGenericPatrol = !clipName || clipNameLower === "patrol unit" || clipHandleLower === "patrolunit";
+
+    // 1. Look up matching officer in props.officers database array if clip is associated with a specific officer
     if (props.officers && props.officers.length > 0) {
-        const clipName = (clip.officer_name || "").toLowerCase().trim();
-        const clipHandle = (clip.officer_handle || clip.handle || "").toLowerCase().replace("@", "").trim();
-        const clipTitle = (clip.title || "").toLowerCase().trim();
-        const clipCreator = (clip.creator_name || "").toLowerCase().trim();
-
         const found = props.officers.find((o) => {
-            const offName = (o.officer_name || "").toLowerCase().trim();
-            const offStreamer = (o.streamer_name || "").toLowerCase().trim();
-            const offHandle = (o.handle || o.channel_id || "").toLowerCase().replace("@", "").trim();
-            const offCallsign = (o.callsign || "").toLowerCase().trim();
-
             if (clip.officer_id && o.id === clip.officer_id) return true;
 
-            if (clipName || clipHandle) {
-                return (
-                    (clipName && offName && (clipName === offName || clipName.includes(offName) || offName.includes(clipName))) ||
-                    (clipName && offStreamer && (clipName === offStreamer || clipName.includes(offStreamer) || offStreamer.includes(clipName))) ||
-                    (clipHandle && offHandle && clipHandle === offHandle) ||
-                    (clipName && offCallsign && clipName.includes(offCallsign))
-                );
-            }
+            if (!isGenericPatrol) {
+                const offName = (o.officer_name || "").toLowerCase().trim();
+                const offStreamer = (o.streamer_name || "").toLowerCase().trim();
+                const offHandle = (o.handle || o.channel_id || "").toLowerCase().replace("@", "").trim();
+                const offCallsign = (o.callsign || "").toLowerCase().trim();
 
-            // Fallback match if clipName/clipHandle are empty: check title or creator
-            if (offName && (clipTitle.includes(offName) || clipCreator.includes(offName))) return true;
-            if (offStreamer && (clipTitle.includes(offStreamer) || clipCreator.includes(offStreamer))) return true;
-            if (offHandle && (clipTitle.includes(offHandle) || clipCreator.includes(offHandle))) return true;
+                if (clipHandleLower && offHandle && clipHandleLower === offHandle) return true;
+                if (clipNameLower && offName && (clipNameLower === offName || clipNameLower.includes(offName) || offName.includes(clipNameLower))) return true;
+                if (clipNameLower && offStreamer && (clipNameLower === offStreamer || clipNameLower.includes(offStreamer) || offStreamer.includes(clipNameLower))) return true;
+                if (clipNameLower && offCallsign && clipNameLower.includes(offCallsign)) return true;
+            }
 
             return false;
         });
@@ -582,23 +576,15 @@ const currentClipAvatar = computed(() => {
         return clip.avatar;
     }
 
-    // 3. Fallback to any active officer YouTube avatar from database
-    const fallbackOfficer = props.officers?.find(o => o.avatar_url && !o.avatar_url.includes("dicebear"));
-    if (fallbackOfficer?.avatar_url) {
-        return fallbackOfficer.avatar_url;
-    }
-
-    // 4. Default static YouTube fallback avatar
-    return clip.avatar_url || "https://yt3.googleusercontent.com/i589zY0D0fUTVDXVbRIPK5HTFahFA8pagMPjj11Djoa7kzjTCqC8BDf4CQzWohqjTMt8W9_woLg=s900-c-k-c0x00ffffff-no-rj";
+    // 3. Neutral Default Fallback Avatar (DiceBear bottts SVG)
+    const seed = !isGenericPatrol ? (clip.officer_name || clip.officer_handle || "PatrolUnit") : "PatrolUnit";
+    return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}`;
 });
 
 const handleAvatarError = (e) => {
-    const fallbackOfficer = props.officers?.find(o => o.avatar_url && !o.avatar_url.includes("dicebear"));
-    if (fallbackOfficer?.avatar_url) {
-        e.target.src = fallbackOfficer.avatar_url;
-    } else {
-        e.target.src = "https://yt3.googleusercontent.com/i589zY0D0fUTVDXVbRIPK5HTFahFA8pagMPjj11Djoa7kzjTCqC8BDf4CQzWohqjTMt8W9_woLg=s900-c-k-c0x00ffffff-no-rj";
-    }
+    const clip = currentShortClip.value;
+    const seed = clip?.officer_name || clip?.officer_handle || "PatrolUnit";
+    e.target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}`;
 };
 
 const startProgressTimer = () => {
