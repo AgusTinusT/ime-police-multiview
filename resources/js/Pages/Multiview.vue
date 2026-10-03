@@ -19,9 +19,11 @@ import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import OfficerVisibilityBottomSheet from "@/Components/OfficerVisibilityBottomSheet.vue";
 import TacChannelNotificationToast from "@/Components/TacChannelNotificationToast.vue";
+import MultiviewLandscapeOverlay from "@/Components/MultiviewLandscapeOverlay.vue";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 import { useAnalytics } from "@/Composables/useAnalytics";
+import { useTacChannelManager } from "@/Composables/useTacChannelManager";
 
 const { trackPageView, trackSelectStream, trackDepartmentChange, trackHeartbeat } = useAnalytics();
 
@@ -211,177 +213,6 @@ const handleOpenClipperEvent = (e) => {
     openClipper(e?.detail?.url || "");
 };
 
-// Tactical Radio Channels (TAC 1 to TAC 10) State
-const defaultTacChannels = [
-    {
-        id: 1,
-        code: "TAC_1",
-        name: "TAC 1",
-        video_ids: [],
-        expires_at: null,
-        remaining_seconds: 0,
-        is_active: false,
-        unit_count: 0,
-    },
-    {
-        id: 2,
-        code: "TAC_2",
-        name: "TAC 2",
-        video_ids: [],
-        expires_at: null,
-        remaining_seconds: 0,
-        is_active: false,
-        unit_count: 0,
-    },
-    {
-        id: 3,
-        code: "TAC_3",
-        name: "TAC 3",
-        video_ids: [],
-        expires_at: null,
-        remaining_seconds: 0,
-        is_active: false,
-        unit_count: 0,
-    },
-    {
-        id: 4,
-        code: "TAC_4",
-        name: "TAC 4",
-        video_ids: [],
-        expires_at: null,
-        remaining_seconds: 0,
-        is_active: false,
-        unit_count: 0,
-    },
-    {
-        id: 5,
-        code: "TAC_5",
-        name: "TAC 5",
-        video_ids: [],
-        expires_at: null,
-        remaining_seconds: 0,
-        is_active: false,
-        unit_count: 0,
-    },
-    {
-        id: 6,
-        code: "TAC_6",
-        name: "TAC 6",
-        video_ids: [],
-        expires_at: null,
-        remaining_seconds: 0,
-        is_active: false,
-        unit_count: 0,
-    },
-    {
-        id: 7,
-        code: "TAC_7",
-        name: "TAC 7",
-        video_ids: [],
-        expires_at: null,
-        remaining_seconds: 0,
-        is_active: false,
-        unit_count: 0,
-    },
-    {
-        id: 8,
-        code: "TAC_8",
-        name: "TAC 8",
-        video_ids: [],
-        expires_at: null,
-        remaining_seconds: 0,
-        is_active: false,
-        unit_count: 0,
-    },
-    {
-        id: 9,
-        code: "TAC_9",
-        name: "TAC 9",
-        video_ids: [],
-        expires_at: null,
-        remaining_seconds: 0,
-        is_active: false,
-        unit_count: 0,
-    },
-    {
-        id: 10,
-        code: "TAC_10",
-        name: "TAC 10",
-        video_ids: [],
-        expires_at: null,
-        remaining_seconds: 0,
-        is_active: false,
-        unit_count: 0,
-    },
-];
-const tacChannels = ref(
-    props.initialTacChannels && props.initialTacChannels.length > 0
-        ? props.initialTacChannels
-        : defaultTacChannels,
-);
-const activeTacPopoverVideoId = ref(null);
-const tacticalToast = ref(null);
-
-const getCsrfToken = () => {
-    return (
-        document
-            .querySelector('meta[name="csrf-token"]')
-            ?.getAttribute("content") || ""
-    );
-};
-
-const showTacticalToast = (message, type = "info") => {
-    tacticalToast.value = { message, type };
-    setTimeout(() => {
-        if (tacticalToast.value?.message === message) {
-            tacticalToast.value = null;
-        }
-    }, 3500);
-};
-
-const getStreamTac = (videoId) => {
-    if (!videoId) return null;
-    const ch = tacChannels.value.find(
-        (c) => c.video_ids && c.video_ids.includes(videoId),
-    );
-    return ch ? ch.code : null;
-};
-
-const getTacChannel = (tacCode) => {
-    return tacChannels.value.find((c) => c.code === tacCode) || null;
-};
-
-const getTacUnitCount = (tacCode) => {
-    const ch = getTacChannel(tacCode);
-    return ch && ch.video_ids ? ch.video_ids.length : 0;
-};
-
-const getTacRemainingSeconds = (tacCode) => {
-    const ch = getTacChannel(tacCode);
-    return ch ? ch.remaining_seconds || 0 : 0;
-};
-
-const isTacDepartment = (deptId) => {
-    return typeof deptId === "string" && deptId.startsWith("TAC_");
-};
-
-const formatRemainingTime = (seconds) => {
-    if (!seconds || seconds <= 0) return "00:00";
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-};
-
-const getTacStreams = (tacCode) => {
-    const ch = getTacChannel(tacCode);
-    if (!ch || !ch.video_ids || ch.video_ids.length === 0) return [];
-    const ids = ch.video_ids.map((id) => String(id).trim());
-    return allActiveStreams.value.filter((s) =>
-        ids.includes(String(s.video_id).trim()),
-    );
-};
-
-// Announcements & Promos State
 const activeAnnouncements = ref([]);
 
 const fetchAnnouncements = async () => {
@@ -452,271 +283,32 @@ watch(
     { deep: true },
 );
 
-// Fetch & Synchronize TAC Channels from Server
-const fetchTacChannels = async () => {
-    try {
-        const res = await fetch("/api/v1/tac", {
-            headers: {
-                Accept: "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-            },
-        });
-        if (res.ok) {
-            const data = await res.json();
-            if (data.status === "success" && data.data) {
-                tacChannels.value = data.data;
-            }
-        }
-    } catch (e) {
-        console.warn("TAC sync failed:", e);
-    }
-};
 
-// 1-Click TAC Assignment
-const assignStreamToTac = async (tacCode, videoId) => {
-    if (!tacCode || !videoId) return;
-    const cleanVideoId = String(videoId).trim();
 
-    // Optimistic UI update
-    tacChannels.value.forEach((ch) => {
-        if (
-            ch.code !== tacCode &&
-            ch.video_ids &&
-            ch.video_ids.includes(cleanVideoId)
-        ) {
-            ch.video_ids = ch.video_ids.filter((id) => id !== cleanVideoId);
-            ch.unit_count = ch.video_ids.length;
-            if (ch.unit_count === 0) {
-                ch.remaining_seconds = 0;
-                ch.is_active = false;
-            }
-        }
-    });
-
-    const targetCh = getTacChannel(tacCode);
-    if (targetCh) {
-        if (!targetCh.video_ids) targetCh.video_ids = [];
-        if (!targetCh.video_ids.includes(cleanVideoId)) {
-            targetCh.video_ids.push(cleanVideoId);
-        }
-        targetCh.unit_count = targetCh.video_ids.length;
-        if (!targetCh.remaining_seconds || targetCh.remaining_seconds <= 0) {
-            targetCh.remaining_seconds = 1800; // 30 mins
-        }
-        targetCh.is_active = true;
-    }
-
-    showTacticalToast(
-        `Unit berhasil dimasukkan ke ${tacCode.replace("_", " ")} (30 Menit)`,
-    );
-
-    try {
-        const csrfToken =
-            document
-                .querySelector('meta[name="csrf-token"]')
-                ?.getAttribute("content") || "";
-        const res = await fetch("/api/v1/tac/assign", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRF-TOKEN": csrfToken,
-            },
-            body: JSON.stringify({
-                tac_code: tacCode,
-                video_id: cleanVideoId,
-            }),
-        });
-        if (res.ok) {
-            const data = await res.json();
-            if (data.status === "success" && data.data) {
-                tacChannels.value = data.data;
-            }
-        } else {
-            console.error(
-                "TAC Assign API Error:",
-                res.status,
-                await res.text(),
-            );
-        }
-    } catch (e) {
-        console.error("Failed to assign stream to TAC:", e);
-    }
-};
-
-// Remove stream from TAC
-const removeStreamFromTac = async (videoId, tacCode = null) => {
-    if (!videoId) return;
-    const cleanVideoId = String(videoId).trim();
-
-    // Optimistic UI update
-    tacChannels.value.forEach((ch) => {
-        if (!tacCode || ch.code === tacCode) {
-            if (ch.video_ids && ch.video_ids.includes(cleanVideoId)) {
-                ch.video_ids = ch.video_ids.filter((id) => id !== cleanVideoId);
-                ch.unit_count = ch.video_ids.length;
-                if (ch.unit_count === 0) {
-                    ch.remaining_seconds = 0;
-                    ch.is_active = false;
-                }
-            }
-        }
-    });
-
-    showTacticalToast("Unit dilepas dari Tactical Radio");
-
-    try {
-        const csrfToken =
-            document
-                .querySelector('meta[name="csrf-token"]')
-                ?.getAttribute("content") || "";
-        const res = await fetch("/api/v1/tac/remove", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRF-TOKEN": csrfToken,
-            },
-            body: JSON.stringify({
-                video_id: cleanVideoId,
-                tac_code: tacCode,
-            }),
-        });
-        if (res.ok) {
-            const data = await res.json();
-            if (data.status === "success" && data.data) {
-                tacChannels.value = data.data;
-            }
-        } else {
-            console.error(
-                "TAC Remove API Error:",
-                res.status,
-                await res.text(),
-            );
-        }
-    } catch (e) {
-        console.error("Failed to remove stream from TAC:", e);
-    }
-};
-
-// Extend TAC Timer
-const extendTacTimer = async (tacCode, minutes = 20) => {
-    if (!tacCode) return;
-
-    // Optimistic UI update
-    const targetCh = getTacChannel(tacCode);
-    if (targetCh) {
-        targetCh.remaining_seconds =
-            (targetCh.remaining_seconds || 0) + minutes * 60;
-    }
-
-    showTacticalToast(
-        `Waktu situasi ${tacCode.replace("_", " ")} diperpanjang +${minutes} menit`,
-    );
-
-    try {
-        const csrfToken =
-            document
-                .querySelector('meta[name="csrf-token"]')
-                ?.getAttribute("content") || "";
-        const res = await fetch("/api/v1/tac/extend", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRF-TOKEN": csrfToken,
-            },
-            body: JSON.stringify({
-                tac_code: tacCode,
-                minutes: minutes,
-            }),
-        });
-        if (res.ok) {
-            const data = await res.json();
-            if (data.status === "success" && data.data) {
-                tacChannels.value = data.data;
-            }
-        } else {
-            console.error(
-                "TAC Extend API Error:",
-                res.status,
-                await res.text(),
-            );
-        }
-    } catch (e) {
-        console.error("Failed to extend TAC timer:", e);
-    }
-};
-
-// Disband / Clear TAC Channel
-const disbandTacChannel = async (tacCode) => {
-    if (!tacCode) return;
-
-    if (
-        !confirm(
-            `Apakah Anda yakin ingin mengosongkan / membubarkan kanal ${tacCode.replace("_", " ")} untuk seluruh penonton?`,
-        )
-    ) {
-        return;
-    }
-
-    // Optimistic UI update
-    const targetCh = getTacChannel(tacCode);
-    if (targetCh) {
-        targetCh.video_ids = [];
-        targetCh.unit_count = 0;
-        targetCh.remaining_seconds = 0;
-        targetCh.is_active = false;
-        targetCh.expires_at = null;
-    }
-
-    showTacticalToast(
-        `Kanal ${tacCode.replace("_", " ")} telah dibubarkan / dikosongkan`,
-    );
-
-    try {
-        const csrfToken =
-            document
-                .querySelector('meta[name="csrf-token"]')
-                ?.getAttribute("content") || "";
-        const res = await fetch("/api/v1/tac/clear", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRF-TOKEN": csrfToken,
-            },
-            body: JSON.stringify({
-                tac_code: tacCode,
-            }),
-        });
-        if (res.ok) {
-            const data = await res.json();
-            if (data.status === "success" && data.data) {
-                tacChannels.value = data.data;
-            }
-        } else {
-            console.error("TAC Clear API Error:", res.status, await res.text());
-        }
-    } catch (e) {
-        console.error("Failed to disband TAC channel:", e);
-    }
-};
-
-// Expiring TAC channel for global alert prompt (Active only in last 60 seconds)
-const expiringTacChannel = computed(() => {
-    return tacChannels.value.find(
-        (c) =>
-            c.video_ids &&
-            c.video_ids.length > 0 &&
-            c.remaining_seconds > 0 &&
-            c.remaining_seconds <= 60 &&
-            selectedDepartment.value !== c.code,
-    );
+// Tactical Radio Channels Manager Composable (Level 2 Refactoring)
+const {
+    tacChannels,
+    activeTacPopoverVideoId,
+    expiringTacChannel,
+    tacticalToast,
+    showTacticalToast,
+    fetchTacChannels,
+    getStreamTac,
+    getTacChannel,
+    getTacUnitCount,
+    getTacRemainingSeconds,
+    isTacDepartment,
+    formatRemainingTime,
+    getTacStreams,
+    assignStreamToTac,
+    removeStreamFromTac,
+    extendTacTimer,
+    disbandTacChannel,
+    tickTacTimers,
+} = useTacChannelManager({
+    initialTacChannels: props.initialTacChannels,
+    allActiveStreams: () => allActiveStreams.value,
+    selectedDepartment,
 });
 
 // Focus Mode Right-Column Live Chat State (Default Open)
@@ -852,24 +444,7 @@ const triggerManualSync = async () => {
     }
 };
 
-const tickTacTimers = () => {
-    let hasExpired = false;
-    tacChannels.value.forEach((ch) => {
-        if (ch.remaining_seconds > 0) {
-            ch.remaining_seconds -= 1;
-            if (ch.remaining_seconds <= 0) {
-                ch.remaining_seconds = 0;
-                ch.is_active = false;
-                ch.video_ids = [];
-                ch.unit_count = 0;
-                hasExpired = true;
-            }
-        }
-    });
-    if (hasExpired) {
-        fetchTacChannels();
-    }
-};
+
 
 // Suppress YouTube internal iframe postMessage error: isExternalMethodAvailable is not a function
 const handleYouTubeInternalError = (event) => {
@@ -3466,22 +3041,13 @@ const submitFeedbackForm = async () => {
             @reset-priority="resetCustomStreamOrder"
         />
 
-        <!-- Floating Immersive Overlay Controls for Mobile Landscape -->
-        <Teleport to="body">
-            <div
-                v-if="isMobileLandscape && showLandscapeControls"
-                class="fixed top-3 right-3 z-[100] flex items-center gap-2 bg-slate-950/85 backdrop-blur-md border border-slate-800 rounded-full px-3.5 py-1.5 shadow-2xl text-xs font-mono text-slate-200 animate-in fade-in duration-200"
-            >
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-[10px] font-bold text-slate-300">LANDSCAPE MODE</span>
-                <button
-                    @click.stop="toggleBrowserFullscreen"
-                    class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] rounded-full transition cursor-pointer shadow-sm"
-                >
-                    {{ isFullscreen ? 'Keluar Fullscreen' : 'Fullscreen' }}
-                </button>
-            </div>
-        </Teleport>
+        <!-- Floating Immersive Overlay Controls for Mobile Landscape (Refactored Level 2) -->
+        <MultiviewLandscapeOverlay
+            :is-mobile-landscape="isMobileLandscape"
+            :show-landscape-controls="showLandscapeControls"
+            :is-fullscreen="isFullscreen"
+            @toggle-fullscreen="toggleBrowserFullscreen"
+        />
     </div>
 </template>
 
