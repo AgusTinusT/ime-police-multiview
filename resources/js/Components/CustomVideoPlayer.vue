@@ -74,35 +74,6 @@ const segmentDuration = computed(() => {
     return duration.value || 0;
 });
 
-const displayCurrentTime = computed(() => {
-    if (isSegmentMode.value) {
-        return Math.max(
-            0,
-            Math.min(
-                currentTime.value - effectiveStart.value,
-                segmentDuration.value,
-            ),
-        );
-    }
-    return currentTime.value;
-});
-
-const displayDuration = computed(() => {
-    if (isSegmentMode.value) {
-        return segmentDuration.value;
-    }
-    return duration.value;
-});
-
-const handleScrubInput = (val) => {
-    if (isSegmentMode.value) {
-        const targetAbs = effectiveStart.value + parseFloat(val);
-        seek(targetAbs);
-    } else {
-        seek(parseFloat(val));
-    }
-};
-
 // Format seconds into HH:MM:SS or MM:SS
 const formatTime = (sec) => {
     if (isNaN(sec) || sec === null || sec < 0) return "00:00";
@@ -338,11 +309,11 @@ defineExpose({
 <template>
     <div
         ref="containerRef"
-        class="relative aspect-video rounded-xl overflow-hidden bg-black border border-slate-800 group select-none flex items-center justify-center"
+        class="relative w-full h-full rounded-xl overflow-hidden bg-black border border-slate-800 group select-none flex items-center justify-center"
         @mousemove="handleMouseMove"
         @mouseleave="showControls = false"
     >
-        <!-- YouTube iFrame Background (Native controls disabled & cropped) -->
+        <!-- YouTube iFrame Background (Portrait Zoomed on Mobile, 16:9 on Desktop) -->
         <template v-if="computedYoutubeId">
             <div
                 class="absolute inset-0 overflow-hidden flex items-center justify-center pointer-events-none"
@@ -350,8 +321,8 @@ defineExpose({
                 <iframe
                     ref="ytIframeRef"
                     :id="iframeId"
-                    :src="`https://www.youtube-nocookie.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&disablekb=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&fs=0&playsinline=1&autoplay=${autoplay ? 1 : 0}${startSeconds ? '&start=' + startSeconds : ''}${endSeconds ? '&end=' + endSeconds : ''}`"
-                    class="w-full h-full border-0 pointer-events-none select-none sm:w-[125%] sm:h-[125%] sm:max-w-none sm:scale-115 sm:transform sm:origin-center"
+                    :src="`https://www.youtube-nocookie.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&disablekb=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&fs=0&playsinline=1&autoplay=${autoplay ? 1 : 0}&mute=1${startSeconds ? '&start=' + startSeconds : ''}${endSeconds ? '&end=' + endSeconds : ''}`"
+                    class="w-[220%] h-[220%] max-w-none scale-150 origin-center sm:w-full sm:h-full sm:max-w-full sm:scale-100 border-0 pointer-events-none select-none transition-all duration-300"
                     allow="
                         accelerometer;
                         autoplay;
@@ -366,6 +337,7 @@ defineExpose({
             <div
                 class="absolute inset-0 z-10 cursor-pointer"
                 @click="togglePlay"
+                @touchstart.prevent="togglePlay"
             ></div>
         </template>
 
@@ -401,7 +373,7 @@ defineExpose({
             </button>
         </div>
 
-        <!-- Custom Player Controls Bar (Method 2 Custom Player UI) -->
+        <!-- Custom Player Controls Bar -->
         <div
             class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent p-3 pt-6 space-y-2 transition-opacity duration-300 z-20"
             :class="
@@ -418,15 +390,15 @@ defineExpose({
                 <input
                     type="range"
                     min="0"
-                    :max="displayDuration || 100"
+                    :max="duration || 100"
                     step="0.1"
-                    :value="displayCurrentTime"
-                    @input="handleScrubInput($event.target.value)"
+                    :value="currentTime"
+                    @input="seek(parseFloat($event.target.value))"
                     class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer focus:outline-none accent-blue-500"
                 />
             </div>
 
-            <!-- Controls Row: Play/Pause, Rewind, Fast Forward, Time Display, Volume, Speed, Fullscreen -->
+            <!-- Controls Row: Play/Pause, Time Display, Volume, Speed, Fullscreen -->
             <div
                 class="flex items-center justify-between text-xs font-mono text-slate-200 flex-wrap gap-2"
             >
@@ -456,10 +428,10 @@ defineExpose({
                     <!-- Time Counter -->
                     <span class="text-[11px] text-slate-400 font-mono ml-1">
                         <span class="text-slate-100 font-bold">{{
-                            formatTime(displayCurrentTime)
+                            formatTime(currentTime)
                         }}</span>
                         <span> / </span>
-                        <span>{{ formatTime(displayDuration) }}</span>
+                        <span>{{ formatTime(duration) }}</span>
                     </span>
                 </div>
 
