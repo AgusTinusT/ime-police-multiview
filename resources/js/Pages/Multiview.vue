@@ -18,6 +18,7 @@ import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import OfficerVisibilityBottomSheet from "@/Components/OfficerVisibilityBottomSheet.vue";
+import TacChannelNotificationToast from "@/Components/TacChannelNotificationToast.vue";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 import { useAnalytics } from "@/Composables/useAnalytics";
@@ -3438,68 +3439,15 @@ const submitFeedbackForm = async () => {
             @set-department="(dept) => (selectedDepartment = dept)"
         />
 
-        <!-- Global Expiring TAC Channel Alert Prompt (When viewing other tabs) -->
-        <div
-            v-if="expiringTacChannel"
-            class="fixed bottom-20 md:bottom-4 left-4 z-50 bg-slate-900 border border-amber-800 rounded-lg p-3 shadow-lg flex items-center space-x-3 text-xs animate-in slide-in-from-bottom duration-300 max-w-lg"
-        >
-            <div
-                class="w-8 h-8 rounded bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0"
-            >
-                <img :src="iconRadio" class="w-4 h-4 brightness-0 invert opacity-90" alt="" />
-            </div>
-            <div class="flex-1 min-w-0">
-                <div
-                    class="font-bold text-amber-300 font-mono text-[11px] truncate"
-                >
-                    {{ expiringTacChannel.name }} ({{
-                        expiringTacChannel.video_ids.length
-                    }}
-                    Units) tersisa
-                    {{
-                        formatRemainingTime(
-                            expiringTacChannel.remaining_seconds,
-                        )
-                    }}
-                </div>
-                <div class="text-[10px] text-slate-400 truncate">
-                    Apakah situasi masih berlangsung?
-                </div>
-            </div>
-            <div class="flex items-center space-x-1.5 shrink-0">
-                <button
-                    @click="extendTacTimer(expiringTacChannel.code, 20)"
-                    class="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold text-[10px] rounded-md font-mono transition-colors shadow-none"
-                >
-                    +20m
-                </button>
-                <button
-                    @click="disbandTacChannel(expiringTacChannel.code)"
-                    class="px-2.5 py-1 bg-rose-950/60 hover:bg-rose-900/70 text-rose-400 hover:text-rose-300 text-[10px] rounded-md border border-rose-900/80 font-mono transition-colors shadow-none"
-                >
-                    Bubarkan
-                </button>
-                <button
-                    @click="selectedDepartment = expiringTacChannel.code"
-                    class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 text-[10px] rounded-md font-mono transition-colors shadow-none"
-                >
-                    Buka
-                </button>
-            </div>
-        </div>
-
-        <!-- Floating Tactical Action Toast -->
-        <div
-            v-if="tacticalToast"
-            class="fixed bottom-20 md:bottom-16 right-4 z-[60] bg-slate-900 border border-amber-800 rounded-md px-4 py-2.5 flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200 pointer-events-auto"
-        >
-            <img
-                :src="iconRadio"
-                class="w-4 h-4 brightness-0 invert opacity-90 shrink-0"
-                alt=""
-            />
-            <span>{{ tacticalToast.message }}</span>
-        </div>
+        <!-- Global Expiring TAC Channel Alert & Action Toast -->
+        <TacChannelNotificationToast
+            :expiring-tac-channel="expiringTacChannel"
+            :tactical-toast="tacticalToast"
+            :format-remaining-time="formatRemainingTime"
+            @extend-timer="(code, mins) => extendTacTimer(code, mins)"
+            @disband-channel="(code) => disbandTacChannel(code)"
+            @select-department="(code) => selectedDepartment = code"
+        />
 
 
         <!-- Floating Tactical Community Chat -->
