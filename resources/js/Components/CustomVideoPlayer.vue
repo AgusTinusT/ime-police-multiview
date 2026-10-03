@@ -22,6 +22,10 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    muted: {
+        type: Boolean,
+        default: false,
+    },
     startSeconds: {
         type: Number,
         default: 0,
@@ -32,7 +36,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["timeupdate", "ended"]);
+const emit = defineEmits(["timeupdate", "ended", "muted-change"]);
 
 const videoRef = ref(null);
 const containerRef = ref(null);
@@ -42,7 +46,17 @@ const isPlaying = ref(false);
 const currentTime = ref(0);
 const duration = ref(0);
 const volume = ref(1);
-const isMuted = ref(false);
+const isMuted = ref(props.muted);
+
+watch(
+    () => props.muted,
+    (newVal) => {
+        isMuted.value = newVal;
+        if (computedYoutubeId.value) {
+            sendYTCommand(newVal ? "mute" : "unMute");
+        }
+    },
+);
 const playbackRate = ref(1);
 const isFullscreen = ref(false);
 const showControls = ref(true);
@@ -195,6 +209,9 @@ const toggleMute = () => {
     isMuted.value = !isMuted.value;
     if (computedYoutubeId.value) {
         sendYTCommand(isMuted.value ? "mute" : "unMute");
+        if (!isMuted.value) {
+            sendYTCommand("setVolume", [volume.value > 0 ? volume.value * 100 : 100]);
+        }
     } else if (videoRef.value) {
         videoRef.value.muted = isMuted.value;
     }
@@ -357,7 +374,7 @@ defineExpose({
                 <iframe
                     ref="ytIframeRef"
                     :id="iframeId"
-                    :src="`https://www.youtube-nocookie.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&disablekb=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&fs=0&playsinline=1&autoplay=${autoplay ? 1 : 0}&mute=1${startSeconds ? '&start=' + startSeconds : ''}${endSeconds ? '&end=' + endSeconds : ''}`"
+                    :src="`https://www.youtube-nocookie.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&disablekb=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&fs=0&playsinline=1&autoplay=${autoplay ? 1 : 0}&mute=${isMuted ? 1 : 0}${startSeconds ? '&start=' + startSeconds : ''}${endSeconds ? '&end=' + endSeconds : ''}`"
                     class="w-[220%] h-[220%] max-w-none scale-150 origin-center sm:w-full sm:h-full sm:max-w-full sm:scale-100 border-0 pointer-events-none select-none transition-all duration-300"
                     style="pointer-events: none !important; touch-action: none;"
                     allow="
@@ -408,6 +425,19 @@ defineExpose({
                     <path d="M8 5v14l11-7z" />
                 </svg>
             </button>
+        </div>
+
+        <!-- Floating Tap to Unmute Badge (Visible when video is playing muted) -->
+        <div
+            v-if="isMuted && isPlaying"
+            @click.stop="toggleMute"
+            class="absolute top-3 right-3 z-30 bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-full text-xs font-mono shadow-xl flex items-center gap-2 cursor-pointer backdrop-blur-md transition transform active:scale-95"
+            title="Klik untuk membuka suara"
+        >
+            <svg class="w-3.5 h-3.5 fill-current animate-pulse" viewBox="0 0 24 24">
+                <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+            </svg>
+            <span>Buka Suara 🔇</span>
         </div>
 
         <!-- Custom Player Controls Bar -->

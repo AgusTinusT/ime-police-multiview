@@ -895,6 +895,8 @@ onUnmounted(() => {
                             :start-seconds="currentShortClip.start_seconds || 0"
                             :end-seconds="currentShortClip.end_seconds || 0"
                             :autoplay="true"
+                            :muted="isMuted"
+                            @muted-change="(val) => (isMuted = val)"
                             class="w-full h-full"
                         />
                     </div>
