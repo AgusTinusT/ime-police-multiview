@@ -32,6 +32,7 @@ const props = defineProps({
     isTheaterMode: { type: Boolean, default: false },
     activeTacChannel: { type: String, default: null },
     fetchedDescription: { type: String, default: "" },
+    chatEmbedDomain: { type: String, default: "" },
 });
 
 const emit = defineEmits([
@@ -49,8 +50,16 @@ const emit = defineEmits([
 const page = usePage();
 const authUser = computed(() => page.props.auth?.user);
 
-// Active Tab in Focus Mode: 'description' (Primary / Default), 'clips' (Kumpulan Aksi), 'create-clip' (Form Input Klip Baru)
-const activeFocusTab = ref("description");
+// Active Tab in Focus Mode: 'chat' (Live Chat Mobile-First), 'description' (Deskripsi), 'clips' (Kumpulan Aksi), 'create-clip' (Form Input Klip Baru)
+const activeFocusTab = ref("chat");
+
+const computedChatEmbedDomain = computed(() => {
+    if (props.chatEmbedDomain) return props.chatEmbedDomain;
+    if (typeof window !== "undefined") {
+        return window.location.hostname;
+    }
+    return "localhost";
+});
 
 // Radio TAC Popover State & Methods
 const isTacPopoverOpen = ref(false);
@@ -749,11 +758,11 @@ const handleAvatarError = (e) => {
                 </div>
             </div>
 
-            <!-- RIGHT SIDE: ACTION CONTROLS (Tandai Aksi, Mode Bioskop, Live Chat, Buka di YouTube) -->
+            <!-- RIGHT SIDE: ACTION CONTROLS (Tandai Aksi [Desktop], Mode Bioskop, Live Chat, Buka di YouTube) -->
             <div
                 class="flex items-center space-x-1.5 flex-wrap gap-y-1.5 shrink-0"
             >
-                <!-- Tandai Aksi / Clip Button -->
+                <!-- Tandai Aksi / Clip Button (Desktop Only) -->
                 <button
                     @click="
                         activeFocusTab =
@@ -766,7 +775,7 @@ const handleAvatarError = (e) => {
                             ? 'bg-rose-950 text-rose-300 border-rose-800 font-semibold'
                             : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
                     "
-                    class="px-2.5 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 cursor-pointer font-mono text-xs"
+                    class="hidden lg:inline-flex px-2.5 py-1.5 rounded-md border transition-colors items-center gap-1.5 cursor-pointer font-mono text-xs"
                     title="Tandai Momen Aksi (Buka Form Input di Bawah Video)"
                 >
                     <img
@@ -796,25 +805,23 @@ const handleAvatarError = (e) => {
                     <span>Mode Bioskop</span>
                 </button>
 
-                <!-- Live Chat Toggle Button (Right to the right side of Mode Bioskop) -->
+                <!-- Live Chat Toggle Button (Di Kanan Mode Bioskop) -->
                 <button
                     @click="emit('toggle-right-chat')"
                     :class="
                         isRightChatOpen
-                            ? 'bg-slate-800 text-slate-100 border-slate-700 font-semibold'
+                            ? 'bg-blue-950 text-blue-300 border-blue-800 font-semibold'
                             : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
                     "
                     class="px-2.5 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 cursor-pointer font-mono text-xs"
-                    :title="
-                        isRightChatOpen ? 'Sembunyikan Chat' : 'Tampilkan Chat'
-                    "
+                    title="Toggle Live Chat"
                 >
                     <img
-                        :src="isRightChatOpen ? iconChatRemove : iconChat"
+                        :src="iconChat"
                         class="w-3.5 h-3.5 invert opacity-70"
-                        alt="Toggle Chat"
+                        alt="Live Chat"
                     />
-                    <span>Chat</span>
+                    <span>Live Chat</span>
                 </button>
 
                 <!-- External YouTube Link -->
@@ -833,17 +840,37 @@ const handleAvatarError = (e) => {
             </div>
         </div>
 
-        <!-- 4. TAB SECTOR BELOW VIDEO PLAYER & OFFICER PROFILE -->
-        <div class="bg-slate-900 p-4 space-y-4 border-t border-slate-800">
-            <!-- TAB BAR NAVIGATION (ONLY 2 TABS: DESKRIPSI STREAMER & KUMPULAN AKSI & SHORTS) -->
+        <!-- 4. MOBILE-ONLY LIVE CHAT (DIRECTLY BELOW OFFICER PROFILE, EDGE-TO-EDGE, NO PADDING, NO HEADER) -->
+        <div
+            v-if="isRightChatOpen"
+            class="block lg:hidden bg-slate-950 border-t border-slate-800 w-full p-0 overflow-hidden"
+        >
+            <div
+                class="w-full h-[480px] bg-slate-900 relative"
+            >
+                <iframe
+                    :key="`mobile-chat-${stream.video_id}`"
+                    :src="`https://www.youtube.com/live_chat?v=${stream.video_id}&embed_domain=${computedChatEmbedDomain}&dark_theme=1`"
+                    class="w-full h-full border-0 block"
+                    allow="autoplay"
+                ></iframe>
+            </div>
+        </div>
+
+        <!-- 5. TAB SECTOR (ALWAYS VISIBLE ON DESKTOP `lg:block`, TOGGLEABLE ON MOBILE) -->
+        <div
+            :class="{ 'hidden lg:block': isRightChatOpen }"
+            class="bg-slate-900 p-4 space-y-4 border-t border-slate-800"
+        >
+            <!-- TAB BAR NAVIGATION (2 TABS: DESKRIPSI STREAMER & KUMPULAN AKSI) -->
             <div
                 class="flex items-center space-x-2 border-b border-slate-800 pb-2 overflow-x-auto text-xs font-medium"
             >
-                <!-- TAB 1: DESKRIPSI STREAMER (PRIMARY) -->
+                <!-- TAB 1: DESKRIPSI STREAMER -->
                 <button
                     @click="activeFocusTab = 'description'"
                     :class="
-                        activeFocusTab === 'description'
+                        activeFocusTab === 'description' || activeFocusTab === 'chat'
                             ? 'border-slate-700 text-slate-100 bg-slate-800 font-semibold'
                             : 'border-slate-800 text-slate-400 hover:text-slate-200 bg-slate-950'
                     "
@@ -896,7 +923,7 @@ const handleAvatarError = (e) => {
             <div class="pt-1">
                 <!-- DESKRIPSI STREAMER CONTENT -->
                 <div
-                    v-if="activeFocusTab === 'description'"
+                    v-if="activeFocusTab === 'description' || activeFocusTab === 'chat'"
                     class="bg-slate-950 rounded-lg p-4 border border-slate-800 space-y-3 font-mono text-xs text-slate-300"
                 >
                     <div
@@ -933,7 +960,7 @@ const handleAvatarError = (e) => {
                     @open-create-clip="activeFocusTab = 'create-clip'"
                 />
 
-                <!-- TAB INLINE FORM: TANDAI AKSI BARU (FLAT MINIMAL TAILWIND DESIGN FROM PANDUAN.HTML) -->
+                <!-- TAB INLINE FORM: TANDAI AKSI BARU -->
                 <div
                     v-else-if="activeFocusTab === 'create-clip'"
                     class="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-4 font-sans text-xs text-slate-300 animate-in fade-in duration-200"
@@ -966,7 +993,7 @@ const handleAvatarError = (e) => {
 
                     <!-- 2-COLUMN GRID: LEFT SIDE = STUDIO CLIPPER PRO CARD, RIGHT SIDE = FORM INPUTS -->
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                        <!-- LEFT SIDE: STUDIO CLIPPER PRO INVITATION CARD (4 COLS - FLAT MINIMAL DESIGNS FROM PANDUAN.HTML) -->
+                        <!-- LEFT SIDE: STUDIO CLIPPER PRO INVITATION CARD -->
                         <div
                             class="md:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-4"
                         >
@@ -1070,7 +1097,6 @@ const handleAvatarError = (e) => {
 
                             <!-- ROW 2: LIVE TIME QUICK SETTER & PRESET + STEMPEL WAKTU -->
                             <div class="space-y-2.5">
-                                <!-- QUICK SETTER BUTTON FROM STREAM PLAYBACK -->
                                 <div
                                     class="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-md p-2 flex-wrap gap-2"
                                 >

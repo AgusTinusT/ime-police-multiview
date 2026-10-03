@@ -587,6 +587,7 @@ const getCustomOrderRank = (item) => {
                         v-if="primaryFocusedStream"
                         :stream="primaryFocusedStream"
                         :originUrl="originUrl"
+                        :chatEmbedDomain="chatEmbedDomain"
                         :activeAudioVideoId="activeAudioVideoId"
                         :isStreamStopped="isStreamStopped(primaryFocusedStream.video_id)"
                         :isRightChatOpen="isRightChatOpen"
@@ -610,7 +611,7 @@ const getCustomOrderRank = (item) => {
                 <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-3">
                     <div
                         v-if="isRightChatOpen && primaryFocusedStream"
-                        class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col animate-in fade-in zoom-in-95 duration-200"
+                        class="hidden lg:flex bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex-col animate-in fade-in zoom-in-95 duration-200"
                     >
                         <div
                             class="bg-slate-900/95 px-3 py-1.5 flex items-center justify-between border-b border-slate-800 text-xs"
