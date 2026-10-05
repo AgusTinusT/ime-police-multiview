@@ -1,9 +1,12 @@
 <script setup>
 import { ref, computed } from "vue";
 import { router } from "@inertiajs/vue3";
+import { useI18n } from "vue-i18n";
 import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
 import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
 import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
+
+const { t } = useI18n();
 
 const props = defineProps({
     allActiveStreams: { type: Array, default: () => [] },
@@ -214,12 +217,11 @@ const getStreamTac = (videoId) => {
                     <h2
                         class="text-base sm:text-lg font-bold text-slate-100 tracking-tight uppercase"
                     >
-                        DISPATCH FEED: PATROLI LIVE & REKAMAN
+                        {{ $t("stream_slimles.dispatch_feed_title") }}
                     </h2>
                 </div>
                 <p class="text-xs text-slate-400 font-normal hidden md:block">
-                    Saluran pemantauan gabungan siaran langsung 10-8 (On Duty)
-                    dan arsip rekaman patroli perwira San Andreas.
+                    {{ $t("stream_slimles.dispatch_feed_subtitle") }}
                 </p>
             </div>
 
@@ -238,7 +240,7 @@ const getStreamTac = (videoId) => {
                                 : 'text-slate-400 hover:text-slate-200',
                         ]"
                     >
-                        Semuanya ({{ liveCount + replayCount }})
+                        {{ $t("stream_slimles.all_filter", { count: liveCount + replayCount }) }}
                     </button>
                     <button
                         @click="activeFilter = 'LIVE'"
@@ -249,7 +251,7 @@ const getStreamTac = (videoId) => {
                                 : 'text-slate-400 hover:text-slate-200',
                         ]"
                     >
-                        <span>Live ({{ liveCount }})</span>
+                        <span>{{ $t("stream_slimles.live_filter", { count: liveCount }) }}</span>
                     </button>
                     <button
                         @click="activeFilter = 'REPLAY'"
@@ -260,7 +262,7 @@ const getStreamTac = (videoId) => {
                                 : 'text-slate-400 hover:text-slate-200',
                         ]"
                     >
-                        <span>Rekaman ({{ replayCount }})</span>
+                        <span>{{ $t("stream_slimles.replay_filter", { count: replayCount }) }}</span>
                     </button>
                 </div>
 
@@ -275,7 +277,7 @@ const getStreamTac = (videoId) => {
                         class="w-3.5 h-3.5 invert opacity-80"
                         :class="{ 'animate-spin': isSyncingFeeds }"
                     />
-                    <span>{{ isSyncingFeeds ? "Syncing..." : "Sync" }}</span>
+                    <span>{{ isSyncingFeeds ? $t("common.syncing") : "Sync" }}</span>
                 </button>
             </div>
         </div>
@@ -287,7 +289,7 @@ const getStreamTac = (videoId) => {
                 <span
                     class="text-xs font-mono text-slate-400 uppercase tracking-wider"
                 >
-                    Menampilkan {{ combinedStreams.length }} Tayangan Patroli
+                    {{ $t("stream_slimles.showing_count", { count: combinedStreams.length }) }}
                 </span>
 
                 <div
@@ -358,10 +360,10 @@ const getStreamTac = (videoId) => {
                     </svg>
                 </div>
                 <p class="text-xs font-mono font-semibold text-slate-200">
-                    Tidak ada siaran atau rekaman patroli yang ditemukan.
+                    {{ $t("stream_slimles.empty_title") }}
                 </p>
                 <p class="text-[11px] text-slate-400">
-                    Coba ubah filter atau tekan tombol Sync Live Feeds.
+                    {{ $t("stream_slimles.empty_subtitle") }}
                 </p>
             </div>
 

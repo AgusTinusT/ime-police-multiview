@@ -1,18 +1,18 @@
 <script setup>
-import { ref, computed } from "vue";
-import { Head, Link, usePage } from "@inertiajs/vue3";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
+import { Head, usePage } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 // SVG Icon Assets & Branding Logos
-import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
-import iconFocus from "@/Components/Icons/focus-point-round-844-svgrepo-com.svg";
+import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
 import iconSearch from "@/Components/Icons/search-svgrepo-com.svg";
-import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
 import iconPinPlus from "@/Components/Icons/star-line-svgrepo-com.svg";
 import iconPinMinus from "@/Components/Icons/star-svgrepo-com.svg";
-import iconFeedback from "@/Components/Icons/report-svgrepo-com.svg";
-import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
 import iconTarget from "@/Components/Icons/target-svgrepo-com.svg";
+import { defineProps } from "vue";
 
 const props = defineProps({
     initialOfficers: {
@@ -31,7 +31,10 @@ const props = defineProps({
 
 const page = usePage();
 const isAdmin = computed(() => {
-    return !!page.props.auth?.user?.is_admin || page.props.auth?.user?.role === "admin";
+    return (
+        !!page.props.auth?.user?.is_admin ||
+        page.props.auth?.user?.role === "admin"
+    );
 });
 
 // State Management
@@ -45,7 +48,10 @@ const getInitialSort = () => {
     if (typeof window !== "undefined" && window.location.search) {
         const params = new URLSearchParams(window.location.search);
         const sortParam = params.get("sort");
-        if (sortParam && ["status", "subs_desc", "subs_asc", "name"].includes(sortParam)) {
+        if (
+            sortParam &&
+            ["status", "subs_desc", "subs_asc", "name"].includes(sortParam)
+        ) {
             return sortParam;
         }
     }
@@ -398,16 +404,14 @@ const filteredOfficers = computed(() => {
                         <h1
                             class="text-3xl sm:text-4xl lg:text-5xl font-tactical font-extrabold text-slate-100 uppercase tracking-tight leading-tight"
                         >
-                            Direktori & Manajemen Personil Kepolisian
+                            {{ $t("directory.title") }}
                         </h1>
 
                         <!-- Subtitle Context -->
                         <p
                             class="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl font-sans"
                         >
-                            Pantau seluruh personil terdaftar, status siaga 10-8 / 10-7,
-                            klasifikasi divisi operasional (LSPD, BCSO, SASP, SAPR),
-                            serta siaran live stream secara real-time.
+                            {{ $t("directory.subtitle") }}
                         </p>
 
                         <!-- Operational Status Badges -->
@@ -420,7 +424,8 @@ const filteredOfficers = computed(() => {
                                 <span
                                     class="w-2 h-2 rounded-full bg-emerald-400"
                                 ></span>
-                                10-8 Live Duty: {{ deptStats.total_live || 0 }} Unit
+                                10-8 Live Duty:
+                                {{ deptStats.total_live || 0 }} Unit
                             </span>
                             <span
                                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-950 border border-slate-800"
@@ -537,9 +542,7 @@ const filteredOfficers = computed(() => {
                             </svg>
                         </div>
                     </div>
-                    <div
-                        class="text-2xl sm:text-3xl font-black text-slate-100"
-                    >
+                    <div class="text-2xl sm:text-3xl font-black text-slate-100">
                         {{ officers.length }}
                     </div>
                     <div
@@ -616,9 +619,7 @@ const filteredOfficers = computed(() => {
                             </svg>
                         </div>
                     </div>
-                    <div
-                        class="text-2xl sm:text-3xl font-black text-slate-300"
-                    >
+                    <div class="text-2xl sm:text-3xl font-black text-slate-300">
                         {{
                             deptStats.total_offline ||
                             officers.length - (deptStats.total_live || 0)
@@ -650,9 +651,7 @@ const filteredOfficers = computed(() => {
                             />
                         </div>
                     </div>
-                    <div
-                        class="text-2xl sm:text-3xl font-black text-amber-400"
-                    >
+                    <div class="text-2xl sm:text-3xl font-black text-amber-400">
                         {{
                             officers.filter(
                                 (o) => (o.subscriber_count || 0) < 1000,
@@ -687,7 +686,7 @@ const filteredOfficers = computed(() => {
                         <input
                             v-model="searchQuery"
                             type="text"
-                            placeholder="Cari berdasarkan nama, email, departemen, peran, atau lokasi..."
+                            :placeholder="$t('directory.search_placeholder')"
                             class="w-full bg-slate-950 border border-slate-800 rounded-md pl-10 pr-9 py-2 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition duration-200"
                         />
                         <button
@@ -726,7 +725,9 @@ const filteredOfficers = computed(() => {
                                 v-model="sortBy"
                                 class="appearance-none bg-slate-950 border border-slate-800 rounded-md pl-3 py-2 pr-7 text-xs text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
                             >
-                                <option value="status">Terakhir Aktif (10-8 Live)</option>
+                                <option value="status">
+                                    Terakhir Aktif (10-8 Live)
+                                </option>
                                 <option value="subs_desc">
                                     Subscribers Terbanyak
                                 </option>
@@ -1149,7 +1150,13 @@ const filteredOfficers = computed(() => {
 
                             <!-- YouTube External Link -->
                             <a
-                                :href="officer.handle ? (officer.handle.startsWith('@') ? `https://www.youtube.com/${officer.handle}` : `https://www.youtube.com/@${officer.handle}`) : 'https://www.youtube.com/'"
+                                :href="
+                                    officer.handle
+                                        ? officer.handle.startsWith('@')
+                                            ? `https://www.youtube.com/${officer.handle}`
+                                            : `https://www.youtube.com/@${officer.handle}`
+                                        : 'https://www.youtube.com/'
+                                "
                                 target="_blank"
                                 class="w-8 h-8 rounded-md bg-slate-950 border border-slate-800 hover:border-slate-700 transition flex items-center justify-center"
                                 title="Buka Channel YouTube"
@@ -1411,7 +1418,15 @@ const filteredOfficers = computed(() => {
                                         </button>
 
                                         <a
-                                            :href="officer.handle ? (officer.handle.startsWith('@') ? `https://www.youtube.com/${officer.handle}` : `https://www.youtube.com/@${officer.handle}`) : 'https://www.youtube.com/'"
+                                            :href="
+                                                officer.handle
+                                                    ? officer.handle.startsWith(
+                                                          '@',
+                                                      )
+                                                        ? `https://www.youtube.com/${officer.handle}`
+                                                        : `https://www.youtube.com/@${officer.handle}`
+                                                    : 'https://www.youtube.com/'
+                                            "
                                             target="_blank"
                                             class="w-8 h-8 rounded-md bg-slate-950 border border-slate-800 hover:border-slate-700 transition flex items-center justify-center"
                                             title="Buka Channel YouTube"

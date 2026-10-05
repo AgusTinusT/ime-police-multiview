@@ -1,0 +1,13 @@
+{
+  "title": "SYSTEM UPDATES LOG",
+  "subtitle": "Official release notes, tactical feature updates, bug fixes, and platform performance optimizations for IME Police Terminal.",
+  "filter_all": "All Updates",
+  "filter_feature": "New Feature",
+  "filter_bugfix": "Bug Fixes",
+  "filter_performance": "Performance",
+  "filter_uiux": "UI & Experience",
+  "badge_latest": "LATEST RELEASE",
+  "badge_stable": "STABLE VERSION",
+  "footer_suggestion": "Have a feature suggestion or found a bug after this update?",
+  "footer_btn_report": "Submit Report / Feedback"
+}

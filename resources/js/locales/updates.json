@@ -1,0 +1,13 @@
+{
+  "title": "LOG PEMBARUAN SISTEM",
+  "subtitle": "Catatan rilis resmi, pembaruan fitur taktis, perbaikan bug, dan optimasi performa platform IME Police Terminal.",
+  "filter_all": "Semua Pembaruan",
+  "filter_feature": "Fitur Baru",
+  "filter_bugfix": "Perbaikan Bug",
+  "filter_performance": "Performa",
+  "filter_uiux": "UI & Pengalaman",
+  "badge_latest": "RILIS TERBARU",
+  "badge_stable": "VERSI STABIL",
+  "footer_suggestion": "Punya usulan fitur atau menemukan bug setelah pembaruan ini?",
+  "footer_btn_report": "Kirim Laporan / Feedback"
+}

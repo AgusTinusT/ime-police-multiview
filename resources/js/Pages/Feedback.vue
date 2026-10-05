@@ -1,15 +1,19 @@
 <script setup>
-import { ref, computed } from "vue";
-import { Head, Link } from "@inertiajs/vue3";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
+import { Head } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
-import iconFeedback from "@/Components/Icons/report-svgrepo-com.svg";
-import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
+const { t } = useI18n();
+
+import iconBug from "@/Components/Icons/bug-svgrepo-com.svg";
 import iconQuickAdd from "@/Components/Icons/button-plus-svgrepo-com.svg";
 import iconEdit from "@/Components/Icons/edit-2-svgrepo-com.svg";
-import iconBug from "@/Components/Icons/bug-svgrepo-com.svg";
-import iconSend from "@/Components/Icons/send-svgrepo-com.svg";
+import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
 import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
+import iconFeedback from "@/Components/Icons/report-svgrepo-com.svg";
+import iconSend from "@/Components/Icons/send-svgrepo-com.svg";
+import { defineProps } from "vue";
 
 const props = defineProps({
     prefillType: {
@@ -45,48 +49,51 @@ const selectType = (type) => {
 
 // Dynamic Labels based on selected category
 const titleLabel = computed(() => {
-    if (feedbackForm.value.type === 'DATA_CORRECTION') {
-        return 'Halaman atau Dokumen yang Memiliki Typo';
-    } else if (feedbackForm.value.type === 'CHANNEL_REQUEST') {
-        return 'Nama Fitur / Usulan Streamer Baru';
-    } else if (feedbackForm.value.type === 'OTHER') {
-        return 'Subjek / Judul Masukan';
+    if (feedbackForm.value.type === "DATA_CORRECTION") {
+        return "Halaman atau Dokumen yang Memiliki Typo";
+    } else if (feedbackForm.value.type === "CHANNEL_REQUEST") {
+        return "Nama Fitur / Usulan Streamer Baru";
+    } else if (feedbackForm.value.type === "OTHER") {
+        return "Subjek / Judul Masukan";
     }
-    return 'Judul Kendala / Bug';
+    return "Judul Kendala / Bug";
 });
 
 const titlePlaceholder = computed(() => {
-    if (feedbackForm.value.type === 'DATA_CORRECTION') {
-        return 'Contoh: Typo pada dokumen SOP-MV-01 di halaman FAQ';
-    } else if (feedbackForm.value.type === 'CHANNEL_REQUEST') {
-        return 'Contoh: Penambahan Streamer Ofc. Budi (1-ADAM-12)';
-    } else if (feedbackForm.value.type === 'OTHER') {
-        return 'Contoh: Pertanyaan seputar integrasi API Discord';
+    if (feedbackForm.value.type === "DATA_CORRECTION") {
+        return "Contoh: Typo pada dokumen SOP-MV-01 di halaman FAQ";
+    } else if (feedbackForm.value.type === "CHANNEL_REQUEST") {
+        return "Contoh: Penambahan Streamer Ofc. Budi (1-ADAM-12)";
+    } else if (feedbackForm.value.type === "OTHER") {
+        return "Contoh: Pertanyaan seputar integrasi API Discord";
     }
-    return 'Contoh: Tombol mute video tidak merespons di layar Multiview';
+    return "Contoh: Tombol mute video tidak merespons di layar Multiview";
 });
 
 const descriptionLabel = computed(() => {
-    if (feedbackForm.value.type === 'DATA_CORRECTION') {
-        return 'Konteks Paragraf / Keterangan Tambahan';
-    } else if (feedbackForm.value.type === 'CHANNEL_REQUEST') {
-        return 'Bagaimana fitur / streamer ini mempermudah operasi dispatch?';
+    if (feedbackForm.value.type === "DATA_CORRECTION") {
+        return "Konteks Paragraf / Keterangan Tambahan";
+    } else if (feedbackForm.value.type === "CHANNEL_REQUEST") {
+        return "Bagaimana fitur / streamer ini mempermudah operasi dispatch?";
     }
-    return 'Deskripsi & Langkah Kejadian';
+    return "Deskripsi & Langkah Kejadian";
 });
 
 const descriptionPlaceholder = computed(() => {
-    if (feedbackForm.value.type === 'DATA_CORRECTION') {
-        return 'Jelaskan bagian paragraf atau teks yang memerlukan perbaikan...';
-    } else if (feedbackForm.value.type === 'CHANNEL_REQUEST') {
-        return 'Jelaskan detail usulan fitur atau alokasi siaran live streamer...';
+    if (feedbackForm.value.type === "DATA_CORRECTION") {
+        return "Jelaskan bagian paragraf atau teks yang memerlukan perbaikan...";
+    } else if (feedbackForm.value.type === "CHANNEL_REQUEST") {
+        return "Jelaskan detail usulan fitur atau alokasi siaran live streamer...";
     }
-    return 'Jelaskan langkah demi langkah sampai kendala ini terjadi...';
+    return "Jelaskan langkah demi langkah sampai kendala ini terjadi...";
 });
 
 // Submit Feedback Handler
 const submitFeedbackForm = async () => {
-    if (!feedbackForm.value.message || feedbackForm.value.message.trim() === "") {
+    if (
+        !feedbackForm.value.message ||
+        feedbackForm.value.message.trim() === ""
+    ) {
         alert("Mohon isi deskripsi / detail laporan Anda.");
         return;
     }
@@ -147,19 +154,30 @@ const submitFeedbackForm = async () => {
     <TacticalLayout>
         <Head title="Pusat Laporan & Feedback — IME Police Terminal" />
 
-        <main class="relative z-10 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
-            
+        <main
+            class="relative z-10 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8"
+        >
             <!-- Hero Header Section -->
             <div class="text-center space-y-3">
-                <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-mono text-xs font-bold">
-                    <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                <div
+                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-mono text-xs font-bold"
+                >
+                    <img
+                        :src="iconRadio"
+                        class="w-3.5 h-3.5 invert opacity-90"
+                        alt=""
+                    />
                     <span>DUKUNGAN PENGGUNA & DISPATCH</span>
                 </div>
-                <h1 class="text-3xl sm:text-4xl font-tactical font-black text-slate-100 uppercase tracking-wider">
-                    KIRIM LAPORAN ATAU MASUKAN
+                <h1
+                    class="text-3xl sm:text-4xl font-tactical font-black text-slate-100 uppercase tracking-wider"
+                >
+                    {{ $t("feedback.title") }}
                 </h1>
-                <p class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto leading-relaxed font-sans">
-                    Menemukan bug, kesalahan teks (typo), atau punya usulan fitur baru? Bantu kami meningkatkan platform dengan menyampaikan detailnya langsung ke Command Center.
+                <p
+                    class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto leading-relaxed font-sans"
+                >
+                    {{ $t("feedback.subtitle") }}
                 </p>
             </div>
 
@@ -191,12 +209,16 @@ const submitFeedbackForm = async () => {
             </div>
 
             <!-- Main Form Card Container (Solid Dark Surface) -->
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 space-y-8">
-                
+            <div
+                class="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 space-y-8"
+            >
                 <!-- 1. Category Selector (4 Interactive Cards) -->
                 <div>
-                    <label class="block text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-3">
-                        1. Pilih Jenis Masukan <span class="text-rose-400">*</span>
+                    <label
+                        class="block text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-3"
+                    >
+                        1. Pilih Jenis Masukan
+                        <span class="text-rose-400">*</span>
                     </label>
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -208,12 +230,17 @@ const submitFeedbackForm = async () => {
                                 'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
                                 feedbackForm.type === 'BUG_REPORT'
                                     ? 'bg-rose-950 border-rose-800 text-white'
-                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200',
                             ]"
                         >
                             <img :src="iconBug" class="w-6 h-6 invert" alt="" />
-                            <span class="text-xs font-bold font-tactical uppercase tracking-wider">Bug / Error</span>
-                            <span class="text-[10px] text-slate-400 font-mono">Sistem bermasalah</span>
+                            <span
+                                class="text-xs font-bold font-tactical uppercase tracking-wider"
+                                >Bug / Error</span
+                            >
+                            <span class="text-[10px] text-slate-400 font-mono"
+                                >Sistem bermasalah</span
+                            >
                         </button>
 
                         <!-- Option 2: Typo / Text Correction -->
@@ -224,12 +251,21 @@ const submitFeedbackForm = async () => {
                                 'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
                                 feedbackForm.type === 'DATA_CORRECTION'
                                     ? 'bg-amber-950 border-amber-800 text-white'
-                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200',
                             ]"
                         >
-                            <img :src="iconEdit" class="w-6 h-6 invert" alt="" />
-                            <span class="text-xs font-bold font-tactical uppercase tracking-wider">Typo / Teks</span>
-                            <span class="text-[10px] text-slate-400 font-mono">Koreksi kata</span>
+                            <img
+                                :src="iconEdit"
+                                class="w-6 h-6 invert"
+                                alt=""
+                            />
+                            <span
+                                class="text-xs font-bold font-tactical uppercase tracking-wider"
+                                >Typo / Teks</span
+                            >
+                            <span class="text-[10px] text-slate-400 font-mono"
+                                >Koreksi kata</span
+                            >
                         </button>
 
                         <!-- Option 3: Feature / Streamer Idea -->
@@ -240,12 +276,21 @@ const submitFeedbackForm = async () => {
                                 'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
                                 feedbackForm.type === 'CHANNEL_REQUEST'
                                     ? 'bg-blue-950 border-blue-800 text-white'
-                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200',
                             ]"
                         >
-                            <img :src="iconQuickAdd" class="w-6 h-6 invert" alt="" />
-                            <span class="text-xs font-bold font-tactical uppercase tracking-wider">Ide Fitur</span>
-                            <span class="text-[10px] text-slate-400 font-mono">Usulan streamer</span>
+                            <img
+                                :src="iconQuickAdd"
+                                class="w-6 h-6 invert"
+                                alt=""
+                            />
+                            <span
+                                class="text-xs font-bold font-tactical uppercase tracking-wider"
+                                >Ide Fitur</span
+                            >
+                            <span class="text-[10px] text-slate-400 font-mono"
+                                >Usulan streamer</span
+                            >
                         </button>
 
                         <!-- Option 4: General Feedback -->
@@ -256,23 +301,34 @@ const submitFeedbackForm = async () => {
                                 'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
                                 feedbackForm.type === 'OTHER'
                                     ? 'bg-purple-950 border-purple-800 text-white'
-                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200',
                             ]"
                         >
-                            <img :src="iconFeedback" class="w-6 h-6 invert" alt="" />
-                            <span class="text-xs font-bold font-tactical uppercase tracking-wider">Lainnya</span>
-                            <span class="text-[10px] text-slate-400 font-mono">Kritik & kesan</span>
+                            <img
+                                :src="iconFeedback"
+                                class="w-6 h-6 invert"
+                                alt=""
+                            />
+                            <span
+                                class="text-xs font-bold font-tactical uppercase tracking-wider"
+                                >Lainnya</span
+                            >
+                            <span class="text-[10px] text-slate-400 font-mono"
+                                >Kritik & kesan</span
+                            >
                         </button>
                     </div>
                 </div>
 
                 <!-- Form Inputs -->
                 <form @submit.prevent="submitFeedbackForm" class="space-y-6">
-                    
                     <!-- Report Title -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">
-                            {{ titleLabel }} <span class="text-rose-400">*</span>
+                        <label
+                            class="block text-xs font-semibold text-slate-300 mb-1.5"
+                        >
+                            {{ titleLabel }}
+                            <span class="text-rose-400">*</span>
                         </label>
                         <input
                             v-model="feedbackForm.title"
@@ -284,9 +340,14 @@ const submitFeedbackForm = async () => {
                     </div>
 
                     <!-- Dynamic Typo / Text Correction Fields (Shown when Typo category is active) -->
-                    <div v-if="feedbackForm.type === 'DATA_CORRECTION'" class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div
+                        v-if="feedbackForm.type === 'DATA_CORRECTION'"
+                        class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1"
+                    >
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                            <label
+                                class="block text-xs font-semibold text-slate-300 mb-1.5"
+                            >
                                 Teks yang Salah (Saat Ini)
                             </label>
                             <input
@@ -297,7 +358,9 @@ const submitFeedbackForm = async () => {
                             />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                            <label
+                                class="block text-xs font-semibold text-slate-300 mb-1.5"
+                            >
                                 Usulan Koreksi yang Benar
                             </label>
                             <input
@@ -310,9 +373,14 @@ const submitFeedbackForm = async () => {
                     </div>
 
                     <!-- Dynamic Officer / Streamer Fields (Shown when Feature/Streamer category is active) -->
-                    <div v-if="feedbackForm.type === 'CHANNEL_REQUEST'" class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                    <div
+                        v-if="feedbackForm.type === 'CHANNEL_REQUEST'"
+                        class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1"
+                    >
                         <div class="sm:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                            <label
+                                class="block text-xs font-semibold text-slate-300 mb-1.5"
+                            >
                                 Nama Karakter / Callsign Polisi
                             </label>
                             <input
@@ -323,7 +391,9 @@ const submitFeedbackForm = async () => {
                             />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                            <label
+                                class="block text-xs font-semibold text-slate-300 mb-1.5"
+                            >
                                 Kesatuan / Department
                             </label>
                             <select
@@ -332,16 +402,23 @@ const submitFeedbackForm = async () => {
                             >
                                 <option value="LSPD">LSPD (Police)</option>
                                 <option value="BCSO">BCSO (Sheriff)</option>
-                                <option value="SASP">SASP (State Police)</option>
-                                <option value="SAPR">SAPR (Park Rangers)</option>
+                                <option value="SASP">
+                                    SASP (State Police)
+                                </option>
+                                <option value="SAPR">
+                                    SAPR (Park Rangers)
+                                </option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Main Description Textarea -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">
-                            {{ descriptionLabel }} <span class="text-rose-400">*</span>
+                        <label
+                            class="block text-xs font-semibold text-slate-300 mb-1.5"
+                        >
+                            {{ descriptionLabel }}
+                            <span class="text-rose-400">*</span>
                         </label>
                         <textarea
                             v-model="feedbackForm.message"
@@ -354,7 +431,9 @@ const submitFeedbackForm = async () => {
 
                     <!-- Screenshot / Image Link Input Field -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        <label
+                            class="block text-xs font-semibold text-slate-300 mb-1.5"
+                        >
                             Tangkapan Layar / Screenshot URL (Opsional)
                         </label>
                         <div class="space-y-2">
@@ -364,12 +443,23 @@ const submitFeedbackForm = async () => {
                                 placeholder="Tempelkan URL Gambar (contoh: https://i.imgur.com/example.png atau Discord attachment link)..."
                                 class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-none focus:border-blue-500"
                             />
-                            <div class="border border-dashed border-slate-800 rounded-md p-4 text-center bg-slate-950 text-xs text-slate-400 space-y-1">
-                                <div class="flex items-center justify-center gap-1.5 text-blue-400 font-mono text-[11px] font-semibold">
-                                    <span>🤖 INTEGRASI GAMBAR DISCORD BOT AUTOMATIC</span>
+                            <div
+                                class="border border-dashed border-slate-800 rounded-md p-4 text-center bg-slate-950 text-xs text-slate-400 space-y-1"
+                            >
+                                <div
+                                    class="flex items-center justify-center gap-1.5 text-blue-400 font-mono text-[11px] font-semibold"
+                                >
+                                    <span
+                                        >🤖 INTEGRASI GAMBAR DISCORD BOT
+                                        AUTOMATIC</span
+                                    >
                                 </div>
                                 <p class="text-[11px] text-slate-400">
-                                    Discord Webhook otomatis mendeteksi URL gambar (Imgur, Discord Attachment, Gyazo, dsb.) dan menampilkan gambar pratinjau utuh secara langsung di channel Discord Dispatcher!
+                                    Discord Webhook otomatis mendeteksi URL
+                                    gambar (Imgur, Discord Attachment, Gyazo,
+                                    dsb.) dan menampilkan gambar pratinjau utuh
+                                    secara langsung di channel Discord
+                                    Dispatcher!
                                 </p>
                             </div>
                         </div>
@@ -378,8 +468,11 @@ const submitFeedbackForm = async () => {
                     <!-- Contact & Related Links -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">
-                                Nama / Email Pengirim (Untuk Notifikasi Perbaikan)
+                            <label
+                                class="block text-xs font-semibold text-slate-300 mb-1.5"
+                            >
+                                Nama / Email Pengirim (Untuk Notifikasi
+                                Perbaikan)
                             </label>
                             <input
                                 v-model="feedbackForm.sender_name"
@@ -389,7 +482,9 @@ const submitFeedbackForm = async () => {
                             />
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                            <label
+                                class="block text-xs font-semibold text-slate-300 mb-1.5"
+                            >
                                 Tautan URL / YouTube Terkait (Jika Ada)
                             </label>
                             <input
@@ -402,7 +497,9 @@ const submitFeedbackForm = async () => {
                     </div>
 
                     <!-- Submit Action Footer -->
-                    <div class="pt-2 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div
+                        class="pt-2 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4"
+                    >
                         <span class="text-[11px] text-slate-500 font-mono">
                             ⚡ Terhubung langsung ke Webhook Dispatcher
                         </span>
@@ -424,25 +521,43 @@ const submitFeedbackForm = async () => {
                                 class="w-4 h-4 invert"
                                 alt=""
                             />
-                            <span>{{ isSubmitting ? "MENGIRIM LAPORAN..." : "KIRIM MASUKAN SEKARANG" }}</span>
+                            <span>{{
+                                isSubmitting
+                                    ? "MENGIRIM LAPORAN..."
+                                    : "KIRIM MASUKAN SEKARANG"
+                            }}</span>
                         </button>
                     </div>
                 </form>
-
             </div>
 
             <!-- Bottom Info Banner -->
-            <div class="flex items-center gap-3 p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
-                <div class="p-1.5 rounded-md bg-slate-950 text-blue-400 border border-slate-800 shrink-0">
-                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <div
+                class="flex items-center gap-3 p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400"
+            >
+                <div
+                    class="p-1.5 rounded-md bg-slate-950 text-blue-400 border border-slate-800 shrink-0"
+                >
+                    <svg
+                        class="w-4 h-4 text-blue-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                     </svg>
                 </div>
                 <span class="leading-relaxed">
-                    Semua laporan diproses secara otomatis oleh sistem Dispatcher. Bug kritis dan usulan streamer akan langsung ditinjau oleh Komando IME Roleplay.
+                    Semua laporan diproses secara otomatis oleh sistem
+                    Dispatcher. Bug kritis dan usulan streamer akan langsung
+                    ditinjau oleh Komando IME Roleplay.
                 </span>
             </div>
-
         </main>
     </TacticalLayout>
 </template>

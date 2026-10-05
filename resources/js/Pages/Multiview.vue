@@ -1,31 +1,39 @@
 <script setup>
-import { ref, onMounted, computed, watch, onUnmounted, nextTick } from "vue";
-import { usePage, Head, Link, router } from "@inertiajs/vue3";
+import { Head, router, usePage } from "@inertiajs/vue3";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 // SVG Icon Assets & Branding Logos
 import iconLspd from "@/Components/Icons/LSPD_HD.svg";
 import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
 import iconSasp from "@/Components/Icons/SASP_HD.svg";
-import iconSapr from "@/Components/Icons/ranger_logo.svg";
 import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
+import iconSapr from "@/Components/Icons/ranger_logo.svg";
 import iconPersonal from "@/Components/Icons/star-svgrepo-com.svg";
 
 // Refactored Sub-Components
-import MultiviewHeader from "@/Components/MultiviewHeader.vue";
-import TacticalStreamGrid from "@/Components/TacticalStreamGrid.vue";
-import TacticalDrawers from "@/Components/TacticalDrawers.vue";
 import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
-import TacticalFooter from "@/Components/TacticalFooter.vue";
-import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
+import MultiviewHeader from "@/Components/MultiviewHeader.vue";
+import MultiviewLandscapeOverlay from "@/Components/MultiviewLandscapeOverlay.vue";
 import OfficerVisibilityBottomSheet from "@/Components/OfficerVisibilityBottomSheet.vue";
 import TacChannelNotificationToast from "@/Components/TacChannelNotificationToast.vue";
-import MultiviewLandscapeOverlay from "@/Components/MultiviewLandscapeOverlay.vue";
-import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
-import { useOfficerFilter } from "@/Composables/useOfficerFilter";
+import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
+import TacticalDrawers from "@/Components/TacticalDrawers.vue";
+import TacticalStreamGrid from "@/Components/TacticalStreamGrid.vue";
 import { useAnalytics } from "@/Composables/useAnalytics";
+import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 import { useTacChannelManager } from "@/Composables/useTacChannelManager";
+import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
+import { defineProps } from "vue";
+import { useI18n } from "vue-i18n";
 
-const { trackPageView, trackSelectStream, trackDepartmentChange, trackHeartbeat } = useAnalytics();
+const { t } = useI18n();
+
+const {
+    trackPageView,
+    trackSelectStream,
+    trackDepartmentChange,
+    trackHeartbeat,
+} = useAnalytics();
 
 const props = defineProps({
     initialStreams: {
@@ -283,8 +291,6 @@ watch(
     { deep: true },
 );
 
-
-
 // Tactical Radio Channels Manager Composable (Level 2 Refactoring)
 const {
     tacChannels,
@@ -444,8 +450,6 @@ const triggerManualSync = async () => {
     }
 };
 
-
-
 // Suppress YouTube internal iframe postMessage error: isExternalMethodAvailable is not a function
 const handleYouTubeInternalError = (event) => {
     if (
@@ -466,21 +470,20 @@ const dynamicPageTitle = computed(() => {
             primaryFocusedStream.value.officer?.officer_name ||
             primaryFocusedStream.value.title ||
             "Officer";
-        const dept =
-            primaryFocusedStream.value.officer?.department || "UNIT";
-        return `Menonton: ${officerName} (${dept}) – IME RP Multiview`;
+        const dept = primaryFocusedStream.value.officer?.department || "UNIT";
+        return t("multiview.title_watching", { officer: officerName, dept });
     }
     if (selectedDepartment.value && selectedDepartment.value !== "ALL") {
         const deptName =
             selectedDepartment.value === "PERSONAL"
-                ? "Watchlist Personal"
+                ? t("multiview.watchlist")
                 : selectedDepartment.value.replace("_", " ");
-        return `Kategori: ${deptName} – IME RP Multiview`;
+        return t("multiview.title_category", { category: deptName });
     }
     if (searchFilter.value && searchFilter.value.trim() !== "") {
-        return `Cari: ${searchFilter.value.trim()} – IME RP Multiview`;
+        return t("multiview.title_search", { query: searchFilter.value.trim() });
     }
-    return "Multiview (10-8 Live Officer Feeds) – IME RP Multiview";
+    return t("multiview.title_default");
 });
 
 let heartbeatTimer = null;
@@ -513,9 +516,15 @@ onMounted(() => {
     // Active session telemetry heartbeat for GA4 Realtime watching metrics (every 2 mins)
     heartbeatTimer = setInterval(() => {
         trackHeartbeat({
-            activeStreamsCount: visibleStreams.value ? visibleStreams.value.length : 0,
-            focusedStreamId: focusedStreamId.value || primaryFocusedStream.value?.video_id || null,
-            focusedOfficer: primaryFocusedStream.value?.officer?.officer_name || null,
+            activeStreamsCount: visibleStreams.value
+                ? visibleStreams.value.length
+                : 0,
+            focusedStreamId:
+                focusedStreamId.value ||
+                primaryFocusedStream.value?.video_id ||
+                null,
+            focusedOfficer:
+                primaryFocusedStream.value?.officer?.officer_name || null,
             selectedDepartment: selectedDepartment.value || "ALL",
         });
     }, 120000);
@@ -1328,14 +1337,28 @@ const filteredStreams = computed(() => {
         const query = normalizeUnicodeText(searchFilter.value.trim());
         result = result.filter((s) => {
             const title = normalizeUnicodeText(s.title || "");
-            const officerName = normalizeUnicodeText(s.officer?.officer_name || s.officer_name || s.name || "");
-            const streamerName = normalizeUnicodeText(s.officer?.streamer_name || s.streamer_name || "");
-            const callsign = normalizeUnicodeText(s.officer?.callsign || s.callsign || "");
-            const badge = normalizeUnicodeText(s.officer?.badge_number || s.badge_number || "");
-            const dept = normalizeUnicodeText(s.officer?.department || s.department || "");
+            const officerName = normalizeUnicodeText(
+                s.officer?.officer_name || s.officer_name || s.name || "",
+            );
+            const streamerName = normalizeUnicodeText(
+                s.officer?.streamer_name || s.streamer_name || "",
+            );
+            const callsign = normalizeUnicodeText(
+                s.officer?.callsign || s.callsign || "",
+            );
+            const badge = normalizeUnicodeText(
+                s.officer?.badge_number || s.badge_number || "",
+            );
+            const dept = normalizeUnicodeText(
+                s.officer?.department || s.department || "",
+            );
             const rank = normalizeUnicodeText(s.officer?.rank || s.rank || "");
-            const handle = normalizeUnicodeText(s.officer?.handle || s.handle || s.channel_id || "");
-            const zone = normalizeUnicodeText(s.officer?.patrol_zone || s.patrol_zone || "");
+            const handle = normalizeUnicodeText(
+                s.officer?.handle || s.handle || s.channel_id || "",
+            );
+            const zone = normalizeUnicodeText(
+                s.officer?.patrol_zone || s.patrol_zone || "",
+            );
 
             return (
                 title.includes(query) ||
@@ -1384,7 +1407,9 @@ const filteredOfflineOfficers = computed(() => {
     if (searchFilter.value.trim() !== "") {
         const query = normalizeUnicodeText(searchFilter.value.trim());
         result = result.filter((o) => {
-            const officerName = normalizeUnicodeText(o.officer_name || o.name || "");
+            const officerName = normalizeUnicodeText(
+                o.officer_name || o.name || "",
+            );
             const streamerName = normalizeUnicodeText(o.streamer_name || "");
             const callsign = normalizeUnicodeText(o.callsign || "");
             const badge = normalizeUnicodeText(o.badge_number || "");
@@ -1422,7 +1447,10 @@ onMounted(() => {
                 customStreamOrder.value = JSON.parse(savedOrder);
             }
         } catch (e) {
-            console.error("Gagal memuat custom stream order dari localStorage:", e);
+            console.error(
+                "Gagal memuat custom stream order dari localStorage:",
+                e,
+            );
         }
     }
 });
@@ -1432,25 +1460,39 @@ watch(
     (newVal) => {
         if (typeof window !== "undefined") {
             try {
-                localStorage.setItem(CUSTOM_ORDER_STORAGE_KEY, JSON.stringify(newVal));
+                localStorage.setItem(
+                    CUSTOM_ORDER_STORAGE_KEY,
+                    JSON.stringify(newVal),
+                );
             } catch (e) {
-                console.error("Gagal menyimpan custom stream order ke localStorage:", e);
+                console.error(
+                    "Gagal menyimpan custom stream order ke localStorage:",
+                    e,
+                );
             }
         }
     },
-    { deep: true }
+    { deep: true },
 );
 
 const getCustomOrderRank = (item) => {
     if (!item) return 0;
-    const key = getOfficerKey(item) || (typeof item === "string" ? item.trim() : (item.video_id ? String(item.video_id).trim() : ""));
+    const key =
+        getOfficerKey(item) ||
+        (typeof item === "string"
+            ? item.trim()
+            : item.video_id
+              ? String(item.video_id).trim()
+              : "");
     if (!key) return 0;
 
     const idx = customStreamOrder.value.indexOf(key);
     if (idx !== -1) return idx + 1;
 
     if (typeof item === "object" && item.video_id) {
-        const vIdx = customStreamOrder.value.indexOf(String(item.video_id).trim());
+        const vIdx = customStreamOrder.value.indexOf(
+            String(item.video_id).trim(),
+        );
         if (vIdx !== -1) return vIdx + 1;
     }
 
@@ -1459,7 +1501,13 @@ const getCustomOrderRank = (item) => {
 
 const toggleCustomOrderPin = (item) => {
     if (!item) return;
-    const key = getOfficerKey(item) || (typeof item === "string" ? item.trim() : (item.video_id ? String(item.video_id).trim() : ""));
+    const key =
+        getOfficerKey(item) ||
+        (typeof item === "string"
+            ? item.trim()
+            : item.video_id
+              ? String(item.video_id).trim()
+              : "");
     if (!key) return;
 
     const idx = customStreamOrder.value.indexOf(key);
@@ -1478,7 +1526,13 @@ const toggleCustomOrderPin = (item) => {
 
 const moveCustomOrderUp = (item) => {
     if (!item) return;
-    const key = getOfficerKey(item) || (typeof item === "string" ? item.trim() : (item.video_id ? String(item.video_id).trim() : ""));
+    const key =
+        getOfficerKey(item) ||
+        (typeof item === "string"
+            ? item.trim()
+            : item.video_id
+              ? String(item.video_id).trim()
+              : "");
     if (!key) return;
 
     const idx = customStreamOrder.value.indexOf(key);
@@ -1490,7 +1544,13 @@ const moveCustomOrderUp = (item) => {
 
 const moveCustomOrderDown = (item) => {
     if (!item) return;
-    const key = getOfficerKey(item) || (typeof item === "string" ? item.trim() : (item.video_id ? String(item.video_id).trim() : ""));
+    const key =
+        getOfficerKey(item) ||
+        (typeof item === "string"
+            ? item.trim()
+            : item.video_id
+              ? String(item.video_id).trim()
+              : "");
     if (!key) return;
 
     const idx = customStreamOrder.value.indexOf(key);
@@ -1538,8 +1598,8 @@ const promoteStreamToFirst = (item) => {
         (typeof item === "string"
             ? item.trim()
             : targetStream?.video_id
-            ? String(targetStream.video_id).trim()
-            : "");
+              ? String(targetStream.video_id).trim()
+              : "");
     if (!key) return;
 
     const idx = customStreamOrder.value.indexOf(key);
@@ -2258,7 +2318,10 @@ const primaryFocusedStream = computed(() => {
             officer: {
                 id: 0,
                 officer_name: "Patrol Officer",
-                department: selectedDepartment.value !== "ALL" ? selectedDepartment.value : "LSPD",
+                department:
+                    selectedDepartment.value !== "ALL"
+                        ? selectedDepartment.value
+                        : "LSPD",
                 callsign: "REPLAY",
                 badge_number: "#VOD",
                 rank: "Officer",
@@ -2273,7 +2336,9 @@ const primaryFocusedStream = computed(() => {
 const secondaryStreams = computed(() => {
     if (!primaryFocusedStream.value) return [];
     return sortedFocusStreams.value.filter(
-        (s) => String(s.video_id).trim() !== String(primaryFocusedStream.value.video_id).trim(),
+        (s) =>
+            String(s.video_id).trim() !==
+            String(primaryFocusedStream.value.video_id).trim(),
     );
 });
 
@@ -2909,8 +2974,8 @@ const submitFeedbackForm = async () => {
                 isMobileLandscape
                     ? 'fixed inset-0 z-50 bg-black w-screen h-[100dvh] p-0 overflow-hidden flex flex-col justify-center'
                     : isTheaterMode
-                        ? 'flex-1 w-full px-2 sm:px-4 pt-3 sm:pt-4 pb-6 relative transition-all duration-300'
-                        : 'flex-1 w-full max-w-screen-2xl mx-auto p-2 sm:p-4 pb-6 relative transition-all duration-300'
+                      ? 'flex-1 w-full px-2 sm:px-4 pt-3 sm:pt-4 pb-6 relative transition-all duration-300'
+                      : 'flex-1 w-full max-w-screen-2xl mx-auto p-2 sm:p-4 pb-6 relative transition-all duration-300',
             ]"
             @click="handleLandscapeTap"
         >
@@ -3021,9 +3086,8 @@ const submitFeedbackForm = async () => {
             :format-remaining-time="formatRemainingTime"
             @extend-timer="(code, mins) => extendTacTimer(code, mins)"
             @disband-channel="(code) => disbandTacChannel(code)"
-            @select-department="(code) => selectedDepartment = code"
+            @select-department="(code) => (selectedDepartment = code)"
         />
-
 
         <!-- Floating Tactical Community Chat -->
         <TacticalChatDrawer />

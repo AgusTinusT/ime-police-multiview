@@ -1,0 +1,150 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search...",
+    "syncing": "Syncing...",
+    "sync_live_feeds": "Sync Live Feeds",
+    "all_units": "All Units",
+    "departments": "Departments"
+  },
+  "dashboard": {
+    "title": "IME RP — SASP Police Duty | Live Officer Bodycam & Discovery Hub",
+    "active_officers": "On-Duty Officers: {count} Units",
+    "hero_description": "Tactical monitoring hub & live streaming officer bodycams in the field. Monitor live YouTube broadcasts from LSPD, BCSO, SASP, and SAPR officers simultaneously in interactive multiview mode.",
+    "btn_open_multi_bodycam": "Open Multi-Bodycam",
+    "btn_explore_feeds": "Explore Bodycam Feeds",
+    "grid_monitor": "SAN ANDREAS GRID MONITOR",
+    "live_metrics": "LIVE METRICS",
+    "on_duty_feeds": "ACTIVE BODYCAM FEEDS",
+    "active": "Active",
+    "divisions": "Divisions",
+    "total_officers": "TOTAL OFFICERS",
+    "officers_unit": "Officers",
+    "replay_archive": "ARCHIVE & REPLAY",
+    "videos_unit": "Videos",
+    "transmission_feed": "BROADCAST TRANSMISSION",
+    "transmission_log": "[DISPATCH]: Bodycam stream connected. Switching to Multiview Theater for synchronized grid display."
+  },
+  "multiview": {
+    "title_default": "Multiview (10-8 Live Officer Feeds) – IME RP Multiview",
+    "title_watching": "Watching: {officer} ({dept}) – IME RP Multiview",
+    "title_category": "Category: {category} – IME RP Multiview",
+    "title_search": "Search: {query} – IME RP Multiview",
+    "watchlist": "Watchlist",
+    "tac_channel": "TAC Channel",
+    "tac_active": "Active TAC Radio",
+    "theater_mode": "Theater Mode",
+    "data_saver": "Saver Mode",
+    "all_units": "All Units"
+  },
+  "leaderboard": {
+    "title": "Top Streamer of IME Police",
+    "subtitle": "Highest appreciation for Los Santos law enforcement officers who loyally dedicate their patrol streaming hours on YouTube. Broadcast hours are automatically calculated based on accumulated 10-8 (On Duty) stream durations this month.",
+    "rank_1_gold": "#1 CHIEF OF ON-AIR",
+    "rank_2_silver": "RANK #2 SILVER",
+    "rank_3_bronze": "RANK #3 BRONZE",
+    "badge_gold": "GOLD",
+    "status_live": "10-8 LIVE STREAMING",
+    "status_live_viewers": "10-8 PATROL LIVE ({count})",
+    "status_standby": "10-7 STANDBY",
+    "total_duration": "Total Patrol Duration:",
+    "record_duration": "Stream Hours Record:",
+    "average": "Average: {avg}",
+    "percent_from_top": "{percent}% from #1",
+    "peak_top": "100% Peak",
+    "watch_live": "Watch Stream",
+    "youtube_channel": "YouTube Channel",
+    "reset_cycle": "Reset Cycle: {days} Days Left"
+  },
+  "stream_slimles": {
+    "dispatch_feed_title": "DISPATCH FEED: LIVE PATROLS & REPLAYS",
+    "dispatch_feed_subtitle": "Combined monitoring channel for 10-8 (On Duty) live streams and archived patrol recordings of San Andreas officers.",
+    "all_filter": "All ({count})",
+    "live_filter": "Live ({count})",
+    "replay_filter": "Replays ({count})",
+    "showing_count": "Showing {count} Patrol Streams",
+    "empty_title": "No patrol broadcasts or recordings found.",
+    "empty_subtitle": "Try changing the filter or tap Sync Live Feeds button."
+  },
+  "sub_support": {
+    "badge_title": "ROAD TO 1,000 SUBS",
+    "subtitle": "Support active San Andreas officers reaching the 1k Subscribers milestone who went live in the last 3 days. Hitting 1,000 subscribers helps officers with monetization and unlocking advanced YouTube features.",
+    "active_list_title": "ACTIVE OFFICERS LIST (< 1K SUBS)",
+    "live_3_days": "LIVE IN LAST 3 DAYS",
+    "showing_officers": "Showing {count} active officers",
+    "view_all_officers": "View All Officers",
+    "support_btn": "Support",
+    "feature_active_officers": "Active Officers",
+    "feature_active_officers_desc": "Active live streaming within the last 3 days",
+    "feature_community_support": "Free Community Support",
+    "feature_community_support_desc": "1-click to open officer YouTube channel."
+  },
+  "footer": {
+    "tagline": "IME RP Police Duty Multiview — Tactical Bodycam Monitoring Platform for Officers",
+    "copyright": "© 2026 IME RP Police Duty. All rights reserved.",
+    "disclaimer": "This platform is created to expand visibility for San Andreas streamers & officers."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "multiview": "Multiview",
+    "directory": "Officer Directory",
+    "clips": "TacClips",
+    "updates": "Updates",
+    "about": "About",
+    "faq": "FAQ",
+    "feedback": "Feedback"
+  },
+  "visibility_panel": {
+    "title": "MANAGE OFFICER VISIBILITY",
+    "shown": "Shown",
+    "hidden": "Hidden",
+    "priority": "Priority",
+    "search_placeholder": "Search officer, callsign, department...",
+    "reset": "↺ Reset",
+    "all_depts": "All Depts",
+    "no_officers_found": "No officers matched your search criteria."
+  },
+  "directory": {
+    "title": "SAN ANDREAS OFFICER DIRECTORY",
+    "subtitle": "Official roster of all registered LSPD, BCSO, SASP, and SAPR law enforcement personnel in the IME Roleplay community.",
+    "search_placeholder": "Search officer name, callsign, or badge...",
+    "filter_all": "All Units",
+    "filter_live": "10-8 Live Only",
+    "status_online": "10-8 Live Patrol",
+    "status_offline": "10-7 Standby / Off Duty",
+    "add_officer": "Add New Officer",
+    "total_officers": "Total Officers",
+    "active_now": "10-8 Live Patrols"
+  },
+  "feedback": {
+    "title": "FEEDBACK & BUG REPORT CENTER",
+    "subtitle": "Help us improve the IME RP Police Duty Terminal platform. Report technical bugs, document typos, or request new features.",
+    "cat_bug": "Bug Report",
+    "cat_typo": "Data / Typo Correction",
+    "cat_feature": "Feature Request",
+    "cat_other": "Other Inquiry",
+    "sender_name": "Sender Name",
+    "sender_name_ph": "Your Name / Callsign...",
+    "email": "Email Address",
+    "email_ph": "name@email.com",
+    "submit": "Submit Feedback",
+    "submitting": "Submitting...",
+    "success_toast": "Thank you! Your feedback report has been successfully submitted."
+  },
+  "faq": {
+    "title": "OPERATIONAL MANUAL & FAQS",
+    "subtitle": "Find tactical guidelines, radio frequency allocations, bodycam troubleshooting, and officer registration rules.",
+    "search_placeholder": "Type keyword (e.g. #imepolice, Focus Mode, TAC Radio)...",
+    "quick_keywords": "Quick Keywords:",
+    "sop_count": "SOP DOCUMENTS",
+    "search_results": "Search results: {query} ({count} documents)",
+    "showing_count": "Showing {count} SOP documents"
+  },
+  "about": {
+    "title": "ABOUT THE PLATFORM",
+    "hero_statement": "Building a patrol monitoring hub that respects your time.",
+    "hero_description": "This platform was born out of a simple need: providing an integrated bodycam monitoring hub that respects viewer and command focus, eliminates navigation friction, and delivers an uninterrupted multiview experience.",
+    "badge_tag": "ABOUT THE PLATFORM"
+  }
+}

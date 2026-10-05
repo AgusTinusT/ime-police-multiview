@@ -1,38 +1,26 @@
 <script setup>
-import { ref, onMounted, computed, watch, onUnmounted, nextTick } from "vue";
-import { usePage, Head, Link, router } from "@inertiajs/vue3";
+import { Head, Link } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
 
 // SVG Icon Assets & Branding Logos
-import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
 import iconLspd from "@/Components/Icons/LSPD_HD.svg";
 import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
 import iconSasp from "@/Components/Icons/SASP_HD.svg";
-import iconSapr from "@/Components/Icons/ranger_logo.svg";
 import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
-import iconPersonal from "@/Components/Icons/star-svgrepo-com.svg";
-import iconSaver from "@/Components/Icons/gauge-low-svgrepo-com.svg";
-import iconPlayAll from "@/Components/Icons/play-full-svgrepo-com.svg";
-import iconMute from "@/Components/Icons/mute-svgrepo-com.svg";
-import iconUnmute from "@/Components/Icons/unmute-svgrepo-com.svg";
-import iconFeedback from "@/Components/Icons/report-svgrepo-com.svg";
-import iconQuickAdd from "@/Components/Icons/button-plus-svgrepo-com.svg";
-import iconFullscreen from "@/Components/Icons/full-screen-svgrepo-com.svg";
-import iconExitFullscreen from "@/Components/Icons/minimize-svgrepo-com.svg";
-import iconFocus from "@/Components/Icons/focus-point-round-844-svgrepo-com.svg";
-import iconSearch from "@/Components/Icons/search-svgrepo-com.svg";
+import iconSapr from "@/Components/Icons/ranger_logo.svg";
 import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
-import iconPinPlus from "@/Components/Icons/star-line-svgrepo-com.svg";
+import iconPersonal from "@/Components/Icons/star-svgrepo-com.svg";
 
 // Refactored Sub-Components
+import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
-import TacticalStreamGrid from "@/Components/TacticalStreamGrid.vue";
-import TacticalStreamSlimles from "@/Components/TacticalStreamSlimles.vue";
-import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
-import TacticalSubSupportGrid from "@/Components/TacticalSubSupportGrid.vue";
 import TacticalDrawers from "@/Components/TacticalDrawers.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
-import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
+import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
+import TacticalStreamSlimles from "@/Components/TacticalStreamSlimles.vue";
+import TacticalSubSupportGrid from "@/Components/TacticalSubSupportGrid.vue";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
+import { defineProps } from "vue";
 
 const props = defineProps({
     initialStreams: {
@@ -179,8 +167,12 @@ const trendingStreams = computed(() => streams.value.slice(0, 8));
 const recentReplayStreams = computed(() => {
     const list = [...(recentReplays.value || [])];
     return list.sort((a, b) => {
-        const timeA = parseRelativeTimeToSeconds(a.streamed_at || a.incident_code);
-        const timeB = parseRelativeTimeToSeconds(b.streamed_at || b.incident_code);
+        const timeA = parseRelativeTimeToSeconds(
+            a.streamed_at || a.incident_code,
+        );
+        const timeB = parseRelativeTimeToSeconds(
+            b.streamed_at || b.incident_code,
+        );
         return timeA - timeB;
     });
 });
@@ -308,8 +300,10 @@ const triggerManualSync = async () => {
             const data = await res.json();
             if (data.status === "success") {
                 if (Array.isArray(data.data)) streams.value = data.data;
-                if (Array.isArray(data.replays)) recentReplays.value = data.replays;
-                if (Array.isArray(data.offline_officers)) offlineOfficers.value = data.offline_officers;
+                if (Array.isArray(data.replays))
+                    recentReplays.value = data.replays;
+                if (Array.isArray(data.offline_officers))
+                    offlineOfficers.value = data.offline_officers;
             }
         }
     } catch (e) {
@@ -345,10 +339,19 @@ const scrollToUnitsGrid = () => {
 </script>
 
 <template>
-    <Head title="IME RP — SASP Police Duty | Live Officer Bodycam & Discovery Hub">
-        <meta name="description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay (LSPD, BCSO, SASP, SAPR). Pantau seluruh siaran langsung perwira patroli secara multiview interaktif." />
-        <meta property="og:title" content="IME RP — SASP Police Duty | Live Officer Bodycam & Discovery Hub" />
-        <meta property="og:description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay." />
+    <Head :title="$t('dashboard.title')">
+        <meta
+            name="description"
+            content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay (LSPD, BCSO, SASP, SAPR). Pantau seluruh siaran langsung perwira patroli secara multiview interaktif."
+        />
+        <meta
+            property="og:title"
+            content="IME RP — SASP Police Duty | Live Officer Bodycam & Discovery Hub"
+        />
+        <meta
+            property="og:description"
+            content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay."
+        />
         <meta property="og:type" content="website" />
     </Head>
 
@@ -425,11 +428,7 @@ const scrollToUnitsGrid = () => {
                             <p
                                 class="text-slate-400 text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl font-normal"
                             >
-                                Pusat pemantauan taktis & live streaming bodycam
-                                perwira di lapangan. Pantau seluruh tayangan
-                                YouTube live stream petugas LSPD, BCSO, SASP,
-                                dan SAPR secara bersamaan dalam mode multiview
-                                interaktif.
+                                {{ $t("dashboard.hero_description") }}
                             </p>
 
                             <!-- Department Quick Status Badges (Flat Crisp Badges) -->
@@ -519,7 +518,9 @@ const scrollToUnitsGrid = () => {
                                             d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
                                         />
                                     </svg>
-                                    <span>OPEN MULTI-BODYCAM</span>
+                                    <span>{{
+                                        $t("dashboard.btn_open_multi_bodycam")
+                                    }}</span>
                                 </Link>
 
                                 <button
@@ -540,7 +541,9 @@ const scrollToUnitsGrid = () => {
                                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                                         />
                                     </svg>
-                                    <span>Explore Bodycam Feeds</span>
+                                    <span>{{
+                                        $t("dashboard.btn_explore_feeds")
+                                    }}</span>
                                 </button>
                             </div>
                         </div>
@@ -560,12 +563,12 @@ const scrollToUnitsGrid = () => {
                                         ></span>
                                         <span
                                             class="text-xs font-mono font-semibold tracking-wider text-slate-200 uppercase"
-                                            >SAN ANDREAS GRID MONITOR</span
+                                            >{{ $t("dashboard.grid_monitor") }}</span
                                         >
                                     </div>
                                     <span
                                         class="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/80 font-medium"
-                                        >LIVE METRICS</span
+                                        >{{ $t("dashboard.live_metrics") }}</span
                                     >
                                 </div>
 
@@ -576,7 +579,7 @@ const scrollToUnitsGrid = () => {
                                     >
                                         <span
                                             class="text-[10px] font-mono text-slate-400 block uppercase"
-                                            >ON DUTY FEEDS</span
+                                            >{{ $t("dashboard.on_duty_feeds") }}</span
                                         >
                                         <div class="flex items-baseline gap-2">
                                             <span
@@ -587,7 +590,7 @@ const scrollToUnitsGrid = () => {
                                             >
                                             <span
                                                 class="text-[11px] text-slate-500 font-mono"
-                                                >Active</span
+                                                >{{ $t("dashboard.active") }}</span
                                             >
                                         </div>
                                     </div>
@@ -597,7 +600,7 @@ const scrollToUnitsGrid = () => {
                                     >
                                         <span
                                             class="text-[10px] font-mono text-slate-400 block uppercase"
-                                            >DEPARTEMEN</span
+                                            >{{ $t("common.departments") }}</span
                                         >
                                         <div class="flex items-baseline gap-2">
                                             <span
@@ -606,7 +609,7 @@ const scrollToUnitsGrid = () => {
                                             >
                                             <span
                                                 class="text-[11px] text-slate-500 font-mono"
-                                                >Divisions</span
+                                                >{{ $t("dashboard.divisions") }}</span
                                             >
                                         </div>
                                     </div>
@@ -616,7 +619,7 @@ const scrollToUnitsGrid = () => {
                                     >
                                         <span
                                             class="text-[10px] font-mono text-slate-400 block uppercase"
-                                            >TOTAL OFFICER</span
+                                            >{{ $t("dashboard.total_officers") }}</span
                                         >
                                         <div class="flex items-baseline gap-2">
                                             <span
@@ -628,7 +631,7 @@ const scrollToUnitsGrid = () => {
                                             >
                                             <span
                                                 class="text-[11px] text-slate-500 font-mono"
-                                                >Officers</span
+                                                >{{ $t("dashboard.officers_unit") }}</span
                                             >
                                         </div>
                                     </div>
@@ -638,7 +641,7 @@ const scrollToUnitsGrid = () => {
                                     >
                                         <span
                                             class="text-[10px] font-mono text-slate-400 block uppercase"
-                                            >REPLAY & ARCHIVE</span
+                                            >{{ $t("dashboard.replay_archive") }}</span
                                         >
                                         <div class="flex items-baseline gap-2">
                                             <span
@@ -649,7 +652,7 @@ const scrollToUnitsGrid = () => {
                                             >
                                             <span
                                                 class="text-[11px] text-slate-500 font-mono"
-                                                >Videos</span
+                                                >{{ $t("dashboard.videos_unit") }}</span
                                             >
                                         </div>
                                     </div>
@@ -678,7 +681,7 @@ const scrollToUnitsGrid = () => {
                                                     d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
                                                 />
                                             </svg>
-                                            TRANSMISSION FEED
+                                            {{ $t("dashboard.transmission_feed") }}
                                         </span>
                                         <span class="text-cyan-400 text-[10px]"
                                             >YOUTUBE LIVE</span
@@ -687,9 +690,7 @@ const scrollToUnitsGrid = () => {
                                     <p
                                         class="text-xs font-mono text-slate-400 bg-slate-900 p-2 rounded border border-slate-800 leading-relaxed"
                                     >
-                                        "[DISPATCH]: Live bodycam streams
-                                        connected. Switch to Multiview Theater
-                                        for synchronized grid layout."
+                                        {{ $t("dashboard.transmission_log") }}
                                     </p>
                                     <div
                                         class="flex items-center justify-between pt-1"
@@ -710,8 +711,8 @@ const scrollToUnitsGrid = () => {
                                             />
                                             <span>{{
                                                 isSyncingFeeds
-                                                    ? "Syncing..."
-                                                    : "Sync Live Feeds"
+                                                    ? $t("common.syncing")
+                                                    : $t("common.sync_live_feeds")
                                             }}</span>
                                         </button>
                                         <span
@@ -751,7 +752,9 @@ const scrollToUnitsGrid = () => {
                 class="w-full bg-slate-950 pt-12 sm:pt-16 pb-16 sm:pb-24 relative z-10"
             >
                 <div class="max-w-screen-2xl mx-auto px-3.5 sm:px-6 lg:px-8">
-                    <TacticalMonthlyLeaderboard :leaderboard="monthlyLeaderboard" />
+                    <TacticalMonthlyLeaderboard
+                        :leaderboard="monthlyLeaderboard"
+                    />
                 </div>
             </section>
 

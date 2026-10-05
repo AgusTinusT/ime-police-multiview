@@ -535,13 +535,14 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
-import TacticalLayout from '@/Layouts/TacticalLayout.vue';
 import CustomVideoPlayer from '@/Components/CustomVideoPlayer.vue';
+import TacticalLayout from '@/Layouts/TacticalLayout.vue';
+import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 import iconDelete from '@/Components/Icons/delete-2-svgrepo-com.svg';
+import { defineProps, } from 'vue';
 
 const props = defineProps({
     initialUrl: String,

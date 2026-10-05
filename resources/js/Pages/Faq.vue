@@ -1,8 +1,13 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { Head, Link } from "@inertiajs/vue3";
-import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import iconSend from "@/Components/Icons/send-svgrepo-com.svg";
+import TacticalLayout from "@/Layouts/TacticalLayout.vue";
+import { Head, Link } from "@inertiajs/vue3";
+import { computed, defineProps, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { faqsId } from "@/Data/faqs.id.js";
+import { faqsEn } from "@/Data/faqs.en.js";
+
+const { t, locale } = useI18n();
 
 const props = defineProps({
     appVersion: {
@@ -84,148 +89,8 @@ onMounted(() => {
     }
 });
 
-// Comprehensive IME Police SOP & FAQ Data
-const faqs = [
-    // Category: MULTIVIEW & FITUR
-    {
-        id: 1,
-        code: "SOP-MV-01",
-        category: "MULTIVIEW",
-        categoryLabel: "Multiview & Fitur",
-        question: "Bagaimana cara kerja platform IME Police Multiview ini?",
-        answer: 'Platform ini dirancang sebagai pusat pemantauan patroli kepolisian IME Roleplay. Sistem menampilkan tayangan langsung (live bodycam/stream) dari perwira aktif secara bersamaan agar komando dan penonton dapat memantau situasi operasi secara real-time.<br/><br/><div class="p-3.5 rounded-md bg-slate-950 border border-slate-800 text-slate-300 text-xs font-mono space-y-1.5"><div class="flex items-center justify-between"><strong class="uppercase text-blue-400 font-tactical tracking-wider text-xs">Aturan Judul Live Stream:</strong><span class="text-[10px] text-blue-400 font-mono">HASHTAG RULE</span></div><p class="leading-relaxed">Judul siaran perwira <strong>wajib menyertakan hashtag <code class="bg-slate-900 px-1.5 py-0.5 rounded-md text-blue-400 border border-slate-800 font-mono">#imepolice</code></strong> agar siaran patroli terdeteksi dan tampil otomatis di layar pemantauan.</p></div>',
-    },
-    {
-        id: 2,
-        code: "SOP-MV-02",
-        category: "MULTIVIEW",
-        categoryLabel: "Multiview & Fitur",
-        question: "Mengapa video awal diputar tanpa suara (Mute)?",
-        answer: 'Secara bawaan, aturan keamanan browser (Chrome, Edge, Safari) otomatis mematikan suara awal pada halaman yang memutar beberapa video sekaligus.<br/><br/>Untuk mendengarkan suara perwira tertentu, silakan klik tombol <strong class="text-blue-400 font-mono font-semibold">Unmute</strong> atau aktifkan <strong class="text-blue-400 font-mono font-semibold">Focus Mode</strong> pada jendela video perwira tersebut.',
-    },
-    {
-        id: 3,
-        code: "SOP-MV-03",
-        category: "MULTIVIEW",
-        categoryLabel: "Multiview & Fitur",
-        question: "Apa perbedaan antara Mode Saver dan Play All?",
-        answer: '<strong class="text-blue-400 font-mono uppercase">Mode Saver (Hemat Kuota):</strong> Menahan pemutaran otomatis dan menampilkan gambar sampul video yang ringan untuk menghemat kuota internet serta kinerja perangkat. Video akan langsung diputar saat diklik.<br/><br/><strong class="text-blue-400 font-mono uppercase">Mode Play All:</strong> Memutar seluruh siaran video secara bersamaan untuk pemantauan komando menyeluruh.',
-    },
-    {
-        id: 4,
-        code: "SOP-MV-04",
-        category: "MULTIVIEW",
-        categoryLabel: "Multiview & Fitur",
-        question:
-            "Bagaimana cara menyimpan video ke daftar Personal Watchlist?",
-        answer: 'Anda dapat menekan tombol <strong class="text-blue-400 font-mono font-semibold">Pin (Bintang)</strong> pada kartu video perwira. Video tersebut akan tersimpan otomatis di browser Anda dan terkumpul di tab <span class="font-mono text-blue-400 font-semibold">Personal Watchlist</span> (maksimal 6 video aktif).',
-    },
-
-    // Category: RADIO TAKTIS (TAC)
-    {
-        id: 5,
-        code: "SOP-TAC-01",
-        category: "TAC",
-        categoryLabel: "Radio Taktis (TAC)",
-        question: "Apa fungsi dari Saluran Radio Taktis (TAC 1 - 10)?",
-        answer: "Saluran TAC (Radio Taktis) digunakan oleh perwira dan komando untuk mengelompokkan siaran unit yang sedang menangani situasi atau operasi khusus (seperti High Speed Pursuit atau Code 3). Memilih tab TAC akan menyaring dan menampilkan unit yang terhubung ke saluran tersebut.",
-    },
-    {
-        id: 6,
-        code: "SOP-TAC-02",
-        category: "TAC",
-        categoryLabel: "Radio Taktis (TAC)",
-        question: "Berapa lama batas waktu alokasi situasi TAC Radio?",
-        answer: 'Setiap alokasi saluran TAC memiliki batas waktu otomatis selama <strong class="text-blue-400 font-mono font-bold">30 Menit</strong>. Ketika waktu tersisa kurang dari 60 detik, sistem akan menampilkan pemberitahuan. Petugas dapat memperpanjang waktu situasi (+20 menit) atau menutup saluran jika operasi selesai.',
-    },
-
-    // Category: STREAMER & PENDAFTARAN
-    {
-        id: 7,
-        code: "SOP-REG-01",
-        category: "OFFICERS",
-        categoryLabel: "Streamer & Pendaftaran",
-        question: "Bagaimana cara mendaftarkan channel siaran perwira baru?",
-        answer: 'Anda dapat mengajukan pendaftaran channel siaran langsung melalui menu <a href="/feedback" class="text-blue-400 font-mono underline font-semibold hover:text-blue-300 transition">Feedback & Reports</a>. Cantumkan Nama Perwira, Callsign, Kesatuan (LSPD/BCSO/SASP/SAPR), dan Link Channel YouTube Anda. Pastikan judul streaming menyertakan hashtag <code class="bg-slate-950 px-1.5 py-0.5 rounded text-blue-400 border border-blue-800/60 font-mono font-semibold">#imepolice</code>.',
-    },
-    {
-        id: 8,
-        code: "SOP-REG-02",
-        category: "OFFICERS",
-        categoryLabel: "Streamer & Pendaftaran",
-        question: "Apakah sistem ini mendukung pemantauan streamer non-polisi?",
-        answer: 'Ya. Anda dapat menggunakan fitur <strong class="text-blue-400 font-mono">Pencarian Live</strong> di bagian atas untuk mencari siaran berdasarkan hashtag (seperti <code class="bg-slate-950 px-1.5 py-0.5 rounded text-blue-400 border border-blue-800/60 font-mono">#imeroleplay</code>, <code class="bg-slate-950 px-1.5 py-0.5 rounded text-blue-400 border border-blue-800/60 font-mono">#DOJ</code>) atau memasukkan link YouTube secara manual ke layar pemantauan.',
-    },
-
-    // Category: KENDALA TEKNIS
-    {
-        id: 9,
-        code: "SOP-SYS-01",
-        category: "TROUBLESHOOTING",
-        categoryLabel: "Kendala Teknis",
-        question:
-            'Mengapa pemutar video berwarna hitam atau muncul "Playback Error"?',
-        answer: 'Penyebab umum meliputi:<br/>1. Perwira telah mengakhiri siaran live.<br/>2. Pemilik channel membatasi pemutaran video di luar YouTube.<br/>3. Pemblokir iklan (Adblocker) memblokir pemutar YouTube.<br/><br/>Coba tekan tombol <strong class="text-blue-400 font-mono">Sync (Segarkan Siaran)</strong> atau buka video langsung di situs YouTube.',
-    },
-    {
-        id: 10,
-        code: "SOP-SYS-02",
-        category: "TROUBLESHOOTING",
-        categoryLabel: "Kendala Teknis",
-        question: "Apakah situs ini dapat ditambahkan sebagai aplikasi di HP?",
-        answer: 'Tentu saja. Buka situs ini di Chrome (Android) atau Safari (iOS), lalu pilih menu browser <strong class="text-slate-200 font-mono">"Add to Home Screen"</strong> agar situs terpasang dan dapat diakses cepat seperti aplikasi HP.',
-    },
-    {
-        id: 11,
-        code: "SOP-SYS-03",
-        category: "MULTIVIEW",
-        categoryLabel: "Multiview & Fitur",
-        question:
-            "Mengapa Super Chat atau Membership tidak muncul di Live Chat?",
-        answer: 'Aturan resmi Google & YouTube melarang transaksi keuangan (Super Chat, Gift Membership) di pemutar situs luar untuk menjaga keamanan pembayaran.<br/><br/>Untuk mengirimkan Super Chat atau bergabung menjadi Member, silakan klik tombol <strong class="text-slate-200 font-mono font-semibold">"Buka di YouTube"</strong> pada kartu siaran.',
-    },
-    // Category: TACCLIPS & STUDIO CLIPPER
-    {
-        id: 12,
-        code: "SOP-CLIP-01",
-        category: "CLIPS",
-        categoryLabel: "TacClips & Studio Pro",
-        question: "Apa itu fitur TacClips dan bagaimana cara menikmatinya?",
-        answer: '<strong>TacClips</strong> adalah galeri pemutar video sinematik 16:9 yang menampilkan momen-momen aksi terbaik kepolisian (seperti pengejaran kendaraan Code 3, negosiasi, taktis penggerebekan, dan momen unik perwira).<br/><br/>Anda dapat melakukan navigasi antar klip secara mudah menggunakan tombol panah atas/bawah, scroll mouse, menyukai klip, memutar ulang (replay), atau menyalin tautan untuk dibagikan ke teman.',
-    },
-    {
-        id: 13,
-        code: "SOP-CLIP-02",
-        category: "CLIPS",
-        categoryLabel: "TacClips & Studio Pro",
-        question: "Mengapa video klip muncul pesan Error atau Video Tidak Ditemukan (Unavailable)?",
-        answer: 'Pesan <strong class="text-amber-400 font-mono">"Video Tidak Ditemukan / Unavailable"</strong> biasanya disebabkan oleh beberapa faktor bawaan kebijakan YouTube:<br/><br/>' +
-            '<ul class="list-disc list-inside space-y-1.5 text-slate-300 font-sans">' +
-            '<li><strong class="text-slate-100">Video Khusus Member (YouTube Membership):</strong> Video YouTube disetel oleh pemilik channel khusus untuk Member berlangganan. Pemutar luar (embed) tidak diizinkan memutar video berbayar/khusus member.</li>' +
-            '<li><strong class="text-slate-100">Video Dihapus atau Diset Private/Unlisted:</strong> Pemilik channel atau YouTube telah menghapus video asli atau mengubah aksesnya menjadi Pribadi (Private).</li>' +
-            '<li><strong class="text-slate-100">Pembatasan Penanaman (Embedding Disabled):</strong> Pemilik channel mematikan opsi <em>"Allow embedding"</em> pada pengaturan YouTube Studio.</li>' +
-            '<li><strong class="text-slate-100">Pembatasan Usia (Age-Restricted Video):</strong> Video mengandung pembatasan usia yang mewajibkan penonton melakukan verifikasi usia langsung di situs resmi YouTube.</li>' +
-            '<li><strong class="text-slate-100">Siaran Live Belum Selesai Diproses:</strong> Klip yang diambil dari siaran langsung (YouTube Live) yang baru saja berakhir membutuhkan waktu beberapa menit bagi server YouTube untuk memproses arsip video resmi (VOD).</li>' +
-            '</ul><br/>' +
-            '<em>Solusi: Klik tombol <strong class="text-blue-400 font-mono">"Full (Buka di YouTube)"</strong> di panel samping untuk menonton video langsung di situs YouTube resmi.</em>',
-    },
-    {
-        id: 14,
-        code: "SOP-CLIP-03",
-        category: "CLIPS",
-        categoryLabel: "TacClips & Studio Pro",
-        question: "Apa itu Studio Clipper Pro dan apa kegunaannya?",
-        answer: '<strong class="text-blue-400 font-mono">Studio Clipper Pro</strong> adalah studio khusus yang dirancang bagi perwira dan editor resmi untuk memotong, mengedit, serta memproses cuplikan video siaran YouTube secara presisi.<br/><br/>Melalui studio ini, tim media dapat mengolah cuplikan momen patroli menjadi konten berkualitas tinggi untuk publikasi komunitas.',
-    },
-    {
-        id: 15,
-        code: "SOP-CLIP-04",
-        category: "CLIPS",
-        categoryLabel: "TacClips & Studio Pro",
-        question: "Mengapa tombol Akses Studio Clipper bertanda gembok (🔒) dan terkunci?",
-        answer: 'Untuk menjaga kualitas dan keamanan operasional, akses penuh ke fitur Studio Clipper Pro **dibatasi khusus untuk akun berizin (Role Clipper / Admin)**.<br/><br/>Jika Anda belum memiliki role yang diizinkan, tombol akan menampilkan tanda gembok <code class="bg-slate-950 px-1.5 py-0.5 rounded text-amber-400 border border-amber-900/60 font-mono">🔒</code>. Jika Anda adalah editor konten atau perwira yang berminat menjadi Clipper resmi IME Police, Anda dapat mengajukan permohonan role melalui halaman <a href="/feedback" class="text-blue-400 font-mono underline font-semibold hover:text-blue-300 transition">Feedback & Support</a>.',
-    },
-];
+// Comprehensive IME Police SOP & FAQ Data (Multi-language Data Modules)
+const faqs = computed(() => (locale.value === "en" ? faqsEn : faqsId));
 
 // Categories configuration with dedicated SVG icons
 const categories = [
@@ -295,26 +160,22 @@ const highlightKeyword = (text) => {
                 <div
                     class="inline-flex items-center space-x-2 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300"
                 >
-                    <span
-                        class="w-2 h-2 rounded-full bg-blue-400"
-                    ></span>
+                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                     <span
                         >DISPATCH MANUAL v{{ appVersion }} •
-                        {{ faqs.length }} DOKUMEN SOP</span
+                        {{ faqs.length }} {{ $t("faq.sop_count") }}</span
                     >
                 </div>
 
                 <h1
                     class="text-3xl sm:text-4xl md:text-5xl font-tactical font-extrabold uppercase text-slate-100 tracking-wider leading-tight sm:leading-tight"
                 >
-                    PANDUAN OPERASIONAL &
-                    <span class="text-blue-400">FAQS</span>
+                    {{ $t("faq.title") }}
                 </h1>
                 <p
                     class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed font-sans"
                 >
-                    Temukan panduan taktis, alokasi frekuensi radio, solusi
-                    kendala teknis bodycam, dan regulasi pendaftaran perwira.
+                    {{ $t("faq.subtitle") }}
                 </p>
 
                 <!-- Search Field -->
@@ -340,7 +201,7 @@ const highlightKeyword = (text) => {
                         <input
                             v-model="searchQuery"
                             type="text"
-                            placeholder="Ketik kata kunci (contoh: #imepolice, Focus Mode, TAC Radio)..."
+                            :placeholder="$t('faq.search_placeholder')"
                             class="w-full bg-transparent border-0 border-none ring-0 focus:ring-0 focus:outline-none focus:border-none shadow-none px-3.5 py-2 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-slate-500"
                         />
                         <button
@@ -691,7 +552,11 @@ const highlightKeyword = (text) => {
                                     <svg
                                         v-if="cat.icon === 'grid'"
                                         class="w-4 h-4 shrink-0"
-                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
+                                        :class="
+                                            activeCategory === cat.id
+                                                ? 'text-white'
+                                                : 'text-blue-400'
+                                        "
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -706,7 +571,11 @@ const highlightKeyword = (text) => {
                                     <svg
                                         v-else-if="cat.icon === 'video'"
                                         class="w-4 h-4 shrink-0"
-                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
+                                        :class="
+                                            activeCategory === cat.id
+                                                ? 'text-white'
+                                                : 'text-blue-400'
+                                        "
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -721,7 +590,11 @@ const highlightKeyword = (text) => {
                                     <svg
                                         v-else-if="cat.icon === 'cut'"
                                         class="w-4 h-4 shrink-0"
-                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
+                                        :class="
+                                            activeCategory === cat.id
+                                                ? 'text-white'
+                                                : 'text-blue-400'
+                                        "
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -736,7 +609,11 @@ const highlightKeyword = (text) => {
                                     <svg
                                         v-else-if="cat.icon === 'radio'"
                                         class="w-4 h-4 shrink-0"
-                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
+                                        :class="
+                                            activeCategory === cat.id
+                                                ? 'text-white'
+                                                : 'text-blue-400'
+                                        "
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -751,7 +628,11 @@ const highlightKeyword = (text) => {
                                     <svg
                                         v-else-if="cat.icon === 'user'"
                                         class="w-4 h-4 shrink-0"
-                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
+                                        :class="
+                                            activeCategory === cat.id
+                                                ? 'text-white'
+                                                : 'text-blue-400'
+                                        "
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -766,7 +647,11 @@ const highlightKeyword = (text) => {
                                     <svg
                                         v-else-if="cat.icon === 'wrench'"
                                         class="w-4 h-4 shrink-0"
-                                        :class="activeCategory === cat.id ? 'text-white' : 'text-blue-400'"
+                                        :class="
+                                            activeCategory === cat.id
+                                                ? 'text-white'
+                                                : 'text-blue-400'
+                                        "
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"

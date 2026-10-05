@@ -1,0 +1,154 @@
+{
+  "common": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "search": "Cari...",
+    "syncing": "Menyingkronkan...",
+    "sync_live_feeds": "Singkronkan Siaran Live",
+    "all_units": "Semua Unit",
+    "departments": "Departemen"
+  },
+  "dashboard": {
+    "title": "IME RP — SASP Police Duty | Live Officer Bodycam & Discovery Hub",
+    "active_officers": "Perwira Siaga: {count} Unit",
+    "hero_description": "Pusat pemantauan taktis & live streaming bodycam perwira di lapangan. Pantau seluruh tayangan YouTube live stream petugas LSPD, BCSO, SASP, dan SAPR secara bersamaan dalam mode multiview interaktif.",
+    "btn_open_multi_bodycam": "Buka Multi-Bodycam",
+    "btn_explore_feeds": "Jelajahi Feed Bodycam",
+    "grid_monitor": "SAN ANDREAS GRID MONITOR",
+    "live_metrics": "METRIK LIVE",
+    "on_duty_feeds": "FEED BODYCAM AKTIF",
+    "active": "Aktif",
+    "divisions": "Divisi",
+    "total_officers": "TOTAL PERWIRA",
+    "officers_unit": "Perwira",
+    "replay_archive": "ARSIP & REPLAY",
+    "videos_unit": "Video",
+    "transmission_feed": "TRANSMISI SIARAN",
+    "transmission_log": "[DISPATCH]: Stream bodycam terhubung. Beralih ke Multiview Theater untuk tampilan grid tersinkronisasi."
+  },
+  "multiview": {
+    "title_default": "Multiview (10-8 Live Officer Feeds) – IME RP Multiview",
+    "title_watching": "Menonton: {officer} ({dept}) – IME RP Multiview",
+    "title_category": "Kategori: {category} – IME RP Multiview",
+    "title_search": "Cari: {query} – IME RP Multiview",
+    "watchlist": "Watchlist",
+    "tac_channel": "Channel TAC",
+    "tac_active": "Radio TAC Aktif",
+    "theater_mode": "Theater Mode",
+    "data_saver": "Saver Mode",
+    "all_units": "All Units"
+  },
+  "leaderboard": {
+    "title": "Top Streamer of IME Police",
+    "subtitle": "Apresiasi tertinggi bagi para penegak hukum Los Santos yang paling loyal meluangkan jam streaming patroli di YouTube. Jam tayang dihitung otomatis berdasarkan akumulasi durasi siaran status 10-8 (On Duty) bulan ini.",
+    "rank_1_gold": "#1 CHIEF OF ON-AIR",
+    "rank_2_silver": "RANK #2 SILVER",
+    "rank_3_bronze": "RANK #3 BRONZE",
+    "badge_gold": "EMAS",
+    "status_live": "10-8 LIVE STREAMING",
+    "status_live_viewers": "10-8 LIVE PATROLI ({count})",
+    "status_standby": "10-7 STANDBY",
+    "total_duration": "Total Durasi Patroli:",
+    "record_duration": "Rekor Jam Siaran:",
+    "average": "Rata-rata: {avg}",
+    "percent_from_top": "{percent}% dari #1",
+    "peak_top": "100% Puncak",
+    "watch_live": "Tonton Siaran",
+    "youtube_channel": "Kanal YouTube",
+    "reset_cycle": "Siklus Reset: {days} Hari Lagi"
+  },
+  "stream_slimles": {
+    "dispatch_feed_title": "DISPATCH FEED: PATROLI LIVE & REKAMAN",
+    "dispatch_feed_subtitle": "Saluran pemantauan gabungan siaran langsung 10-8 (On Duty) dan arsip rekaman patroli perwira San Andreas.",
+    "all_filter": "Semuanya ({count})",
+    "live_filter": "Live ({count})",
+    "replay_filter": "Rekaman ({count})",
+    "showing_count": "Menampilkan {count} Tayangan Patroli",
+    "empty_title": "Tidak ada siaran atau rekaman patroli yang ditemukan.",
+    "empty_subtitle": "Coba ubah filter atau tekan tombol Sync Live Feeds."
+  },
+  "sub_support": {
+    "badge_title": "ROAD TO 1,000 SUBS",
+    "subtitle": "Dukung perwira aktif San Andreas mencapai milestone 1k Subscribers yang aktif live dalam 3 hari terakhir. Pencapaian 1,000 subscriber dapat membantu officer dalam hal monetisasi dan mendapatkan fitur youtube yang lebih lengkap.",
+    "active_list_title": "DAFTAR PERWIRA AKTIF (< 1K SUBS)",
+    "live_3_days": "LIVE 3 HARI TERAKHIR",
+    "showing_officers": "Menampilkan {count} perwira aktif",
+    "view_all_officers": "Lihat Semua Perwira",
+    "support_btn": "Support",
+    "feature_active_officers": "Perwira Aktif",
+    "feature_active_officers_desc": "Aktif live streaming dalam 3 hari terakhir",
+    "feature_community_support": "Dukungan Komunitas Gratis",
+    "feature_community_support_desc": "1-klik untuk buka YouTube perwira."
+  },
+  "visibility_panel": {
+    "title": "KELOLA TAMPILAN PERWIRA",
+    "shown": "Tampil",
+    "hidden": "Disembunyikan",
+    "priority": "Prioritas",
+    "search_placeholder": "Cari perwira, callsign, departemen...",
+    "reset": "↺ Reset",
+    "all_depts": "Semua Dept",
+    "no_officers_found": "Tidak ada perwira yang sesuai dengan pencarian."
+  },
+  "directory": {
+    "title": "DIREKTORI PERWIRA SAN ANDREAS",
+    "subtitle": "Katalog resmi seluruh personil penegak hukum LSPD, BCSO, SASP, dan SAPR terdaftar di komunitas IME Roleplay.",
+    "search_placeholder": "Cari nama perwira, callsign, atau badge...",
+    "filter_all": "Semua Unit",
+    "filter_live": "10-8 Live Only",
+    "status_online": "10-8 Live Patrol",
+    "status_offline": "10-7 Standby / Off Duty",
+    "add_officer": "Tambah Perwira Baru",
+    "total_officers": "Total Perwira",
+    "active_now": "10-8 Live Patroli"
+  },
+  "feedback": {
+    "title": "PUSAT UMPAN BALIK & LAPORAN BUG",
+    "subtitle": "Bantu kami memperkuat platform IME RP Police Duty Terminal. Laporkan kendala teknis, typo dokumen, atau ajukan usulan fitur baru.",
+    "cat_bug": "Laporan Bug",
+    "cat_typo": "Koreksi Data / Typo",
+    "cat_feature": "Usulan Fitur Baru",
+    "cat_other": "Lainnya",
+    "sender_name": "Nama Pengirim",
+    "sender_name_ph": "Nama / Callsign Anda...",
+    "email": "Alamat Email",
+    "email_ph": "nama@email.com",
+    "submit": "Kirim Laporan",
+    "submitting": "Mengirim...",
+    "success_toast": "Terima kasih! Laporan umpan balik Anda telah berhasil terkirim."
+  },
+  "faq": {
+    "title": "PANDUAN OPERASIONAL & FAQS",
+    "subtitle": "Temukan panduan taktis, alokasi frekuensi radio, solusi kendala teknis bodycam, dan regulasi pendaftaran perwira.",
+    "search_placeholder": "Ketik kata kunci (contoh: #imepolice, Focus Mode, TAC Radio)...",
+    "quick_keywords": "Kata Kunci Cepat:",
+    "sop_count": "DOKUMEN SOP",
+    "search_results": "Hasil pencarian: {query} ({count} dokumen)",
+    "showing_count": "Menampilkan {count} dokumen SOP"
+  },
+  "about": {
+    "title": "TENTANG PLATFORM",
+    "hero_statement": "Membangun pusat pemantauan patroli yang tidak membuang waktu Anda.",
+    "hero_description": "Platform ini lahir dari kebutuhan sederhana: menyediakan pusat pemantauan bodycam terintegrasi yang menghargai fokus penonton dan komando, memangkas friksi navigasi, dan memberikan pengalaman multiview tanpa hambatan.",
+    "badge_tag": "TENTANG PLATFORM"
+  },
+  "footer": {
+    "tagline": "IME RP Police Duty Multiview — Platform Pemantauan Taktis Bodycam Perwira",
+    "copyright": "© 2026 IME RP Police Duty. Hak cipta dilindungi.",
+    "disclaimer": "Platform ini dibuat untuk memperluas visibilitas streamer & perwira San Andreas."
+  },
+  "nav": {
+    "dashboard": "Beranda",
+    "multiview": "Multiview",
+    "directory": "Direktori Perwira",
+    "clips": "TacClips",
+    "updates": "Pembaruan",
+    "about": "Tentang",
+    "faq": "FAQ",
+    "feedback": "Feedback"
+  }
+}
+
+
+
+

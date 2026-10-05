@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 import iconSearch from "@/Components/Icons/search-svgrepo-com.svg";
+
+const { t } = useI18n();
 
 const props = defineProps({
     isOpen: {
@@ -203,14 +206,14 @@ const disableAllOffline = () => {
                                 </div>
                                 <div class="min-w-0">
                                     <h3 class="text-sm font-bold text-slate-100 tracking-tight uppercase flex items-center gap-2">
-                                        <span>KELOLA TAMPILAN PERWIRA</span>
+                                        <span>{{ $t("visibility_panel.title") }}</span>
                                     </h3>
                                     <p class="text-[11px] font-mono text-slate-400 truncate flex items-center gap-1.5">
-                                        <span class="text-emerald-400 font-semibold">{{ activeCount }} Tampil</span>
+                                        <span class="text-emerald-400 font-semibold">{{ activeCount }} {{ $t("visibility_panel.shown") }}</span>
                                         <span>•</span>
-                                        <span class="text-rose-400 font-semibold">{{ disabledCount }} Disembunyikan</span>
+                                        <span class="text-rose-400 font-semibold">{{ disabledCount }} {{ $t("visibility_panel.hidden") }}</span>
                                         <span>•</span>
-                                        <span class="text-amber-400 font-semibold">{{ (customStreamOrder || []).length }} Prioritas</span>
+                                        <span class="text-amber-400 font-semibold">{{ (customStreamOrder || []).length }} {{ $t("visibility_panel.priority") }}</span>
                                     </p>
                                 </div>
                             </div>
@@ -234,7 +237,7 @@ const disableAllOffline = () => {
                                     <input
                                         v-model="searchQuery"
                                         type="text"
-                                        placeholder="Cari perwira, callsign, departemen..."
+                                        :placeholder="$t('visibility_panel.search_placeholder')"
                                         class="w-full bg-slate-950 border border-slate-800 rounded-md pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-700 font-mono"
                                     />
                                     <img
@@ -257,7 +260,7 @@ const disableAllOffline = () => {
                                     class="px-3 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-800 hover:border-slate-700 font-mono text-[11px] font-semibold transition-colors shrink-0 cursor-pointer flex items-center gap-1"
                                     title="Tampilkan Kembali Semua Perwira"
                                 >
-                                    <span>↺ Reset</span>
+                                    <span>{{ $t("visibility_panel.reset") }}</span>
                                 </button>
                             </div>
 
@@ -274,7 +277,7 @@ const disableAllOffline = () => {
                                             : 'bg-slate-900 text-slate-400 hover:text-slate-200 border-slate-800'
                                     ]"
                                 >
-                                    {{ dept === 'ALL' ? 'Semua Dept' : dept }}
+                                    {{ dept === 'ALL' ? $t("visibility_panel.all_depts") : dept }}
                                 </button>
                             </div>
                         </div>
@@ -285,7 +288,7 @@ const disableAllOffline = () => {
                                 v-if="filteredOfficersList.length === 0"
                                 class="p-8 text-center text-slate-500 font-mono text-xs"
                             >
-                                Tidak ada perwira yang sesuai dengan pencarian.
+                                {{ $t("visibility_panel.no_officers_found") }}
                             </div>
 
                             <div

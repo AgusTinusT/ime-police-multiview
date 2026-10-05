@@ -1,11 +1,18 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
+import { useI18n } from "vue-i18n";
 import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
 import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
 import iconFocus from "@/Components/Icons/focus-point-round-844-svgrepo-com.svg";
 import iconRoster from "@/Components/Icons/doc-svgrepo-com.svg";
 import iconFeedback from "@/Components/Icons/report-svgrepo-com.svg";
 import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
+
+const { t, locale } = useI18n();
+
+const toggleLanguage = () => {
+    locale.value = locale.value === "id" ? "en" : "id";
+};
 </script>
 
 <template>
@@ -43,9 +50,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                     <p
                         class="text-xs text-slate-400 leading-relaxed max-w-md font-mono"
                     >
-                        Platform pemantauan CCTV bodycam petugas kepolisian
-                        (LSPD, BCSO, SASP, SAPR) untuk komunitas IME Roleplay
-                        Indonesia.
+                        {{ $t("footer.tagline") }}
                     </p>
                 </div>
 
@@ -67,7 +72,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                                     class="w-3.5 h-3.5 invert opacity-80"
                                     alt=""
                                 />
-                                <span>Multiview</span>
+                                <span>{{ $t("nav.multiview") }}</span>
                             </Link>
                         </li>
                         <li>
@@ -80,7 +85,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                                     class="w-3.5 h-3.5 invert opacity-80"
                                     alt=""
                                 />
-                                <span>Officers</span>
+                                <span>{{ $t("nav.directory") }}</span>
                             </Link>
                         </li>
                         <li>
@@ -93,7 +98,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                                     class="w-3.5 h-3.5 invert opacity-80"
                                     alt=""
                                 />
-                                <span>FAQ</span>
+                                <span>{{ $t("nav.faq") }}</span>
                             </Link>
                         </li>
                         <li>
@@ -106,7 +111,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                                     class="w-3.5 h-3.5 invert opacity-80"
                                     alt=""
                                 />
-                                <span>About</span>
+                                <span>{{ $t("nav.about") }}</span>
                             </Link>
                         </li>
                         <li class="col-span-2">
@@ -119,23 +124,33 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                                     class="w-3.5 h-3.5 invert opacity-90"
                                     alt=""
                                 />
-                                <span>Feedback</span>
+                                <span>{{ $t("nav.feedback") }}</span>
                             </Link>
                         </li>
                     </ul>
                 </div>
 
-                <!-- Legal / Roleplay Disclaimer (Cols 9-12) -->
-                <div class="md:col-span-3 space-y-2">
+                <!-- Legal / Language Switcher (Cols 9-12) -->
+                <div class="md:col-span-3 space-y-3">
                     <h4
                         class="text-xs font-mono font-bold uppercase tracking-wider text-slate-400"
                     >
-                        Disklaimer Komunitas
+                        Bahasa / Language
                     </h4>
+                    <!-- Language Switcher Button -->
+                    <button
+                        @click="toggleLanguage"
+                        class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono font-bold text-slate-200 transition flex items-center gap-2 cursor-pointer shadow-sm"
+                    >
+                        <span class="text-sm">{{ locale === 'id' ? '🇮🇩' : '🇬🇧' }}</span>
+                        <span>{{ locale === 'id' ? 'Bahasa Indonesia' : 'English' }}</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 font-mono">
+                            {{ locale.toUpperCase() }}
+                        </span>
+                    </button>
+
                     <p class="text-[11px] text-slate-500 leading-normal">
-                        Platform fan-made independen non-komersial. Seluruh
-                        konten siaran langsung dan rekaman merupakan hak cipta
-                        masing-masing streamer GTA V Roleplay.
+                        {{ $t("footer.disclaimer") }}
                     </p>
                 </div>
             </div>
@@ -145,8 +160,7 @@ import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
                 class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 pt-2"
             >
                 <p class="font-medium text-slate-300">
-                    © {{ new Date().getFullYear() }} IME Roleplay — SASP Police
-                    Duty
+                    {{ $t("footer.copyright") }}
                 </p>
                 <p class="text-[11px] text-slate-400 font-mono">
                     Developed with ❤️ by

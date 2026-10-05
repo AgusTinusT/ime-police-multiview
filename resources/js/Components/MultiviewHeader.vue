@@ -1,5 +1,6 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
+import { useI18n } from "vue-i18n";
 
 // SVG Icon Assets & Branding Logos
 import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
@@ -14,6 +15,12 @@ import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
 // Sub-components
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
+
+const { t, locale } = useI18n();
+
+const toggleLanguage = () => {
+    locale.value = locale.value === "id" ? "en" : "id";
+};
 
 const props = defineProps({
     selectedDepartment: {
@@ -76,7 +83,9 @@ const getDeptCount = (deptId) => {
     <header
         class="w-full bg-slate-950 border-b border-slate-800 sticky top-0 z-40 py-2.5 sm:py-3"
     >
-        <div class="max-w-screen-2xl mx-auto w-full px-3 sm:px-4 lg:px-8 flex items-center justify-between gap-3 text-slate-100">
+        <div
+            class="max-w-screen-2xl mx-auto w-full px-3 sm:px-4 lg:px-8 flex items-center justify-between gap-3 text-slate-100"
+        >
             <!-- LEFT BRANDING: Police Duty (Navigates to Dashboard) -->
             <Link
                 href="/"
@@ -107,22 +116,31 @@ const getDeptCount = (deptId) => {
             </Link>
 
             <!-- CENTER CATEGORIES (Desktop: Clean Transparent Inactive + Hover Reveal Slate + Active Primary) -->
-            <nav class="hidden md:flex items-center space-x-1.5 overflow-x-auto scrollbar-none px-1 py-0.5">
+            <nav
+                class="hidden md:flex items-center space-x-1.5 overflow-x-auto scrollbar-none px-1 py-0.5"
+            >
                 <button
                     @click="emit('update:selectedDepartment', 'ALL')"
                     :class="[
                         'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border group',
                         selectedDepartment === 'ALL'
                             ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80'
+                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80',
                     ]"
                 >
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>All Units</span>
                     <span
-                        :class="selectedDepartment === 'ALL' ? 'bg-blue-700/80 text-white' : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'"
+                        class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
+                    ></span>
+                    <span>{{ $t("multiview.all_units") }}</span>
+                    <span
+                        :class="
+                            selectedDepartment === 'ALL'
+                                ? 'bg-blue-700/80 text-white'
+                                : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
+                        "
                         class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
-                    >{{ getDeptCount('ALL') }}</span>
+                        >{{ getDeptCount("ALL") }}</span
+                    >
                 </button>
 
                 <button
@@ -131,15 +149,23 @@ const getDeptCount = (deptId) => {
                         'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border group',
                         selectedDepartment === 'LSPD'
                             ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80'
+                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80',
                     ]"
                 >
-                    <img :src="iconLspd" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
+                    <img
+                        :src="iconLspd"
+                        class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90"
+                    />
                     <span>LSPD</span>
                     <span
-                        :class="selectedDepartment === 'LSPD' ? 'bg-blue-700/80 text-white' : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'"
+                        :class="
+                            selectedDepartment === 'LSPD'
+                                ? 'bg-blue-700/80 text-white'
+                                : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
+                        "
                         class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
-                    >{{ getDeptCount('LSPD') }}</span>
+                        >{{ getDeptCount("LSPD") }}</span
+                    >
                 </button>
 
                 <button
@@ -148,15 +174,23 @@ const getDeptCount = (deptId) => {
                         'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border group',
                         selectedDepartment === 'BCSO'
                             ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80'
+                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80',
                     ]"
                 >
-                    <img :src="iconBcso" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
+                    <img
+                        :src="iconBcso"
+                        class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90"
+                    />
                     <span>BCSO</span>
                     <span
-                        :class="selectedDepartment === 'BCSO' ? 'bg-blue-700/80 text-white' : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'"
+                        :class="
+                            selectedDepartment === 'BCSO'
+                                ? 'bg-blue-700/80 text-white'
+                                : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
+                        "
                         class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
-                    >{{ getDeptCount('BCSO') }}</span>
+                        >{{ getDeptCount("BCSO") }}</span
+                    >
                 </button>
 
                 <button
@@ -165,15 +199,23 @@ const getDeptCount = (deptId) => {
                         'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border group',
                         selectedDepartment === 'SASP'
                             ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80'
+                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80',
                     ]"
                 >
-                    <img :src="iconSasp" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
+                    <img
+                        :src="iconSasp"
+                        class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90"
+                    />
                     <span>SASP</span>
                     <span
-                        :class="selectedDepartment === 'SASP' ? 'bg-blue-700/80 text-white' : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'"
+                        :class="
+                            selectedDepartment === 'SASP'
+                                ? 'bg-blue-700/80 text-white'
+                                : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
+                        "
                         class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
-                    >{{ getDeptCount('SASP') }}</span>
+                        >{{ getDeptCount("SASP") }}</span
+                    >
                 </button>
 
                 <button
@@ -182,32 +224,59 @@ const getDeptCount = (deptId) => {
                         'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border group',
                         selectedDepartment === 'SAPR'
                             ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80'
+                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80',
                     ]"
                 >
-                    <img :src="iconSapr" class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90" />
+                    <img
+                        :src="iconSapr"
+                        class="w-3.5 h-3.5 object-contain brightness-0 invert opacity-90"
+                    />
                     <span>SAPR</span>
                     <span
-                        :class="selectedDepartment === 'SAPR' ? 'bg-blue-700/80 text-white' : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'"
+                        :class="
+                            selectedDepartment === 'SAPR'
+                                ? 'bg-blue-700/80 text-white'
+                                : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
+                        "
                         class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
-                    >{{ getDeptCount('SAPR') }}</span>
+                        >{{ getDeptCount("SAPR") }}</span
+                    >
                 </button>
 
                 <button
-                    @click="emit('update:selectedDepartment', selectedDepartment.startsWith('TAC_') ? 'ALL' : 'TAC_1')"
+                    @click="
+                        emit(
+                            'update:selectedDepartment',
+                            selectedDepartment.startsWith('TAC_')
+                                ? 'ALL'
+                                : 'TAC_1',
+                        )
+                    "
                     :class="[
                         'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border group',
                         selectedDepartment.startsWith('TAC_')
                             ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80'
+                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80',
                     ]"
                 >
-                    <img :src="iconRadio" class="w-3.5 h-3.5 invert opacity-90" />
-                    <span>{{ selectedDepartment.startsWith('TAC_') ? selectedDepartment.replace('_', ' ') : 'TAC' }}</span>
+                    <img
+                        :src="iconRadio"
+                        class="w-3.5 h-3.5 invert opacity-90"
+                    />
+                    <span>{{
+                        selectedDepartment.startsWith("TAC_")
+                            ? selectedDepartment.replace("_", " ")
+                            : "TAC"
+                    }}</span>
                     <span
-                        :class="selectedDepartment.startsWith('TAC_') ? 'bg-blue-700/80 text-white' : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'"
+                        :class="
+                            selectedDepartment.startsWith('TAC_')
+                                ? 'bg-blue-700/80 text-white'
+                                : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
+                        "
                         class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
-                    >{{ getDeptCount('TAC') }}</span>
+                        >{{ getDeptCount("TAC") }}</span
+                    >
                 </button>
 
                 <button
@@ -216,27 +285,54 @@ const getDeptCount = (deptId) => {
                         'px-3 py-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer rounded-lg border group',
                         selectedDepartment === 'PERSONAL'
                             ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80'
+                            : 'bg-transparent text-slate-400 border-transparent hover:bg-slate-900/80 hover:text-slate-200 hover:border-slate-800/80',
                     ]"
                 >
-                    <img :src="iconPersonal" class="w-3.5 h-3.5 invert opacity-90" />
-                    <span>Watchlist</span>
+                    <img
+                        :src="iconPersonal"
+                        class="w-3.5 h-3.5 invert opacity-90"
+                    />
+                    <span>{{ $t("multiview.watchlist") }}</span>
                     <span
-                        :class="selectedDepartment === 'PERSONAL' ? 'bg-blue-700/80 text-white' : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'"
+                        :class="
+                            selectedDepartment === 'PERSONAL'
+                                ? 'bg-blue-700/80 text-white'
+                                : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
+                        "
                         class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
-                    >{{ getDeptCount('PERSONAL') }}</span>
+                        >{{ getDeptCount("PERSONAL") }}</span
+                    >
                 </button>
             </nav>
 
             <!-- RIGHT AREA: Action Controls & User Avatar -->
             <div class="flex items-center space-x-2 shrink-0">
+                <!-- Language Switcher Pill -->
+                <button
+                    @click="toggleLanguage"
+                    class="h-8 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-mono font-bold text-slate-200 transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    :title="`Beralih Bahasa / Switch Language (${locale === 'id' ? 'English' : 'Bahasa Indonesia'})`"
+                >
+                    <span class="text-xs">{{ locale === 'id' ? '🇮🇩 ID' : '🇬🇧 EN' }}</span>
+                </button>
+
                 <Link
                     href="/action-clips"
                     class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer shadow-sm"
                     title="Buka TacClips — Galeri Momen Aksi Kepolisian"
                 >
-                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    <svg
+                        class="w-3.5 h-3.5 text-blue-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
                     </svg>
                     <span class="hidden sm:inline">TacClips</span>
                 </Link>
@@ -254,11 +350,15 @@ const getDeptCount = (deptId) => {
                     'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
                     selectedDepartment === 'ALL'
                         ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800',
                 ]"
             >
                 <span>ALL</span>
-                <span v-if="selectedDepartment === 'ALL'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('ALL') }}</span>
+                <span
+                    v-if="selectedDepartment === 'ALL'"
+                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount("ALL") }}</span
+                >
             </button>
 
             <button
@@ -267,11 +367,15 @@ const getDeptCount = (deptId) => {
                     'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
                     selectedDepartment === 'LSPD'
                         ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800',
                 ]"
             >
                 <span>LSPD</span>
-                <span v-if="selectedDepartment === 'LSPD'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('LSPD') }}</span>
+                <span
+                    v-if="selectedDepartment === 'LSPD'"
+                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount("LSPD") }}</span
+                >
             </button>
 
             <button
@@ -280,11 +384,15 @@ const getDeptCount = (deptId) => {
                     'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
                     selectedDepartment === 'BCSO'
                         ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800',
                 ]"
             >
                 <span>BCSO</span>
-                <span v-if="selectedDepartment === 'BCSO'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('BCSO') }}</span>
+                <span
+                    v-if="selectedDepartment === 'BCSO'"
+                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount("BCSO") }}</span
+                >
             </button>
 
             <button
@@ -293,11 +401,15 @@ const getDeptCount = (deptId) => {
                     'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
                     selectedDepartment === 'SASP'
                         ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800',
                 ]"
             >
                 <span>SASP</span>
-                <span v-if="selectedDepartment === 'SASP'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('SASP') }}</span>
+                <span
+                    v-if="selectedDepartment === 'SASP'"
+                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount("SASP") }}</span
+                >
             </button>
 
             <button
@@ -306,24 +418,37 @@ const getDeptCount = (deptId) => {
                     'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
                     selectedDepartment === 'SAPR'
                         ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800',
                 ]"
             >
                 <span>SAPR</span>
-                <span v-if="selectedDepartment === 'SAPR'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('SAPR') }}</span>
+                <span
+                    v-if="selectedDepartment === 'SAPR'"
+                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount("SAPR") }}</span
+                >
             </button>
 
             <button
-                @click="emit('update:selectedDepartment', selectedDepartment.startsWith('TAC_') ? 'ALL' : 'TAC_1')"
+                @click="
+                    emit(
+                        'update:selectedDepartment',
+                        selectedDepartment.startsWith('TAC_') ? 'ALL' : 'TAC_1',
+                    )
+                "
                 :class="[
                     'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
                     selectedDepartment.startsWith('TAC_')
                         ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800',
                 ]"
             >
                 <span>TAC</span>
-                <span v-if="selectedDepartment.startsWith('TAC_')" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('TAC') }}</span>
+                <span
+                    v-if="selectedDepartment.startsWith('TAC_')"
+                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount("TAC") }}</span
+                >
             </button>
 
             <button
@@ -332,11 +457,15 @@ const getDeptCount = (deptId) => {
                     'px-3 py-1 text-xs font-mono uppercase font-bold transition shrink-0 cursor-pointer rounded-lg border flex items-center gap-1.5',
                     selectedDepartment === 'PERSONAL'
                         ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
-                        : 'bg-slate-900/80 text-slate-400 border-slate-800'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800',
                 ]"
             >
                 <span>WATCHLIST</span>
-                <span v-if="selectedDepartment === 'PERSONAL'" class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold">{{ getDeptCount('PERSONAL') }}</span>
+                <span
+                    v-if="selectedDepartment === 'PERSONAL'"
+                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    >{{ getDeptCount("PERSONAL") }}</span
+                >
             </button>
         </div>
     </header>

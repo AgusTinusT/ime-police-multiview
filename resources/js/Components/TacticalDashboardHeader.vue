@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { usePage, Link } from "@inertiajs/vue3";
+import { useI18n } from "vue-i18n";
 
 // SVG Icon Assets & Branding Logos
 import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
@@ -8,6 +9,12 @@ import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
 // Sub-components
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
+
+const { t, locale } = useI18n();
+
+const toggleLanguage = () => {
+    locale.value = locale.value === "id" ? "en" : "id";
+};
 
 defineProps({
     isDataSaverEnabled: {
@@ -132,7 +139,7 @@ onUnmounted(() => {
                         ]"
                         title="Home Discovery Hub"
                     >
-                        <span>Home</span>
+                        <span>{{ $t("nav.dashboard") }}</span>
                     </Link>
 
                     <Link
@@ -145,7 +152,7 @@ onUnmounted(() => {
                         ]"
                         title="Stand-alone Multiview Stage"
                     >
-                        <span>Multiview</span>
+                        <span>{{ $t("nav.multiview") }}</span>
                     </Link>
 
                     <Link
@@ -158,7 +165,7 @@ onUnmounted(() => {
                         ]"
                         title="TacClips — Kumpulan Klip Momen Aksi Kepolisian"
                     >
-                        <span>TacClips</span>
+                        <span>{{ $t("nav.clips") }}</span>
                     </Link>
 
                     <Link
@@ -171,7 +178,7 @@ onUnmounted(() => {
                         ]"
                         title="Officers"
                     >
-                        <span>Officers</span>
+                        <span>{{ $t("nav.directory") }}</span>
                     </Link>
 
                     <Link
@@ -184,7 +191,7 @@ onUnmounted(() => {
                         ]"
                         title="About"
                     >
-                        <span>About</span>
+                        <span>{{ $t("nav.about") }}</span>
                     </Link>
 
                     <Link
@@ -197,7 +204,7 @@ onUnmounted(() => {
                         ]"
                         title="FAQ"
                     >
-                        FAQ
+                        {{ $t("nav.faq") }}
                     </Link>
 
                     <Link
@@ -210,13 +217,21 @@ onUnmounted(() => {
                         ]"
                         title="Feedback"
                     >
-                        Feedback
+                        {{ $t("nav.feedback") }}
                     </Link>
                 </nav>
             </div>
 
-            <!-- Right Area: Stream Controls & User Account Menu -->
+            <!-- Right Area: Language Switcher & User Account Menu -->
             <div class="flex items-center space-x-2 shrink-0">
+                <button
+                    @click="toggleLanguage"
+                    class="h-8 px-2.5 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-mono font-bold text-slate-200 transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    :title="`Beralih Bahasa / Switch Language (${locale === 'id' ? 'English' : 'Bahasa Indonesia'})`"
+                >
+                    <span class="text-xs">{{ locale === 'id' ? '🇮🇩 ID' : '🇬🇧 EN' }}</span>
+                </button>
+
                 <UserAccountMenu />
             </div>
         </div>

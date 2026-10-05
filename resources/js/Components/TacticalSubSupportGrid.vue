@@ -1,22 +1,31 @@
 <script setup>
 import { ref, computed } from "vue";
 import { Link } from "@inertiajs/vue3";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps({
     title: {
         type: String,
-        default: "ROAD TO 1,000 SUBS",
+        default: "",
     },
     subtitle: {
         type: String,
-        default:
-            "Dukung perwira aktif San Andreas mencapai milestone 1k Subscribers yang aktif live dalam 3 hari terakhir.",
+        default: "",
     },
     officers: {
         type: Array,
         default: () => null,
     },
 });
+
+const displayTitle = computed(
+    () => props.title || t("sub_support.badge_title"),
+);
+const displaySubtitle = computed(
+    () => props.subtitle || t("sub_support.subtitle"),
+);
 
 // Standardized Department Color Badges Function
 const getDeptBadgeClass = (dept) => {
@@ -195,13 +204,13 @@ const openChannel = (url) => {
                             <h3
                                 class="text-xs font-mono font-semibold text-slate-200 uppercase tracking-wider"
                             >
-                                DAFTAR PERWIRA AKTIF (&lt; 1K SUBS)
+                                {{ $t("sub_support.active_list_title") }}
                             </h3>
                         </div>
                         <span
                             class="hidden sm:inline-block text-[11px] font-mono text-blue-400 bg-blue-950/70 px-2 py-0.5 rounded border border-blue-800/80 font-medium"
                         >
-                            LIVE 3 HARI TERAKHIR
+                            {{ $t("sub_support.live_3_days") }}
                         </span>
                     </div>
 
@@ -275,7 +284,7 @@ const openChannel = (url) => {
                                         d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
                                     />
                                 </svg>
-                                <span>Support</span>
+                                <span>{{ $t("sub_support.support_btn") }}</span>
                             </button>
                         </div>
                     </div>
@@ -298,17 +307,19 @@ const openChannel = (url) => {
                                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
                                 />
                             </svg>
-                            <span
-                                >Menampilkan
-                                {{ displayedOfficers.length }} perwira
-                                aktif</span
-                            >
+                            <span>{{
+                                $t("sub_support.showing_officers", {
+                                    count: displayedOfficers.length,
+                                })
+                            }}</span>
                         </span>
                         <Link
                             href="/officers?sort=subs_asc"
                             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-xs transition-colors group"
                         >
-                            <span>Lihat Semua Perwira</span>
+                            <span>{{
+                                $t("sub_support.view_all_officers")
+                            }}</span>
                             <span
                                 class="group-hover:translate-x-1 transition-transform"
                                 >→</span
@@ -337,17 +348,15 @@ const openChannel = (url) => {
                             class="text-xl font-bold text-slate-100 tracking-tight uppercase leading-tight"
                         >
                             IME POLICE OFFICER <br />
-                            <span class="text-blue-500"
-                                >ROAD TO 1,000 SUBS</span
-                            >
+                            <span class="text-blue-500">{{
+                                displayTitle
+                            }}</span>
                         </h2>
 
                         <p
                             class="text-slate-400 text-xs leading-relaxed font-sans font-normal"
                         >
-                            {{ subtitle }} Pencapaian 1,000 subscriber dapat
-                            membantu officer dalam hal monetisasi dan
-                            mendapatkan fitur youtube yang lebih lengkap.
+                            {{ displaySubtitle }}
                         </p>
                     </div>
 
@@ -372,12 +381,19 @@ const openChannel = (url) => {
                             <div>
                                 <strong
                                     class="text-slate-200 block font-sans text-xs"
-                                    >Perwira Aktif</strong
+                                    >{{
+                                        $t(
+                                            "sub_support.feature_active_officers",
+                                        )
+                                    }}</strong
                                 >
                                 <span
                                     class="text-slate-400 text-[10px] font-sans font-normal"
-                                    >Aktif live streaming dalam 3 hari
-                                    terakhir</span
+                                    >{{
+                                        $t(
+                                            "sub_support.feature_active_officers_desc",
+                                        )
+                                    }}</span
                                 >
                             </div>
                         </div>
@@ -401,11 +417,19 @@ const openChannel = (url) => {
                             <div>
                                 <strong
                                     class="text-slate-200 block font-sans text-xs"
-                                    >Dukungan Komunitas Gratis</strong
+                                    >{{
+                                        $t(
+                                            "sub_support.feature_community_support",
+                                        )
+                                    }}</strong
                                 >
                                 <span
                                     class="text-slate-400 text-[10px] font-sans font-normal"
-                                    >1-klik untuk buka YouTube perwira.</span
+                                    >{{
+                                        $t(
+                                            "sub_support.feature_community_support_desc",
+                                        )
+                                    }}</span
                                 >
                             </div>
                         </div>

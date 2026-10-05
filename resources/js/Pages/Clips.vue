@@ -1,11 +1,10 @@
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
-import { Head, Link, usePage } from "@inertiajs/vue3";
-import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import CustomVideoPlayer from "@/Components/CustomVideoPlayer.vue";
-import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
-import axios from "axios";
 import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
+import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
+import { Head, Link, usePage } from "@inertiajs/vue3";
+import axios from "axios";
+import { computed, defineProps, onMounted, onUnmounted, ref, watch } from "vue";
 
 const props = defineProps({
     officers: {

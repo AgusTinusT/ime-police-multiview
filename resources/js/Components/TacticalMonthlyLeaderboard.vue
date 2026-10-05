@@ -1,21 +1,26 @@
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps({
     title: {
         type: String,
-        default: "Top Streamer of IME Police",
+        default: "",
     },
     subtitle: {
         type: String,
-        default:
-            "Apresiasi tertinggi bagi para penegak hukum Los Santos yang paling loyal meluangkan jam streaming patroli di YouTube. Jam tayang dihitung otomatis berdasarkan akumulasi durasi siaran status 10-8 (On Duty) bulan ini.",
+        default: "",
     },
     leaderboard: {
         type: Object,
         default: () => null,
     },
 });
+
+const displayTitle = computed(() => props.title || t("leaderboard.title"));
+const displaySubtitle = computed(() => props.subtitle || t("leaderboard.subtitle"));
 
 const defaultTopStreamers = [
     {
@@ -118,7 +123,7 @@ const getDefaultResetCycleText = () => {
         0,
     ).getDate();
     const daysLeft = Math.max(1, totalDaysInMonth - now.getDate());
-    return `Siklus Reset: ${daysLeft} Hari Lagi`;
+    return t("leaderboard.reset_cycle", { days: daysLeft });
 };
 
 const periodText = computed(() => {
@@ -189,7 +194,7 @@ const openChannel = (url) => {
             <h2
                 class="text-xl sm:text-3xl lg:text-4xl font-bold text-slate-100 tracking-tight uppercase leading-tight"
             >
-                {{ title }}
+                {{ displayTitle }}
             </h2>
         </div>
 
@@ -646,7 +651,7 @@ const openChannel = (url) => {
                     />
                 </svg>
                 <p class="text-slate-400 leading-relaxed font-normal">
-                    {{ subtitle }}
+                    {{ displaySubtitle }}
                 </p>
             </div>
 
