@@ -17,18 +17,18 @@ const toggleLanguage = () => {
 
 <template>
     <footer
-        class="mt-auto bg-slate-950 border-t border-slate-800 text-slate-300 font-sans pt-8 pb-6 px-4 sm:px-6 lg:px-8"
+        class="mt-auto bg-tactical-base border-t border-tactical-border text-tactical-muted font-sans pt-8 pb-6 px-4 sm:px-6 lg:px-8"
     >
         <div class="max-w-screen-2xl mx-auto space-y-6">
             <!-- Top Footer Grid: Branding, Quick Navigation & System Status -->
             <div
-                class="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-slate-800"
+                class="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-tactical-border"
             >
                 <!-- Branding & Community Info (Cols 1-5) -->
                 <div class="md:col-span-5 space-y-3">
                     <div class="flex items-center space-x-3">
                         <div
-                            class="w-10 h-10 rounded-md bg-slate-900 border border-slate-800 p-1 overflow-hidden shrink-0"
+                            class="w-10 h-10 rounded-md bg-tactical-panel border border-tactical-border p-1 overflow-hidden shrink-0"
                         >
                             <img
                                 :src="logoSaspColor"
@@ -48,7 +48,7 @@ const toggleLanguage = () => {
                         </div>
                     </div>
                     <p
-                        class="text-xs text-slate-400 leading-relaxed max-w-md font-mono"
+                        class="text-xs text-tactical-muted leading-relaxed max-w-md font-mono"
                     >
                         {{ $t("footer.tagline") }}
                     </p>
@@ -140,7 +140,7 @@ const toggleLanguage = () => {
                     <!-- Language Switcher Button -->
                     <button
                         @click="toggleLanguage"
-                        class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono font-bold text-slate-200 transition flex items-center gap-2 cursor-pointer shadow-sm"
+                        class="btn-tactical-secondary text-xs"
                     >
                         <span class="text-sm">{{ locale === 'id' ? '🇮🇩' : '🇬🇧' }}</span>
                         <span>{{ locale === 'id' ? 'Bahasa Indonesia' : 'English' }}</span>

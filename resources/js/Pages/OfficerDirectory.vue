@@ -250,16 +250,16 @@ const openSubscribePopup = (
 const getDeptBadgeClass = (dept) => {
     switch (dept) {
         case "LSPD":
-            return "bg-blue-600/30 text-blue-300 border-blue-500/50";
+            return "bg-dept-lspd/20 text-blue-300 border-dept-lspd/50";
         case "BCSO":
-            return "bg-amber-600/30 text-amber-300 border-amber-500/50";
+            return "bg-dept-bcso/20 text-amber-300 border-dept-bcso/50";
         case "SASP":
-            return "bg-teal-600/30 text-teal-300 border-teal-500/50";
+            return "bg-dept-sasp/20 text-slate-300 border-dept-sasp/50";
         case "SAPR":
         case "PARK RANGER":
-            return "bg-green-600/30 text-green-300 border-green-500/50";
+            return "bg-dept-sapr/20 text-emerald-300 border-dept-sapr/50";
         default:
-            return "bg-slate-700/40 text-slate-300 border-slate-600";
+            return "bg-tactical-surface text-tactical-muted border-tactical-border";
     }
 };
 
@@ -427,9 +427,7 @@ const filteredOfficers = computed(() => {
                                 10-8 Live Duty:
                                 {{ deptStats.total_live || 0 }} Unit
                             </span>
-                            <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-950 border border-slate-800"
-                            >
+                            <span class="tactical-badge">
                                 <svg
                                     class="w-3.5 h-3.5 text-blue-400"
                                     fill="none"
@@ -445,9 +443,7 @@ const filteredOfficers = computed(() => {
                                 </svg>
                                 Multi-Divisi: LSPD / BCSO / SASP / SAPR
                             </span>
-                            <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-950 border border-slate-800 text-slate-300"
-                            >
+                            <span class="tactical-badge">
                                 <svg
                                     class="w-3.5 h-3.5 text-amber-400"
                                     fill="none"

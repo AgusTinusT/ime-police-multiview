@@ -89,7 +89,7 @@ onUnmounted(() => {
 <template>
     <!-- 1. TOP HEADER (DESKTOP FULL & MOBILE COMPACT) -->
     <header
-        class="bg-slate-950/90 backdrop-blur-md border-b border-slate-800 px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 sticky top-0 z-40"
+        class="bg-tactical-base/90 backdrop-blur-md border-b border-tactical-border px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 sticky top-0 z-40"
     >
         <div
             class="max-w-screen-2xl mx-auto w-full flex items-center justify-between gap-2"
@@ -102,7 +102,7 @@ onUnmounted(() => {
                     title="Halaman Beranda Dashboard"
                 >
                     <div
-                        class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-md bg-slate-900 border border-slate-800 group-hover:border-slate-700 p-1 overflow-hidden transition"
+                        class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-md bg-tactical-panel border border-tactical-border group-hover:border-tactical-border-light p-1 overflow-hidden transition"
                     >
                         <img
                             :src="logoSaspColor"
@@ -125,7 +125,7 @@ onUnmounted(() => {
                 </Link>
 
                 <!-- Vertical Divider (Visible on desktop) -->
-                <div class="h-5 w-px bg-slate-800 hidden md:block"></div>
+                <div class="h-5 w-px bg-tactical-border hidden md:block"></div>
 
                 <!-- Desktop Navigation Links (>= md) -->
                 <nav class="hidden md:flex items-center space-x-1 shrink-0">

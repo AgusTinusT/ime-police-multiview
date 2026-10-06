@@ -401,7 +401,7 @@ const scrollToUnitsGrid = () => {
                         <!-- Left Hero Content -->
                         <div class="lg:col-span-7 space-y-5">
                             <div
-                                class="hidden sm:inline-flex items-center gap-2.5 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300"
+                                class="hidden sm:inline-flex tactical-badge"
                             >
                                 <span
                                     class="w-2 h-2 rounded-full bg-blue-500 animate-pulse shrink-0"
@@ -426,7 +426,7 @@ const scrollToUnitsGrid = () => {
                             </h1>
 
                             <p
-                                class="text-slate-400 text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl font-normal"
+                                class="text-tactical-muted text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl font-normal"
                             >
                                 {{ $t("dashboard.hero_description") }}
                             </p>
@@ -434,7 +434,7 @@ const scrollToUnitsGrid = () => {
                             <!-- Department Quick Status Badges (Flat Crisp Badges) -->
                             <div class="flex flex-wrap items-center gap-2 pt-1">
                                 <div
-                                    class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 border bg-slate-900 border-slate-800 text-slate-300"
+                                    class="tactical-badge"
                                 >
                                     <span
                                         class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"
@@ -447,7 +447,7 @@ const scrollToUnitsGrid = () => {
                                 </div>
 
                                 <div
-                                    class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 border bg-slate-900 border-slate-800 text-slate-300"
+                                    class="tactical-badge"
                                 >
                                     <span
                                         class="w-2 h-2 rounded-full bg-blue-500 shrink-0"

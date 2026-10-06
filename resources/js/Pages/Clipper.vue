@@ -6,7 +6,7 @@
             
             <!-- HEADER / HERO & URL INPUT SECTION -->
             <section class="text-center max-w-3xl mx-auto space-y-4">
-                <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-xs font-semibold text-blue-400">
+                <div class="tactical-badge-blue">
                     <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                     <span>Pemrosesan Lossless YouTube & Multi-Format (MP4 / WebM / MP3 / GIF)</span>
                 </div>
@@ -15,13 +15,13 @@
                     Potong & Klip Video YouTube <br class="hidden sm:inline" />
                     <span class="text-blue-400">Dengan Presisi Milidetik</span>
                 </h1>
-                <p class="text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto">
+                <p class="text-xs sm:text-sm text-tactical-muted max-w-2xl mx-auto">
                     Masukkan URL video YouTube untuk menentukan titik potong, preview klip instan, dan unduh ke format MP4, WebM, MP3 Audio, atau GIF animasi tanpa watermark (Maksimal 10 Menit).
                 </p>
 
                 <!-- URL Loader Bar -->
                 <div class="pt-2 max-w-2xl mx-auto">
-                    <div class="relative flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1.5 focus-within:border-blue-500 transition duration-200">
+                    <div class="relative flex items-center bg-tactical-base border border-tactical-border rounded-xl p-1.5 focus-within:border-blue-500 transition duration-200">
                         <div class="pl-3.5 text-red-500 shrink-0">
                             <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
                                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
@@ -35,7 +35,7 @@
                         />
                         <button
                             @click="loadVideoFromInput"
-                            class="px-4 sm:px-6 py-2.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold transition flex items-center gap-1.5 shrink-0"
+                            class="btn-tactical-primary shrink-0"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -51,7 +51,7 @@
                             v-for="(sample, idx) in sampleVideos"
                             :key="idx"
                             @click="setSampleVideo(idx)"
-                            class="px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition text-xs font-mono"
+                            class="tactical-badge cursor-pointer"
                         >
                             {{ sample.shortLabel }}
                         </button>

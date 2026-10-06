@@ -61,17 +61,13 @@ const filteredReleases = computed(() => {
     <TacticalLayout activeTab="updates">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             <!-- HERO HEADER BANNER -->
-            <div
-                class="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8"
-            >
+            <div class="tactical-card p-6 sm:p-8">
                 <div
                     class="flex flex-col md:flex-row md:items-center justify-between gap-6"
                 >
                     <div class="space-y-2.5 max-w-2xl">
                         <div class="flex items-center gap-2">
-                            <span
-                                class="px-2.5 py-0.5 rounded-md bg-slate-950 text-slate-300 border border-slate-800 text-[10px] font-mono font-bold uppercase tracking-wider"
-                            >
+                            <span class="tactical-badge">
                                 {{ $t("updates.title") }}
                             </span>
                         </div>

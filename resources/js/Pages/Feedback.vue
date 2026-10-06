@@ -159,9 +159,7 @@ const submitFeedbackForm = async () => {
         >
             <!-- Hero Header Section -->
             <div class="text-center space-y-3">
-                <div
-                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-300 font-mono text-xs font-bold"
-                >
+                <div class="tactical-badge">
                     <img
                         :src="iconRadio"
                         class="w-3.5 h-3.5 invert opacity-90"
@@ -175,7 +173,7 @@ const submitFeedbackForm = async () => {
                     {{ $t("feedback.title") }}
                 </h1>
                 <p
-                    class="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto leading-relaxed font-sans"
+                    class="text-xs sm:text-sm text-tactical-muted max-w-lg mx-auto leading-relaxed font-sans"
                 >
                     {{ $t("feedback.subtitle") }}
                 </p>
@@ -184,7 +182,7 @@ const submitFeedbackForm = async () => {
             <!-- Toast Notifications -->
             <div
                 v-if="successMessage"
-                class="bg-slate-900 border border-emerald-800 rounded-md p-4 text-xs text-emerald-400 font-mono flex items-start gap-3"
+                class="bg-tactical-panel border border-emerald-800 rounded-md p-4 text-xs text-emerald-400 font-mono flex items-start gap-3"
             >
                 <span class="text-lg leading-none">✓</span>
                 <div>
@@ -197,7 +195,7 @@ const submitFeedbackForm = async () => {
 
             <div
                 v-if="errorMessage"
-                class="bg-slate-900 border border-rose-800 rounded-md p-4 text-xs text-rose-400 font-mono flex items-start gap-3"
+                class="bg-tactical-panel border border-rose-800 rounded-md p-4 text-xs text-rose-400 font-mono flex items-start gap-3"
             >
                 <span class="text-lg leading-none">✕</span>
                 <div>
@@ -209,9 +207,7 @@ const submitFeedbackForm = async () => {
             </div>
 
             <!-- Main Form Card Container (Solid Dark Surface) -->
-            <div
-                class="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 space-y-8"
-            >
+            <div class="tactical-card p-6 sm:p-8 space-y-8">
                 <!-- 1. Category Selector (4 Interactive Cards) -->
                 <div>
                     <label

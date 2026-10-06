@@ -157,9 +157,7 @@ const highlightKeyword = (text) => {
             <section
                 class="text-center max-w-3xl mx-auto py-6 sm:py-10 space-y-6 sm:space-y-8"
             >
-                <div
-                    class="inline-flex items-center space-x-2 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300"
-                >
+                <div class="tactical-badge">
                     <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                     <span
                         >DISPATCH MANUAL v{{ appVersion }} •

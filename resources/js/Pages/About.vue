@@ -37,13 +37,11 @@ const props = defineProps({
             >
                 <!-- Left Statement Column -->
                 <div class="lg:col-span-7 space-y-5">
-                    <div
-                        class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300"
-                    >
+                    <div class="tactical-badge">
                         <span class="w-2 h-2 rounded-full bg-blue-400"></span>
-                        <span class="uppercase tracking-wider font-semibold"
-                            >{{ $t("about.badge_tag") }}</span
-                        >
+                        <span class="uppercase tracking-wider font-semibold">{{
+                            $t("about.badge_tag")
+                        }}</span>
                     </div>
 
                     <h1
@@ -53,7 +51,7 @@ const props = defineProps({
                     </h1>
 
                     <p
-                        class="text-sm sm:text-base text-slate-300 font-sans leading-relaxed max-w-xl"
+                        class="text-sm sm:text-base text-tactical-muted font-sans leading-relaxed max-w-xl"
                     >
                         {{ $t("about.hero_description") }}
                     </p>
@@ -63,7 +61,7 @@ const props = defineProps({
                             href="https://imeroleplay.com"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold uppercase tracking-wider transition"
+                            class="btn-tactical-primary"
                         >
                             <span>Website Resmi imeroleplay.com</span>
                             <svg
@@ -84,7 +82,7 @@ const props = defineProps({
                             href="https://discord.gg/imeroleplay"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-mono font-semibold uppercase tracking-wider transition"
+                            class="btn-tactical-secondary"
                         >
                             <span>Discord IME RP</span>
                         </a>
@@ -92,9 +90,7 @@ const props = defineProps({
                 </div>
 
                 <!-- Right Quick Glance Board -->
-                <div
-                    class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5"
-                >
+                <div class="lg:col-span-5 tactical-card space-y-5">
                     <div
                         class="flex items-center justify-between border-b border-slate-800 pb-3"
                     >
