@@ -6,6 +6,9 @@ import { computed, defineProps, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { faqsId } from "@/Data/faqs.id.js";
 import { faqsEn } from "@/Data/faqs.en.js";
+import BaseSearchInput from "@/Components/Base/BaseSearchInput.vue";
+import BaseBadge from "@/Components/Base/BaseBadge.vue";
+import BaseEmptyState from "@/Components/Base/BaseEmptyState.vue";
 
 const { t, locale } = useI18n();
 
@@ -157,13 +160,12 @@ const highlightKeyword = (text) => {
             <section
                 class="text-center max-w-3xl mx-auto py-6 sm:py-10 space-y-6 sm:space-y-8"
             >
-                <div class="tactical-badge">
-                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                <BaseBadge pulse>
                     <span
                         >DISPATCH MANUAL v{{ appVersion }} •
                         {{ faqs.length }} {{ $t("faq.sop_count") }}</span
                     >
-                </div>
+                </BaseBadge>
 
                 <h1
                     class="text-3xl sm:text-4xl md:text-5xl font-tactical font-extrabold uppercase text-slate-100 tracking-wider leading-tight sm:leading-tight"
@@ -178,47 +180,11 @@ const highlightKeyword = (text) => {
 
                 <!-- Search Field -->
                 <div class="relative max-w-2xl mx-auto pt-4 sm:pt-6">
-                    <div
-                        class="relative flex items-center bg-slate-900 border border-slate-800 focus-within:border-blue-500 rounded-md p-1.5 transition duration-200"
-                    >
-                        <div class="pl-3.5 text-slate-400 shrink-0">
-                            <svg
-                                class="w-5 h-5 text-blue-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                />
-                            </svg>
-                        </div>
-                        <input
-                            v-model="searchQuery"
-                            type="text"
-                            :placeholder="$t('faq.search_placeholder')"
-                            class="w-full bg-transparent border-0 border-none ring-0 focus:ring-0 focus:outline-none focus:border-none shadow-none px-3.5 py-2 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-slate-500"
-                        />
-                        <button
-                            v-if="searchQuery"
-                            @click="clearSearch"
-                            class="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition text-xs font-mono shrink-0"
-                            title="Bersihkan pencarian"
-                        >
-                            ✕
-                        </button>
-                        <div
-                            class="hidden sm:flex items-center pr-3 pointer-events-none shrink-0"
-                        >
-                            <kbd
-                                class="px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 border border-slate-800 rounded-md"
-                                >ESC</kbd
-                            >
-                        </div>
-                    </div>
+                    <BaseSearchInput
+                        v-model="searchQuery"
+                        :placeholder="$t('faq.search_placeholder')"
+                        @clear="clearSearch"
+                    />
 
                     <!-- Quick Search Chips -->
                     <div

@@ -2,6 +2,9 @@
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import { Head, Link } from "@inertiajs/vue3";
 import { useI18n } from "vue-i18n";
+import BaseCard from "@/Components/Base/BaseCard.vue";
+import BaseBadge from "@/Components/Base/BaseBadge.vue";
+import BaseButton from "@/Components/Base/BaseButton.vue";
 
 const { t } = useI18n();
 
@@ -37,12 +40,11 @@ const props = defineProps({
             >
                 <!-- Left Statement Column -->
                 <div class="lg:col-span-7 space-y-5">
-                    <div class="tactical-badge">
-                        <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                    <BaseBadge pulse>
                         <span class="uppercase tracking-wider font-semibold">{{
                             $t("about.badge_tag")
                         }}</span>
-                    </div>
+                    </BaseBadge>
 
                     <h1
                         class="text-3xl sm:text-4xl lg:text-5xl font-tactical font-extrabold uppercase text-slate-100 tracking-wider leading-[1.15]"
@@ -57,11 +59,11 @@ const props = defineProps({
                     </p>
 
                     <div class="pt-2 flex flex-wrap items-center gap-3">
-                        <a
+                        <BaseButton
                             href="https://imeroleplay.com"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="btn-tactical-primary"
+                            variant="primary"
                         >
                             <span>Website Resmi imeroleplay.com</span>
                             <svg
@@ -77,20 +79,20 @@ const props = defineProps({
                                     d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                                 />
                             </svg>
-                        </a>
-                        <a
+                        </BaseButton>
+                        <BaseButton
                             href="https://discord.gg/imeroleplay"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="btn-tactical-secondary"
+                            variant="secondary"
                         >
                             <span>Discord IME RP</span>
-                        </a>
+                        </BaseButton>
                     </div>
                 </div>
 
                 <!-- Right Quick Glance Board -->
-                <div class="lg:col-span-5 tactical-card space-y-5">
+                <BaseCard class="lg:col-span-5 space-y-5">
                     <div
                         class="flex items-center justify-between border-b border-slate-800 pb-3"
                     >
@@ -216,7 +218,7 @@ const props = defineProps({
                             </div>
                         </div>
                     </div>
-                </div>
+                </BaseCard>
             </section>
 
             <!-- 2. KEPOLISIAN TERDAFTAR (HORIZONTAL TILES) -->
