@@ -10,7 +10,7 @@ import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 
-const { t, locale } = useI18n();
+const { locale } = useI18n();
 
 const toggleLanguage = () => {
     locale.value = locale.value === "id" ? "en" : "id";
@@ -52,11 +52,6 @@ const isUrlActive = (path) => {
 // Bottom Sheet Mobile Drawer State
 const isBottomSheetOpen = ref(false);
 
-const openBottomSheet = () => {
-    isBottomSheetOpen.value = true;
-    document.body.style.overflow = "hidden";
-};
-
 const closeBottomSheet = () => {
     isBottomSheetOpen.value = false;
     document.body.style.overflow = "";
@@ -95,7 +90,9 @@ onUnmounted(() => {
             class="max-w-screen-2xl mx-auto w-full flex items-center justify-between gap-2"
         >
             <!-- Left Area: Branding & Logo -->
-            <div class="flex items-center space-x-2 sm:space-x-3 min-w-0 shrink-0">
+            <div
+                class="flex items-center space-x-2 sm:space-x-3 min-w-0 shrink-0"
+            >
                 <Link
                     href="/"
                     class="flex items-center space-x-2 shrink-0 group cursor-pointer"
@@ -159,7 +156,8 @@ onUnmounted(() => {
                         href="/action-clips"
                         :class="[
                             'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
-                            isUrlActive('/action-clips') || isUrlActive('/clips')
+                            isUrlActive('/action-clips') ||
+                            isUrlActive('/clips')
                                 ? 'text-white bg-blue-600 font-bold'
                                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
                         ]"
@@ -229,7 +227,9 @@ onUnmounted(() => {
                     class="h-8 px-2.5 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-mono font-bold text-slate-200 transition flex items-center gap-1.5 cursor-pointer shadow-sm"
                     :title="`Beralih Bahasa / Switch Language (${locale === 'id' ? 'English' : 'Bahasa Indonesia'})`"
                 >
-                    <span class="text-xs">{{ locale === 'id' ? '🇮🇩 ID' : '🇬🇧 EN' }}</span>
+                    <span class="text-xs">{{
+                        locale === "id" ? "🇮🇩 ID" : "🇬🇧 EN"
+                    }}</span>
                 </button>
 
                 <UserAccountMenu />
@@ -240,4 +240,3 @@ onUnmounted(() => {
     <!-- 2. MOBILE BOTTOM NAVIGATION BAR & BOTTOM SHEET DRAWER -->
     <TacticalMobileBottomNav />
 </template>
-

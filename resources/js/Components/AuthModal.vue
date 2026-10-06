@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useForm, router } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import iconUser from '@/Components/Icons/user-svgrepo-com.svg';
 
 const props = defineProps({

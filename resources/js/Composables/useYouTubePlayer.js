@@ -2,7 +2,7 @@ import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
 
 /**
  * Senior Web Architect Refactored useYouTubePlayer Composable
- * 
+ *
  * Complies with YouTube Embedded Ads Requirements:
  * 1. No simultaneous mass `playVideo()` calls (Sequential Staggered Activation).
  * 2. Master Active Player concept for single interactive audio stream & high-res ad eligibility.
@@ -26,7 +26,7 @@ export function useYouTubePlayer() {
         typeof window !== "undefined"
             ? window.location.origin ||
                   window.location.protocol + "//" + window.location.host
-            : ""
+            : "",
     );
 
     const chatEmbedDomain = computed(() => {
@@ -69,8 +69,9 @@ export function useYouTubePlayer() {
      * Create or Bind YT.Player Instance (Standard API Handshake)
      */
     const bindYTPlayer = (domId, videoId, onReadyCallback = null) => {
-        if (typeof window === "undefined" || !window.YT || !window.YT.Player) return null;
-        
+        if (typeof window === "undefined" || !window.YT || !window.YT.Player)
+            return null;
+
         try {
             if (players[videoId]) {
                 return players[videoId];
@@ -83,10 +84,10 @@ export function useYouTubePlayer() {
                             onReadyCallback(event);
                         }
                     },
-                    onStateChange: (event) => {
+                    onStateChange: (_event) => {
                         // Standard state change monitoring for ad events or playback status
-                    }
-                }
+                    },
+                },
             });
             players[videoId] = player;
             return player;
@@ -100,10 +101,8 @@ export function useYouTubePlayer() {
     const controlPlayerAudio = (videoId, shouldUnmute) => {
         if (!videoId) return;
 
-        const isMaster = masterActiveVideoId.value === videoId;
-
         const iframes = document.querySelectorAll(
-            `iframe[id="yt-bodycam-${videoId}"]`
+            `iframe[id="yt-bodycam-${videoId}"]`,
         );
 
         iframes.forEach((iframe) => {
@@ -111,8 +110,12 @@ export function useYouTubePlayer() {
                 try {
                     const func = shouldUnmute ? "unMute" : "mute";
                     iframe.contentWindow.postMessage(
-                        JSON.stringify({ event: "command", func: func, args: [] }),
-                        "*"
+                        JSON.stringify({
+                            event: "command",
+                            func: func,
+                            args: [],
+                        }),
+                        "*",
                     );
                     if (shouldUnmute) {
                         iframe.contentWindow.postMessage(
@@ -121,11 +124,14 @@ export function useYouTubePlayer() {
                                 func: "setVolume",
                                 args: [100],
                             }),
-                            "*"
+                            "*",
                         );
                     }
                 } catch (err) {
-                    console.warn("postMessage audio failed for " + videoId, err);
+                    console.warn(
+                        "postMessage audio failed for " + videoId,
+                        err,
+                    );
                 }
             }
         });
@@ -143,7 +149,10 @@ export function useYouTubePlayer() {
                     }
                 }
             } catch (e) {
-                console.warn("YT.Player instance call failed for " + videoId, e);
+                console.warn(
+                    "YT.Player instance call failed for " + videoId,
+                    e,
+                );
                 delete players[videoId];
             }
         }
@@ -186,7 +195,10 @@ export function useYouTubePlayer() {
 
         if (players[videoId]) {
             try {
-                if (typeof players[videoId].setPlaybackQualityRange === "function") {
+                if (
+                    typeof players[videoId].setPlaybackQualityRange ===
+                    "function"
+                ) {
                     players[videoId].setPlaybackQualityRange(qualityRange);
                 }
                 if (typeof players[videoId].setPlaybackQuality === "function") {
@@ -196,7 +208,7 @@ export function useYouTubePlayer() {
         }
 
         const iframes = document.querySelectorAll(
-            `iframe[id="yt-bodycam-${videoId}"]`
+            `iframe[id="yt-bodycam-${videoId}"]`,
         );
         iframes.forEach((iframe) => {
             if (iframe && iframe.contentWindow) {
@@ -207,7 +219,7 @@ export function useYouTubePlayer() {
                             func: "setPlaybackQuality",
                             args: [targetQuality],
                         }),
-                        "*"
+                        "*",
                     );
                 } catch (err) {}
             }
@@ -312,7 +324,10 @@ export function useYouTubePlayer() {
      * Replaces simultaneous playVideo calls with smooth 600ms interval queueing.
      * Enforces single stream playback policy on mobile devices (< 640px) to prevent thermal throttling.
      */
-    const disableDataSaverAndPlayAll = (allActiveStreams = [], onPlayAllCallback = null) => {
+    const disableDataSaverAndPlayAll = (
+        allActiveStreams = [],
+        onPlayAllCallback = null,
+    ) => {
         if (typeof window !== "undefined" && window.innerWidth < 640) {
             isDataSaverEnabled.value = true;
             if (typeof onPlayAllCallback === "function") {
@@ -351,13 +366,15 @@ export function useYouTubePlayer() {
     // YouTube Subscribe Popup Modal
     const openSubscribePopup = (
         channelIdOrHandle,
-        officerName = "",
+        _officerName = "",
         videoId = "",
-        handle = ""
+        handle = "",
     ) => {
         let subUrl = "";
         const rawStr =
-            typeof channelIdOrHandle === "string" ? channelIdOrHandle.trim() : "";
+            typeof channelIdOrHandle === "string"
+                ? channelIdOrHandle.trim()
+                : "";
         const rawHandle =
             typeof handle === "string" && handle.trim()
                 ? handle.trim()
@@ -386,12 +403,15 @@ export function useYouTubePlayer() {
         const width = 640;
         const height = 660;
         const left = Math.max(0, Math.floor((window.screen.width - width) / 2));
-        const top = Math.max(0, Math.floor((window.screen.height - height) / 2));
+        const top = Math.max(
+            0,
+            Math.floor((window.screen.height - height) / 2),
+        );
 
         window.open(
             subUrl,
             "YouTubeSubscribeModal",
-            `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,toolbar=no,menubar=no,location=no,resizable=yes`
+            `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,toolbar=no,menubar=no,location=no,resizable=yes`,
         );
     };
 
@@ -400,7 +420,7 @@ export function useYouTubePlayer() {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch((err) => {
                 console.warn(
-                    `Error attempting to enable fullscreen: ${err.message}`
+                    `Error attempting to enable fullscreen: ${err.message}`,
                 );
             });
         } else {
@@ -417,14 +437,20 @@ export function useYouTubePlayer() {
     onMounted(() => {
         loadYouTubeAPI();
         if (typeof document !== "undefined") {
-            document.addEventListener("fullscreenchange", handleFullscreenChange);
+            document.addEventListener(
+                "fullscreenchange",
+                handleFullscreenChange,
+            );
         }
     });
 
     onUnmounted(() => {
         destroyAllPlayers();
         if (typeof document !== "undefined") {
-            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+            document.removeEventListener(
+                "fullscreenchange",
+                handleFullscreenChange,
+            );
         }
     });
 
@@ -459,7 +485,6 @@ export function useYouTubePlayer() {
         disableDataSaverAndPlayAll,
         openSubscribePopup,
         toggleBrowserFullscreen,
-        handleFullscreenChange
+        handleFullscreenChange,
     };
 }
-

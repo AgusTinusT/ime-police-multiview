@@ -2,22 +2,13 @@
 import { Head, router, usePage } from "@inertiajs/vue3";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
-// SVG Icon Assets & Branding Logos
-import iconLspd from "@/Components/Icons/LSPD_HD.svg";
-import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
-import iconSasp from "@/Components/Icons/SASP_HD.svg";
-import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
-import iconSapr from "@/Components/Icons/ranger_logo.svg";
-import iconPersonal from "@/Components/Icons/star-svgrepo-com.svg";
-
 // Refactored Sub-Components
-import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
 import MultiviewHeader from "@/Components/MultiviewHeader.vue";
 import MultiviewLandscapeOverlay from "@/Components/MultiviewLandscapeOverlay.vue";
 import OfficerVisibilityBottomSheet from "@/Components/OfficerVisibilityBottomSheet.vue";
 import TacChannelNotificationToast from "@/Components/TacChannelNotificationToast.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
-import TacticalDrawers from "@/Components/TacticalDrawers.vue";
+import QuickAddDrawer from "@/Components/Drawers/QuickAddDrawer.vue";
 import TacticalStreamGrid from "@/Components/TacticalStreamGrid.vue";
 import { useAnalytics } from "@/Composables/useAnalytics";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
@@ -139,7 +130,6 @@ watch(selectedDepartment, (newDept) => {
 });
 
 const activeTab = ref("10-8"); // '10-8' (online feeds) or '10-7' (offline roster)
-const isSidebarOpen = ref(true);
 const getInitialLayout = () => {
     if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
@@ -185,7 +175,6 @@ const {
     initializePlayer,
     destroyAllPlayers,
     toggleAudio: composableToggleAudio,
-    muteAll: composableMuteAll,
     toggleSidebarPreview,
     toggleGridStreamPlay,
     enableDataSaver: composableEnableDataSaver,
@@ -242,55 +231,6 @@ const fetchAnnouncements = async () => {
     }
 };
 
-// Carousel Logic
-const activePromoIndex = ref(0);
-let promoTimer = null;
-
-const startPromoTimer = () => {
-    if (promoTimer) clearInterval(promoTimer);
-    if (activeAnnouncements.value.length > 1) {
-        promoTimer = setInterval(() => {
-            nextPromo();
-        }, 5000); // 5 seconds
-    }
-};
-
-const pausePromoTimer = () => {
-    if (promoTimer) clearInterval(promoTimer);
-};
-
-const nextPromo = () => {
-    if (activeAnnouncements.value.length === 0) return;
-    activePromoIndex.value =
-        (activePromoIndex.value + 1) % activeAnnouncements.value.length;
-};
-
-const prevPromo = () => {
-    if (activeAnnouncements.value.length === 0) return;
-    activePromoIndex.value =
-        (activePromoIndex.value - 1 + activeAnnouncements.value.length) %
-        activeAnnouncements.value.length;
-};
-
-const setPromo = (index) => {
-    activePromoIndex.value = index;
-    startPromoTimer(); // Reset timer on manual selection
-};
-
-// Start timer when announcements are successfully fetched
-watch(
-    activeAnnouncements,
-    (newVal) => {
-        if (newVal.length > 0) {
-            activePromoIndex.value = 0;
-            startPromoTimer();
-        } else {
-            pausePromoTimer();
-        }
-    },
-    { deep: true },
-);
-
 // Tactical Radio Channels Manager Composable (Level 2 Refactoring)
 const {
     tacChannels,
@@ -299,10 +239,6 @@ const {
     tacticalToast,
     showTacticalToast,
     fetchTacChannels,
-    getStreamTac,
-    getTacChannel,
-    getTacUnitCount,
-    getTacRemainingSeconds,
     isTacDepartment,
     formatRemainingTime,
     getTacStreams,
@@ -316,9 +252,6 @@ const {
     allActiveStreams: () => allActiveStreams.value,
     selectedDepartment,
 });
-
-// Focus Mode Right-Column Live Chat State (Default Open)
-const isRightChatOpen = ref(true);
 
 const handleKeyDown = (e) => {
     if (e.key === "F11") {
@@ -335,7 +268,7 @@ const handleKeyDown = (e) => {
     }
 };
 
-const handleGlobalClick = (e) => {
+const handleGlobalClick = () => {
     if (activeTacPopoverVideoId.value) {
         activeTacPopoverVideoId.value = null;
     }
@@ -425,18 +358,6 @@ const triggerManualSync = async () => {
     );
 
     try {
-        const csrfToken =
-            document
-                .querySelector('meta[name="csrf-token"]')
-                ?.getAttribute("content") || "";
-        const res = await fetch("/api/v1/sync", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRF-TOKEN": csrfToken,
-            },
-        });
         await fetchLiveStreamsSilently();
         showTacticalToast(
             "Sinkronisasi selesai! Siaran terbaru telah dimuat.",
@@ -481,7 +402,9 @@ const dynamicPageTitle = computed(() => {
         return t("multiview.title_category", { category: deptName });
     }
     if (searchFilter.value && searchFilter.value.trim() !== "") {
-        return t("multiview.title_search", { query: searchFilter.value.trim() });
+        return t("multiview.title_search", {
+            query: searchFilter.value.trim(),
+        });
     }
     return t("multiview.title_default");
 });
@@ -571,20 +494,7 @@ const disableDataSaverAndPlayAll = () => {
     });
 };
 
-const playAllGridStreams = () => {
-    disableDataSaverAndPlayAll();
-};
-
-const pauseAllGridStreams = () => {
-    enableDataSaver();
-};
-
-const isQuickAddModalOpen = ref(false);
 const activeChatVideoId = ref(null);
-
-const handleLogout = () => {
-    router.post("/logout");
-};
 
 const syncCloudWatchlist = async () => {
     const user = usePage().props.auth?.user;
@@ -894,31 +804,7 @@ const clearAllPersonalStreams = () => {
     }
 };
 
-// Safe HTML escaping helper to prevent XSS
-const escapeHtml = (text) => {
-    if (!text) return "";
-    return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-};
-
-// Format description with clickable links and preserved line breaks
-const formatDescriptionWithLinks = (text) => {
-    if (!text) return "";
-    const safeText = escapeHtml(text);
-
-    // Convert standard URLs (https://, http://) into clickable styled links
-    const urlRegex = /(https?:\/\/[^\s<>"']+)/g;
-    return safeText.replace(urlRegex, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline font-medium break-all hover:text-white transition-colors">${url}</a>`;
-    });
-};
-
 // Stream Info / Description Toggle State & Lazy Detail Loader
-const expandedInfoVideoIds = ref([]);
 const isFetchingStreamDetail = ref({});
 
 const fetchFullStreamDetails = async (videoId) => {
@@ -953,31 +839,6 @@ const fetchFullStreamDetails = async (videoId) => {
         isFetchingStreamDetail.value[videoId] = false;
     }
 };
-
-const toggleStreamInfo = (videoId) => {
-    const idx = expandedInfoVideoIds.value.indexOf(videoId);
-    if (idx !== -1) {
-        expandedInfoVideoIds.value.splice(idx, 1);
-        return;
-    }
-
-    expandedInfoVideoIds.value.push(videoId);
-
-    // If description is missing or ends with "..." (search snippet), fetch full description in background
-    const targetStream = allActiveStreams.value.find(
-        (s) => s.video_id === videoId,
-    );
-    if (
-        !targetStream?.description ||
-        targetStream.description.endsWith("...") ||
-        targetStream.description.endsWith("…")
-    ) {
-        fetchFullStreamDetails(videoId);
-    }
-};
-
-const isStreamInfoOpen = (videoId) =>
-    expandedInfoVideoIds.value.includes(videoId);
 
 // Unified list of saved personal items with online/offline status for drawer management
 const savedPersonalList = computed(() => {
@@ -1126,187 +987,7 @@ onUnmounted(() => {
     window.removeEventListener("click", closeMoreTac);
 });
 
-// Main Visible Department Tabs (ALL, PERSONAL, LSPD, BCSO, SASP, SAPR + Primary TAC 1 to 3)
-const departments = [
-    {
-        id: "ALL",
-        name: "ALL UNITS",
-        icon: iconAllUnits,
-        isSvg: true,
-        color: "border-slate-600 text-slate-300",
-    },
-    {
-        id: "PERSONAL",
-        name: "PERSONAL",
-        icon: iconPersonal,
-        isSvg: true,
-        color: "border-purple-500 text-purple-300 bg-purple-950/40",
-    },
-    {
-        id: "LSPD",
-        name: "LSPD",
-        icon: iconLspd,
-        isSvg: true,
-        color: "border-blue-500 text-blue-400 bg-blue-950/40",
-    },
-    {
-        id: "BCSO",
-        name: "BCSO",
-        icon: iconBcso,
-        isSvg: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-    {
-        id: "SASP",
-        name: "SASP",
-        icon: iconSasp,
-        isSvg: true,
-        color: "border-teal-500 text-teal-400 bg-teal-950/40",
-    },
-    {
-        id: "SAPR",
-        name: "SAPR",
-        icon: iconSapr,
-        isSvg: true,
-        color: "border-green-500 text-green-400 bg-green-950/40",
-    },
-    {
-        id: "TAC_1",
-        name: "TAC 1",
-        icon: iconRadio,
-        isSvg: true,
-        isTac: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-    {
-        id: "TAC_2",
-        name: "TAC 2",
-        icon: iconRadio,
-        isSvg: true,
-        isTac: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-    {
-        id: "TAC_3",
-        name: "TAC 3",
-        icon: iconRadio,
-        isSvg: true,
-        isTac: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-];
-
-// Extended Dropdown TAC Channels (TAC 4 to TAC 10)
-const dropdownTacDepartments = [
-    {
-        id: "TAC_4",
-        name: "TAC 4",
-        icon: iconRadio,
-        isSvg: true,
-        isTac: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-    {
-        id: "TAC_5",
-        name: "TAC 5",
-        icon: iconRadio,
-        isSvg: true,
-        isTac: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-    {
-        id: "TAC_6",
-        name: "TAC 6",
-        icon: iconRadio,
-        isSvg: true,
-        isTac: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-    {
-        id: "TAC_7",
-        name: "TAC 7",
-        icon: iconRadio,
-        isSvg: true,
-        isTac: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-    {
-        id: "TAC_8",
-        name: "TAC 8",
-        icon: iconRadio,
-        isSvg: true,
-        isTac: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-    {
-        id: "TAC_9",
-        name: "TAC 9",
-        icon: iconRadio,
-        isSvg: true,
-        isTac: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-    {
-        id: "TAC_10",
-        name: "TAC 10",
-        icon: iconRadio,
-        isSvg: true,
-        isTac: true,
-        color: "border-amber-500 text-amber-400 bg-amber-950/40",
-    },
-];
-
 const isMoreTacOpen = ref(false);
-const tacDropdownPos = ref({ top: 0, left: 0 });
-
-const toggleMoreTac = (event) => {
-    isMoreTacOpen.value = !isMoreTacOpen.value;
-    if (isMoreTacOpen.value && event?.currentTarget) {
-        const rect = event.currentTarget.getBoundingClientRect();
-        tacDropdownPos.value = {
-            top: rect.bottom + 6,
-            left: Math.min(rect.left, Math.max(10, window.innerWidth - 205)),
-        };
-    }
-};
-
-const getDeptIcon = (dept) => {
-    if (typeof dept === "string" && dept.startsWith("TAC_")) return iconRadio;
-    switch (dept) {
-        case "LSPD":
-            return iconLspd;
-        case "BCSO":
-            return iconBcso;
-        case "SASP":
-            return iconSasp;
-        case "SAPR":
-        case "PARK RANGER":
-            return iconSapr;
-        case "PERSONAL":
-            return iconPersonal;
-        default:
-            return iconAllUnits;
-    }
-};
-
-// Department styling helper
-const getDeptBadgeClass = (dept) => {
-    if (typeof dept === "string" && dept.startsWith("TAC_"))
-        return "bg-amber-600/30 text-amber-300 border-amber-500/50";
-    switch (dept) {
-        case "LSPD":
-            return "bg-blue-600/30 text-blue-300 border-blue-500/50";
-        case "BCSO":
-            return "bg-amber-600/30 text-amber-300 border-amber-500/50";
-        case "SASP":
-            return "bg-teal-600/30 text-teal-300 border-teal-500/50";
-        case "SAPR":
-        case "PARK RANGER":
-            return "bg-green-600/30 text-green-300 border-green-500/50";
-        default:
-            return "bg-slate-700/40 text-slate-300 border-slate-600";
-    }
-};
 
 // Filtered Streams (Online 10-8)
 const filteredStreams = computed(() => {
@@ -1435,7 +1116,6 @@ const filteredOfflineOfficers = computed(() => {
 });
 
 // Custom Grid Sequence Ordering System (#1, #2, #3...)
-// Custom Grid Sequence Ordering System (#1, #2, #3...)
 const CUSTOM_ORDER_STORAGE_KEY = "ime_custom_stream_order";
 const customStreamOrder = ref([]); // Array of officer key / video_id strings in priority sequence
 
@@ -1560,16 +1240,6 @@ const moveCustomOrderDown = (item) => {
     }
 };
 
-const moveCustomOrderToTop = (videoId) => {
-    const strId = String(videoId).trim();
-    const idx = customStreamOrder.value.indexOf(strId);
-    if (idx !== -1) {
-        customStreamOrder.value.splice(idx, 1);
-    }
-    customStreamOrder.value.unshift(strId);
-    showTacticalToast("Siaran dijadikan urutan #1 terdepan", "info");
-};
-
 const resetCustomStreamOrder = () => {
     customStreamOrder.value = [];
     showTacticalToast("Urutan grid dikembalikan ke posisi semula", "info");
@@ -1577,14 +1247,6 @@ const resetCustomStreamOrder = () => {
 
 // Sidebar Hidden stream video IDs
 const hiddenStreamVideoIds = ref([]);
-const toggleStreamVisibility = (videoId) => {
-    const idx = hiddenStreamVideoIds.value.indexOf(videoId);
-    if (idx === -1) {
-        hiddenStreamVideoIds.value.push(videoId);
-    } else {
-        hiddenStreamVideoIds.value.splice(idx, 1);
-    }
-};
 
 const promoteStreamToFirst = (item) => {
     if (!item) return;
@@ -1695,348 +1357,8 @@ const hasRequiredImeHashtag = (stream) => {
 };
 
 // ==========================================
-// NETFLIX-STYLE CINEMA HUB COMPUTED CATEGORIES
+// TAC SITUATIONAL STREAMS COMPUTED
 // ==========================================
-
-// All combined catalog streams (Active Live Streams prioritized + Offline Patrol Replays, strictly deduplicated by video_id)
-const allCatalogStreams = computed(() => {
-    const catalogMap = new Map();
-
-    // 1. Prioritize active live streams first
-    allActiveStreams.value.forEach((s) => {
-        if (s && s.video_id && hasRequiredImeHashtag(s)) {
-            catalogMap.set(String(s.video_id).trim(), s);
-        }
-    });
-
-    // 2. Add recent replays only if video_id is not already present and passes hashtag check
-    (recentReplays.value || []).forEach((replay) => {
-        if (replay && replay.video_id && hasRequiredImeHashtag(replay)) {
-            const key = String(replay.video_id).trim();
-            if (!catalogMap.has(key)) {
-                catalogMap.set(key, replay);
-            }
-        }
-    });
-
-    let list = Array.from(catalogMap.values());
-
-    if (searchFilter.value.trim() !== "") {
-        const query = normalizeUnicodeText(searchFilter.value);
-        list = list.filter((s) => {
-            const normTitle = normalizeUnicodeText(s.title);
-            const normOfficerName = normalizeUnicodeText(
-                s.officer?.officer_name,
-            );
-            const normCallsign = normalizeUnicodeText(s.officer?.callsign);
-            const normBadge = normalizeUnicodeText(s.officer?.badge_number);
-            const normStreamer = normalizeUnicodeText(s.officer?.streamer_name);
-            const normZone = normalizeUnicodeText(s.officer?.patrol_zone);
-
-            return (
-                normTitle.includes(query) ||
-                normOfficerName.includes(query) ||
-                normCallsign.includes(query) ||
-                normBadge.includes(query) ||
-                normStreamer.includes(query) ||
-                normZone.includes(query)
-            );
-        });
-    }
-
-    return sortStreamsByStatusAndRecency(list);
-});
-
-// Hero Spotlight: #1 Live patrol stream, or if none live -> #1 Latest patrol replay
-const topHeroStream = computed(() => {
-    const validLive = allActiveStreams.value.filter((s) =>
-        hasRequiredImeHashtag(s),
-    );
-    if (validLive.length > 0) {
-        return [...validLive].sort(
-            (a, b) => (b.viewers_count || 0) - (a.viewers_count || 0),
-        )[0];
-    }
-    const validReplays = recentReplayStreams.value;
-    if (validReplays.length > 0) {
-        return validReplays[0];
-    }
-    return null;
-});
-
-// Live trending streams (sorted by viewers, strictly filtered for police hashtags in title)
-const trendingStreams = computed(() => {
-    return allActiveStreams.value
-        .filter((s) => hasRequiredImeHashtag(s))
-        .sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0));
-});
-
-const formatRelativeTimeLabel = (str) => {
-    if (!str) return "REPLAY";
-    const text = String(str).trim();
-    if (!text || text === "REPLAY" || text === "Target 1K Milestone")
-        return text;
-
-    const lower = text.toLowerCase();
-    if (
-        lower.includes("baru saja") ||
-        lower.includes("just now") ||
-        lower.includes("live") ||
-        lower.includes("sedang tayang")
-    ) {
-        return "Baru saja";
-    }
-
-    const numMatch = lower.match(/(\d+)/);
-    if (!numMatch) return text;
-    const num = parseInt(numMatch[1], 10);
-    const isIndonesian = lower.includes("lalu");
-
-    if (
-        lower.includes("tahun") ||
-        lower.includes("year") ||
-        lower.match(/\b\d+\s*(?:y|thn|th)\b/)
-    ) {
-        return `${num} tahun yang lalu`;
-    }
-    if (
-        lower.includes("bulan") ||
-        lower.includes("month") ||
-        lower.match(/\b\d+\s*(?:mo|bln)\b/)
-    ) {
-        return `${num} bulan yang lalu`;
-    }
-    if (
-        lower.includes("minggu") ||
-        lower.includes("week") ||
-        lower.match(/\b\d+\s*w\b/)
-    ) {
-        return `${num} minggu yang lalu`;
-    }
-
-    // Handle "hari" vs "jam": In YouTube Indonesian UI, "2 h lalu" = 2 HARI LALU! In English UI, "2h ago" = 2 HOURS AGO!
-    if (
-        lower.includes("hari") ||
-        lower.includes("day") ||
-        (isIndonesian && lower.match(/\b\d+\s*h\b/)) ||
-        (!isIndonesian && lower.match(/\b\d+\s*d\b/))
-    ) {
-        return `${num} hari yang lalu`;
-    }
-    if (
-        lower.includes("jam") ||
-        lower.includes("hour") ||
-        (isIndonesian && lower.match(/\b\d+\s*j\b/)) ||
-        (!isIndonesian && lower.match(/\b\d+\s*h\b/))
-    ) {
-        return `${num} jam yang lalu`;
-    }
-    if (
-        lower.includes("menit") ||
-        lower.includes("minute") ||
-        lower.includes("min") ||
-        lower.match(/\b\d+\s*m\b/)
-    ) {
-        return `${num} menit yang lalu`;
-    }
-    if (
-        lower.includes("detik") ||
-        lower.includes("second") ||
-        lower.includes("sec") ||
-        lower.match(/\b\d+\s*s\b/)
-    ) {
-        return `${num} detik yang lalu`;
-    }
-
-    return text;
-};
-
-const parseRelativeTimeToSeconds = (str) => {
-    if (!str) return 999999999;
-    const text = String(str).toLowerCase().trim();
-    if (
-        text.includes("baru saja") ||
-        text.includes("just now") ||
-        text.includes("live") ||
-        text.includes("sedang tayang")
-    )
-        return 0;
-
-    const numMatch = text.match(/(\d+)/);
-    const num = numMatch ? parseInt(numMatch[1], 10) : 1;
-    const isIndonesian = text.includes("lalu");
-
-    if (
-        text.includes("tahun") ||
-        text.includes("year") ||
-        text.match(/\b\d+\s*(?:y|thn|th)\b/)
-    )
-        return num * 31536000;
-    if (
-        text.includes("bulan") ||
-        text.includes("month") ||
-        text.match(/\b\d+\s*(?:mo|bln)\b/)
-    )
-        return num * 2592000;
-    if (
-        text.includes("minggu") ||
-        text.includes("week") ||
-        text.match(/\b\d+\s*w\b/)
-    )
-        return num * 604800;
-    if (
-        text.includes("hari") ||
-        text.includes("day") ||
-        (isIndonesian && text.match(/\b\d+\s*h\b/)) ||
-        (!isIndonesian && text.match(/\b\d+\s*d\b/))
-    )
-        return num * 86400;
-    if (
-        text.includes("jam") ||
-        text.includes("hour") ||
-        (isIndonesian && text.match(/\b\d+\s*j\b/)) ||
-        (!isIndonesian && text.match(/\b\d+\s*h\b/))
-    )
-        return num * 3600;
-    if (
-        text.includes("menit") ||
-        text.includes("minute") ||
-        text.includes("min") ||
-        text.match(/\b\d+\s*m\b/)
-    )
-        return num * 60;
-    if (
-        text.includes("detik") ||
-        text.includes("second") ||
-        text.includes("sec") ||
-        text.match(/\b\d+\s*s\b/)
-    )
-        return num;
-
-    return 999999999;
-};
-
-// Sort streams helper: 1) LIVE status first, 2) Video streams/replays over static cards, 3) Recency timestamp (newest stream/replay first)
-const sortStreamsByStatusAndRecency = (streamList) => {
-    return [...streamList].sort((a, b) => {
-        if (a.status === "LIVE" && b.status !== "LIVE") return -1;
-        if (b.status === "LIVE" && a.status !== "LIVE") return 1;
-
-        if (!a.is_officer_card && b.is_officer_card) return -1;
-        if (a.is_officer_card && !b.is_officer_card) return 1;
-
-        const timeA = parseRelativeTimeToSeconds(
-            a.streamed_at || a.incident_code,
-        );
-        const timeB = parseRelativeTimeToSeconds(
-            b.streamed_at || b.incident_code,
-        );
-        if (timeA !== timeB) {
-            return timeA - timeB;
-        }
-
-        return 0;
-    });
-};
-
-// Support 1K Subs (Streamers / Officers with < 1,000 subscribers)
-const support1kStreams = computed(() => {
-    const list = [
-        ...allCatalogStreams.value.filter((s) => {
-            const count = Number(s.officer?.subscriber_count);
-            return !isNaN(count) && count > 0 && count < 1000;
-        }),
-    ];
-
-    const seenOfficerIds = new Set(
-        list.map((s) => s.officer?.id).filter(Boolean),
-    );
-
-    // Fallback: include offline officers with < 1,000 subs who do not have an active stream / VOD replay in catalog
-    (offlineOfficers.value || []).forEach((o) => {
-        if (o.id && !seenOfficerIds.has(o.id)) {
-            const count = Number(o.subscriber_count);
-            if (!isNaN(count) && count > 0 && count < 1000) {
-                seenOfficerIds.add(o.id);
-                list.push({
-                    id: `sub1k-officer-${o.id}`,
-                    video_id: `officer-${o.id}`,
-                    title: `Support Officer ${o.officer_name}`,
-                    thumbnail:
-                        o.avatar_url ||
-                        `https://api.dicebear.com/7.x/bottts/svg?seed=${o.id}`,
-                    status: "OFFLINE",
-                    incident_code: "10-7 Road to 1K",
-                    streamed_at: "Target 1K Milestone",
-                    description: `Dukung ${o.officer_name} mencapai 1.000 subscriber YouTube pertama!`,
-                    viewers_count: 0,
-                    is_officer_card: true,
-                    officer: o,
-                });
-            }
-        }
-    });
-
-    return sortStreamsByStatusAndRecency(list);
-});
-
-// Recent offline patrol video replays / VODs (Sorted newest first, filtered for valid IME RP/Police hashtags)
-const recentReplayStreams = computed(() => {
-    const liveIds = new Set(
-        allActiveStreams.value.map((s) => String(s.video_id).trim()),
-    );
-    const list = (recentReplays.value || []).filter((r) => {
-        if (!r || !r.video_id) return false;
-        if (liveIds.has(String(r.video_id).trim())) return false;
-        return hasRequiredImeHashtag(r);
-    });
-    return sortStreamsByStatusAndRecency(list);
-});
-
-// Department Catalog Streams (Live + Replay VODs)
-const lspdCatalogStreams = computed(() => {
-    return allCatalogStreams.value.filter(
-        (s) => s.officer && s.officer.department === "LSPD",
-    );
-});
-
-const bcsoCatalogStreams = computed(() => {
-    return allCatalogStreams.value.filter(
-        (s) => s.officer && s.officer.department === "BCSO",
-    );
-});
-
-const saspCatalogStreams = computed(() => {
-    return allCatalogStreams.value.filter(
-        (s) => s.officer && s.officer.department === "SASP",
-    );
-});
-
-const saprCatalogStreams = computed(() => {
-    return allCatalogStreams.value.filter(
-        (s) =>
-            s.officer &&
-            (s.officer.department === "SAPR" ||
-                s.officer.department === "PARK RANGER"),
-    );
-});
-
-const specialOpsCatalogStreams = computed(() => {
-    return allCatalogStreams.value.filter((s) => {
-        const text =
-            `${s.officer?.rank || ""} ${s.officer?.callsign || ""} ${s.title || ""}`.toLowerCase();
-        return (
-            text.includes("swat") ||
-            text.includes("k9") ||
-            text.includes("k-9") ||
-            text.includes("srt") ||
-            text.includes("air") ||
-            text.includes("trooper") ||
-            text.includes("investigation") ||
-            text.includes("detective")
-        );
-    });
-});
 
 const tacSituationalStreams = computed(() => {
     const allTacVideoIds = [];
@@ -2053,28 +1375,8 @@ const tacSituationalStreams = computed(() => {
 });
 
 // Scroll helper for horizontal swimlane rows
-const scrollRow = (rowId, direction = "right") => {
-    const el = document.getElementById(rowId);
-    if (!el) return;
-    const scrollAmount = direction === "left" ? -650 : 650;
-    el.scrollBy({ left: scrollAmount, behavior: "smooth" });
-};
 
 // Helper to construct YouTube URL safely (Handles officer support cards)
-const getStreamYoutubeUrl = (stream) => {
-    if (!stream) return "#";
-    if (
-        stream.is_officer_card ||
-        (typeof stream.video_id === "string" &&
-            stream.video_id.startsWith("officer-"))
-    ) {
-        const handle = stream.officer?.handle
-            ? stream.officer.handle.replace(/^@/, "")
-            : "";
-        return handle ? `https://www.youtube.com/@${handle}` : "#";
-    }
-    return `https://www.youtube.com/watch?v=${stream.video_id}`;
-};
 
 // 1-Click Launch from Cinema Hub into Focus Lead View
 const playStreamInFocus = (stream) => {
@@ -2172,20 +1474,8 @@ const updateAllStreamQualities = () => {
     }
 };
 
-const toggleGlobalDataSaver = () => {
-    if (isDataSaverEnabled.value) {
-        disableDataSaverAndPlayAll();
-    } else {
-        enableDataSaver();
-    }
-};
-
 const toggleAudio = (videoId) => {
     composableToggleAudio(videoId, allActiveStreams.value);
-};
-
-const muteAll = () => {
-    composableMuteAll(allActiveStreams.value);
 };
 
 // Clean up active YT player instances when changing department category
@@ -2243,35 +1533,6 @@ onMounted(() => {
 });
 
 // Layout Grid CSS Class Computation
-const layoutGridClass = computed(() => {
-    if (selectedLayout.value === "grid-1x2") {
-        return "grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-2";
-    }
-    if (selectedLayout.value === "grid-1x3") {
-        return "grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3";
-    }
-    if (selectedLayout.value === "grid-2x2") {
-        return "grid grid-cols-1 md:grid-cols-2 gap-3.5";
-    }
-    if (selectedLayout.value === "grid-3x3") {
-        return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5";
-    }
-    if (selectedLayout.value === "grid-4x4") {
-        return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3";
-    }
-    if (selectedLayout.value === "focus") {
-        return "";
-    }
-
-    // Auto mode
-    const count = visibleStreams.value.length;
-    if (count <= 1) return "grid grid-cols-1 gap-4";
-    if (count === 2) return "grid grid-cols-1 md:grid-cols-2 gap-4";
-    if (count <= 4) return "grid grid-cols-1 md:grid-cols-2 gap-3.5";
-    if (count <= 6)
-        return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5";
-    return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5";
-});
 
 // Focus Mode & Grid Mode Shared Stream Sequence (Ensures 100% layout state consistency)
 const sortedFocusStreams = computed(() => visibleStreams.value);
@@ -2592,283 +1853,7 @@ const handleAddLiveStreamToPersonal = (streamItem) => {
     }, 3500);
 };
 
-// Officer Directory State & Filtering
-const directorySearch = ref("");
-const directoryDeptFilter = ref("ALL"); // 'ALL', 'LIVE_ONLY', 'LSPD', 'BCSO', 'SASP'
-const directorySortBy = ref("status"); // 'status', 'subs_desc', 'subs_asc', 'name'
-
-// All Registered Officers Combined (Deduplicated with real-time online status and subscriber data)
-const allDirectoryOfficers = computed(() => {
-    const list = [];
-    const seenHandles = new Set();
-    const seenIds = new Set();
-
-    // 1. First add all currently live/active officers
-    allActiveStreams.value.forEach((s) => {
-        if (!s.officer) return;
-        const key =
-            s.officer.handle || s.officer.channel_id || s.officer.officer_name;
-        if (!seenHandles.has(key)) {
-            seenHandles.add(key);
-            if (s.officer.id) seenIds.add(s.officer.id);
-            list.push({
-                id: s.officer.id || `live-${s.video_id}`,
-                channel_id: s.officer.channel_id,
-                handle: s.officer.handle || "",
-                streamer_name: s.officer.streamer_name || "",
-                officer_name: s.officer.officer_name || "",
-                callsign: s.officer.callsign || "",
-                department: s.officer.department || "LSPD",
-                rank: s.officer.rank || "Officer",
-                badge_number: s.officer.badge_number || "#000",
-                patrol_zone: s.officer.patrol_zone || "",
-                avatar_url: s.officer.avatar_url || null,
-                subscriber_count: s.officer.subscriber_count || 0,
-                is_online: true,
-                live_stream: s,
-            });
-        }
-    });
-
-    // 2. Then add all offline officers from props
-    offlineOfficers.value.forEach((o) => {
-        const key = o.handle || o.channel_id || o.officer_name;
-        if (!seenHandles.has(key) && (!o.id || !seenIds.has(o.id))) {
-            seenHandles.add(key);
-            list.push({
-                id: o.id,
-                channel_id: o.channel_id,
-                handle: o.handle || "",
-                streamer_name: o.streamer_name || "",
-                officer_name: o.officer_name || "",
-                callsign: o.callsign || "",
-                department: o.department || "LSPD",
-                rank: o.rank || "Officer",
-                badge_number: o.badge_number || "#000",
-                patrol_zone: o.patrol_zone || "",
-                avatar_url: o.avatar_url || null,
-                subscriber_count: o.subscriber_count || 0,
-                is_online: false,
-                live_stream: null,
-            });
-        }
-    });
-
-    // 3. Filter by department or online status
-    let filtered = list;
-    if (directoryDeptFilter.value === "LIVE_ONLY") {
-        filtered = filtered.filter((o) => o.is_online);
-    } else if (directoryDeptFilter.value !== "ALL") {
-        filtered = filtered.filter(
-            (o) => o.department === directoryDeptFilter.value,
-        );
-    }
-
-    // 4. Filter by search term (name, callsign, handle, badge, streamer, rank, zone)
-    if (directorySearch.value.trim()) {
-        const q = directorySearch.value.toLowerCase().trim();
-        filtered = filtered.filter(
-            (o) =>
-                (o.officer_name && o.officer_name.toLowerCase().includes(q)) ||
-                (o.callsign && o.callsign.toLowerCase().includes(q)) ||
-                (o.streamer_name &&
-                    o.streamer_name.toLowerCase().includes(q)) ||
-                (o.handle && o.handle.toLowerCase().includes(q)) ||
-                (o.badge_number && o.badge_number.toLowerCase().includes(q)) ||
-                (o.patrol_zone && o.patrol_zone.toLowerCase().includes(q)) ||
-                (o.rank && o.rank.toLowerCase().includes(q)),
-        );
-    }
-
-    // 5. Sorting
-    return filtered.sort((a, b) => {
-        if (directorySortBy.value === "status") {
-            if (a.is_online && !b.is_online) return -1;
-            if (!a.is_online && b.is_online) return 1;
-            return (b.subscriber_count || 0) - (a.subscriber_count || 0);
-        } else if (directorySortBy.value === "subs_desc") {
-            return (b.subscriber_count || 0) - (a.subscriber_count || 0);
-        } else if (directorySortBy.value === "subs_asc") {
-            return (a.subscriber_count || 0) - (b.subscriber_count || 0);
-        } else if (directorySortBy.value === "name") {
-            return (a.officer_name || "").localeCompare(b.officer_name || "");
-        }
-        return 0;
-    });
-});
-
-// 10-Codes and Radio Operational Protocols State & Data
-const radioCodesActiveTab = ref("CODES"); // 'CODES' or 'TAC'
-const radioCodesSearch = ref("");
-
-const standardPolice10Codes = [
-    {
-        code: "10-4",
-        title: "Message Received / Roger",
-        meaning:
-            "Pesan atau instruksi telah diterima dengan jelas dan dipahami sepenuhnya.",
-        category: "Umum",
-    },
-    {
-        code: "10-7",
-        title: "Out of Service / Off Duty",
-        meaning: "Petugas keluar dari dinas patroli atau unit dinonaktifkan.",
-        category: "Status",
-    },
-    {
-        code: "10-8",
-        title: "In Service / On Duty",
-        meaning:
-            "Petugas aktif bertugas, siap menerima panggilan dispatch dan penugasan.",
-        category: "Status",
-    },
-    {
-        code: "10-20",
-        title: "Location / Coordinates",
-        meaning:
-            "Permintaan atau konfirmasi posisi / lokasi spesifik unit saat ini.",
-        category: "Navigasi",
-    },
-    {
-        code: "10-23",
-        title: "Arrived on Scene",
-        meaning:
-            "Unit telah tiba di lokasi kejadian / Tempat Kejadian Perkara (TKP).",
-        category: "Taktis",
-    },
-    {
-        code: "10-33",
-        title: "Officer in Distress / Emergency",
-        meaning:
-            "Panggilan darurat kritis! Petugas berada di bawah ancaman dan butuh bantuan segera.",
-        category: "Darurat",
-    },
-    {
-        code: "10-50",
-        title: "Motor Vehicle Accident",
-        meaning:
-            "Terjadi tabrakan atau kecelakaan lalu lintas kendaraan bermotor.",
-        category: "Lantas",
-    },
-    {
-        code: "10-70",
-        title: "Foot Pursuit",
-        meaning: "Pengejaran tersangka dengan berlari / berjalan kaki.",
-        category: "Pengejaran",
-    },
-    {
-        code: "10-80",
-        title: "High Speed Pursuit",
-        meaning:
-            "Pengejaran kendaraan berkecepatan tinggi yang berpotensi membahayakan publik.",
-        category: "Pengejaran",
-    },
-    {
-        code: "10-90",
-        title: "Armed Robbery in Progress",
-        meaning:
-            "Perampokan bersenjata sedang berlangsung (Toko, Bank, Perhiasan).",
-        category: "Darurat",
-    },
-    {
-        code: "10-99",
-        title: "Situation Under Control / Code 4",
-        meaning: "Situasi telah sepenuhnya terkendali, area aman kembali.",
-        category: "Status",
-    },
-    {
-        code: "Code 1",
-        title: "Routine Response",
-        meaning:
-            "Respon rutin normal tanpa sirine dan tanpa strobo, patuhi lalu lintas umum.",
-        category: "Respon",
-    },
-    {
-        code: "Code 2",
-        title: "Urgent Silent Run",
-        meaning:
-            "Respon mendesak dengan lampu strobo tanpa sirine untuk mendekati TKP diam-diam.",
-        category: "Respon",
-    },
-    {
-        code: "Code 3",
-        title: "Emergency Full Lights & Sirens",
-        meaning:
-            "Respon darurat penuh prioritas tertinggi, sirine dan strobo aktif.",
-        category: "Respon",
-    },
-    {
-        code: "Code 4",
-        title: "No Further Assistance Needed",
-        meaning:
-            "Situasi aman, tidak diperlukan penambahan unit tambahan ke lokasi.",
-        category: "Respon",
-    },
-    {
-        code: "Signal 100",
-        title: "Radio Silence for High-Risk Event",
-        meaning:
-            "Seluruh unit dilarang berbicara di radio selain unit komando penanganan situasi.",
-        category: "Protokol",
-    },
-];
-
-const tacChannelGuides = [
-    {
-        code: "TAC 1",
-        title: "Dispatch & General Patrol",
-        badgeColor: "blue",
-        scope: "Komunikasi lalu lintas patroli reguler, tilang harian, dan respon panggilan 911 standar.",
-        protocol:
-            "Digunakan oleh seluruh unit patroli LSPD, BCSO, dan SASP saat tidak berada dalam situasi khusus. Pertahankan transmisi singkat dan jelas.",
-    },
-    {
-        code: "TAC 2",
-        title: "High Speed Vehicle Pursuit (10-80)",
-        badgeColor: "amber",
-        scope: "Pengejaran kendaraan tersangka dan koordinasi formasi interception di jalan raya.",
-        protocol:
-            "Lead unit bertanggung jawab memberikan callout arah (heading, visual, nomor plat, kecepatan). Unit sekunder menyiapkan manuver PIT atau Spikestrip.",
-    },
-    {
-        code: "TAC 3",
-        title: "Major Robbery & Bank Heist (10-90)",
-        badgeColor: "red",
-        scope: "Penanganan perampokan toko bersenjata, Fleeca Bank, Paleto Bank, Pacific Standard.",
-        protocol:
-            "Hanya unit yang ditugaskan di perimeter dalam dan negosiator yang berkomunikasi. Unit lain menjaga perimeter luar dan jalur pelarian.",
-    },
-    {
-        code: "TAC 4",
-        title: "Special Weapons & SWAT Tactical Ops",
-        badgeColor: "purple",
-        scope: "Operasi penggerebekan senjata berat, drug lab raid, dan hostile hostage rescue.",
-        protocol:
-            "Di bawah komando langsung SWAT Commander / Tactical Supervisor. Disiplin radio penuh, gunakan formasi breaching standar.",
-    },
-    {
-        code: "TAC 5",
-        title: "Air Support & Inter-Agency Joint Command",
-        badgeColor: "indigo",
-        scope: "Koordinasi unit udara Air-1/Helikopter, Unit Maritim, dan komando gabungan lintas instansi.",
-        protocol:
-            "Memberikan visual bird-eye view kepada ground units. Koordinasi gabungan LSPD, BCSO, SASP, dan EMS.",
-    },
-];
-
-const filteredPolice10Codes = computed(() => {
-    if (!radioCodesSearch.value.trim()) return standardPolice10Codes;
-    const q = radioCodesSearch.value.toLowerCase().trim();
-    return standardPolice10Codes.filter(
-        (c) =>
-            c.code.toLowerCase().includes(q) ||
-            c.title.toLowerCase().includes(q) ||
-            c.meaning.toLowerCase().includes(q) ||
-            c.category.toLowerCase().includes(q),
-    );
-});
-
-// Unified Right Slide-Over Drawer State ('QUICK_ADD', 'FEEDBACK', 'ABOUT', 'DIRECTORY', 'RADIO_CODES', 'ROSTER', or null)
+// Unified Right Slide-Over Drawer State ('QUICK_ADD', 'FEEDBACK', 'ABOUT', 'DIRECTORY', 'ROSTER', or null)
 const activeRightDrawer = ref(null);
 
 const openRightDrawer = (drawerName, extra = null) => {
@@ -2899,11 +1884,7 @@ const closeRightDrawer = () => {
 };
 
 // Admin Roster Management State & Methods (Protected for Admin)
-const rosterOfficers = ref([]);
-const isRosterLoading = ref(false);
-const rosterSearch = ref("");
 // Visitor Feedback & Channel Request State & Methods (Option 1 Discord Webhook)
-const isSubmittingFeedback = ref(false);
 const feedbackSuccessToast = ref("");
 const feedbackForm = ref({
     type: "CHANNEL_REQUEST", // 'CHANNEL_REQUEST', 'DATA_CORRECTION', 'BUG_REPORT', 'OTHER'
@@ -2914,36 +1895,6 @@ const feedbackForm = ref({
     department: "LSPD",
     message: "",
 });
-
-const submitFeedbackForm = async () => {
-    isSubmittingFeedback.value = true;
-    try {
-        const res = await fetch("/api/v1/feedback", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                "X-CSRF-TOKEN": getCsrfToken(),
-            },
-            body: JSON.stringify(feedbackForm.value),
-        });
-        const data = await res.json();
-        if (res.ok) {
-            feedbackSuccessToast.value =
-                data.message || "Laporan berhasil dikirim ke Command Center!";
-            setTimeout(() => {
-                closeRightDrawer();
-                feedbackSuccessToast.value = "";
-            }, 3000);
-        } else {
-            alert(data.message || "Gagal mengirim masukan. Silakan coba lagi.");
-        }
-    } catch (e) {
-        alert("Terjadi kesalahan jaringan saat mengirim laporan.");
-    } finally {
-        isSubmittingFeedback.value = false;
-    }
-};
 </script>
 
 <template>
@@ -2991,15 +1942,7 @@ const submitFeedbackForm = async () => {
                 :is-syncing-feeds="isSyncingFeeds"
                 :is-theater-mode="isTheaterMode"
                 :all-active-streams="allActiveStreams"
-                :all-catalog-streams="allCatalogStreams"
-                :trending-streams="trendingStreams"
-                :recent-replay-streams="recentReplayStreams"
                 :active-personal-streams="activePersonalStreams"
-                :lspd-catalog-streams="lspdCatalogStreams"
-                :sasp-catalog-streams="saspCatalogStreams"
-                :bcso-catalog-streams="bcsoCatalogStreams"
-                :sapr-catalog-streams="saprCatalogStreams"
-                :special-ops-catalog-streams="specialOpsCatalogStreams"
                 :tac-situational-streams="tacSituationalStreams"
                 :filtered-offline-officers="filteredOfflineOfficers"
                 :visible-streams="visibleStreams"
@@ -3037,9 +1980,9 @@ const submitFeedbackForm = async () => {
                 @toggle-grid-stream-play="toggleGridStreamPlay"
             />
         </main>
-        <!-- UNIFIED RIGHT SLIDE-OVER SIDEBAR / DRAWER -->
-        <TacticalDrawers
-            :active-right-drawer="activeRightDrawer"
+        <!-- QUICK ADD STREAM DRAWER -->
+        <QuickAddDrawer
+            :is-open="activeRightDrawer === 'QUICK_ADD'"
             v-model:quick-add-mode="quickAddMode"
             v-model:live-search-query="liveSearchQuery"
             :is-live-searching="isLiveSearching"
@@ -3051,32 +1994,13 @@ const submitFeedbackForm = async () => {
             :total-personal-count="totalPersonalCount"
             :total-saved-personal-count="totalSavedPersonalCount"
             :saved-personal-list="savedPersonalList"
-            :feedback-form="feedbackForm"
-            :is-submitting-feedback="isSubmittingFeedback"
-            :feedback-success-toast="feedbackSuccessToast"
-            v-model:directory-search="directorySearch"
-            v-model:directory-sort-by="directorySortBy"
-            v-model:directory-dept-filter="directoryDeptFilter"
-            :offline-officers="offlineOfficers"
-            :streams="streams"
-            :all-directory-officers="allDirectoryOfficers"
-            v-model:radio-codes-active-tab="radioCodesActiveTab"
-            v-model:radio-codes-search="radioCodesSearch"
-            :filtered-police-10-codes="filteredPolice10Codes"
-            :tac-channel-guides="tacChannelGuides"
             :personal-stream-ids="personalVideoIds"
-            :get-tac-unit-count="getTacUnitCount"
             @close="closeRightDrawer"
             @search-live-streams="handleSearchLiveStreams"
             @add-live-stream-to-personal="handleAddLiveStreamToPersonal"
             @quick-add-stream="handleQuickAddStream"
             @clear-all-personal="clearAllPersonalStreams"
             @remove-personal-stream="removePersonalStream"
-            @toggle-personal-stream="togglePersonalStream"
-            @submit-feedback="submitFeedbackForm"
-            @open-subscribe-popup="openSubscribePopup"
-            @set-focus-stream="setFocusStream"
-            @set-department="(dept) => (selectedDepartment = dept)"
         />
 
         <!-- Global Expiring TAC Channel Alert & Action Toast -->

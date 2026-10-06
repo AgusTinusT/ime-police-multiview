@@ -34,7 +34,6 @@ const emit = defineEmits([
 ]);
 
 const {
-    disabledOfficerKeys,
     getOfficerKey,
     isOfficerDisabled,
     toggleOfficerStatus,
@@ -67,7 +66,9 @@ const getOfficerRank = (rawItem) => {
     if (idx !== -1) return idx + 1;
 
     if (rawItem.video_id) {
-        const vIdx = props.customStreamOrder.indexOf(String(rawItem.video_id).trim());
+        const vIdx = props.customStreamOrder.indexOf(
+            String(rawItem.video_id).trim(),
+        );
         if (vIdx !== -1) return vIdx + 1;
     }
 
@@ -87,11 +88,17 @@ const combinedOfficers = computed(() => {
             list.push({
                 key,
                 raw: stream,
-                officer_name: stream.officer?.officer_name || stream.streamer_name || "Officer",
+                officer_name:
+                    stream.officer?.officer_name ||
+                    stream.streamer_name ||
+                    "Officer",
                 handle: stream.officer?.handle || stream.channel_id || "",
                 department: stream.officer?.department || "UNIT",
                 callsign: stream.officer?.callsign || "",
-                avatar_url: stream.officer?.avatar_url || stream.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(key)}`,
+                avatar_url:
+                    stream.officer?.avatar_url ||
+                    stream.avatar ||
+                    `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(key)}`,
                 is_live: true,
                 live_viewers: stream.viewers_count || 0,
             });
@@ -110,7 +117,9 @@ const combinedOfficers = computed(() => {
                 handle: officer.handle || officer.channel_id || "",
                 department: officer.department || "UNIT",
                 callsign: officer.callsign || "",
-                avatar_url: officer.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(key)}`,
+                avatar_url:
+                    officer.avatar_url ||
+                    `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(key)}`,
                 is_live: false,
                 live_viewers: 0,
             });
@@ -149,17 +158,12 @@ const filteredOfficersList = computed(() => {
 
 const totalOfficerCount = computed(() => combinedOfficers.value.length);
 const disabledCount = computed(() => {
-    return combinedOfficers.value.filter((o) => isOfficerDisabled(o.raw)).length;
+    return combinedOfficers.value.filter((o) => isOfficerDisabled(o.raw))
+        .length;
 });
-const activeCount = computed(() => totalOfficerCount.value - disabledCount.value);
-
-const disableAllOffline = () => {
-    combinedOfficers.value.forEach((officer) => {
-        if (!officer.is_live && !isOfficerDisabled(officer.raw)) {
-            toggleOfficerStatus(officer.raw);
-        }
-    });
-};
+const activeCount = computed(
+    () => totalOfficerCount.value - disabledCount.value,
+);
 </script>
 
 <template>
@@ -191,29 +195,79 @@ const disableAllOffline = () => {
                         class="w-full sm:max-w-xl bg-slate-900 border-t sm:border border-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col font-sans transform-gpu will-change-transform"
                     >
                         <!-- Mobile Drag Indicator Bar -->
-                        <div class="pt-2 pb-1 bg-slate-900 shrink-0 sm:hidden flex justify-center cursor-pointer" @click="emit('close')">
-                            <div class="w-12 h-1.5 bg-slate-700 rounded-full"></div>
+                        <div
+                            class="pt-2 pb-1 bg-slate-900 shrink-0 sm:hidden flex justify-center cursor-pointer"
+                            @click="emit('close')"
+                        >
+                            <div
+                                class="w-12 h-1.5 bg-slate-700 rounded-full"
+                            ></div>
                         </div>
 
                         <!-- Panel Header -->
-                        <div class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
+                        <div
+                            class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0"
+                        >
                             <div class="flex items-center gap-2.5 min-w-0">
-                                <div class="p-2 rounded-md bg-slate-900 border border-slate-800 text-blue-400 shrink-0">
-                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <div
+                                    class="p-2 rounded-md bg-slate-900 border border-slate-800 text-blue-400 shrink-0"
+                                >
+                                    <svg
+                                        class="w-5 h-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                        />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                        />
                                     </svg>
                                 </div>
                                 <div class="min-w-0">
-                                    <h3 class="text-sm font-bold text-slate-100 tracking-tight uppercase flex items-center gap-2">
-                                        <span>{{ $t("visibility_panel.title") }}</span>
+                                    <h3
+                                        class="text-sm font-bold text-slate-100 tracking-tight uppercase flex items-center gap-2"
+                                    >
+                                        <span>{{
+                                            $t("visibility_panel.title")
+                                        }}</span>
                                     </h3>
-                                    <p class="text-[11px] font-mono text-slate-400 truncate flex items-center gap-1.5">
-                                        <span class="text-emerald-400 font-semibold">{{ activeCount }} {{ $t("visibility_panel.shown") }}</span>
+                                    <p
+                                        class="text-[11px] font-mono text-slate-400 truncate flex items-center gap-1.5"
+                                    >
+                                        <span
+                                            class="text-emerald-400 font-semibold"
+                                            >{{ activeCount }}
+                                            {{
+                                                $t("visibility_panel.shown")
+                                            }}</span
+                                        >
                                         <span>•</span>
-                                        <span class="text-rose-400 font-semibold">{{ disabledCount }} {{ $t("visibility_panel.hidden") }}</span>
+                                        <span
+                                            class="text-rose-400 font-semibold"
+                                            >{{ disabledCount }}
+                                            {{
+                                                $t("visibility_panel.hidden")
+                                            }}</span
+                                        >
                                         <span>•</span>
-                                        <span class="text-amber-400 font-semibold">{{ (customStreamOrder || []).length }} {{ $t("visibility_panel.priority") }}</span>
+                                        <span
+                                            class="text-amber-400 font-semibold"
+                                            >{{
+                                                (customStreamOrder || []).length
+                                            }}
+                                            {{
+                                                $t("visibility_panel.priority")
+                                            }}</span
+                                        >
                                     </p>
                                 </div>
                             </div>
@@ -223,21 +277,37 @@ const disableAllOffline = () => {
                                 class="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-100 border border-slate-800 transition-colors cursor-pointer shrink-0"
                                 title="Tutup Panel"
                             >
-                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                <svg
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
                                 </svg>
                             </button>
                         </div>
 
                         <!-- Filter Controls Bar (Department Tabs & Search Input) -->
-                        <div class="p-3 bg-slate-950/60 border-b border-slate-800 space-y-2.5 shrink-0">
+                        <div
+                            class="p-3 bg-slate-950/60 border-b border-slate-800 space-y-2.5 shrink-0"
+                        >
                             <!-- Search & Action Buttons -->
                             <div class="flex items-center gap-2">
                                 <div class="relative flex-1 items-center">
                                     <input
                                         v-model="searchQuery"
                                         type="text"
-                                        :placeholder="$t('visibility_panel.search_placeholder')"
+                                        :placeholder="
+                                            $t(
+                                                'visibility_panel.search_placeholder',
+                                            )
+                                        "
                                         class="w-full bg-slate-950 border border-slate-800 rounded-md pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-700 font-mono"
                                     />
                                     <img
@@ -260,30 +330,46 @@ const disableAllOffline = () => {
                                     class="px-3 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-800 hover:border-slate-700 font-mono text-[11px] font-semibold transition-colors shrink-0 cursor-pointer flex items-center gap-1"
                                     title="Tampilkan Kembali Semua Perwira"
                                 >
-                                    <span>{{ $t("visibility_panel.reset") }}</span>
+                                    <span>{{
+                                        $t("visibility_panel.reset")
+                                    }}</span>
                                 </button>
                             </div>
 
                             <!-- Department Pills Selector -->
-                            <div class="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-0.5 font-mono text-xs">
+                            <div
+                                class="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-0.5 font-mono text-xs"
+                            >
                                 <button
-                                    v-for="dept in ['ALL', 'LSPD', 'BCSO', 'SASP', 'SAPR']"
+                                    v-for="dept in [
+                                        'ALL',
+                                        'LSPD',
+                                        'BCSO',
+                                        'SASP',
+                                        'SAPR',
+                                    ]"
                                     :key="dept"
                                     @click="selectedDeptFilter = dept"
                                     :class="[
                                         'px-2.5 py-1 rounded-md border transition-colors cursor-pointer font-medium text-[11px]',
                                         selectedDeptFilter === dept
                                             ? 'bg-slate-800 text-blue-400 border-slate-700 font-bold'
-                                            : 'bg-slate-900 text-slate-400 hover:text-slate-200 border-slate-800'
+                                            : 'bg-slate-900 text-slate-400 hover:text-slate-200 border-slate-800',
                                     ]"
                                 >
-                                    {{ dept === 'ALL' ? $t("visibility_panel.all_depts") : dept }}
+                                    {{
+                                        dept === "ALL"
+                                            ? $t("visibility_panel.all_depts")
+                                            : dept
+                                    }}
                                 </button>
                             </div>
                         </div>
 
                         <!-- Officer List (Scrollable Content) -->
-                        <div class="p-3 overflow-y-auto space-y-2 flex-1 scrollbar-thin scrollbar-thumb-slate-800">
+                        <div
+                            class="p-3 overflow-y-auto space-y-2 flex-1 scrollbar-thin scrollbar-thumb-slate-800"
+                        >
                             <div
                                 v-if="filteredOfficersList.length === 0"
                                 class="p-8 text-center text-slate-500 font-mono text-xs"
@@ -298,11 +384,13 @@ const disableAllOffline = () => {
                                 :class="[
                                     isOfficerDisabled(officer.raw)
                                         ? 'bg-slate-950/60 border-slate-900 opacity-50'
-                                        : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+                                        : 'bg-slate-950 border-slate-800 hover:border-slate-700',
                                 ]"
                             >
                                 <!-- Left Info (Rank Badge, Avatar, Name, Dept, Callsign) -->
-                                <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                <div
+                                    class="flex items-center gap-2.5 min-w-0 flex-1"
+                                >
                                     <span
                                         v-if="getOfficerRank(officer.raw) > 0"
                                         class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950/80 text-amber-400 border border-amber-800/80 shrink-0"
@@ -319,65 +407,143 @@ const disableAllOffline = () => {
                                         />
                                         <span
                                             class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-950"
-                                            :class="officer.is_live ? 'bg-red-500' : 'bg-slate-600'"
+                                            :class="
+                                                officer.is_live
+                                                    ? 'bg-red-500'
+                                                    : 'bg-slate-600'
+                                            "
                                         ></span>
                                     </div>
 
                                     <div class="min-w-0 flex-1">
-                                        <div class="flex items-center gap-1.5 flex-wrap">
-                                            <span class="text-xs font-bold text-slate-100 truncate">
+                                        <div
+                                            class="flex items-center gap-1.5 flex-wrap"
+                                        >
+                                            <span
+                                                class="text-xs font-bold text-slate-100 truncate"
+                                            >
                                                 {{ officer.officer_name }}
                                             </span>
                                             <span
                                                 class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold border"
-                                                :class="getDeptBadgeClass(officer.department)"
+                                                :class="
+                                                    getDeptBadgeClass(
+                                                        officer.department,
+                                                    )
+                                                "
                                             >
                                                 {{ officer.department }}
                                             </span>
                                         </div>
-                                        <p class="text-[10px] font-mono text-slate-400 truncate">
-                                            {{ officer.callsign || officer.handle }}
-                                            <span v-if="officer.is_live" class="text-red-400 font-semibold ml-1">LIVE</span>
-                                            <span v-else class="text-slate-500 ml-1">Standby</span>
+                                        <p
+                                            class="text-[10px] font-mono text-slate-400 truncate"
+                                        >
+                                            {{
+                                                officer.callsign ||
+                                                officer.handle
+                                            }}
+                                            <span
+                                                v-if="officer.is_live"
+                                                class="text-red-400 font-semibold ml-1"
+                                                >LIVE</span
+                                            >
+                                            <span
+                                                v-else
+                                                class="text-slate-500 ml-1"
+                                                >Standby</span
+                                            >
                                         </p>
                                     </div>
                                 </div>
 
                                 <!-- Right Controls: Priority Pin + Up/Down + Tampil/Sembunyi -->
                                 <div class="flex items-center gap-1.5 shrink-0">
-                                    <div v-if="!isOfficerDisabled(officer.raw)" class="flex items-center gap-1">
+                                    <div
+                                        v-if="!isOfficerDisabled(officer.raw)"
+                                        class="flex items-center gap-1"
+                                    >
                                         <button
-                                            @click="emit('toggle-priority', officer.raw)"
+                                            @click="
+                                                emit(
+                                                    'toggle-priority',
+                                                    officer.raw,
+                                                )
+                                            "
                                             class="px-2 py-1 rounded-md text-xs font-mono font-bold border transition cursor-pointer flex items-center justify-center gap-1"
                                             :class="[
                                                 getOfficerRank(officer.raw) > 0
                                                     ? 'bg-slate-800 text-amber-400 border-slate-700'
-                                                    : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border-slate-800'
+                                                    : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border-slate-800',
                                             ]"
-                                            :title="getOfficerRank(officer.raw) > 0 ? 'Lepas dari Prioritas Utama' : 'Pin ke Prioritas Utama (#1, #2, #3...)'"
+                                            :title="
+                                                getOfficerRank(officer.raw) > 0
+                                                    ? 'Lepas dari Prioritas Utama'
+                                                    : 'Pin ke Prioritas Utama (#1, #2, #3...)'
+                                            "
                                         >
-                                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z" />
+                                            <svg
+                                                class="w-3.5 h-3.5"
+                                                fill="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"
+                                                />
                                             </svg>
                                         </button>
 
-                                        <div v-if="getOfficerRank(officer.raw) > 0" class="flex flex-col gap-0.5">
+                                        <div
+                                            v-if="
+                                                getOfficerRank(officer.raw) > 0
+                                            "
+                                            class="flex flex-col gap-0.5"
+                                        >
                                             <button
-                                                @click="emit('move-priority-up', officer.raw)"
+                                                @click="
+                                                    emit(
+                                                        'move-priority-up',
+                                                        officer.raw,
+                                                    )
+                                                "
                                                 class="px-1 py-0.2 rounded text-[9px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 leading-none cursor-pointer"
                                                 title="Naikkan Urutan Prioritas"
                                             >
-                                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                                <svg
+                                                    class="w-2.5 h-2.5"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M5 15l7-7 7 7"
+                                                    />
                                                 </svg>
                                             </button>
                                             <button
-                                                @click="emit('move-priority-down', officer.raw)"
+                                                @click="
+                                                    emit(
+                                                        'move-priority-down',
+                                                        officer.raw,
+                                                    )
+                                                "
                                                 class="px-1 py-0.2 rounded text-[9px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 leading-none cursor-pointer"
                                                 title="Turunkan Urutan Prioritas"
                                             >
-                                                <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                <svg
+                                                    class="w-2.5 h-2.5"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 9l-7 7-7-7"
+                                                    />
                                                 </svg>
                                             </button>
                                         </div>
@@ -385,23 +551,35 @@ const disableAllOffline = () => {
 
                                     <!-- Enable/Disable Switch Toggle -->
                                     <button
-                                        @click="toggleOfficerStatus(officer.raw)"
+                                        @click="
+                                            toggleOfficerStatus(officer.raw)
+                                        "
                                         class="px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 border"
                                         :class="[
                                             isOfficerDisabled(officer.raw)
                                                 ? 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
-                                                : 'bg-slate-800 text-emerald-400 border-slate-700 hover:bg-slate-700'
+                                                : 'bg-slate-800 text-emerald-400 border-slate-700 hover:bg-slate-700',
                                         ]"
-                                        :title="isOfficerDisabled(officer.raw) ? 'Klik untuk menampilkan perwira' : 'Klik untuk menyembunyikan perwira'"
+                                        :title="
+                                            isOfficerDisabled(officer.raw)
+                                                ? 'Klik untuk menampilkan perwira'
+                                                : 'Klik untuk menyembunyikan perwira'
+                                        "
                                     >
-                                        <span>{{ isOfficerDisabled(officer.raw) ? "Sembunyi" : "Tampil" }}</span>
+                                        <span>{{
+                                            isOfficerDisabled(officer.raw)
+                                                ? "Sembunyi"
+                                                : "Tampil"
+                                        }}</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Panel Bottom Footer -->
-                        <div class="p-3 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0 text-xs font-mono">
+                        <div
+                            class="p-3 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0 text-xs font-mono"
+                        >
                             <div class="flex items-center gap-2">
                                 <span class="text-slate-400 text-[11px]">
                                     Filter tersimpan otomatis di browser
@@ -412,8 +590,18 @@ const disableAllOffline = () => {
                                     class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 hover:border-slate-700 text-[10px] transition-colors cursor-pointer flex items-center gap-1"
                                     title="Reset seluruh urutan prioritas ke standar"
                                 >
-                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    <svg
+                                        class="w-3 h-3"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                        />
                                     </svg>
                                     <span>Reset Prioritas</span>
                                 </button>

@@ -8,7 +8,6 @@ import iconLspd from "@/Components/Icons/LSPD_HD.svg";
 import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
 import iconSasp from "@/Components/Icons/SASP_HD.svg";
 import iconSapr from "@/Components/Icons/ranger_logo.svg";
-import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
 import iconPersonal from "@/Components/Icons/star-svgrepo-com.svg";
 import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
 

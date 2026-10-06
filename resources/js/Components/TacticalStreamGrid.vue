@@ -1,28 +1,5 @@
 <script setup>
-/**
- * ==============================================================================
- * SPESIFIKASI DATA & CONTRACT INTEGRASI - TACTICAL STREAM GRID & FOCUS MODE
- * ==============================================================================
- * 
- * 1. STATE & PROPS MODE FOKUS (FocusModePlayer):
- *    - focusStream: Object (Stream perwira aktif yang sedang dalam Mode Fokus)
- *    - visibleStreams / allActiveStreams: Array (Daftar stream aktif dari YouTube Scraper)
- *    - activeTacChannel: String (Channel Radio TAC aktif, misal 'TAC_1')
- *    - isTheaterMode: Boolean (Status tampilan bioskop)
- *    - isRightChatOpen: Boolean (Status panel Live Chat)
- * 
- * 2. ENDPOINT & DOKUMEN SCRAPER YOUTUBE:
- *    - GET /api/streams/live             : Mengambil seluruh siaran live patroli aktif
- *    - GET /api/streams/description/{id} : Mengambil deskripsi lengkap streamer jika tidak ada di feed awal
- * 
- * ==============================================================================
- * CATATAN INTEGRASI:
- * Jika integrasi data stream real-time & controller ini sudah selesai dikerjakan,
- * HAPUS BLOK KOMENTAR INI.
- * ==============================================================================
- */
 import { ref, computed } from "vue";
-import { Link } from "@inertiajs/vue3";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 
 const { toggleOfficerStatus, getOfficerKey } = useOfficerFilter();
@@ -33,25 +10,10 @@ import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
 import iconSasp from "@/Components/Icons/SASP_HD.svg";
 import iconSapr from "@/Components/Icons/ranger_logo.svg";
 import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
-import iconPersonal from "@/Components/Icons/star-svgrepo-com.svg";
-import iconQuickAdd from "@/Components/Icons/button-plus-svgrepo-com.svg";
-import iconSaver from "@/Components/Icons/gauge-low-svgrepo-com.svg";
-import iconPlayAll from "@/Components/Icons/play-full-svgrepo-com.svg";
-import iconPause from "@/Components/Icons/controller-paus-svgrepo-com.svg";
-import iconMute from "@/Components/Icons/audio-off-svgrepo-com.svg";
-import iconUnmute from "@/Components/Icons/audio-svgrepo-com.svg";
-import iconFocus from "@/Components/Icons/focus-point-round-844-svgrepo-com.svg";
 import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
-import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
 import iconRadio from "@/Components/Icons/radio-tac-svgrepo-com.svg";
 import iconChat from "@/Components/Icons/chat-svgrepo-com.svg";
-import iconChatRemove from "@/Components/Icons/chat-remove-svgrepo-com.svg";
 import iconClock from "@/Components/Icons/time-svgrepo-com.svg";
-import iconFullscreen from "@/Components/Icons/full-screen-svgrepo-com.svg";
-import iconDoc from "@/Components/Icons/document-svgrepo-com.svg";
-import iconCloseBold from "@/Components/Icons/close-bold-svgrepo-com.svg";
-import iconGrid4 from "@/Components/Icons/grid-4-svgrepo-com.svg";
-import iconTheater from "@/Components/Icons/rectangle-o-svgrepo-com.svg";
 
 import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
 import TacChannelToolbar from "@/Components/TacChannelToolbar.vue";
@@ -68,15 +30,7 @@ const props = defineProps({
     isSyncingFeeds: { type: Boolean, default: false },
     isTheaterMode: { type: Boolean, default: false },
     allActiveStreams: { type: Array, default: () => [] },
-    allCatalogStreams: { type: Array, default: () => [] },
-    trendingStreams: { type: Array, default: () => [] },
-    recentReplayStreams: { type: Array, default: () => [] },
     activePersonalStreams: { type: Array, default: () => [] },
-    lspdCatalogStreams: { type: Array, default: () => [] },
-    saspCatalogStreams: { type: Array, default: () => [] },
-    bcsoCatalogStreams: { type: Array, default: () => [] },
-    saprCatalogStreams: { type: Array, default: () => [] },
-    specialOpsCatalogStreams: { type: Array, default: () => [] },
     tacSituationalStreams: { type: Array, default: () => [] },
     filteredOfflineOfficers: { type: Array, default: () => [] },
     visibleStreams: { type: Array, default: () => [] },
@@ -125,8 +79,6 @@ const emit = defineEmits([
     "update:selectedLayout",
     "update:searchFilter",
 ]);
-
-
 
 const getDeptCount = (deptId) => {
     if (deptId === "ALL") return props.allActiveStreams?.length || 0;
@@ -177,8 +129,10 @@ const isVideoPlaying = (videoId) => {
     if (stoppedVideoIds.value.includes(videoId)) return false;
     if (props.isDataSaverEnabled) {
         return (
-            (props.activeGridVideoIds && props.activeGridVideoIds.includes(videoId)) ||
-            (props.activePreviewVideoIds && props.activePreviewVideoIds.includes(videoId)) ||
+            (props.activeGridVideoIds &&
+                props.activeGridVideoIds.includes(videoId)) ||
+            (props.activePreviewVideoIds &&
+                props.activePreviewVideoIds.includes(videoId)) ||
             props.activeAudioVideoId === videoId
         );
     }
@@ -244,7 +198,6 @@ const handleSetFocusStream = (videoId) => {
 
 // Focus Mode Right-Column Live Chat State
 const isRightChatOpen = ref(true);
-const openInfoVideoIds = ref([]);
 const fetchedDescriptions = ref({});
 
 const handleChatClick = (streamId) => {
@@ -262,80 +215,12 @@ const handleChatClick = (streamId) => {
     }
 };
 
-const isStreamInfoOpen = (videoId) => openInfoVideoIds.value.includes(videoId);
-
 const getStreamDescription = (stream) => {
     if (!stream) return "";
     if (fetchedDescriptions.value[stream.video_id]) {
         return fetchedDescriptions.value[stream.video_id];
     }
     return stream.description || "";
-};
-
-const toggleStreamInfo = async (videoId) => {
-    if (isStreamInfoOpen(videoId)) {
-        openInfoVideoIds.value = openInfoVideoIds.value.filter(
-            (id) => id !== videoId,
-        );
-    } else {
-        openInfoVideoIds.value.push(videoId);
-
-        const targetStream =
-            (props.allActiveStreams || []).find(
-                (s) => s.video_id === videoId,
-            ) ||
-            (props.visibleStreams || []).find((s) => s.video_id === videoId) ||
-            (props.focusStream && props.focusStream.video_id === videoId
-                ? props.focusStream
-                : null);
-
-        const currentDesc =
-            (targetStream && targetStream.description) ||
-            fetchedDescriptions.value[videoId] ||
-            "";
-
-        if (
-            !fetchedDescriptions.value[videoId] &&
-            (!currentDesc ||
-                currentDesc.endsWith("...") ||
-                currentDesc.length < 300)
-        ) {
-            try {
-                const response = await fetch(
-                    `/api/stream-details?video_id=${videoId}`,
-                );
-                const json = await response.json();
-                if (
-                    json.status === "success" &&
-                    json.data &&
-                    json.data.description
-                ) {
-                    fetchedDescriptions.value[videoId] = json.data.description;
-                    if (targetStream) {
-                        targetStream.description = json.data.description;
-                        if (json.data.title) {
-                            targetStream.title = json.data.title;
-                        }
-                    }
-                }
-            } catch (err) {
-                console.warn("Could not fetch full stream description:", err);
-            }
-        }
-    }
-};
-
-const formatDescriptionWithLinks = (text) => {
-    if (!text) return "";
-    const escaped = text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    const urlPattern = /(https?:\/\/[^\s]+)/g;
-    return escaped.replace(
-        urlPattern,
-        '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline hover:text-blue-300">$1</a>',
-    );
 };
 
 // Computed Primary & Secondary Streams for Focus Layout
@@ -382,26 +267,8 @@ const layoutGridClass = computed(() => {
 });
 
 // Horizontal Scroll Helper for Netflix Swimlanes
-const scrollRow = (rowId, direction = "right") => {
-    const el = document.getElementById(rowId);
-    if (!el) return;
-    const scrollAmount = direction === "left" ? -650 : 650;
-    el.scrollBy({ left: scrollAmount, behavior: "smooth" });
-};
 
 // Department Badge Class Mapper
-const getDeptBadgeClass = (dept) => {
-    const d = (dept || "").toUpperCase();
-    if (d.includes("LSPD"))
-        return "bg-blue-900/60 text-blue-200 border-blue-700/80";
-    if (d.includes("BCSO") || d.includes("LSCSD"))
-        return "bg-amber-900/60 text-amber-200 border-amber-700/80";
-    if (d.includes("SASP"))
-        return "bg-teal-900/60 text-teal-200 border-teal-700/80";
-    if (d.includes("SAPR") || d.includes("RANGER"))
-        return "bg-emerald-900/60 text-emerald-200 border-emerald-700/80";
-    return "bg-slate-800 text-slate-300 border-slate-700";
-};
 
 // Department Icon Mapper
 const getDeptIcon = (dept) => {
@@ -414,26 +281,8 @@ const getDeptIcon = (dept) => {
 };
 
 // Relative Time Label Helper
-const formatRelativeTimeLabel = (dateStr) => {
-    if (!dateStr) return "REPLAY";
-    return String(dateStr);
-};
 
 // YouTube Link Helper
-const getStreamYoutubeUrl = (stream) => {
-    if (!stream) return "#";
-    if (
-        stream.is_officer_card ||
-        (typeof stream.video_id === "string" &&
-            stream.video_id.startsWith("officer-"))
-    ) {
-        const handle = stream.officer?.handle
-            ? stream.officer.handle.replace(/^@/, "")
-            : "";
-        return handle ? `https://www.youtube.com/@${handle}` : "#";
-    }
-    return `https://www.youtube.com/watch?v=${stream.video_id}`;
-};
 
 // TAC Department Check Helper
 const isTacDepartment = (deptId) => {
@@ -472,7 +321,13 @@ const getStreamTac = (videoId) => {
 
 const getCustomOrderRank = (item) => {
     if (!item || !props.customOrderMap) return 0;
-    const key = getOfficerKey(item) || (typeof item === "string" ? item.trim() : (item.video_id ? String(item.video_id).trim() : ""));
+    const key =
+        getOfficerKey(item) ||
+        (typeof item === "string"
+            ? item.trim()
+            : item.video_id
+              ? String(item.video_id).trim()
+              : "");
     if (!key) return 0;
 
     if (Array.isArray(props.customOrderMap)) {
@@ -589,20 +444,61 @@ const getCustomOrderRank = (item) => {
                         :originUrl="originUrl"
                         :chatEmbedDomain="chatEmbedDomain"
                         :activeAudioVideoId="activeAudioVideoId"
-                        :isStreamStopped="isStreamStopped(primaryFocusedStream.video_id)"
+                        :isStreamStopped="
+                            isStreamStopped(primaryFocusedStream.video_id)
+                        "
                         :isRightChatOpen="isRightChatOpen"
                         :isTheaterMode="isTheaterMode"
-                        :activeTacChannel="getStreamTac(primaryFocusedStream.video_id)"
-                        :isPersonalStream="isPersonalStream(primaryFocusedStream.officer?.handle || primaryFocusedStream.video_id)"
-                        :fetchedDescription="getStreamDescription(primaryFocusedStream)"
-                        @toggle-audio="emit('toggle-audio', primaryFocusedStream.video_id)"
-                        @toggle-stop-feed="toggleStopFeed(primaryFocusedStream.video_id)"
+                        :activeTacChannel="
+                            getStreamTac(primaryFocusedStream.video_id)
+                        "
+                        :isPersonalStream="
+                            isPersonalStream(
+                                primaryFocusedStream.officer?.handle ||
+                                    primaryFocusedStream.video_id,
+                            )
+                        "
+                        :fetchedDescription="
+                            getStreamDescription(primaryFocusedStream)
+                        "
+                        @toggle-audio="
+                            emit('toggle-audio', primaryFocusedStream.video_id)
+                        "
+                        @toggle-stop-feed="
+                            toggleStopFeed(primaryFocusedStream.video_id)
+                        "
                         @toggle-right-chat="isRightChatOpen = !isRightChatOpen"
                         @toggle-theater-mode="emit('toggle-theater-mode')"
-                        @toggle-tac-popover="emit('update:activeTacPopoverVideoId', activeTacPopoverVideoId === primaryFocusedStream.video_id ? null : primaryFocusedStream.video_id)"
-                        @assign-tac="(tacCode) => emit('assign-stream-to-tac', tacCode, primaryFocusedStream.video_id)"
-                        @remove-tac="emit('remove-stream-from-tac', primaryFocusedStream.video_id)"
-                        @toggle-personal-stream="emit('toggle-personal-stream', primaryFocusedStream.officer?.handle || primaryFocusedStream.video_id)"
+                        @toggle-tac-popover="
+                            emit(
+                                'update:activeTacPopoverVideoId',
+                                activeTacPopoverVideoId ===
+                                    primaryFocusedStream.video_id
+                                    ? null
+                                    : primaryFocusedStream.video_id,
+                            )
+                        "
+                        @assign-tac="
+                            (tacCode) =>
+                                emit(
+                                    'assign-stream-to-tac',
+                                    tacCode,
+                                    primaryFocusedStream.video_id,
+                                )
+                        "
+                        @remove-tac="
+                            emit(
+                                'remove-stream-from-tac',
+                                primaryFocusedStream.video_id,
+                            )
+                        "
+                        @toggle-personal-stream="
+                            emit(
+                                'toggle-personal-stream',
+                                primaryFocusedStream.officer?.handle ||
+                                    primaryFocusedStream.video_id,
+                            )
+                        "
                         @close-focus="emit('update:selectedLayout', 'auto')"
                     />
                 </div>
@@ -667,7 +563,9 @@ const getCustomOrderRank = (item) => {
                             @set-focus-stream="handleSetFocusStream($event)"
                             @handle-chat-click="handleChatClick($event)"
                             @toggle-officer-status="toggleOfficerStatus($event)"
-                            @update:selectedLayout="emit('update:selectedLayout', $event)"
+                            @update:selectedLayout="
+                                emit('update:selectedLayout', $event)
+                            "
                         />
                     </div>
                 </div>
@@ -706,7 +604,9 @@ const getCustomOrderRank = (item) => {
                             @set-focus-stream="handleSetFocusStream($event)"
                             @handle-chat-click="handleChatClick($event)"
                             @toggle-officer-status="toggleOfficerStatus($event)"
-                            @update:selectedLayout="emit('update:selectedLayout', $event)"
+                            @update:selectedLayout="
+                                emit('update:selectedLayout', $event)
+                            "
                         />
                     </div>
                 </div>
@@ -775,7 +675,9 @@ const getCustomOrderRank = (item) => {
             :selectedDeptLabel="selectedDeptLabel"
             :selectedLayoutLabel="selectedLayoutLabel"
             :primaryFocusedStream="primaryFocusedStream"
-            @update:selectedDepartment="emit('update:selectedDepartment', $event)"
+            @update:selectedDepartment="
+                emit('update:selectedDepartment', $event)
+            "
             @update:selectedLayout="emit('update:selectedLayout', $event)"
             @update:searchFilter="emit('update:searchFilter', $event)"
             @trigger-manual-sync="emit('trigger-manual-sync')"

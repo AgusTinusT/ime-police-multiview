@@ -5,12 +5,6 @@ import axios from "axios";
 
 import CommunityClipsTab from "@/Components/CommunityClipsTab.vue";
 
-import iconLspd from "@/Components/Icons/LSPD_HD.svg";
-import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
-import iconSasp from "@/Components/Icons/SASP_HD.svg";
-import iconSapr from "@/Components/Icons/ranger_logo.svg";
-import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
-
 import iconCloseBold from "@/Components/Icons/close-bold-svgrepo-com.svg";
 import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
 import iconTheater from "@/Components/Icons/rectangle-o-svgrepo-com.svg";
@@ -20,7 +14,6 @@ import iconMute from "@/Components/Icons/audio-off-svgrepo-com.svg";
 import iconPause from "@/Components/Icons/controller-paus-svgrepo-com.svg";
 import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
 import iconChat from "@/Components/Icons/chat-svgrepo-com.svg";
-import iconChatRemove from "@/Components/Icons/chat-remove-svgrepo-com.svg";
 import iconPlayAll from "@/Components/Icons/play-full-svgrepo-com.svg";
 
 const props = defineProps({
@@ -88,7 +81,7 @@ watch(
             newClipAuthor.value = newName;
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 // Clips list state for Focus Mode (Persisted in localStorage across page refreshes)
@@ -148,8 +141,7 @@ const parseTimestamp = (str) => {
     }
     if (parts.length === 2) {
         return (
-            (parseInt(parts[0], 10) || 0) * 60 +
-            (parseInt(parts[1], 10) || 0)
+            (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0)
         );
     }
     return parseInt(str, 10) || 0;
@@ -270,8 +262,12 @@ const handleCreateClipSubmit = async () => {
             title: newClipTitle.value.trim(),
             start_seconds: startSec,
             end_seconds: endSec,
-            officer_id: props.stream?.officer?.id || props.stream?.officer_id || null,
-            officer_name: props.stream?.officer?.officer_name || props.stream?.officer?.name || null,
+            officer_id:
+                props.stream?.officer?.id || props.stream?.officer_id || null,
+            officer_name:
+                props.stream?.officer?.officer_name ||
+                props.stream?.officer?.name ||
+                null,
             officer_handle: props.stream?.officer?.handle || null,
             creator_name: authorNameFinal,
         });
@@ -280,7 +276,10 @@ const handleCreateClipSubmit = async () => {
             customClipsList.value.unshift(response.data.clip);
         }
     } catch (err) {
-        alert(err.response?.data?.message || "Gagal menyimpan klip momen aksi ke database.");
+        alert(
+            err.response?.data?.message ||
+                "Gagal menyimpan klip momen aksi ke database.",
+        );
         return;
     }
 
@@ -333,15 +332,6 @@ const formatDescriptionWithLinks = (text) => {
     );
 };
 
-const getDeptIcon = (dept) => {
-    const d = (dept || "").toUpperCase();
-    if (d.includes("LSPD")) return iconLspd;
-    if (d.includes("BCSO") || d.includes("LSCSD")) return iconBcso;
-    if (d.includes("SASP")) return iconSasp;
-    if (d.includes("SAPR") || d.includes("RANGER")) return iconSapr;
-    return iconAllUnits;
-};
-
 const getDeptBadgeClass = (dept) => {
     const d = (dept || "").toUpperCase();
     if (d.includes("LSPD"))
@@ -369,14 +359,6 @@ const officerDepartment = computed(() => {
 
 const officerCallsign = computed(() => {
     return props.stream?.officer?.callsign || "";
-});
-
-const officerBadge = computed(() => {
-    return props.stream?.officer?.badge_number || "";
-});
-
-const officerRank = computed(() => {
-    return props.stream?.officer?.rank || "";
 });
 
 const officerAvatar = computed(() => {
@@ -490,8 +472,14 @@ const handleAvatarError = (e) => {
                                 class="px-1 py-1.5 rounded border transition-colors cursor-pointer flex flex-col items-center justify-center leading-none gap-0.5"
                                 :title="`Alokasikan ke Radio TAC ${i}`"
                             >
-                                <span class="text-[9px] font-bold tracking-tight opacity-75">TAC</span>
-                                <span class="text-xs sm:text-sm font-extrabold font-mono">{{ i }}</span>
+                                <span
+                                    class="text-[9px] font-bold tracking-tight opacity-75"
+                                    >TAC</span
+                                >
+                                <span
+                                    class="text-xs sm:text-sm font-extrabold font-mono"
+                                    >{{ i }}</span
+                                >
                             </button>
                         </div>
 
@@ -845,9 +833,7 @@ const handleAvatarError = (e) => {
             v-if="isRightChatOpen"
             class="block lg:hidden bg-slate-950 border-t border-slate-800 w-full p-0 overflow-hidden"
         >
-            <div
-                class="w-full h-[480px] bg-slate-900 relative"
-            >
+            <div class="w-full h-[480px] bg-slate-900 relative">
                 <iframe
                     :key="`mobile-chat-${stream.video_id}`"
                     :src="`https://www.youtube.com/live_chat?v=${stream.video_id}&embed_domain=${computedChatEmbedDomain}&dark_theme=1`"
@@ -870,7 +856,8 @@ const handleAvatarError = (e) => {
                 <button
                     @click="activeFocusTab = 'description'"
                     :class="
-                        activeFocusTab === 'description' || activeFocusTab === 'chat'
+                        activeFocusTab === 'description' ||
+                        activeFocusTab === 'chat'
                             ? 'border-slate-700 text-slate-100 bg-slate-800 font-semibold'
                             : 'border-slate-800 text-slate-400 hover:text-slate-200 bg-slate-950'
                     "
@@ -923,7 +910,10 @@ const handleAvatarError = (e) => {
             <div class="pt-1">
                 <!-- DESKRIPSI STREAMER CONTENT -->
                 <div
-                    v-if="activeFocusTab === 'description' || activeFocusTab === 'chat'"
+                    v-if="
+                        activeFocusTab === 'description' ||
+                        activeFocusTab === 'chat'
+                    "
                     class="bg-slate-950 rounded-lg p-4 border border-slate-800 space-y-3 font-mono text-xs text-slate-300"
                 >
                     <div

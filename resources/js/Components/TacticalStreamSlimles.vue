@@ -2,9 +2,9 @@
 import { ref, computed } from "vue";
 import { router } from "@inertiajs/vue3";
 import { useI18n } from "vue-i18n";
-import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
 import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
 import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
+import { parseRelativeTimeToSeconds } from "@/Utils/timeHelpers";
 
 const { t } = useI18n();
 
@@ -20,71 +20,6 @@ const emit = defineEmits(["play-stream-in-focus", "trigger-manual-sync"]);
 
 // Filter tabs state: 'ALL' | 'LIVE' | 'REPLAY'
 const activeFilter = ref("ALL");
-
-const parseRelativeTimeToSeconds = (str) => {
-    if (!str) return 999999999;
-    const text = String(str).toLowerCase().trim();
-    if (
-        text.includes("baru saja") ||
-        text.includes("just now") ||
-        text.includes("live") ||
-        text.includes("sedang tayang")
-    )
-        return 0;
-
-    const numMatch = text.match(/(\d+)/);
-    const num = numMatch ? parseInt(numMatch[1], 10) : 1;
-    const isIndonesian = text.includes("lalu");
-
-    if (
-        text.includes("tahun") ||
-        text.includes("year") ||
-        text.match(/\b\d+\s*(?:y|thn|th)\b/)
-    )
-        return num * 31536000;
-    if (
-        text.includes("bulan") ||
-        text.includes("month") ||
-        text.match(/\b\d+\s*(?:mo|bln)\b/)
-    )
-        return num * 2592000;
-    if (
-        text.includes("minggu") ||
-        text.includes("week") ||
-        text.match(/\b\d+\s*w\b/)
-    )
-        return num * 604800;
-    if (
-        text.includes("hari") ||
-        text.includes("day") ||
-        (isIndonesian && text.match(/\b\d+\s*h\b/)) ||
-        (!isIndonesian && text.match(/\b\d+\s*d\b/))
-    )
-        return num * 86400;
-    if (
-        text.includes("jam") ||
-        text.includes("hour") ||
-        (isIndonesian && text.match(/\b\d+\s*j\b/)) ||
-        (!isIndonesian && text.match(/\b\d+\s*h\b/))
-    )
-        return num * 3600;
-    if (
-        text.includes("menit") ||
-        text.includes("minute") ||
-        text.includes("min") ||
-        text.match(/\b\d+\s*m\b/)
-    )
-        return num * 60;
-    if (
-        text.includes("detik") ||
-        text.includes("second") ||
-        text.includes("sec") ||
-        text.match(/\b\d+\s*s\b/)
-    )
-        return num;
-
-    return 999999999;
-};
 
 // Combine Live & Recent Replays into a single array (Replays sorted newest first)
 const combinedStreams = computed(() => {

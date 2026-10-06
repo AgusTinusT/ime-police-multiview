@@ -1,4 +1,3 @@
-import { ref } from "vue";
 
 /**
  * Senior Web Analytics & GA4 Centralized Composable

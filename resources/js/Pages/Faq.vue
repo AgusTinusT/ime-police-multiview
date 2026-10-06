@@ -8,7 +8,6 @@ import { faqsId } from "@/Data/faqs.id.js";
 import { faqsEn } from "@/Data/faqs.en.js";
 import BaseSearchInput from "@/Components/Base/BaseSearchInput.vue";
 import BaseBadge from "@/Components/Base/BaseBadge.vue";
-import BaseEmptyState from "@/Components/Base/BaseEmptyState.vue";
 
 const { t, locale } = useI18n();
 

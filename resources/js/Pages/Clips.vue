@@ -52,16 +52,6 @@ const STORAGE_KEY = "ime_focus_community_clips";
 const VIEW_MODE_KEY = "ime_clips_view_mode";
 const LIKED_CLIPS_KEY = "ime_liked_clips";
 
-const loadCustomClips = () => {
-    if (typeof window === "undefined") return [];
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-        return [];
-    }
-};
-
 const saveCustomClips = (clipsList) => {
     if (typeof window === "undefined") return;
     try {
@@ -74,58 +64,6 @@ const saveCustomClips = (clipsList) => {
 // Initialize clips exclusively from MySQL database props.initialClips
 const clips = ref(props.initialClips || []);
 
-// LIKED CLIPS STATE
-const loadLikedClips = () => {
-    if (typeof window === "undefined") return {};
-    try {
-        const stored = localStorage.getItem(LIKED_CLIPS_KEY);
-        return stored ? JSON.parse(stored) : {};
-    } catch (e) {
-        return {};
-    }
-};
-
-const likedClipsMap = ref(loadLikedClips());
-
-const toggleLikeClip = async (clipId) => {
-    if (!clipId) return;
-    const isLiked = !!likedClipsMap.value[clipId];
-
-    if (isLiked) {
-        delete likedClipsMap.value[clipId];
-    } else {
-        likedClipsMap.value[clipId] = true;
-    }
-
-    if (typeof window !== "undefined") {
-        localStorage.setItem(
-            LIKED_CLIPS_KEY,
-            JSON.stringify(likedClipsMap.value),
-        );
-    }
-
-    try {
-        const response = await axios.post(`/api/v1/tac-clips/${clipId}/like`);
-        if (response.data && response.data.likes_count !== undefined) {
-            const clip = clips.value.find((c) => c.id === clipId);
-            if (clip) {
-                clip.likes_count = response.data.likes_count;
-            }
-        }
-    } catch (e) {
-        // Silently handle backend like error
-    }
-};
-
-const isClipLiked = (clipId) => !!likedClipsMap.value[clipId];
-
-const getClipLikesCount = (clip) => {
-    const base = clip?.likes_count || 0;
-    return isClipLiked(clip?.id)
-        ? Math.max(base, base + (likedClipsMap.value[clip?.id] ? 1 : 0))
-        : base;
-};
-
 // ADD NEW TACCLIP MODAL STATE
 const isAddModalOpen = ref(false);
 const isSubmittingClip = ref(false);
@@ -137,18 +75,6 @@ const newClipForm = ref({
     officer_id: "",
     creator_name: "",
 });
-
-const openAddModal = () => {
-    newClipForm.value = {
-        youtube_url: "",
-        title: "",
-        start_time: "00:00:10",
-        end_time: "00:01:00",
-        officer_id: "",
-        creator_name: authUser.value ? authUser.value.name : "",
-    };
-    isAddModalOpen.value = true;
-};
 
 const closeAddModal = () => {
     isAddModalOpen.value = false;
@@ -233,13 +159,6 @@ const loadInitialViewMode = () => {
 
 const viewMode = ref(loadInitialViewMode());
 
-const setViewMode = (mode) => {
-    viewMode.value = mode;
-    if (typeof window !== "undefined") {
-        localStorage.setItem(VIEW_MODE_KEY, mode);
-    }
-};
-
 // PURGE LEGACY LOCALSTORAGE STORAGE_KEY IF PRESENT
 onMounted(() => {
     if (typeof window !== "undefined") {
@@ -278,19 +197,6 @@ const formatTime = (seconds) => {
         return `${h}:${pad(m)}:${pad(s)}`;
     }
     return `${pad(m)}:${pad(s)}`;
-};
-
-const formatDurationText = (start, end) => {
-    const diff = Math.max(0, (end || 0) - (start || 0));
-    if (diff < 60) return `${diff} Detik`;
-    const m = Math.floor(diff / 60);
-    const s = diff % 60;
-    return s > 0 ? `${m}m ${s}s` : `${m} Menit`;
-};
-
-const formatLikesText = (num) => {
-    if (num >= 1000) return (num / 1000).toFixed(1) + "k";
-    return String(num);
 };
 
 // AUTHORIZATION CHECK FOR DELETING CLIP
@@ -406,10 +312,6 @@ const filteredClips = computed(() => {
     return list;
 });
 
-const paginatedClips = computed(() => {
-    return filteredClips.value.slice(0, visibleCount.value);
-});
-
 const hasMoreClips = computed(() => {
     return visibleCount.value < filteredClips.value.length;
 });
@@ -443,39 +345,6 @@ onUnmounted(() => {
 });
 
 // TELEMETRY KPI COMPUTED
-const totalClipsCount = computed(() => clips.value.length);
-
-const myClipsCount = computed(() => {
-    if (!authUser.value) return 0;
-    return clips.value.filter((c) => canDeleteClip(c)).length;
-});
-
-const uniqueOfficersCount = computed(() => {
-    const handles = new Set();
-    clips.value.forEach((c) => {
-        if (c.officer_handle) handles.add(c.officer_handle);
-        else if (c.officer_name) handles.add(c.officer_name);
-    });
-    return handles.size;
-});
-
-const topClipperName = computed(() => {
-    if (clips.value.length === 0) return "Belum Ada";
-    const counts = {};
-    clips.value.forEach((c) => {
-        const creator = c.creator_name || "Guest";
-        counts[creator] = (counts[creator] || 0) + 1;
-    });
-    let max = 0;
-    let top = "Anonim";
-    Object.entries(counts).forEach(([name, cnt]) => {
-        if (cnt > max) {
-            max = cnt;
-            top = name;
-        }
-    });
-    return top;
-});
 
 // TOAST NOTIFICATION LOGIC
 const toastText = ref("");
@@ -492,34 +361,11 @@ const showToast = (msg) => {
 };
 
 // MODAL EMBED PLAYER FOR GRID MODE
-const activePlayingClip = ref(null);
 const iframeKey = ref(0);
-
-const openClipModal = (clip) => {
-    activePlayingClip.value = clip;
-    iframeKey.value++;
-};
-
-const closeClipModal = () => {
-    activePlayingClip.value = null;
-};
 
 const replayClip = () => {
     iframeKey.value++;
     shortKey.value++;
-};
-
-const copyClipLink = (clip) => {
-    if (!clip) return;
-    const url = `https://www.youtube.com/watch?v=${clip.video_id}&t=${clip.start_seconds}s`;
-    navigator.clipboard
-        .writeText(url)
-        .then(() => {
-            showToast("Tautan video berhasil disalin!");
-        })
-        .catch(() => {
-            showToast("Gagal menyalin tautan");
-        });
 };
 
 // 16:9 CLEAN CINEMA FEED MODE LOGIC & KEYBOARD NAV

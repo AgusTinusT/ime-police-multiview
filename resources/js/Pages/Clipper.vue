@@ -586,7 +586,6 @@ const isSubmitting = ref(false);
 const isLoadingClips = ref(false);
 const isCheckingUrl = ref(false);
 const urlCheckResult = ref(null);
-let checkUrlDebounceTimer = null;
 let currentCheckRequestId = 0;
 const submitCooldownSec = ref(0);
 let cooldownTimer = null;
@@ -674,15 +673,6 @@ const videoChannel = computed(() => {
     return activeVideoId.value ? 'YouTube Live Embed' : 'Local Reference';
 });
 
-const videoThumb = computed(() => {
-    if (urlCheckResult.value?.thumbnail_url) {
-        return urlCheckResult.value.thumbnail_url;
-    }
-    if (activeVideoId.value) {
-        return `https://img.youtube.com/vi/${activeVideoId.value}/hqdefault.jpg`;
-    }
-    return 'https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=400&q=80';
-});
 
 const videoSrc = ref('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4');
 
@@ -834,14 +824,6 @@ function setPresetDuration(secondsOffset) {
     form.value.end_time = formatSecondsToTimestamp(targetEndSecs);
 }
 
-function onHtml5TimeUpdate() {
-    if (html5VideoRef.value) {
-        playerCurrentSeconds.value = Math.floor(html5VideoRef.value.currentTime);
-        if (html5VideoRef.value.duration) {
-            videoDurationSec.value = Math.floor(html5VideoRef.value.duration);
-        }
-    }
-}
 
 function setSampleVideo(idx) {
     const sample = sampleVideos[idx];

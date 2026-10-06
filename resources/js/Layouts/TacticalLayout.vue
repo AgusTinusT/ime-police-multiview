@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, router } from "@inertiajs/vue3";
+import { router } from "@inertiajs/vue3";
 import { ref, onMounted, onUnmounted } from "vue";
 
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";

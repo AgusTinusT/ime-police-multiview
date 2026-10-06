@@ -1,18 +1,16 @@
-import '../css/app.css';
-import './bootstrap';
+import "../css/app.css";
+import "./bootstrap";
 
-import { createInertiaApp, router } from '@inertiajs/vue3';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { createApp, h } from 'vue';
-import { ZiggyVue } from '../../vendor/tightenco/ziggy';
-import i18n from './i18n';
-
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+import { createInertiaApp, router } from "@inertiajs/vue3";
+import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
+import { createApp, h } from "vue";
+import { ZiggyVue } from "../../vendor/tightenco/ziggy";
+import i18n from "./i18n";
 
 // Automatically track Inertia SPA page navigation in Google Analytics
-router.on('navigate', () => {
-    if (typeof window.gtag === 'function') {
-        window.gtag('event', 'page_view', {
+router.on("navigate", () => {
+    if (typeof window.gtag === "function") {
+        window.gtag("event", "page_view", {
             page_title: document.title,
             page_location: window.location.href,
             page_path: window.location.pathname + window.location.search,
@@ -26,18 +24,18 @@ router.on('navigate', () => {
 const GA_HEARTBEAT_INTERVAL_MS = 120000; // 2 minutes
 
 setInterval(() => {
-    if (document.visibilityState === 'visible') {
-        if (typeof window.gtag === 'function') {
-            window.gtag('event', 'stream_heartbeat', {
-                event_category: 'engagement',
-                event_label: 'active_watching',
+    if (document.visibilityState === "visible") {
+        if (typeof window.gtag === "function") {
+            window.gtag("event", "stream_heartbeat", {
+                event_category: "engagement",
+                event_label: "active_watching",
                 non_interaction: false, // Ensures user is counted as active in GA4
             });
         } else if (window.dataLayer && Array.isArray(window.dataLayer)) {
             window.dataLayer.push({
-                event: 'stream_heartbeat',
-                event_category: 'engagement',
-                event_label: 'active_watching',
+                event: "stream_heartbeat",
+                event_category: "engagement",
+                event_label: "active_watching",
                 non_interaction: false,
             });
         }
@@ -45,11 +43,11 @@ setInterval(() => {
 }, GA_HEARTBEAT_INTERVAL_MS);
 
 createInertiaApp({
-    title: (title) => title ? title : 'IME RP — SASP Police Duty',
+    title: (title) => (title ? title : "IME RP — SASP Police Duty"),
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.vue`,
-            import.meta.glob('./Pages/**/*.vue'),
+            import.meta.glob("./Pages/**/*.vue"),
         ),
     setup({ el, App, props, plugin }) {
         return createApp({ render: () => h(App, props) })
@@ -59,7 +57,6 @@ createInertiaApp({
             .mount(el);
     },
     progress: {
-        color: '#4B5563',
+        color: "#4B5563",
     },
 });
-

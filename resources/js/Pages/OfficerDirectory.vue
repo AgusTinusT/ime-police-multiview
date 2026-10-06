@@ -60,7 +60,6 @@ const getInitialSort = () => {
 
 const sortBy = ref(getInitialSort()); // 'status', 'subs_desc', 'subs_asc', 'name'
 const viewMode = ref("grid"); // 'grid' | 'table'
-const isSyncing = ref(false);
 
 // Drawer State
 const activeOfficer = ref(null);
