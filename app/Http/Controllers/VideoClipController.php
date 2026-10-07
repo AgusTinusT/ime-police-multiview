@@ -275,14 +275,16 @@ class VideoClipController extends Controller
             'can_trim' => true,
             'video_id' => $videoId,
             'clean_url' => $cleanUrl,
-            'is_live' => false,
-            'video_type' => 'VIDEO',
-            'type_label' => '🎬 Video YouTube',
+            'is_live' => $isLive,
+            'video_type' => $isLive ? 'LIVE' : 'VOD',
+            'type_label' => $isLive ? '🔴 Siaran Langsung (LIVE Stream)' : '🎬 Video YouTube',
             'title' => $title ?: "YouTube Video Stream [{$videoId}]",
             'channel_name' => $author ?: 'YouTube Channel',
             'thumbnail_url' => $thumbnailUrl,
             'viewers_count' => 0,
-            'message' => 'Link YouTube terverifikasi. Pemotongan presisi siap diproses.',
+            'message' => $isLive
+                ? '🔴 Siaran Langsung (YouTube Live) terdeteksi. Pemotongan DVR HLS Sequence aktif.'
+                : 'Link YouTube terverifikasi. Pemotongan presisi siap diproses.',
         ]);
     }
 

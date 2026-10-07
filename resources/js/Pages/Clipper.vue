@@ -58,11 +58,11 @@
                     </div>
 
                     <!-- YouTube Live Informative Note -->
-                    <div class="mt-3 p-2.5 rounded-lg bg-slate-950/90 border border-amber-900/40 text-amber-300/90 text-xs flex items-center justify-center gap-2 max-w-2xl mx-auto shadow-sm">
-                        <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div class="mt-3 p-2.5 rounded-lg bg-slate-950/90 border border-emerald-900/40 text-emerald-300/90 text-xs flex items-center justify-center gap-2 max-w-2xl mx-auto shadow-sm">
+                        <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
-                        <span><strong>Catatan:</strong> Pemotongan Siaran Langsung (YouTube Live) yang sedang berlangsung belum didukung secara penuh dan berpotensi tidak sesuai dengan hasil yang diinginkan.</span>
+                        <span><strong>Dukungan YouTube Live Active:</strong> Fitur pemotongan siaran langsung (Live Stream DVR HLS) dan video VOD aktif dengan presisi tinggi.</span>
                     </div>
                 </div>
             </section>
@@ -113,6 +113,10 @@
                                 <div class="flex items-center gap-2 flex-wrap text-xs">
                                     <span class="px-2 py-0.5 rounded bg-slate-950 text-blue-400 border border-slate-800 font-mono text-[10px] font-bold uppercase">
                                         {{ activeVideoId ? `ID: ${activeVideoId}` : 'DEMO SOURCE' }}
+                                    </span>
+                                    <span v-if="urlCheckResult?.is_live" class="px-2 py-0.5 rounded bg-red-950/80 text-red-400 border border-red-800/80 font-mono text-[10px] font-bold uppercase animate-pulse flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+                                        🔴 LIVE STREAM (DVR HLS)
                                     </span>
                                     <span v-if="urlCheckResult?.channel_name" class="px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800 font-mono text-[10px] font-semibold">
                                         📺 {{ urlCheckResult.channel_name }}
@@ -372,21 +376,19 @@
                         <!-- Submit Action Button -->
                         <button
                             @click="submitTrim"
-                            :disabled="isSubmitting || !isDurationValid || submitCooldownSec > 0 || (urlCheckResult && urlCheckResult.is_live)"
-                            class="w-full py-3 px-4 rounded-md text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-tactical cursor-pointer"
-                            :class="(urlCheckResult && urlCheckResult.is_live) ? 'bg-slate-800 text-slate-400' : 'bg-blue-600 hover:bg-blue-500'"
+                            :disabled="isSubmitting || !isDurationValid || submitCooldownSec > 0"
+                            class="w-full py-3 px-4 rounded-md text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-tactical cursor-pointer bg-blue-600 hover:bg-blue-500"
                         >
                             <svg v-if="isSubmitting" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <span v-else-if="urlCheckResult && urlCheckResult.is_live" class="font-sans font-bold">🔴 Live Stream Tidak Didukung</span>
                             <span v-else-if="submitCooldownSec > 0" class="font-mono">Tunggu Cooldown ({{ submitCooldownSec }}s)...</span>
                             <template v-else>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L4 4m5.121 5.121L4 14.121" />
                                 </svg>
-                                <span>Potong & Simpan Klip Video</span>
+                                <span>{{ (urlCheckResult && urlCheckResult.is_live) ? '⚡ Potong Klip Live (HLS DVR)' : 'Potong & Simpan Klip Video' }}</span>
                             </template>
                         </button>
                     </div>
