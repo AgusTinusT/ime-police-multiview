@@ -30,18 +30,26 @@ class PruneExpiredVideoClips extends Command
         $hours = (int) $this->option('hours');
         $cutoff = now()->subHours($hours);
 
-        $expiredClips = VideoClip::where('created_at', '<', $cutoff)->get();
+        $expiredClips = VideoClip::where('created_at', '<', $cutoff)
+            ->where(function ($q) {
+                $q->whereNotNull('file_path')
+                  ->orWhere('status', '!=', 'expired');
+            })
+            ->get();
 
         $count = 0;
         foreach ($expiredClips as $clip) {
             if ($clip->file_path && Storage::disk('public')->exists($clip->file_path)) {
                 Storage::disk('public')->delete($clip->file_path);
             }
-            $clip->delete();
+            $clip->update([
+                'file_path' => null,
+                'status' => 'expired',
+            ]);
             $count++;
         }
 
-        $this->info("Successfully pruned {$count} video clip(s) older than {$hours} hour(s).");
+        $this->info("Successfully pruned physical files for {$count} expired video clip(s) older than {$hours} hour(s). Database records preserved.");
         return 0;
     }
 }

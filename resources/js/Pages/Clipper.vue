@@ -472,6 +472,9 @@
                                 <span v-else-if="clip.status === 'pending'" class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-blue-400 border border-blue-900/50 font-mono">
                                     Antrean
                                 </span>
+                                <span v-else-if="clip.status === 'expired'" class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-slate-400 border border-slate-800 font-mono" title="File fisik video telah dibersihkan sistem setelah 1 jam">
+                                    Kadaluarsa (File Dihapus)
+                                </span>
                                 <span v-else class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-red-400 border border-red-900/50 font-mono">
                                     Gagal
                                 </span>
@@ -492,6 +495,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span>1 Jam</span>
+                                </span>
+                                <span v-else-if="clip.status === 'expired'" class="text-[10px] text-slate-500 font-sans italic">
+                                    File Dibersihkan
                                 </span>
                             </div>
                         </div>
