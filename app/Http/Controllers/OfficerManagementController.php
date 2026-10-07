@@ -348,13 +348,6 @@ class OfficerManagementController extends Controller
                 'sapr' => $saprCount,
             ],
             'agenciesMaster' => $agenciesMaster,
-            'auth' => [
-                'user' => $request->user() ? [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                ] : null,
-            ],
         ]);
     }
 

@@ -15,11 +15,7 @@ import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 
-const { t, locale } = useI18n();
-
-const toggleLanguage = () => {
-    locale.value = locale.value === "id" ? "en" : "id";
-};
+const { t } = useI18n();
 
 const props = defineProps({
     selectedDepartment: {
@@ -306,14 +302,6 @@ const getDeptCount = (deptId) => {
 
             <!-- RIGHT AREA: Action Controls & User Avatar -->
             <div class="flex items-center space-x-2 shrink-0">
-                <!-- Language Switcher Pill -->
-                <button
-                    @click="toggleLanguage"
-                    class="h-8 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-mono font-bold text-slate-200 transition flex items-center gap-1.5 cursor-pointer shadow-sm"
-                    :title="`Beralih Bahasa / Switch Language (${locale === 'id' ? 'English' : 'Bahasa Indonesia'})`"
-                >
-                    <span class="text-xs">{{ locale === 'id' ? '🇮🇩 ID' : '🇬🇧 EN' }}</span>
-                </button>
 
                 <Link
                     href="/action-clips"

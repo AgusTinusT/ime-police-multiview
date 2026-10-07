@@ -78,7 +78,7 @@ const copyDirectLink = (faq) => {
 onMounted(() => {
     if (window.location.hash) {
         const hash = window.location.hash.replace("#", "").toUpperCase();
-        const found = faqs.find((f) => f.code.toUpperCase() === hash);
+        const found = faqs.value?.find((f) => f.code.toUpperCase() === hash);
         if (found) {
             openFaqIds.value = [found.id];
             activeCategory.value = found.category;
@@ -116,7 +116,7 @@ const categories = [
 
 // Filtered FAQs based on Category and Search Query
 const filteredFaqs = computed(() => {
-    let list = faqs;
+    let list = faqs.value || [];
 
     if (activeCategory.value !== "ALL") {
         list = list.filter((item) => item.category === activeCategory.value);

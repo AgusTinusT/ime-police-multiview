@@ -160,14 +160,16 @@
                         
                         <!-- Video Canvas / Player Container (Method 2 Custom Player UI) -->
                         <div class="space-y-3">
-                            <CustomVideoPlayer
-                                ref="mainPlayerRef"
-                                :src="form.youtube_url || videoSrc"
-                                :youtube-id="activeVideoId"
-                                :title="videoTitle"
-                                @timeupdate="onMainPlayerTimeUpdate"
-                                class="w-full h-full"
-                            />
+                            <div class="w-full aspect-video rounded-xl overflow-hidden bg-black relative border border-slate-800 shadow-xl">
+                                <CustomVideoPlayer
+                                    ref="mainPlayerRef"
+                                    :src="form.youtube_url || videoSrc"
+                                    :youtube-id="activeVideoId"
+                                    :title="videoTitle"
+                                    @timeupdate="onMainPlayerTimeUpdate"
+                                    class="w-full h-full"
+                                />
+                            </div>
 
                             <!-- Live Time Controls & Marker Capture Bar -->
                             <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
@@ -680,7 +682,7 @@ const videoSrc = ref('https://commondatastorage.googleapis.com/gtv-videos-bucket
 const activeVideoId = computed(() => {
     const url = form.value.youtube_url || '';
     if (!url) return '';
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : '';
 });

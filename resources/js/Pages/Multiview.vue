@@ -465,7 +465,6 @@ onUnmounted(() => {
     if (tacPollInterval) clearInterval(tacPollInterval);
     if (streamPollInterval) clearInterval(streamPollInterval);
     if (heartbeatTimer) clearInterval(heartbeatTimer);
-    pausePromoTimer();
 });
 
 const enableDataSaver = () => {

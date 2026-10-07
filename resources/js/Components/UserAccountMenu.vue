@@ -1,8 +1,17 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { Link, router } from "@inertiajs/vue3";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { Link, router, usePage } from "@inertiajs/vue3";
+import { useI18n } from "vue-i18n";
 import iconLogout from "@/Components/Icons/leave-svgrepo-com.svg";
 import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
+
+const page = usePage();
+const { locale } = useI18n();
+
+const isAdmin = computed(() => {
+    const user = page.props.auth?.user;
+    return user?.role === "admin" || !!user?.is_admin;
+});
 
 const isOpen = ref(false);
 const dropdownRef = ref(null);
@@ -20,6 +29,10 @@ const closeDropdown = (e) => {
 const handleLogout = () => {
     isOpen.value = false;
     router.post("/logout");
+};
+
+const setLanguage = (lang) => {
+    locale.value = lang;
 };
 
 onMounted(() => {
@@ -78,16 +91,14 @@ onUnmounted(() => {
             >
                 <div
                     v-if="isOpen"
-                    class="absolute right-0 top-full mt-2 w-72 bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800 overflow-hidden font-sans z-50 animate-in"
+                    class="absolute right-0 top-full mt-2 w-72 bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800 overflow-hidden font-sans z-50 animate-in shadow-xl"
                 >
                     <!-- Header Profile Section -->
                     <div class="p-4 bg-slate-900 flex items-start space-x-3">
                         <div
                             :class="[
                                 'w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold shrink-0 border border-slate-800 bg-slate-950',
-                                $page.props.auth.user.role === 'admin'
-                                    ? 'text-amber-400'
-                                    : 'text-blue-400',
+                                isAdmin ? 'text-amber-400' : 'text-blue-400',
                             ]"
                         >
                             {{
@@ -113,15 +124,13 @@ onUnmounted(() => {
                             <span
                                 :class="[
                                     'inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-extrabold rounded-md uppercase border border-slate-800 bg-slate-950',
-                                    $page.props.auth.user.role === 'admin'
+                                    isAdmin
                                         ? 'text-amber-400'
                                         : 'text-emerald-400',
                                 ]"
                             >
                                 <svg
-                                    v-if="
-                                        $page.props.auth.user.role === 'admin'
-                                    "
+                                    v-if="isAdmin"
                                     class="w-3 h-3 text-amber-400 shrink-0"
                                     fill="none"
                                     stroke="currentColor"
@@ -149,7 +158,7 @@ onUnmounted(() => {
                                     />
                                 </svg>
                                 {{
-                                    $page.props.auth.user.role === "admin"
+                                    isAdmin
                                         ? "Admin Dispatcher"
                                         : "Member User"
                                 }}
@@ -161,7 +170,7 @@ onUnmounted(() => {
                     <div class="py-1.5 text-xs font-medium bg-slate-900">
                         <!-- Admin Command Hub (Admin Only) -->
                         <Link
-                            v-if="$page.props.auth.user.role === 'admin'"
+                            v-if="isAdmin"
                             href="/admin/officers"
                             @click="isOpen = false"
                             class="flex items-center px-4 py-2.5 text-amber-300 hover:bg-slate-800 hover:text-amber-200 transition gap-2.5 font-semibold"
@@ -192,7 +201,7 @@ onUnmounted(() => {
                         <!-- Tactical Video Trimmer Studio (Admin / Clipper) -->
                         <Link
                             v-if="
-                                $page.props.auth.user.role === 'admin' ||
+                                isAdmin ||
                                 $page.props.auth.user.can_trim_video
                             "
                             href="/clipper"
@@ -250,11 +259,49 @@ onUnmounted(() => {
                         </Link>
                     </div>
 
+                    <!-- Language Switcher Section -->
+                    <div class="p-3 bg-slate-900 border-t border-slate-800">
+                        <div class="flex items-center justify-between mb-2 px-1">
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">
+                                Bahasa / Language
+                            </span>
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-blue-400 font-bold border border-slate-800">
+                                {{ locale.toUpperCase() }}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button
+                                @click="setLanguage('id')"
+                                :class="[
+                                    'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
+                                    locale === 'id'
+                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-sm'
+                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                                ]"
+                            >
+                                <span>🇮🇩</span>
+                                <span>Indonesia</span>
+                            </button>
+                            <button
+                                @click="setLanguage('en')"
+                                :class="[
+                                    'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
+                                    locale === 'en'
+                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-sm'
+                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                                ]"
+                            >
+                                <span>🇬🇧</span>
+                                <span>English</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Footer Section: Sign Out Button -->
                     <div class="p-2 bg-slate-950">
                         <button
                             @click="handleLogout"
-                            class="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-md bg-slate-900 hover:bg-red-950/60 text-red-400 hover:text-red-300 border border-slate-800 transition text-xs font-bold group"
+                            class="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-md bg-slate-900 hover:bg-red-950/60 text-red-400 hover:text-red-300 border border-slate-800 transition text-xs font-bold group cursor-pointer"
                         >
                             <img
                                 :src="iconLogout"
@@ -268,14 +315,24 @@ onUnmounted(() => {
             </transition>
         </template>
 
-        <!-- Guest State: Sign In Button -->
+        <!-- Guest State: Guest Button with Dropdown Trigger -->
         <template v-else>
-            <Link
-                href="/login"
-                class="h-8 flex items-center space-x-1.5 px-3 text-xs font-bold rounded-md bg-blue-600 hover:bg-blue-500 text-white transition shrink-0"
+            <button
+                @click.stop="toggleDropdown"
+                class="h-8 flex items-center space-x-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 transition group cursor-pointer focus:outline-none shrink-0"
+                title="Menu Pengunjung & Masuk / Guest Menu & Sign In"
             >
+                <!-- Guest Label -->
+                <span
+                    class="text-xs font-bold text-slate-200 group-hover:text-white leading-none"
+                >
+                    Guest
+                </span>
+
+                <!-- Down Arrow Icon -->
                 <svg
-                    class="w-4 h-4 text-white"
+                    class="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-transform duration-200 shrink-0"
+                    :class="{ 'rotate-180': isOpen }"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -283,12 +340,88 @@ onUnmounted(() => {
                     <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                        stroke-width="2.5"
+                        d="M19 9l-7 7-7-7"
                     />
                 </svg>
-                <span>Sign In</span>
-            </Link>
+            </button>
+
+            <!-- Guest Floating Dropdown Card -->
+            <transition
+                enter-active-class="transition ease-out duration-150 transform"
+                enter-from-class="opacity-0 scale-95 -translate-y-2"
+                enter-to-class="opacity-100 scale-100 translate-y-0"
+                leave-active-class="transition ease-in duration-100 transform"
+                leave-from-class="opacity-100 scale-100 translate-y-0"
+                leave-to-class="opacity-0 scale-95 -translate-y-2"
+            >
+                <div
+                    v-if="isOpen"
+                    class="absolute right-0 top-full mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800 overflow-hidden font-sans z-50 shadow-xl"
+                >
+                    <!-- Sign In Action -->
+                    <div class="p-3 bg-slate-900">
+                        <Link
+                            href="/login"
+                            @click="isOpen = false"
+                            class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/30 transition cursor-pointer"
+                        >
+                            <svg
+                                class="w-4 h-4 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                                />
+                            </svg>
+                            <span>Masuk / Sign In</span>
+                        </Link>
+                    </div>
+
+                    <!-- Language Switcher Section -->
+                    <div class="p-3 bg-slate-900">
+                        <div class="flex items-center justify-between mb-2 px-1">
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">
+                                Bahasa / Language
+                            </span>
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-blue-400 font-bold border border-slate-800">
+                                {{ locale.toUpperCase() }}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button
+                                @click="setLanguage('id')"
+                                :class="[
+                                    'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
+                                    locale === 'id'
+                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-sm'
+                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                                ]"
+                            >
+                                <span>🇮🇩</span>
+                                <span>Indonesia</span>
+                            </button>
+                            <button
+                                @click="setLanguage('en')"
+                                :class="[
+                                    'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
+                                    locale === 'en'
+                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-sm'
+                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                                ]"
+                            >
+                                <span>🇬🇧</span>
+                                <span>English</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
         </template>
     </div>
 </template>

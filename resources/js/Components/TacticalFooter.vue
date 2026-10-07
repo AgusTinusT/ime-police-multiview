@@ -142,9 +142,12 @@ const toggleLanguage = () => {
                         @click="toggleLanguage"
                         class="btn-tactical-secondary text-xs"
                     >
-                        <span class="text-sm">{{ locale === 'id' ? '🇮🇩' : '🇬🇧' }}</span>
-                        <span>{{ locale === 'id' ? 'Bahasa Indonesia' : 'English' }}</span>
-                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 font-mono">
+                        <span>{{
+                            locale === "id" ? "Bahasa Indonesia" : "English"
+                        }}</span>
+                        <span
+                            class="text-[10px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 font-mono"
+                        >
                             {{ locale.toUpperCase() }}
                         </span>
                     </button>

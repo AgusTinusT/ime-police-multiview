@@ -741,6 +741,7 @@ onUnmounted(() => {
                             :end-seconds="currentShortClip.end_seconds || 0"
                             :autoplay="true"
                             :muted="isMuted"
+                            :zoom-mobile="true"
                             @muted-change="(val) => (isMuted = val)"
                             class="w-full h-full"
                         />

@@ -34,6 +34,10 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
+    zoomMobile: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const emit = defineEmits(["timeupdate", "ended", "muted-change"]);
@@ -70,7 +74,7 @@ const computedYoutubeId = computed(() => {
     if (props.youtubeId) return props.youtubeId;
     if (!props.src) return "";
     const regExp =
-        /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = props.src.match(regExp);
     return match && match[2].length === 11 ? match[2] : "";
 });
@@ -375,7 +379,12 @@ defineExpose({
                     ref="ytIframeRef"
                     :id="iframeId"
                     :src="`https://www.youtube-nocookie.com/embed/${computedYoutubeId}?enablejsapi=1&controls=0&disablekb=1&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&fs=0&playsinline=1&autoplay=${autoplay ? 1 : 0}&mute=${isMuted ? 1 : 0}${startSeconds ? '&start=' + startSeconds : ''}${endSeconds ? '&end=' + endSeconds : ''}`"
-                    class="w-[220%] h-[220%] max-w-none scale-150 origin-center sm:w-full sm:h-full sm:max-w-full sm:scale-100 border-0 pointer-events-none select-none transition-all duration-300"
+                    :class="[
+                        'border-0 pointer-events-none select-none transition-all duration-300',
+                        zoomMobile
+                            ? 'w-[220%] h-[220%] max-w-none scale-150 origin-center sm:w-full sm:h-full sm:max-w-full sm:scale-100'
+                            : 'w-full h-full max-w-full scale-100'
+                    ]"
                     style="pointer-events: none !important; touch-action: none;"
                     allow="
                         accelerometer;
