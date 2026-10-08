@@ -10,7 +10,10 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::job(SyncOfficerStreamsJob::class)->everyMinute();
+Schedule::job(SyncOfficerStreamsJob::class)
+    ->everyFiveMinutes()
+    ->withoutOverlapping(10)
+    ->runInBackground();
 
 // Fetch subscriber counts every hour
 Schedule::command('officer:sync-subscribers')->hourly();

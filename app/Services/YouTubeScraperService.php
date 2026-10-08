@@ -48,15 +48,31 @@ class YouTubeScraperService
         $results = [];
         $unmatchedOfficers = collect();
 
-        // --- TIER 1: Fast Hashtag Live Scan (#imepolice, #lspd, #bcso, #sasp, #sapr, #polisiime, #imesheriff, #imeroleplay, #imerp, #ime) ---
+        // --- TIER 1: Fast Parallel Hashtag Live Scan (#imepolice, #lspd, #bcso, #sasp, #sapr, #polisiime, #imesheriff, #imeroleplay, #imerp, #ime) ---
         $hashtagLiveStreams = [];
-        foreach (['#imepolice', '#lspd', '#bcso', '#sasp', '#sapr', '#polisiime', '#imesheriff', '#imeroleplay', '#imerp', '#ime'] as $tag) {
-            $streams = $this->searchLiveStreams($tag, 35);
-            foreach ($streams as $s) {
-                if (!empty($s['video_id'])) {
-                    $hashtagLiveStreams[$s['video_id']] = $s;
+        $tags = ['#imepolice', '#lspd', '#bcso', '#sasp', '#sapr', '#polisiime', '#imesheriff', '#imeroleplay', '#imerp', '#ime'];
+        try {
+            $tagResponses = Http::pool(function ($pool) use ($tags) {
+                foreach ($tags as $tag) {
+                    $encodedQuery = urlencode($tag);
+                    $url = "https://www.youtube.com/results?search_query={$encodedQuery}&sp=EgJAAQ%3D%3D";
+                    $pool->as($tag)->withHeaders(self::getBrowserHeaders())->timeout(5)->get($url);
+                }
+            });
+
+            foreach ($tags as $tag) {
+                $res = $tagResponses[$tag] ?? null;
+                if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
+                    $streams = $this->parseSearchResultsHtml($res->body(), 35);
+                    foreach ($streams as $s) {
+                        if (!empty($s['video_id'])) {
+                            $hashtagLiveStreams[$s['video_id']] = $s;
+                        }
+                    }
                 }
             }
+        } catch (\Throwable $e) {
+            Log::warning("Parallel Tier 1 hashtag scan failed: " . $e->getMessage());
         }
 
         $claimedVideoIds = [];
@@ -476,7 +492,7 @@ class YouTubeScraperService
         }
 
         $results = [];
-        $chunks = array_chunk($handles, 8); // Chunks of 8 to prevent VPS datacenter IP rate limits
+        $chunks = array_chunk($handles, 24); // Chunks of 24 for high-speed parallel scraping without hitting datacenter IP limits
 
         foreach ($chunks as $chunk) {
             try {
@@ -563,118 +579,129 @@ class YouTubeScraperService
                 return [];
             }
 
-            $html = $response->body();
-            $data = null;
-
-            if (preg_match('/var ytInitialData = ({.*?});<\/script>/s', $html, $matches) || preg_match('/ytInitialData\s*=\s*({.+?});/s', $html, $matches)) {
-                $data = json_decode($matches[1], true);
-            }
-
-            if (!$data) {
-                return [];
-            }
-
-            $contents = $data['contents']['twoColumnSearchResultsRenderer']['primaryContents']['sectionListRenderer']['contents'] ?? [];
-            $videos = [];
-
-            foreach ($contents as $section) {
-                $items = $section['itemSectionRenderer']['contents'] ?? [];
-                foreach ($items as $item) {
-                    if (isset($item['videoRenderer'])) {
-                        $v = $item['videoRenderer'];
-                        $videoId = $v['videoId'] ?? null;
-                        if (!$videoId) {
-                            continue;
-                        }
-
-                        $badges = $v['badges'] ?? [];
-                        $overlays = $v['thumbnailOverlays'] ?? [];
-                        
-                        $isLive = false;
-                        foreach ($overlays as $overlay) {
-                            if (isset($overlay['thumbnailOverlayTimeStatusRenderer'])) {
-                                $style = $overlay['thumbnailOverlayTimeStatusRenderer']['style'] ?? '';
-                                if ($style === 'LIVE' || $style === 'LIVE_NOW') {
-                                    $isLive = true;
-                                }
-                            }
-                        }
-                        foreach ($badges as $b) {
-                            $label = $b['metadataBadgeRenderer']['label'] ?? '';
-                            $style = $b['metadataBadgeRenderer']['style'] ?? '';
-                            if (stripos($label, 'LIVE') !== false || stripos($style, 'LIVE') !== false) {
-                                $isLive = true;
-                            }
-                        }
-
-                        if ($isLive) {
-                            $title = $v['title']['runs'][0]['text'] ?? ($v['headline']['simpleText'] ?? 'Live Stream');
-                            
-                            $ownerText = $v['ownerText'] ?? null;
-                            $channelName = $ownerText['runs'][0]['text'] ?? ($v['shortBylineText']['runs'][0]['text'] ?? 'Streamer');
-                            
-                            // Extract handle & channelId if available in navigationEndpoint
-                            $nav = $ownerText['runs'][0]['navigationEndpoint']['browseEndpoint'] ?? ($v['shortBylineText']['runs'][0]['navigationEndpoint']['browseEndpoint'] ?? null);
-                            $canonical = $nav['canonicalBaseUrl'] ?? null;
-                            $browseId = $nav['browseId'] ?? null;
-                            $handle = null;
-                            if ($canonical && str_starts_with($canonical, '/@')) {
-                                $handle = ltrim($canonical, '/');
-                            }
-
-                            // Extract viewers count safely
-                            $viewers = 'Live';
-                            if (isset($v['viewCountText']['runs']) && is_array($v['viewCountText']['runs'])) {
-                                $viewers = trim(implode('', array_column($v['viewCountText']['runs'], 'text')));
-                            } elseif (isset($v['viewCountText']['simpleText'])) {
-                                $viewers = trim($v['viewCountText']['simpleText']);
-                            } elseif (isset($v['shortViewCountText']['simpleText'])) {
-                                $viewers = trim($v['shortViewCountText']['simpleText']);
-                            }
-
-                            $viewersCount = 0;
-                            if (preg_match('/(\d[\d.,]*)\s*(?:menonton|watching)/iu', $viewers, $vm)) {
-                                $viewersCount = (int) preg_replace('/[^\d]/', '', $vm[1]);
-                            } elseif (str_contains(strtolower($viewers), 'menonton') || str_contains(strtolower($viewers), 'watching')) {
-                                $viewersCount = (int) preg_replace('/[^\d]/', '', $viewers);
-                            }
-
-                            // Extract description snippet
-                            $description = '';
-                            if (isset($v['detailedMetadataSnippets'][0]['snippetText']['runs']) && is_array($v['detailedMetadataSnippets'][0]['snippetText']['runs'])) {
-                                $description = trim(implode('', array_column($v['detailedMetadataSnippets'][0]['snippetText']['runs'], 'text')));
-                            } elseif (isset($v['descriptionSnippet']['runs']) && is_array($v['descriptionSnippet']['runs'])) {
-                                $description = trim(implode('', array_column($v['descriptionSnippet']['runs'], 'text')));
-                            } elseif (isset($v['descriptionSnippet']['simpleText'])) {
-                                $description = trim($v['descriptionSnippet']['simpleText']);
-                            }
-
-                            $videos[] = [
-                                'video_id' => $videoId,
-                                'title' => $title,
-                                'channel_name' => $channelName,
-                                'handle' => $handle,
-                                'channel_id' => $browseId,
-                                'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
-                                'viewers' => $viewers,
-                                'viewers_count' => $viewersCount,
-                                'description' => $description,
-                                'status' => 'LIVE',
-                            ];
-
-                            if (count($videos) >= $limit) {
-                                break 2;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return $videos;
+            return $this->parseSearchResultsHtml($response->body(), $limit);
         } catch (\Throwable $e) {
             Log::error("YouTube live search failed for query {$cleanQuery}: " . $e->getMessage());
             return [];
         }
+    }
+
+    /**
+     * Parse YouTube HTML search results into array of live stream records.
+     */
+    public function parseSearchResultsHtml(string $html, int $limit = 35): array
+    {
+        if (empty($html)) {
+            return [];
+        }
+
+        $data = null;
+        if (preg_match('/var ytInitialData = ({.*?});<\/script>/s', $html, $matches) || preg_match('/ytInitialData\s*=\s*({.+?});/s', $html, $matches)) {
+            $data = json_decode($matches[1], true);
+        }
+
+        if (!$data) {
+            return [];
+        }
+
+        $contents = $data['contents']['twoColumnSearchResultsRenderer']['primaryContents']['sectionListRenderer']['contents'] ?? [];
+        $videos = [];
+
+        foreach ($contents as $section) {
+            $items = $section['itemSectionRenderer']['contents'] ?? [];
+            foreach ($items as $item) {
+                if (isset($item['videoRenderer'])) {
+                    $v = $item['videoRenderer'];
+                    $videoId = $v['videoId'] ?? null;
+                    if (!$videoId) {
+                        continue;
+                    }
+
+                    $badges = $v['badges'] ?? [];
+                    $overlays = $v['thumbnailOverlays'] ?? [];
+                    
+                    $isLive = false;
+                    foreach ($overlays as $overlay) {
+                        if (isset($overlay['thumbnailOverlayTimeStatusRenderer'])) {
+                            $style = $overlay['thumbnailOverlayTimeStatusRenderer']['style'] ?? '';
+                            if ($style === 'LIVE' || $style === 'LIVE_NOW') {
+                                $isLive = true;
+                            }
+                        }
+                    }
+                    foreach ($badges as $b) {
+                        $label = $b['metadataBadgeRenderer']['label'] ?? '';
+                        $style = $b['metadataBadgeRenderer']['style'] ?? '';
+                        if (stripos($label, 'LIVE') !== false || stripos($style, 'LIVE') !== false) {
+                            $isLive = true;
+                        }
+                    }
+
+                    if ($isLive) {
+                        $title = $v['title']['runs'][0]['text'] ?? ($v['headline']['simpleText'] ?? 'Live Stream');
+                        
+                        $ownerText = $v['ownerText'] ?? null;
+                        $channelName = $ownerText['runs'][0]['text'] ?? ($v['shortBylineText']['runs'][0]['text'] ?? 'Streamer');
+                        
+                        // Extract handle & channelId if available in navigationEndpoint
+                        $nav = $ownerText['runs'][0]['navigationEndpoint']['browseEndpoint'] ?? ($v['shortBylineText']['runs'][0]['navigationEndpoint']['browseEndpoint'] ?? null);
+                        $canonical = $nav['canonicalBaseUrl'] ?? null;
+                        $browseId = $nav['browseId'] ?? null;
+                        $handle = null;
+                        if ($canonical && str_starts_with($canonical, '/@')) {
+                            $handle = ltrim($canonical, '/');
+                        }
+
+                        // Extract viewers count safely
+                        $viewers = 'Live';
+                        if (isset($v['viewCountText']['runs']) && is_array($v['viewCountText']['runs'])) {
+                            $viewers = trim(implode('', array_column($v['viewCountText']['runs'], 'text')));
+                        } elseif (isset($v['viewCountText']['simpleText'])) {
+                            $viewers = trim($v['viewCountText']['simpleText']);
+                        } elseif (isset($v['shortViewCountText']['simpleText'])) {
+                            $viewers = trim($v['shortViewCountText']['simpleText']);
+                        }
+
+                        $viewersCount = 0;
+                        if (preg_match('/(\d[\d.,]*)\s*(?:menonton|watching)/iu', $viewers, $vm)) {
+                            $viewersCount = (int) preg_replace('/[^\d]/', '', $vm[1]);
+                        } elseif (str_contains(strtolower($viewers), 'menonton') || str_contains(strtolower($viewers), 'watching')) {
+                            $viewersCount = (int) preg_replace('/[^\d]/', '', $viewers);
+                        }
+
+                        // Extract description snippet
+                        $description = '';
+                        if (isset($v['detailedMetadataSnippets'][0]['snippetText']['runs']) && is_array($v['detailedMetadataSnippets'][0]['snippetText']['runs'])) {
+                            $description = trim(implode('', array_column($v['detailedMetadataSnippets'][0]['snippetText']['runs'], 'text')));
+                        } elseif (isset($v['descriptionSnippet']['runs']) && is_array($v['descriptionSnippet']['runs'])) {
+                            $description = trim(implode('', array_column($v['descriptionSnippet']['runs'], 'text')));
+                        } elseif (isset($v['descriptionSnippet']['simpleText'])) {
+                            $description = trim($v['descriptionSnippet']['simpleText']);
+                        }
+
+                        $videos[] = [
+                            'video_id' => $videoId,
+                            'title' => $title,
+                            'channel_name' => $channelName,
+                            'handle' => $handle,
+                            'channel_id' => $browseId,
+                            'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
+                            'viewers' => $viewers,
+                            'viewers_count' => $viewersCount,
+                            'description' => $description,
+                            'status' => 'LIVE',
+                        ];
+
+                        if (count($videos) >= $limit) {
+                            break 2;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $videos;
+    }
     }
 
     /**
