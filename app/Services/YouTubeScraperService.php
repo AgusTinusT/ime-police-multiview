@@ -702,7 +702,6 @@ class YouTubeScraperService
 
         return $videos;
     }
-    }
 
     /**
      * Fetch complete details (full description, title, viewers) for a specific video ID.
