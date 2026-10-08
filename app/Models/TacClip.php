@@ -27,6 +27,7 @@ class TacClip extends Model
     ];
 
     protected $casts = [
+        'officer_id' => 'integer',
         'start_seconds' => 'integer',
         'end_seconds' => 'integer',
         'likes_count' => 'integer',
