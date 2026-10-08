@@ -143,7 +143,6 @@ class YouTubeClipperService
         $formatOption = $clip->format ?? 'MP4 1080p';
         $ext = match ($formatOption) {
             'MP3 Audio' => 'mp3',
-            'GIF 60fps' => 'gif',
             default => 'mp4',
         };
 
@@ -185,7 +184,7 @@ class YouTubeClipperService
         $formatOption = $clip->format ?? 'MP4 1080p';
         $formatSpec = match ($formatOption) {
             'MP3 Audio' => 'ba/bestaudio',
-            'MP4 360p' => 'bv*[height<=360]+ba/b[height<=360]/best',
+            'MP4 480p' => 'bv*[height<=480]+ba/b[height<=480]/best',
             'MP4 720p' => 'bv*[height<=720]+ba/b[height<=720]/best',
             default => 'bv*[height<=1080]+ba/b[height<=1080]/best',
         };
@@ -391,10 +390,10 @@ class YouTubeClipperService
                 '--audio-format', 'mp3',
                 '--audio-quality', '0'
             );
-        } elseif ($formatOption === 'MP4 360p') {
+        } elseif ($formatOption === 'MP4 480p') {
             array_push(
                 $command,
-                '-f', 'bv*[height<=360]+ba/b[height<=360]/best',
+                '-f', 'bv*[height<=480]+ba/b[height<=480]/best',
                 '--merge-output-format', 'mp4',
                 '--downloader-args', 'ffmpeg:-c copy -movflags +faststart'
             );

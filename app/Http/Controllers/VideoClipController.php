@@ -24,6 +24,22 @@ class VideoClipController extends Controller
     }
 
     /**
+     * Render the dedicated Clipper Plans & Pricing page.
+     */
+    public function pricingPage(Request $request)
+    {
+        return Inertia::render('ClipperPricing');
+    }
+
+    /**
+     * Render the Police Duty Clipper Guide page.
+     */
+    public function policeGuidePage(Request $request)
+    {
+        return Inertia::render('PoliceClipperGuide');
+    }
+
+    /**
      * Get list of video clips.
      */
     public function index(Request $request)
@@ -63,7 +79,7 @@ class VideoClipController extends Controller
             'start_time' => 'required',
             'end_time' => 'required',
             'title' => 'nullable|string|max:255',
-            'format' => 'nullable|string|in:MP4 1080p,MP4 720p,MP4 360p,MP3 Audio',
+            'format' => 'nullable|string|in:MP4 1080p,MP4 720p,MP4 480p,MP3 Audio',
         ]);
 
         $startSeconds = $this->parseTimestampToSeconds($validated['start_time']);
