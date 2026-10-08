@@ -10,7 +10,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::job(SyncOfficerStreamsJob::class)
+Schedule::command('officer:sync')
     ->everyFiveMinutes()
     ->withoutOverlapping(10)
     ->runInBackground();
