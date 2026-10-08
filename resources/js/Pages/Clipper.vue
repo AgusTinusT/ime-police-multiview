@@ -2,7 +2,7 @@
     <TacticalLayout>
         <Head title="ClipStudio - Tactical Video Clipper & Media Hub" />
 
-        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-8 font-sans">
+        <div class="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-8 font-sans">
             
             <!-- HEADER / HERO & URL INPUT SECTION -->
             <section class="text-center max-w-3xl mx-auto space-y-4">
@@ -100,6 +100,250 @@
                 </div>
             </transition>
 
+            <!-- TIER ACCESS STATUS BANNERS -->
+            <div v-if="isGuest" class="p-3.5 rounded-xl bg-blue-950/50 border border-blue-800/80 text-blue-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+                <div class="flex items-center gap-2.5">
+                    <span class="px-2 py-0.5 rounded bg-blue-900 text-blue-200 font-mono font-bold uppercase text-[10px] shrink-0 border border-blue-700">Guest Teaser</span>
+                    <span>Modus Teaser Interaktif. Coba player & timeline trimmer. <strong>Masuk / Daftar Gratis</strong> untuk memproses & mengunduh video.</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a href="/login" class="px-3.5 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-md">Masuk / Sign In</a>
+                    <a href="/register" class="px-3.5 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold text-xs transition">Daftar Gratis</a>
+                </div>
+            </div>
+
+            <div v-else-if="!isClipperOrAdmin" class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 font-mono shadow-md">
+                <div class="flex items-center gap-2.5">
+                    <span class="px-2 py-0.5 rounded bg-slate-950 text-emerald-400 border border-slate-800 font-bold uppercase text-[10px] shrink-0">{{ user?.clipper_tier_name || 'Free Member' }}</span>
+                    <span class="text-slate-300">Kuota Pemotongan Hari Ini: <strong class="text-emerald-400 text-sm font-extrabold">{{ dailyClipsCount }}/{{ dailyClipsLimit }} Klip</strong> (Maks {{ formatSeconds(maxClipDurationSec) }} / Klip)</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0 font-sans">
+                    <span v-if="clipperRequestStatus === 'pending'" class="text-amber-400 text-xs flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-md border border-amber-900/60 font-semibold">
+                        <svg class="w-3.5 h-3.5 text-amber-400 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Pengajuan Hak Spesial Menunggu Review Admin</span>
+                    </span>
+                    <button v-else @click="showRequestClipperModal = true" class="px-3.5 py-1.5 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-md cursor-pointer">
+                        <img :src="iconCut" class="w-3.5 h-3.5 invert opacity-90 shrink-0" alt="" />
+                        <span>Ajukan Hak Spesial Clip</span>
+                    </button>
+                </div>
+            </div>
+
+            <div v-else class="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-800/60 text-emerald-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
+                <div class="flex items-center gap-2.5">
+                    <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/80 font-mono font-bold uppercase text-[10px] shrink-0">{{ user?.clipper_tier_name || 'PRO Clipper' }}</span>
+                    <span>Akses Spesial Terbuka: {{ dailyClipsLimit > 50 ? 'Potong video unlimited' : 'Batas ' + dailyClipsLimit + ' klip/hari' }} hingga {{ formatSeconds(maxClipDurationSec) }} ({{ maxClipDurationSec }}s) & prioritas server.</span>
+                </div>
+                <div v-if="user?.can_delegate_clipper" class="flex items-center gap-2 shrink-0 font-sans">
+                    <button @click="showDelegationModal = true; fetchDelegations();" class="px-3.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-md cursor-pointer">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                        <span>Penunjukan Clipper ({{ delegationData.used_slots }}/2 Slot)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TIER BENEFIT & PRIVILEGE MATRIX ACCORDION -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl overflow-hidden shadow-lg transition-all duration-300 font-sans">
+                <button 
+                    @click="showTierMatrix = !showTierMatrix" 
+                    class="w-full p-4 flex items-center justify-between text-left hover:bg-slate-800/50 transition cursor-pointer"
+                >
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 rounded-lg bg-blue-950 text-blue-400 border border-blue-800/80">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider font-tactical">
+                                    Matriks Level & Benefit Tier ClipStudio
+                                </h3>
+                                <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-blue-900/80 text-blue-300 border border-blue-700 font-mono">Informasi Akses & Hak Officer</span>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                Pelajari keuntungan setiap tingkatan role (Free Member, IME Creator, dan Officer / VIP Supporter) serta hak penunjukan 2 slot Officer.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-mono text-blue-400 shrink-0">
+                        <span>{{ showTierMatrix ? 'Sembunyikan Matriks' : 'Lihat Rincian Benefit' }}</span>
+                        <svg class="w-4 h-4 transition-transform duration-200" :class="showTierMatrix ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </button>
+
+                <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
+                    <div v-if="showTierMatrix" class="p-5 border-t border-slate-800 bg-slate-950/60 space-y-6">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            
+                            <!-- Card 1: Free Member -->
+                            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-4 flex flex-col justify-between">
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800 font-mono text-[10px] font-bold uppercase">Free Member</span>
+                                        <span class="text-xs text-slate-500 font-mono">Pengguna Umum</span>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="text-base font-bold text-white">Guest & Regular Member</h4>
+                                        <p class="text-xs text-slate-400">Akses dasar untuk mencoba dan membuat klip singkat harian.</p>
+                                    </div>
+
+                                    <ul class="space-y-2 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/80">
+                                        <li class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Kuota: <strong>3 Klip / Hari</strong></span>
+                                        </li>
+                                        <li class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Durasi Maks: <strong>1 Menit (60s)</strong></span>
+                                        </li>
+                                        <li class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Format: MP4 720p / 360p / MP3</span>
+                                        </li>
+                                        <li class="flex items-center gap-2 text-slate-500">
+                                            <svg class="w-3.5 h-3.5 text-slate-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            <span>Penunjukan Clipper: Tidak ada</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="pt-3 border-t border-slate-800">
+                                    <span v-if="!user" class="block text-center text-xs text-slate-400">Silakan login untuk menikmati kuota gratis ini.</span>
+                                    <span v-else-if="user.clipper_tier === 'free'" class="block text-center py-1.5 px-3 rounded-lg bg-slate-950 text-emerald-400 font-mono text-xs border border-emerald-900/50">Level Anda Saat Ini</span>
+                                    <span v-else class="block text-center text-xs text-slate-500 font-mono">Termasuk dalam tier Anda</span>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: IME Content Creator / Editor -->
+                            <div class="p-4 rounded-xl bg-slate-900 border border-blue-900/60 space-y-4 flex flex-col justify-between relative overflow-hidden">
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 font-mono text-[10px] font-bold uppercase">Creator Tier</span>
+                                        <span class="text-xs text-blue-300 font-mono">IME Content Creator</span>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="text-base font-bold text-white">Editor & Creator Konten</h4>
+                                        <p class="text-xs text-slate-400">Dirancang khusus untuk editor video YouTube/TikTok/Reels IME.</p>
+                                    </div>
+
+                                    <ul class="space-y-2 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/80">
+                                        <li class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Kuota: <strong>10 Klip / Hari</strong></span>
+                                        </li>
+                                        <li class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Durasi Maks: <strong>5 Menit (300s)</strong></span>
+                                        </li>
+                                        <li class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Format: Lossless 1080p, MP3 & GIF</span>
+                                        </li>
+                                        <li class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Server Priority Processing</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="pt-3 border-t border-slate-800">
+                                    <button 
+                                        v-if="user && !isClipperOrAdmin" 
+                                        @click="clipperRequestType = 'creator'; showRequestClipperModal = true;"
+                                        class="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-md cursor-pointer"
+                                    >
+                                        Ajukan Role Creator
+                                    </button>
+                                    <span v-else-if="user?.clipper_tier === 'creator'" class="block text-center py-1.5 px-3 rounded-lg bg-blue-950 text-blue-300 font-mono text-xs border border-blue-800">Level Anda Saat Ini</span>
+                                    <span v-else class="block text-center text-xs text-slate-500 font-mono">Dapat ditunjuk oleh Officer</span>
+                                </div>
+                            </div>
+
+                            <!-- Card 3: Official Officer & VIP Supporter -->
+                            <div class="p-4 rounded-xl bg-gradient-to-b from-emerald-950/40 to-slate-900 border border-emerald-800/80 space-y-4 flex flex-col justify-between relative overflow-hidden shadow-xl">
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-mono text-[10px] font-bold uppercase">Ultimate Tier</span>
+                                        <span class="text-xs text-emerald-300 font-mono">Official / VIP</span>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="text-base font-bold text-white">Official Officer & VIP</h4>
+                                        <p class="text-xs text-slate-400">Akses penuh kedinasan streamer RP & VIP Supporter.</p>
+                                    </div>
+
+                                    <ul class="space-y-2 text-xs text-slate-300 font-mono pt-2 border-t border-slate-800/80">
+                                        <li class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Kuota: <strong class="text-emerald-400">UNLIMITED KLIP</strong></span>
+                                        </li>
+                                        <li class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Durasi Maks: <strong>10 Menit (600s)</strong></span>
+                                        </li>
+                                        <li class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Pemotongan DVR Live Stream HLS</span>
+                                        </li>
+                                        <li class="flex items-center gap-2 text-amber-300 font-semibold bg-emerald-950/60 p-1.5 rounded border border-emerald-800/60">
+                                            <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                                            <span>Hak Officer: <strong>2 Slot Penunjukan Direct Clipper</strong></span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="pt-3 border-t border-slate-800">
+                                    <button 
+                                        v-if="user?.can_delegate_clipper" 
+                                        @click="showDelegationModal = true; fetchDelegations();"
+                                        class="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                                    >
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                                        <span>Kelola 2 Slot Penunjukan ({{ delegationData.used_slots }}/2)</span>
+                                    </button>
+                                    <button 
+                                        v-else-if="user && !isClipperOrAdmin" 
+                                        @click="clipperRequestType = 'officer'; showRequestClipperModal = true;"
+                                        class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs transition shadow-md cursor-pointer"
+                                    >
+                                        Ajukan Akses Officer / VIP
+                                    </button>
+                                    <span v-else class="block text-center py-1.5 px-3 rounded-lg bg-emerald-950 text-emerald-300 font-mono text-xs border border-emerald-800">Level Anda Saat Ini</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Informative Note for Officers -->
+                        <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div class="flex items-center gap-2.5 text-slate-300">
+                                <span class="p-1 rounded bg-amber-950 text-amber-400 border border-amber-800 shrink-0 font-mono font-bold text-[10px]">Panduan Officer</span>
+                                <span>Officer & Admin berhak menunjuk hingga <strong>2 akun member</strong> menjadi Clipper tanpa perlu persetujuan Admin. Penunjukan dapat dicabut kembali kapan saja untuk membebaskan slot.</span>
+                            </div>
+                            <button 
+                                v-if="user?.can_delegate_clipper"
+                                @click="showDelegationModal = true; fetchDelegations();" 
+                                class="px-3.5 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 text-emerald-400 hover:text-white font-mono font-bold text-xs transition shrink-0 cursor-pointer"
+                            >
+                                Kelola Slot Penunjukan →
+                            </button>
+                        </div>
+
+                    </div>
+                </transition>
+            </div>
+
             <!-- INTERACTIVE TRIMMER WORKSPACE -->
             <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-7 space-y-6">
                 
@@ -116,10 +360,13 @@
                                     </span>
                                     <span v-if="urlCheckResult?.is_live" class="px-2 py-0.5 rounded bg-red-950/80 text-red-400 border border-red-800/80 font-mono text-[10px] font-bold uppercase animate-pulse flex items-center gap-1">
                                         <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
-                                        🔴 LIVE STREAM (DVR HLS)
+                                        <span>LIVE STREAM (DVR HLS)</span>
                                     </span>
-                                    <span v-if="urlCheckResult?.channel_name" class="px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800 font-mono text-[10px] font-semibold">
-                                        📺 {{ urlCheckResult.channel_name }}
+                                    <span v-if="urlCheckResult?.channel_name" class="px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800 font-mono text-[10px] font-semibold flex items-center gap-1">
+                                        <svg class="w-3 h-3 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                        <span>{{ urlCheckResult.channel_name }}</span>
                                     </span>
                                     <span v-else class="text-xs text-slate-400 font-mono">
                                         {{ videoChannel }}
@@ -140,8 +387,8 @@
                         <div class="flex items-center gap-2 font-mono shrink-0">
                             <div class="px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs shadow-inner">
                                 <span class="text-slate-400 uppercase text-[10px] tracking-wider font-semibold block">Durasi Maksimal:</span>
-                                <strong class="text-blue-400 font-bold text-sm">
-                                    10 Menit (600s)
+                                <strong class="font-bold text-sm" :class="isClipperOrAdmin ? 'text-emerald-400' : 'text-blue-400'">
+                                    {{ formatSeconds(maxClipDurationSec) }} ({{ maxClipDurationSec }}s)
                                 </strong>
                             </div>
                         </div>
@@ -245,6 +492,28 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Interactive Dual-Range Timeline Trimmer & Touch Cut Slider -->
+                            <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                                <div class="flex items-center justify-between text-xs font-semibold text-slate-300">
+                                    <span class="flex items-center gap-1.5 font-tactical uppercase tracking-wider text-blue-400">
+                                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L4 4m5.121 5.121L4 14.121" />
+                                        </svg>
+                                        Timeline Trimmer & Touch Cut Slider
+                                    </span>
+                                    <span class="text-[10px] text-slate-500 font-mono">Dukungan Layar Sentuh HP/Tablet & Mouse</span>
+                                </div>
+                                <DualRangeTrimmer
+                                    :duration="videoDurationSec"
+                                    :current-time="playerCurrentSeconds"
+                                    :start-time="trimStartSecs"
+                                    :end-time="trimEndSecs"
+                                    @update:start-time="onTrimmerStartUpdate"
+                                    @update:end-time="onTrimmerEndUpdate"
+                                    @seek="onTrimmerSeek"
+                                />
+                            </div>
                         </div>
 
                     </div>
@@ -331,11 +600,11 @@
                                 <div 
                                     class="h-full transition-all duration-300"
                                     :class="isDurationValid ? 'bg-emerald-500' : 'bg-red-500'"
-                                    :style="{ width: `${Math.min(100, (calculatedSeconds / 600) * 100)}%` }"
+                                    :style="{ width: `${Math.min(100, (calculatedSeconds / maxClipDurationSec) * 100)}%` }"
                                 ></div>
                             </div>
-                            <div v-if="calculatedSeconds > 600" class="text-[10px] text-red-400 font-semibold font-mono">
-                                Melebihi batas maksimal 10 menit (600 detik)!
+                            <div v-if="calculatedSeconds > maxClipDurationSec" class="text-[10px] text-red-400 font-semibold font-mono">
+                                Melebihi batas maksimal {{ isClipperOrAdmin ? '10 menit (600s)' : '1 menit (60s)' }}!
                             </div>
                         </div>
 
@@ -376,19 +645,28 @@
                         <!-- Submit Action Button -->
                         <button
                             @click="submitTrim"
-                            :disabled="isSubmitting || !isDurationValid || submitCooldownSec > 0"
-                            class="w-full py-3 px-4 rounded-md text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-tactical cursor-pointer bg-blue-600 hover:bg-blue-500"
+                            :disabled="isSubmitting || (!isGuest && !isDurationValid) || submitCooldownSec > 0"
+                            class="w-full py-3 px-4 rounded-md text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-tactical cursor-pointer"
+                            :class="isGuest ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-600/30' : (isDurationValid ? 'bg-blue-600 hover:bg-blue-500' : 'bg-slate-800 text-slate-400')"
                         >
                             <svg v-if="isSubmitting" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                             <span v-else-if="submitCooldownSec > 0" class="font-mono">Tunggu Cooldown ({{ submitCooldownSec }}s)...</span>
-                            <template v-else>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L4 4m5.121 5.121L4 14.121" />
+                            <template v-else-if="isGuest">
+                                <img :src="iconCut" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                                <span>Potong Video (Daftar / Login Gratis)</span>
+                            </template>
+                            <template v-else-if="!isClipperOrAdmin && userDailyRemaining <= 0">
+                                <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
-                                <span>{{ (urlCheckResult && urlCheckResult.is_live) ? '⚡ Potong Klip Live (HLS DVR)' : 'Potong & Simpan Klip Video' }}</span>
+                                <span>Kuota Harian Habis (3/3 Klip)</span>
+                            </template>
+                            <template v-else>
+                                <img :src="iconCut" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                                <span>{{ (urlCheckResult && urlCheckResult.is_live) ? 'Potong Klip Live (HLS DVR)' : 'Potong & Simpan Klip Video' }}</span>
                             </template>
                         </button>
                     </div>
@@ -541,22 +819,442 @@
             </section>
 
         </div>
+
+        <!-- STICKY MOBILE BOTTOM ACTION BAR (< 1024px) -->
+        <div class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 border-t border-slate-800 p-3 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 font-sans">
+            <div class="flex items-center gap-2 font-mono text-xs">
+                <span class="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-blue-400 font-bold">
+                    {{ formattedDuration }}
+                </span>
+                <span class="text-[10px] text-slate-400 font-sans hidden sm:inline flex items-center gap-1">
+                    <span v-if="urlCheckResult?.is_live" class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping inline-block mr-1"></span>
+                    <span>{{ urlCheckResult?.is_live ? 'Live DVR' : 'VOD Stream' }}</span>
+                </span>
+            </div>
+
+            <button
+                @click="submitTrim"
+                :disabled="isSubmitting || (!isGuest && !isDurationValid) || submitCooldownSec > 0"
+                class="py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 flex items-center gap-2 font-tactical shadow-lg cursor-pointer"
+            >
+                <svg v-if="isSubmitting" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <template v-else>
+                    <img :src="iconCut" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                    <span>Potong Klip Real</span>
+                </template>
+            </button>
+        </div>
+
+        <!-- GUEST AUTHENTICATION REQUIRED MODAL OVERLAY -->
+        <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+            <div v-if="showGuestAuthModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl relative text-center">
+                    <button @click="showGuestAuthModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <div class="w-16 h-16 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center mx-auto shadow-inner">
+                        <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h3 class="text-xl font-black text-white uppercase font-tactical tracking-tight">
+                            Pendaftaran Akun Gratis Diperlukan
+                        </h3>
+                        <p class="text-xs text-slate-300 leading-relaxed font-sans">
+                            Anda sedang dalam <strong>Modus Teaser Interaktif</strong>. Untuk mulai memproses & mengunduh potongan video YouTube ini, silakan masuk atau daftar akun gratis dalam 10 detik!
+                        </p>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-left text-xs font-mono space-y-1 text-slate-300">
+                        <div class="flex items-center gap-2 text-emerald-400 font-bold">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Dapatkan 3 Klip Gratis per Hari</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-emerald-400 font-bold">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Pemrosesan Lossless MP4 / MP3 / GIF</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-2">
+                        <a 
+                            href="/register" 
+                            class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer block font-tactical"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                            <span>Daftar Akun Gratis Sekarang</span>
+                        </a>
+
+                        <a 
+                            href="/login" 
+                            class="w-full py-2.5 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-bold text-xs transition block text-center cursor-pointer font-sans"
+                        >
+                            Sudah punya akun? Masuk (Sign In)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- REQUEST CLIPPER ROLE MODAL OVERLAY -->
+        <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+            <div v-if="showRequestClipperModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl relative font-sans">
+                    <button @click="showRequestClipperModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 font-mono text-[10px] font-bold uppercase">Hak Spesial Clipper</span>
+                        </div>
+                        <h3 class="text-xl font-black text-white uppercase font-tactical tracking-tight">
+                            Pengajuan Hak Spesial Clip
+                        </h3>
+                        <p class="text-xs text-slate-400 leading-relaxed font-sans">
+                            Pilih kategori pengajuan Anda untuk mendapatkan kuota dan durasi pemotongan video lebih tinggi.
+                        </p>
+                    </div>
+
+                    <div v-if="requestSuccessMsg" class="p-3 rounded-lg bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-xs font-semibold">
+                        {{ requestSuccessMsg }}
+                    </div>
+
+                    <div v-if="requestErrMsg" class="p-3 rounded-lg bg-red-950/80 border border-red-800 text-red-300 text-xs font-semibold">
+                        {{ requestErrMsg }}
+                    </div>
+
+                    <!-- Category Selector Options -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                            Kategori Pengajuan <span class="text-blue-400">*</span>
+                        </label>
+
+                        <div class="space-y-2">
+                            <!-- Option 1: Official Officer / Streamer RP -->
+                            <label
+                                class="flex items-start space-x-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition"
+                                :class="clipperRequestType === 'officer' ? 'border-blue-500 bg-blue-950/20 ring-1 ring-blue-500/50' : ''"
+                            >
+                                <input
+                                    type="radio"
+                                    name="reqType"
+                                    value="officer"
+                                    v-model="clipperRequestType"
+                                    class="mt-1 text-blue-500 focus:ring-0 bg-slate-900 border-slate-700"
+                                />
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-bold text-white text-xs">Official Officer / Streamer RP</span>
+                                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-emerald-950 text-emerald-400 border border-emerald-800/80 font-mono shrink-0">Ultimate Tier</span>
+                                    </div>
+                                    <span class="text-[11px] text-slate-400 block mt-0.5">Tugas Kedinasan / Faction. <strong>Unlimited Klip, Maks 10 Menit</strong>.</span>
+                                </div>
+                            </label>
+
+                            <!-- Option 2: Content Creator / Editor (IME Clipper) -->
+                            <label
+                                class="flex items-start space-x-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition"
+                                :class="clipperRequestType === 'creator' ? 'border-blue-500 bg-blue-950/20 ring-1 ring-blue-500/50' : ''"
+                            >
+                                <input
+                                    type="radio"
+                                    name="reqType"
+                                    value="creator"
+                                    v-model="clipperRequestType"
+                                    class="mt-1 text-blue-500 focus:ring-0 bg-slate-900 border-slate-700"
+                                />
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-bold text-white text-xs">Content Creator / Editor (IME Clipper)</span>
+                                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-blue-950 text-blue-400 border border-blue-800/80 font-mono shrink-0">Creator Tier</span>
+                                    </div>
+                                    <span class="text-[11px] text-slate-400 block mt-0.5">Khusus Editor Resmi IME. <strong>10 Klip / Hari, Maks 5 Menit</strong>.</span>
+                                </div>
+                            </label>
+
+                            <!-- Option 3: VIP Supporter -->
+                            <label
+                                class="flex items-start space-x-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition"
+                                :class="clipperRequestType === 'vip' ? 'border-blue-500 bg-blue-950/20 ring-1 ring-blue-500/50' : ''"
+                            >
+                                <input
+                                    type="radio"
+                                    name="reqType"
+                                    value="vip"
+                                    v-model="clipperRequestType"
+                                    class="mt-1 text-blue-500 focus:ring-0 bg-slate-900 border-slate-700"
+                                />
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="font-bold text-white text-xs">VIP Supporter (Jalur Prioritas/Berbayar)</span>
+                                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-950 text-amber-400 border border-amber-800/80 font-mono shrink-0">Ultimate Tier</span>
+                                    </div>
+                                    <span class="text-[11px] text-slate-400 block mt-0.5">Jalur VIP Supporter. <strong>Unlimited Klip, Maks 10 Menit</strong>.</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Channel URL Input -->
+                    <div class="space-y-1">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                            Link Channel YouTube / Stream (Opsional)
+                        </label>
+                        <input
+                            v-model="clipperChannelUrl"
+                            type="url"
+                            placeholder="https://www.youtube.com/@channel-anda"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:ring-0 outline-none transition font-mono"
+                        />
+                    </div>
+
+                    <!-- Reason Input -->
+                    <div class="space-y-1">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                            Catatan / Alasan Pengajuan (Opsional)
+                        </label>
+                        <textarea
+                            v-model="clipperRequestReason"
+                            rows="2"
+                            placeholder="Tuliskan keterangan singkat pengajuan Anda..."
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:ring-0 outline-none transition"
+                        ></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button
+                            @click="showRequestClipperModal = false"
+                            class="py-2.5 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white font-bold text-xs transition"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            @click="submitClipperRequest"
+                            :disabled="isSubmittingRequest"
+                            class="py-2.5 px-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer font-tactical"
+                        >
+                            <svg v-if="isSubmittingRequest" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <img v-else :src="iconCut" class="w-3.5 h-3.5 invert opacity-90 shrink-0" alt="" />
+                            <span>Kirim Pengajuan</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- DELEGATION CLIPPER MODAL (FOR OFFICERS/ADMINS - 2 SLOTS) -->
+        <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+            <div v-if="showDelegationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 font-sans relative text-left">
+                    <button @click="showDelegationModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/80 font-mono text-[10px] font-bold uppercase">Hak Officer / Clipper</span>
+                            <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800/80 font-mono text-[10px] font-bold uppercase">Maksimal 2 Akun</span>
+                        </div>
+                        <h3 class="text-lg font-black text-white uppercase tracking-tight font-tactical">
+                            Kelola Penunjukan Hak Clipper
+                        </h3>
+                        <p class="text-xs text-slate-400">
+                            Sebagai Officer/Clipper, Anda dapat menunjuk hingga <strong>2 akun member</strong> secara langsung ke kategori Clipper tanpa membebani verifikasi manual admin.
+                        </p>
+                    </div>
+
+                    <!-- Alert Banners inside Modal -->
+                    <div v-if="delegationErrMsg" class="p-3 rounded-xl bg-slate-950 border border-red-900/50 text-red-400 text-xs flex items-center justify-between gap-2 font-mono">
+                        <span>{{ delegationErrMsg }}</span>
+                        <button @click="delegationErrMsg = ''" class="text-red-400 hover:text-white">✕</button>
+                    </div>
+
+                    <div v-if="delegationSuccessMsg" class="p-3 rounded-xl bg-slate-950 border border-emerald-900/50 text-emerald-400 text-xs flex items-center justify-between gap-2 font-mono">
+                        <span>{{ delegationSuccessMsg }}</span>
+                        <button @click="delegationSuccessMsg = ''" class="text-emerald-400 hover:text-white">✕</button>
+                    </div>
+
+                    <!-- Slots Overview Box -->
+                    <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-300 font-semibold uppercase tracking-wider">Status Kuota Slot Penunjukan:</span>
+                            <span class="font-mono font-bold text-sm" :class="delegationData.used_slots >= 2 ? 'text-amber-400' : 'text-emerald-400'">
+                                {{ delegationData.used_slots }}/2 Slot Terpakai
+                            </span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                            <div class="h-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all duration-300" :style="{ width: `${(delegationData.used_slots / 2) * 100}%` }"></div>
+                        </div>
+                    </div>
+
+                    <!-- List of Current Delegations -->
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                            Akun Yang Telah Anda Tunjuk ({{ delegationData.delegations ? delegationData.delegations.length : 0 }}/2)
+                        </h4>
+
+                        <div v-if="isLoadingDelegation" class="p-4 text-center text-xs text-slate-400 font-mono">
+                            Memuat data slot...
+                        </div>
+
+                        <div v-else-if="!delegationData.delegations || delegationData.delegations.length === 0" class="p-4 rounded-xl bg-slate-950/60 border border-dashed border-slate-800 text-center space-y-1">
+                            <p class="text-xs text-slate-400">Belum ada akun member yang Anda tunjuk.</p>
+                            <p class="text-[11px] text-slate-500 font-mono">Gunakan formulir di bawah untuk menunjuk akun via alamat email.</p>
+                        </div>
+
+                        <div v-else class="space-y-2">
+                            <div v-for="del in delegationData.delegations" :key="del.id" class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 text-xs">
+                                <div class="space-y-0.5 truncate">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-white truncate">{{ del.assigned_user?.name || 'Member' }}</span>
+                                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-slate-900 text-emerald-400 border border-slate-800 font-mono uppercase">
+                                            {{ del.tier === 'ultimate' ? 'Ultimate Tier' : 'Creator Tier (10 Klip/hr)' }}
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 font-mono truncate">{{ del.assigned_user?.email }}</p>
+                                </div>
+                                <button
+                                    @click="revokeDelegation(del.id, del.assigned_user?.name || del.assigned_user?.email)"
+                                    class="py-1.5 px-3 rounded-lg bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-300 hover:text-white font-semibold text-xs transition flex items-center gap-1 shrink-0 font-mono cursor-pointer"
+                                    title="Cabut penunjukan & kembalikan pengguna ke member biasa"
+                                >
+                                    <img :src="iconDelete" class="w-3.5 h-3.5 invert opacity-90" alt="" />
+                                    <span>Cabut</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form to Assign New Member (If slots available) -->
+                    <div v-if="delegationData.used_slots < 2" class="p-4 rounded-xl bg-slate-950/80 border border-blue-900/50 space-y-3">
+                        <h4 class="text-xs font-semibold text-blue-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                            <span>Tunjuk Akun Member Baru (Sisa Slot: {{ 2 - delegationData.used_slots }})</span>
+                        </h4>
+
+                        <div class="space-y-2">
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">Email Akun Member:</label>
+                                <input
+                                    v-model="assignEmailInput"
+                                    type="email"
+                                    placeholder="contoh: user@gmail.com"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:ring-0 outline-none transition font-mono"
+                                />
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">Pilih Kategori Hak Clipper:</label>
+                                <select
+                                    v-model="assignTierInput"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 focus:ring-0 outline-none transition font-sans"
+                                >
+                                    <option value="creator">Content Creator / Editor (10 Klip/hari, Durasi Maks 5 Menit)</option>
+                                    <option value="ultimate">Official Streamer / VIP (Unlimited Klip, Durasi Maks 10 Menit)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button
+                            @click="assignDelegation"
+                            :disabled="isAssigningDelegation"
+                            class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer font-tactical"
+                        >
+                            <svg v-if="isAssigningDelegation" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span v-else>Tunjuk Sebagai Clipper</span>
+                        </button>
+                    </div>
+
+                    <div v-else class="p-3 rounded-xl bg-amber-950/40 border border-amber-800/60 text-amber-300 text-xs text-center font-mono">
+                        Kuota penunjukan Anda telah penuh (2/2 Slot Terpakai). Cabut salah satu penunjukan di atas jika ingin mengganti akun target.
+                    </div>
+
+                    <div class="flex items-center justify-end pt-2">
+                        <button
+                            @click="showDelegationModal = false"
+                            class="py-2 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white font-bold text-xs transition cursor-pointer"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </TacticalLayout>
 </template>
 
 <script setup>
+import DualRangeTrimmer from '@/Components/DualRangeTrimmer.vue';
 import CustomVideoPlayer from '@/Components/CustomVideoPlayer.vue';
 import TacticalLayout from '@/Layouts/TacticalLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 
 import iconDelete from '@/Components/Icons/delete-2-svgrepo-com.svg';
-import { defineProps, } from 'vue';
 
 const props = defineProps({
     initialUrl: String,
 });
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user || null);
+const isGuest = computed(() => !user.value);
+const isClipperOrAdmin = computed(() => user.value?.can_trim_video || false);
+const maxClipDurationSec = computed(() => isClipperOrAdmin.value ? 600 : 60);
+const dailyClipsCount = computed(() => user.value?.daily_clips_count || 0);
+const dailyClipsLimit = computed(() => user.value?.daily_clips_limit || 3);
+const userDailyRemaining = computed(() => Math.max(0, dailyClipsLimit.value - dailyClipsCount.value));
+
+const showGuestAuthModal = ref(false);
+const showRequestClipperModal = ref(false);
+const clipperRequestType = ref('officer');
+const clipperChannelUrl = ref('');
+const clipperRequestReason = ref('');
+const clipperRequestStatus = ref(null);
+const isSubmittingRequest = ref(false);
+const requestSuccessMsg = ref('');
+const requestErrMsg = ref('');
+
+// Clipper Delegation State (Officer 2 Slots)
+const showDelegationModal = ref(false);
+const delegationData = ref({ can_delegate: false, max_slots: 2, used_slots: 0, remaining_slots: 2, delegations: [] });
+const isLoadingDelegation = ref(false);
+const isAssigningDelegation = ref(false);
+const assignEmailInput = ref('');
+const assignTierInput = ref('creator');
+const delegationErrMsg = ref('');
+const delegationSuccessMsg = ref('');
+const showTierMatrix = ref(false);
 
 // Demo Sample Streams
 const sampleVideos = [
@@ -773,8 +1471,92 @@ const calculatedSeconds = computed(() => {
 });
 
 const isDurationValid = computed(() => {
-    return calculatedSeconds.value > 0 && calculatedSeconds.value <= 600;
+    return calculatedSeconds.value > 0 && calculatedSeconds.value <= maxClipDurationSec.value;
 });
+
+// Fetch user's Clipper request status
+async function fetchClipperRequestStatus() {
+    if (!user.value || isClipperOrAdmin.value) return;
+    try {
+        const res = await axios.get('/api/v1/clipper-requests/status');
+        if (res.data && res.data.status) {
+            clipperRequestStatus.value = res.data.status;
+        }
+    } catch (err) {}
+}
+
+// Submit a new Clipper Role request
+async function submitClipperRequest() {
+    isSubmittingRequest.value = true;
+    requestSuccessMsg.value = '';
+    requestErrMsg.value = '';
+    try {
+        const res = await axios.post('/api/v1/clipper-requests', {
+            request_type: clipperRequestType.value,
+            channel_url: clipperChannelUrl.value,
+            reason: clipperRequestReason.value,
+        });
+        clipperRequestStatus.value = 'pending';
+        requestSuccessMsg.value = res.data.message || 'Pengajuan berhasil dikirim!';
+        setTimeout(() => {
+            showRequestClipperModal.value = false;
+        }, 2000);
+    } catch (err) {
+        requestErrMsg.value = err.response?.data?.message || 'Gagal mengirim pengajuan.';
+    } finally {
+        isSubmittingRequest.value = false;
+    }
+}
+
+// Clipper Delegation API Calls
+async function fetchDelegations() {
+    if (!user.value?.can_delegate_clipper) return;
+    isLoadingDelegation.value = true;
+    try {
+        const res = await axios.get('/api/v1/clipper-delegations');
+        delegationData.value = res.data;
+    } catch (e) {
+        console.error('Failed to fetch delegations:', e);
+    } finally {
+        isLoadingDelegation.value = false;
+    }
+}
+
+async function assignDelegation() {
+    if (!assignEmailInput.value) {
+        delegationErrMsg.value = 'Silakan masukkan alamat email akun member yang ingin Anda tunjuk!';
+        return;
+    }
+    isAssigningDelegation.value = true;
+    delegationErrMsg.value = '';
+    delegationSuccessMsg.value = '';
+    try {
+        const res = await axios.post('/api/v1/clipper-delegations/assign', {
+            email: assignEmailInput.value,
+            tier: assignTierInput.value,
+        });
+        delegationSuccessMsg.value = res.data.message || 'Berhasil menunjuk akun sebagai Clipper!';
+        assignEmailInput.value = '';
+        await fetchDelegations();
+    } catch (err) {
+        delegationErrMsg.value = err.response?.data?.message || err.response?.data?.errors?.email?.[0] || 'Gagal menunjuk akun.';
+    } finally {
+        isAssigningDelegation.value = false;
+    }
+}
+
+async function revokeDelegation(id, targetName) {
+    if (!confirm(`Apakah Anda yakin ingin mencabut penunjukan Clipper untuk ${targetName}? Slot penunjukan Anda akan kembali bertambah.`)) return;
+    delegationErrMsg.value = '';
+    delegationSuccessMsg.value = '';
+    try {
+        const res = await axios.delete(`/api/v1/clipper-delegations/${id}`);
+        delegationSuccessMsg.value = res.data.message || 'Penunjukan berhasil dicabut.';
+        await fetchDelegations();
+    } catch (err) {
+        delegationErrMsg.value = err.response?.data?.message || 'Gagal mencabut penunjukan.';
+    }
+}
 
 const formattedDuration = computed(() => {
     const secs = calculatedSeconds.value;
@@ -783,6 +1565,24 @@ const formattedDuration = computed(() => {
     const s = secs % 60;
     return `${m}m ${s}s (${secs}d)`;
 });
+
+const trimStartSecs = computed(() => parseTimeToSeconds(form.value.start_time));
+const trimEndSecs = computed(() => parseTimeToSeconds(form.value.end_time));
+
+function onTrimmerStartUpdate(val) {
+    form.value.start_time = formatSecondsToTimestamp(val);
+}
+
+function onTrimmerEndUpdate(val) {
+    form.value.end_time = formatSecondsToTimestamp(val);
+}
+
+function onTrimmerSeek(sec) {
+    playerCurrentSeconds.value = sec;
+    if (mainPlayerRef.value && typeof mainPlayerRef.value.seekTo === 'function') {
+        mainPlayerRef.value.seekTo(sec);
+    }
+}
 
 function formatSeconds(secs) {
     if (!secs) return '0d';
@@ -858,10 +1658,21 @@ function loadVideoFromInput() {
 
 // Submit Trim Job to Laravel API
 async function submitTrim() {
+    if (isGuest.value) {
+        showGuestAuthModal.value = true;
+        return;
+    }
+
     if (submitCooldownSec.value > 0) return;
 
+    if (!isClipperOrAdmin.value && userDailyRemaining.value <= 0) {
+        formError.value = 'Kuota pemotongan video gratis Anda hari ini (3/3 klip) telah habis. Silakan ajukan Role Clipper untuk kuota unlimited!';
+        return;
+    }
+
     if (!isDurationValid.value) {
-        formError.value = 'Durasi pemotongan tidak valid atau melebihi batas 10 menit (600 detik).';
+        const maxTxt = isClipperOrAdmin.value ? '10 menit (600s)' : '1 menit (60s)';
+        formError.value = `Durasi pemotongan tidak valid atau melebihi batas ${maxTxt}.`;
         return;
     }
 
@@ -913,6 +1724,7 @@ async function submitTrim() {
 
 // Fetch Clips List from Laravel API
 async function fetchClips() {
+    if (isGuest.value) return;
     isLoadingClips.value = true;
     try {
         const response = await axios.get('/api/v1/clips');
@@ -994,6 +1806,10 @@ onMounted(() => {
         startYTTimePolling();
     }
     fetchClips();
+    fetchClipperRequestStatus();
+    if (isClipperOrAdmin.value) {
+        fetchDelegations();
+    }
     startPolling();
 });
 

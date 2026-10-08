@@ -34,7 +34,14 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user() ? array_merge($request->user()->toArray(), [
                     'is_admin' => $request->user()->isAdmin(),
+                    'is_officer' => $request->user()->isOfficer(),
+                    'can_delegate_clipper' => $request->user()->canDelegateClipper(),
                     'can_trim_video' => $request->user()->canTrimVideo(),
+                    'clipper_tier' => $request->user()->getClipperTier(),
+                    'clipper_tier_name' => $request->user()->getClipperTierName(),
+                    'daily_clips_count' => $request->user()->getDailyClipsCount(),
+                    'daily_clips_limit' => $request->user()->getDailyClipsLimit(),
+                    'max_clip_duration_sec' => $request->user()->getMaxClipDurationSec(),
                 ]) : null,
             ],
         ];

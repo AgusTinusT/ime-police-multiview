@@ -108,17 +108,42 @@ Route::middleware('auth')->prefix('api/v1/user/watchlist')->group(function () {
     Route::post('/toggle', [UserWatchlistController::class, 'toggle']);
 });
 
-// Dedicated Tactical Video Trimmer Workspace Page & API (Direct Stream Copy, max 10 mins, role restricted)
-Route::middleware(['auth', 'can_trim'])->group(function () {
-    Route::get('/clipper', [VideoClipController::class, 'clipperPage'])->name('clipper');
+use App\Http\Controllers\ClipperRequestController;
 
-    Route::prefix('api/v1/clips')->group(function () {
-        Route::get('/', [VideoClipController::class, 'index']);
-        Route::post('/check-url', [VideoClipController::class, 'checkUrl']);
-        Route::post('/trim', [VideoClipController::class, 'store']);
-        Route::get('/{id}/download', [VideoClipController::class, 'download'])->name('clips.download');
-        Route::delete('/{id}', [VideoClipController::class, 'destroy']);
+// Dedicated Tactical Video Trimmer Workspace Page (Public Teaser & Auth Workspace)
+Route::get('/clipper', [VideoClipController::class, 'clipperPage'])->name('clipper');
+
+// Public YouTube URL Checker (For Teaser & Interactive Preview)
+Route::post('/api/v1/clips/check-url', [VideoClipController::class, 'checkUrl'])->middleware('throttle:30,1');
+
+// Authenticated Video Trimming & Clip Management API
+Route::middleware('auth')->prefix('api/v1/clips')->group(function () {
+    Route::get('/', [VideoClipController::class, 'index']);
+    Route::post('/trim', [VideoClipController::class, 'store'])->middleware('throttle:10,1');
+    Route::get('/{id}/download', [VideoClipController::class, 'download'])->name('clips.download');
+    Route::delete('/{id}', [VideoClipController::class, 'destroy']);
+});
+
+// Authenticated Clipper Role Request API
+Route::middleware('auth')->prefix('api/v1/clipper-requests')->group(function () {
+    Route::get('/status', [ClipperRequestController::class, 'userStatus']);
+    Route::post('/', [ClipperRequestController::class, 'store'])->middleware('throttle:5,1');
+    
+    // Admin Review Endpoints
+    Route::middleware('admin')->group(function () {
+        Route::get('/admin', [ClipperRequestController::class, 'index']);
+        Route::post('/admin/{id}/approve', [ClipperRequestController::class, 'approve']);
+        Route::post('/admin/{id}/reject', [ClipperRequestController::class, 'reject']);
     });
+});
+
+use App\Http\Controllers\ClipperDelegationController;
+
+// Officer / Clipper Delegation API (2-Slot Assignment & Revocation)
+Route::middleware('auth')->prefix('api/v1/clipper-delegations')->group(function () {
+    Route::get('/', [ClipperDelegationController::class, 'index']);
+    Route::post('/assign', [ClipperDelegationController::class, 'assign'])->middleware('throttle:10,1');
+    Route::delete('/{id}', [ClipperDelegationController::class, 'revoke']);
 });
 
 

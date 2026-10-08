@@ -182,10 +182,19 @@ class YouTubeClipperService
         $ytDlpBin = $this->resolveYtDlpBinary();
         $ffmpegBin = $this->resolveFfmpegBinary();
 
-        // 1. Extract M3U8 Stream URLs via yt-dlp -g
+        $formatOption = $clip->format ?? 'MP4 1080p';
+        $formatSpec = match ($formatOption) {
+            'MP3 Audio' => 'ba/bestaudio',
+            'MP4 360p' => 'bv*[height<=360]+ba/b[height<=360]/best',
+            'MP4 720p' => 'bv*[height<=720]+ba/b[height<=720]/best',
+            default => 'bv*[height<=1080]+ba/b[height<=1080]/best',
+        };
+
+        // 1. Extract M3U8 Stream URLs via yt-dlp -g with requested format specification
         $cmd = [
             $ytDlpBin,
             '-g',
+            '-f', $formatSpec,
             '--no-playlist',
             '--no-cache-dir',
             '--force-ipv4',
@@ -200,6 +209,14 @@ class YouTubeClipperService
 
         $process = $this->createProcess($cmd, 30);
         $process->run();
+
+        // Fallback: If format-specific yt-dlp -g failed, try without -f flag
+        if (!$process->isSuccessful() || empty(trim($process->getOutput()))) {
+            Log::warning("Format-specific yt-dlp -g failed for clip #{$clip->id} ({$formatSpec}), falling back to default stream.");
+            $cmdFallback = array_values(array_filter($cmd, fn($arg) => $arg !== '-f' && $arg !== $formatSpec));
+            $process = $this->createProcess($cmdFallback, 30);
+            $process->run();
+        }
 
         if (!$process->isSuccessful()) {
             throw new \RuntimeException("Failed to get stream URLs from yt-dlp: " . $process->getErrorOutput());

@@ -1032,6 +1032,7 @@ const userForm = ref({
     email: "",
     password: "",
     role: "member",
+    clipper_tier: "free",
 });
 
 const openAddUserModal = () => {
@@ -1042,6 +1043,7 @@ const openAddUserModal = () => {
         email: "",
         password: "",
         role: "member",
+        clipper_tier: "free",
     };
     showUserModal.value = true;
 };
@@ -1054,6 +1056,7 @@ const openEditUserModal = (user) => {
         email: user.email || "",
         password: "",
         role: user.role || "member",
+        clipper_tier: user.clipper_tier || "free",
     };
     showUserModal.value = true;
 };
@@ -2310,21 +2313,38 @@ onMounted(() => {
                                 <td class="p-3.5 text-slate-300">
                                     {{ u.email }}
                                 </td>
-                                <td class="p-3.5">
-                                    <span
-                                        class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase"
-                                        :class="{
-                                            'bg-purple-950 text-purple-300 border border-purple-800':
-                                                u.role === 'admin',
-                                            'bg-blue-950 text-blue-300 border border-blue-800':
-                                                u.role === 'clipper',
-                                            'bg-slate-950 text-slate-300 border border-slate-800':
-                                                u.role !== 'admin' &&
-                                                u.role !== 'clipper',
-                                        }"
-                                    >
-                                        {{ u.role || "member" }}
-                                    </span>
+                                <td class="p-3.5 space-y-1">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase"
+                                            :class="{
+                                                'bg-purple-950 text-purple-300 border border-purple-800':
+                                                    u.role === 'admin',
+                                                'bg-emerald-950 text-emerald-300 border border-emerald-800':
+                                                    u.role === 'officer',
+                                                'bg-blue-950 text-blue-300 border border-blue-800':
+                                                    u.role === 'clipper',
+                                                'bg-slate-950 text-slate-300 border border-slate-800':
+                                                    u.role === 'member' || !u.role,
+                                            }"
+                                        >
+                                            {{ u.role === 'officer' ? 'Officer (2 Slot)' : u.role || 'member' }}
+                                        </span>
+
+                                        <span
+                                            class="px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold uppercase"
+                                            :class="{
+                                                'bg-amber-950 text-amber-300 border border-amber-800':
+                                                    u.clipper_tier === 'ultimate',
+                                                'bg-blue-950 text-blue-300 border border-blue-800':
+                                                    u.clipper_tier === 'creator',
+                                                'bg-slate-900 text-slate-400 border border-slate-800':
+                                                    !u.clipper_tier || u.clipper_tier === 'free',
+                                            }"
+                                        >
+                                            {{ u.clipper_tier_name || u.clipper_tier || 'Free Tier' }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="p-3.5">
                                     <button
@@ -3259,15 +3279,36 @@ onMounted(() => {
                                 class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
                             >
                                 <option value="member">
-                                    Member (Pengunjung Umum - Watchlist Cloud)
+                                    Member (Pengunjung Umum - Kuota 3 Klip/hari)
+                                </option>
+                                <option value="officer">
+                                    Officer / Streamer RP (Akses Ultimate + Hak Penunjukan 2 Slot Clipper)
                                 </option>
                                 <option value="clipper">
-                                    Clipper (Editor - Akses Fitur Potong Video
-                                    Clipper)
+                                    Clipper (IME Content Creator / Editor - Akses Clipper)
                                 </option>
                                 <option value="admin">
-                                    Admin (Akses Penuh Command Center &
-                                    Dashboard Dispatcher)
+                                    Admin (Akses Penuh Command Center & Dashboard Dispatcher)
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-300 mb-1 font-bold"
+                                >Clipper Tier (Tingkatan Hak Fitur Trimming) *</label
+                            >
+                            <select
+                                v-model="userForm.clipper_tier"
+                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
+                            >
+                                <option value="free">
+                                    Free Tier (3 Klip/hari, Durasi Maks 1 Menit)
+                                </option>
+                                <option value="creator">
+                                    Creator Tier (10 Klip/hari, Durasi Maks 5 Menit)
+                                </option>
+                                <option value="ultimate">
+                                    Ultimate Tier (Unlimited Klip, Durasi Maks 10 Menit + DVR Live Stream)
                                 </option>
                             </select>
                         </div>

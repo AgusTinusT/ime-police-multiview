@@ -11,12 +11,22 @@ class UserManagementController extends Controller
     /**
      * Get list of all registered users with their cloud watchlist counts.
      */
+    /**
+     * Get list of all registered users with their cloud watchlist counts.
+     */
     public function index(Request $request)
     {
         $users = User::withCount('watchlists')
             ->with('watchlists')
             ->orderBy('id', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($u) {
+                $arr = $u->toArray();
+                $arr['clipper_tier'] = $u->getClipperTier();
+                $arr['clipper_tier_name'] = $u->getClipperTierName();
+                $arr['can_delegate_clipper'] = $u->canDelegateClipper();
+                return $arr;
+            });
 
         return response()->json([
             'status' => 'success',
@@ -34,7 +44,8 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:6',
-            'role' => 'required|string|in:member,clipper,admin',
+            'role' => 'required|string|in:member,officer,clipper,admin',
+            'clipper_tier' => 'nullable|string|in:free,creator,ultimate',
         ]);
 
         $user = User::create([
@@ -42,11 +53,12 @@ class UserManagementController extends Controller
             'email' => strtolower($validated['email']),
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
+            'clipper_tier' => $validated['clipper_tier'] ?? 'free',
         ]);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Akun member baru berhasil ditambahkan.',
+            'message' => 'Akun pengguna baru berhasil ditambahkan.',
             'data' => $user,
         ]);
     }
@@ -62,12 +74,16 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'password' => 'nullable|string|min:6',
-            'role' => 'required|string|in:member,clipper,admin',
+            'role' => 'required|string|in:member,officer,clipper,admin',
+            'clipper_tier' => 'nullable|string|in:free,creator,ultimate',
         ]);
 
         $user->name = $validated['name'];
         $user->email = strtolower($validated['email']);
         $user->role = $validated['role'];
+        if (array_key_exists('clipper_tier', $validated)) {
+            $user->clipper_tier = $validated['clipper_tier'];
+        }
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
@@ -77,7 +93,7 @@ class UserManagementController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Data akun member berhasil diperbarui.',
+            'message' => 'Data akun pengguna berhasil diperbarui.',
             'data' => $user,
         ]);
     }

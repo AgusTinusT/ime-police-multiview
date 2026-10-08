@@ -198,12 +198,8 @@ onUnmounted(() => {
                             </div>
                         </Link>
 
-                        <!-- Tactical Video Trimmer Studio (Admin / Clipper) -->
+                        <!-- Tactical Video Trimmer Studio (All Users) -->
                         <Link
-                            v-if="
-                                isAdmin ||
-                                $page.props.auth.user.can_trim_video
-                            "
                             href="/clipper"
                             @click="isOpen = false"
                             class="flex items-center px-4 py-2.5 text-slate-200 hover:bg-slate-800 hover:text-white transition gap-2.5 font-semibold group"
@@ -214,7 +210,11 @@ onUnmounted(() => {
                                 alt="Tactical Video Trimmer"
                             />
                             <div class="flex flex-col">
-                                <span>Tactical Video Trimmer</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span>Tactical Video Trimmer</span>
+                                    <span v-if="!$page.props.auth.user.can_trim_video" class="px-1.5 py-0.2 text-[9px] font-bold rounded bg-blue-950 text-blue-400 border border-blue-800/60 font-mono">Free</span>
+                                    <span v-else class="px-1.5 py-0.2 text-[9px] font-bold rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-mono">PRO</span>
+                                </div>
                                 <span
                                     class="text-[10px] text-slate-400 font-normal"
                                 >
@@ -279,7 +279,7 @@ onUnmounted(() => {
                                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
                                 ]"
                             >
-                                <span>🇮🇩</span>
+                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded bg-slate-900 border border-slate-700">ID</span>
                                 <span>Indonesia</span>
                             </button>
                             <button
@@ -291,7 +291,7 @@ onUnmounted(() => {
                                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
                                 ]"
                             >
-                                <span>🇬🇧</span>
+                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded bg-slate-900 border border-slate-700">EN</span>
                                 <span>English</span>
                             </button>
                         </div>
@@ -359,8 +359,27 @@ onUnmounted(() => {
                     v-if="isOpen"
                     class="absolute right-0 top-full mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800 overflow-hidden font-sans z-50 shadow-xl"
                 >
-                    <!-- Sign In Action -->
-                    <div class="p-3 bg-slate-900">
+                    <!-- Clipper Teaser Link & Sign In Action -->
+                    <div class="p-3 bg-slate-900 space-y-2">
+                        <Link
+                            href="/clipper"
+                            @click="isOpen = false"
+                            class="flex items-center px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 hover:text-white hover:border-slate-700 transition gap-2 font-semibold group text-xs"
+                        >
+                            <img
+                                :src="iconCut"
+                                class="w-3.5 h-3.5 invert opacity-80 group-hover:opacity-100 transition shrink-0"
+                                alt="Tactical Video Trimmer"
+                            />
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Tactical Trimmer</span>
+                                    <span class="px-1.5 py-0.2 text-[9px] font-bold rounded bg-blue-950 text-blue-400 border border-blue-800/60 font-mono">Demo</span>
+                                </div>
+                                <span class="text-[10px] text-slate-400 font-normal">Coba Potong Video YouTube Gratis</span>
+                            </div>
+                        </Link>
+
                         <Link
                             href="/login"
                             @click="isOpen = false"
@@ -403,7 +422,7 @@ onUnmounted(() => {
                                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
                                 ]"
                             >
-                                <span>🇮🇩</span>
+                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded bg-slate-900 border border-slate-700">ID</span>
                                 <span>Indonesia</span>
                             </button>
                             <button
@@ -415,7 +434,7 @@ onUnmounted(() => {
                                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
                                 ]"
                             >
-                                <span>🇬🇧</span>
+                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded bg-slate-900 border border-slate-700">EN</span>
                                 <span>English</span>
                             </button>
                         </div>

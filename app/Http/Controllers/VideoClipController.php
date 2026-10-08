@@ -82,11 +82,23 @@ class VideoClipController extends Controller
         }
 
         $durationSeconds = $endSeconds - $startSeconds;
+        $user = $request->user();
+        $maxDuration = $user->getMaxClipDurationSec();
+        $dailyLimit = $user->getDailyClipsLimit();
+        $dailyCount = $user->getDailyClipsCount();
 
-        // Hard Limit: Maximum 10 Minutes (600 Seconds)
-        if ($durationSeconds > 600) {
+        // Tier-based Duration Validation
+        if ($durationSeconds > $maxDuration) {
+            $maxMins = ceil($maxDuration / 60);
             throw ValidationException::withMessages([
-                'end_time' => 'Durasi potongan maksimal adalah 10 menit (600 detik). Durasi Anda: ' . ceil($durationSeconds / 60) . ' menit.'
+                'end_time' => "Tipe akun Anda ({$user->getClipperTierName()}) hanya dapat memotong video maksimal {$maxMins} menit ({$maxDuration} detik). Ajukan upgrade hak spesial untuk durasi lebih panjang!"
+            ]);
+        }
+
+        // Tier-based Daily Quota Validation
+        if ($dailyCount >= $dailyLimit) {
+            throw ValidationException::withMessages([
+                'youtube_url' => "Kuota pemotongan video harian Anda ({$dailyCount}/{$dailyLimit} klip) telah habis. Silakan ajukan upgrade hak spesial Clipper!"
             ]);
         }
 
