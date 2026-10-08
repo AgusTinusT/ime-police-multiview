@@ -393,6 +393,11 @@ const currentClipAvatar = computed(() => {
     const clip = currentShortClip.value;
     if (!clip) return "";
 
+    // 1. Priority 1: Use direct clip avatar_url from API payload if provided
+    if (clip.avatar_url && !clip.avatar_url.includes("dicebear")) {
+        return clip.avatar_url;
+    }
+
     const clipName = (clip.officer_name || "").trim();
     const clipHandle = (clip.officer_handle || clip.handle || "").trim();
     const clipNameLower = clipName.toLowerCase();
@@ -402,61 +407,42 @@ const currentClipAvatar = computed(() => {
         clipNameLower === "patrol unit" ||
         clipHandleLower === "patrolunit";
 
-    // 1. Look up matching officer in props.officers database array if clip is associated with a specific officer
+    // 2. Priority 2: Strict match by officer_id in props.officers array
     if (props.officers && props.officers.length > 0) {
-        const found = props.officers.find((o) => {
-            if (clip.officer_id && o.id === clip.officer_id) return true;
+        if (clip.officer_id) {
+            const foundById = props.officers.find(
+                (o) => Number(o.id) === Number(clip.officer_id),
+            );
+            if (foundById && foundById.avatar_url) {
+                return foundById.avatar_url;
+            }
+        }
 
-            if (!isGenericPatrol) {
+        // 3. Priority 3: Strict match by exact handle or exact officer name
+        if (!isGenericPatrol) {
+            const foundByExactMatch = props.officers.find((o) => {
+                const offHandle = (o.handle || "")
+                    .toLowerCase()
+                    .replace("@", "")
+                    .trim();
                 const offName = (o.officer_name || "").toLowerCase().trim();
                 const offStreamer = (o.streamer_name || "")
                     .toLowerCase()
                     .trim();
-                const offHandle = (o.handle || o.channel_id || "")
-                    .toLowerCase()
-                    .replace("@", "")
-                    .trim();
-                const offCallsign = (o.callsign || "").toLowerCase().trim();
 
-                if (
-                    clipHandleLower &&
-                    offHandle &&
-                    clipHandleLower === offHandle
-                )
+                if (clipHandleLower && offHandle && clipHandleLower === offHandle)
                     return true;
-                if (
-                    clipNameLower &&
-                    offName &&
-                    (clipNameLower === offName ||
-                        clipNameLower.includes(offName) ||
-                        offName.includes(clipNameLower))
-                )
+                if (clipNameLower && offName && clipNameLower === offName)
                     return true;
-                if (
-                    clipNameLower &&
-                    offStreamer &&
-                    (clipNameLower === offStreamer ||
-                        clipNameLower.includes(offStreamer) ||
-                        offStreamer.includes(clipNameLower))
-                )
+                if (clipNameLower && offStreamer && clipNameLower === offStreamer)
                     return true;
-                if (
-                    clipNameLower &&
-                    offCallsign &&
-                    clipNameLower.includes(offCallsign)
-                )
-                    return true;
+
+                return false;
+            });
+
+            if (foundByExactMatch && foundByExactMatch.avatar_url) {
+                return foundByExactMatch.avatar_url;
             }
-
-            return false;
-        });
-
-        if (
-            found &&
-            found.avatar_url &&
-            !found.avatar_url.includes("dicebear")
-        ) {
-            return found.avatar_url;
         }
     }
 
