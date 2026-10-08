@@ -11,6 +11,7 @@ class ActiveStream extends Model
     use HasFactory;
 
     protected $fillable = [
+        'officer_id',
         'channel_id',
         'video_id',
         'title',
@@ -25,6 +26,7 @@ class ActiveStream extends Model
     protected $casts = [
         'last_synced_at' => 'datetime',
         'viewers_count' => 'integer',
+        'officer_id' => 'integer',
     ];
 
     /**
@@ -32,7 +34,7 @@ class ActiveStream extends Model
      */
     public function officer(): BelongsTo
     {
-        return $this->belongsTo(Officer::class, 'channel_id', 'channel_id');
+        return $this->belongsTo(Officer::class, 'officer_id', 'id');
     }
 
     /**

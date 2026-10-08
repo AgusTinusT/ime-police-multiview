@@ -79,7 +79,7 @@ class Officer extends Model
      */
     public function streams(): HasMany
     {
-        return $this->hasMany(ActiveStream::class, 'channel_id', 'channel_id');
+        return $this->hasMany(ActiveStream::class, 'officer_id', 'id');
     }
 
     /**
@@ -87,7 +87,7 @@ class Officer extends Model
      */
     public function activeStream(): HasOne
     {
-        return $this->hasOne(ActiveStream::class, 'channel_id', 'channel_id')
+        return $this->hasOne(ActiveStream::class, 'officer_id', 'id')
             ->where('status', 'LIVE');
     }
 
