@@ -72,10 +72,10 @@ class PoliceCommandController extends Controller
             });
 
         // 2. Get Offline 10-7 Officer Roster
-        $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->toArray();
+        $liveOfficerIds = ActiveStream::where('status', 'LIVE')->pluck('officer_id')->filter()->toArray();
 
         $offlineOfficers = Officer::where('is_active', true)
-            ->whereNotIn('channel_id', $liveChannelIds)
+            ->whereNotIn('id', $liveOfficerIds)
             ->orderBy('department')
             ->orderBy('rank')
             ->get()
@@ -206,10 +206,10 @@ class PoliceCommandController extends Controller
                 ];
             });
 
-        $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->toArray();
+        $liveOfficerIds = ActiveStream::where('status', 'LIVE')->pluck('officer_id')->filter()->toArray();
 
         $offlineOfficers = Officer::where('is_active', true)
-            ->whereNotIn('channel_id', $liveChannelIds)
+            ->whereNotIn('id', $liveOfficerIds)
             ->orderBy('department')
             ->orderBy('rank')
             ->get()
@@ -328,9 +328,9 @@ class PoliceCommandController extends Controller
             });
 
         // 2. Offline 10-7 Officer Roster
-        $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->toArray();
+        $liveOfficerIds = ActiveStream::where('status', 'LIVE')->pluck('officer_id')->filter()->toArray();
         $offlineOfficers = Officer::where('is_active', true)
-            ->whereNotIn('channel_id', $liveChannelIds)
+            ->whereNotIn('id', $liveOfficerIds)
             ->orderBy('department')
             ->orderBy('rank')
             ->get()
@@ -513,15 +513,15 @@ class PoliceCommandController extends Controller
         $activeStreams = ActiveStream::with('officer')
             ->where('status', 'LIVE')
             ->get();
-        $liveChannelIds = $activeStreams->pluck('channel_id')->filter()->toArray();
+        $liveOfficerIds = $activeStreams->pluck('officer_id')->filter()->toArray();
 
         $allOfficers = Officer::where('is_active', true)
             ->orderBy('department')
             ->orderBy('rank')
             ->get()
-            ->map(function ($officer) use ($liveChannelIds, $activeStreams) {
-                $isLive = in_array($officer->channel_id, $liveChannelIds);
-                $liveStream = $isLive ? $activeStreams->firstWhere('channel_id', $officer->channel_id) : null;
+            ->map(function ($officer) use ($liveOfficerIds, $activeStreams) {
+                $isLive = in_array($officer->id, $liveOfficerIds);
+                $liveStream = $isLive ? $activeStreams->firstWhere('officer_id', $officer->id) : null;
 
                 return [
                     'id' => $officer->id,

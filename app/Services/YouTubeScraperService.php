@@ -93,19 +93,19 @@ class YouTubeScraperService
                     break;
                 }
 
-                // Match Priority 3: Exact Channel Name / Streamer Name match
+                // Match Priority 3: Exact Channel Name / Streamer Name match (strict non-empty string check)
                 if (!empty($chName) && (
-                    (!empty($cleanHandle) && $chName === $cleanHandle) ||
-                    (!empty($streamerName) && $chName === $streamerName) ||
-                    (!empty($officerName) && $chName === $officerName)
+                    (!empty($cleanHandle) && strlen($cleanHandle) >= 3 && $chName === $cleanHandle) ||
+                    (!empty($streamerName) && strlen($streamerName) >= 3 && $chName === $streamerName) ||
+                    (!empty($officerName) && strlen($officerName) >= 3 && $chName === $officerName)
                 )) {
                     $matchedStream = $stream;
                     break;
                 }
 
-                // Match Priority 4: Exact Callsign in title (ONLY if stream handle is empty OR matches officer handle)
+                // Match Priority 4: Exact Callsign in title ONLY IF stream handle strictly matches officer handle
                 if (!empty($callsign) && strlen($callsign) >= 6 && preg_match('/\b' . preg_quote($callsign, '/') . '\b/i', $title)) {
-                    if (empty($streamHandle) || $streamHandle === $cleanHandle) {
+                    if (!empty($streamHandle) && $streamHandle === $cleanHandle) {
                         $matchedStream = $stream;
                         break;
                     }
@@ -1408,6 +1408,15 @@ class YouTubeScraperService
         'UCfWJd57ZpsLB9skmiDmFlQQ', // @falldie24 / Kanata (Memories RP)
         '@falldie24',
         'falldie24',
+        '@windahbasudara',
+        'windahbasudara',
+        'windah basudara',
+        '@mplindonesia',
+        'mplindonesia',
+        'mpl indonesia',
+        '@mobilelegendsbangbang',
+        'mobile legends: bang bang',
+        'mobile legends indonesia',
     ];
 
     /**
@@ -1417,10 +1426,12 @@ class YouTubeScraperService
     {
         $channelId = '';
         $handle = '';
+        $channelName = '';
 
         if (is_array($streamOrHandle)) {
             $channelId = trim($streamOrHandle['channel_id'] ?? '');
             $handle = strtolower(ltrim(trim($streamOrHandle['handle'] ?? ''), '@'));
+            $channelName = strtolower(trim($streamOrHandle['channel_name'] ?? ''));
         } elseif (is_string($streamOrHandle)) {
             $handle = strtolower(ltrim(trim($streamOrHandle), '@'));
             if (str_starts_with($streamOrHandle, 'UC')) {
@@ -1434,6 +1445,9 @@ class YouTubeScraperService
                 return true;
             }
             if (!empty($handle) && $handle === $cleanBlocked) {
+                return true;
+            }
+            if (!empty($channelName) && str_contains($channelName, $cleanBlocked)) {
                 return true;
             }
         }

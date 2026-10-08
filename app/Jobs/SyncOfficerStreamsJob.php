@@ -46,15 +46,15 @@ class SyncOfficerStreamsJob implements ShouldQueue
 
             if ($liveData && !empty($liveData['video_id'])) {
                 // If officer missing channel_id, auto-save detected YouTube channel ID ONLY for direct handle/RSS detection
-                if ((empty($officer->channel_id) || str_starts_with($officer->channel_id, 'custom-')) && !empty($liveData['channel_id']) && in_array($liveData['detection_method'] ?? '', ['DIRECT_HANDLE', 'RSS_FEED'])) {
+                if ((empty($officer->channel_id) || str_starts_with($officer->channel_id, 'custom-') || str_starts_with($officer->channel_id, 'UC_')) && !empty($liveData['channel_id']) && in_array($liveData['detection_method'] ?? '', ['RSS_FEED'])) {
                     $officer->update(['channel_id' => $liveData['channel_id']]);
                 }
 
                 $channelId = $officer->channel_id ?: ($liveData['channel_id'] ?: 'ch-' . $officer->id);
 
-                // Clean up any other active stream record having this exact video_id under a different channel_id
+                // Clean up any other active stream record having this exact video_id for a different officer
                 ActiveStream::where('video_id', $liveData['video_id'])
-                    ->where('channel_id', '!=', $channelId)
+                    ->where('officer_id', '!=', $officer->id)
                     ->delete();
 
                 $streamDescription = $liveData['description'] ?? null;
@@ -69,13 +69,14 @@ class SyncOfficerStreamsJob implements ShouldQueue
                 $isPolicePatrol = $scraper->isPolicePatrolStream($liveData['title'] ?? '', $streamDescription ?? '', $officer);
 
                 if ($isPolicePatrol) {
-                    // Update or create active stream
+                    // Update or create active stream with officer_id
                     ActiveStream::updateOrCreate(
                         [
-                            'channel_id' => $channelId,
+                            'officer_id' => $officer->id,
                             'video_id' => $liveData['video_id'],
                         ],
                         [
+                            'channel_id' => $channelId,
                             'title' => $liveData['title'],
                             'thumbnail_url' => $liveData['thumbnail_url'],
                             'status' => 'LIVE',
@@ -101,7 +102,7 @@ class SyncOfficerStreamsJob implements ShouldQueue
                     }
 
                     // Mark other previous streams of this officer as ended
-                    ActiveStream::where('channel_id', $channelId)
+                    ActiveStream::where('officer_id', $officer->id)
                         ->where('video_id', '!=', $liveData['video_id'])
                         ->where('status', 'LIVE')
                         ->update([
@@ -110,7 +111,7 @@ class SyncOfficerStreamsJob implements ShouldQueue
                         ]);
                 } else {
                     // Stream is not police patrol (e.g. badside / missing hashtag). Mark any existing active stream as ENDED.
-                    ActiveStream::where('channel_id', $channelId)
+                    ActiveStream::where('officer_id', $officer->id)
                         ->where('status', 'LIVE')
                         ->update([
                             'status' => 'ENDED',
@@ -119,8 +120,7 @@ class SyncOfficerStreamsJob implements ShouldQueue
                 }
             } else {
                 // Officer is not live in this cycle. Mark any existing active stream as ENDED immediately.
-                $channelId = $officer->channel_id ?: 'ch-' . $officer->id;
-                ActiveStream::where('channel_id', $channelId)
+                ActiveStream::where('officer_id', $officer->id)
                     ->where('status', 'LIVE')
                     ->update([
                         'status' => 'ENDED',
