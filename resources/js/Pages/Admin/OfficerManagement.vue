@@ -3279,7 +3279,7 @@ onMounted(() => {
                                 class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
                             >
                                 <option value="member">
-                                    Member (Pengunjung Umum - Kuota 3 Klip/hari)
+                                    Member (Pengunjung Umum - Kuota 3 Klip/minggu)
                                 </option>
                                 <option value="officer">
                                     Officer / Streamer RP (Akses Ultimate + Hak Penunjukan 2 Slot Clipper)
@@ -3302,7 +3302,7 @@ onMounted(() => {
                                 class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
                             >
                                 <option value="free">
-                                    Free Tier (3 Klip/hari, Durasi Maks 1 Menit)
+                                    Free Tier (3 Klip/minggu, Durasi Maks 1 Menit)
                                 </option>
                                 <option value="creator">
                                     Creator Tier (10 Klip/hari, Durasi Maks 5 Menit)

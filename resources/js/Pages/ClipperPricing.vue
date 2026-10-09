@@ -103,9 +103,9 @@
                                 <p
                                     class="text-xs text-slate-400 mt-1 leading-relaxed"
                                 >
-                                    Didorong khusus untuk mendokumentasikan
-                                    aksi-aksi Kepolisian (patroli, chase,
-                                    arrest) di IME Police.
+                                    Clipper yang rutin membuat konten kepolisian
+                                    di IME Roleplay. Baik itu individu tertentu
+                                    atau secara keseluruhan.
                                 </p>
                             </div>
 
@@ -127,8 +127,8 @@
                                     >
                                 </div>
                                 <p class="text-[11px] text-slate-400">
-                                    Dapatkan penunjukan 1 dari 2 slot langsung
-                                    milik Officer tanpa bayar.
+                                    Slot ini didapat dari officer yang
+                                    menunjukmu menjadi clipper.
                                 </p>
                             </div>
 
@@ -150,31 +150,8 @@
                                         />
                                     </svg>
                                     <span
-                                        >Penunjukan:
-                                        <strong
-                                            >Direct 2 Slot Officer</strong
-                                        ></span
-                                    >
-                                </li>
-                                <li class="flex items-center gap-2">
-                                    <svg
-                                        class="w-4 h-4 text-blue-400 shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M5 13l4 4L19 7"
-                                        />
-                                    </svg>
-                                    <span
-                                        >Prosedur:
-                                        <strong
-                                            >Instan Tanpa Review Admin</strong
-                                        ></span
+                                        >Fokus Konten:
+                                        <strong>IME Police</strong></span
                                     >
                                 </li>
                                 <li class="flex items-center gap-2">
@@ -193,7 +170,47 @@
                                     </svg>
                                     <span
                                         >Kuota:
-                                        <strong>10 Klip/Hari</strong></span
+                                        <strong>10 Klip / Hari</strong></span
+                                    >
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <svg
+                                        class="w-4 h-4 text-blue-400 shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M5 13l4 4L19 7"
+                                        />
+                                    </svg>
+                                    <span
+                                        >Durasi Maks:
+                                        <strong>5 Menit (300s)</strong></span
+                                    >
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <svg
+                                        class="w-4 h-4 text-blue-400 shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M5 13l4 4L19 7"
+                                        />
+                                    </svg>
+                                    <span
+                                        >Format:
+                                        <strong
+                                            >1080p, 720p, 480p, MP3</strong
+                                        ></span
                                     >
                                 </li>
                             </ul>
@@ -232,9 +249,8 @@
                                 <p
                                     class="text-xs text-slate-400 mt-1 leading-relaxed"
                                 >
-                                    Untuk pengguna yang fokus membahas kelompok,
-                                    faction, atau gangster tertentu di server
-                                    IME.
+                                    Untuk pengguna yang fokus membahas badside
+                                    dan goodside tertentu di server IME.
                                 </p>
                             </div>
 
@@ -268,6 +284,27 @@
                             <ul
                                 class="space-y-2 text-xs text-slate-300 font-mono pt-1"
                             >
+                                <li class="flex items-center gap-2">
+                                    <svg
+                                        class="w-4 h-4 text-slate-400 shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M5 13l4 4L19 7"
+                                        />
+                                    </svg>
+                                    <span
+                                        >Fokus Konten:
+                                        <strong
+                                            >IME Badside or Goodside</strong
+                                        ></span
+                                    >
+                                </li>
                                 <li class="flex items-center gap-2">
                                     <svg
                                         class="w-4 h-4 text-slate-400 shrink-0"
@@ -451,7 +488,10 @@
                                             d="M5 13l4 4L19 7"
                                         />
                                     </svg>
-                                    <span>Live DVR Cut & Server Priority</span>
+                                    <span
+                                        >Potong Siaran Langsung & Prioritas
+                                        Server</span
+                                    >
                                 </li>
                             </ul>
                         </div>
@@ -503,7 +543,8 @@
                         >
                             Apakah Anda Petugas Officer? <br />
                             <span class="text-blue-400"
-                                >Buat Akun & Miliki Otonomi 2 Slot Clipper</span
+                                >Akses VIP Supporter & 2 Slot Clipper
+                                Gratis</span
                             >
                         </h2>
 
@@ -511,11 +552,16 @@
                             class="text-xs sm:text-sm text-slate-300 leading-relaxed"
                         >
                             Setiap Officer & Petugas Kepolisian di server IME
-                            berhak memegang
-                            <strong>2 Slot Penunjukan Clipper Resmi</strong>
-                            secara mandiri. Tunjuk pemotong klip Anda tanpa
-                            antrean admin dan tampilkan livestream kedinasan
-                            Anda di Multiview Patrol!
+                            berhak mendapatkan
+                            <strong class="text-white"
+                                >Akses VIP Supporter Tier</strong
+                            >
+                            dan memegang
+                            <strong class="text-white"
+                                >2 Slot Police Duty Clipper</strong
+                            >
+                            secara mandiri. Ketentuan berlaku untuk Officer
+                            Aktif.
                         </p>
 
                         <div
@@ -525,29 +571,29 @@
                                 class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
                             >
                                 <span class="font-bold text-blue-400 block"
-                                    >⚡ Otonomi Mandiri</span
+                                    >VIP Supporter Tier</span
                                 >
                                 <span class="text-slate-400 text-[11px]"
-                                    >Tambah & cabut 2 akun Clipper Anda kapan
-                                    saja.</span
+                                    >Mendapatkan akses penuh fitur VIP Supporter
+                                    secara otomatis.</span
                                 >
                             </div>
                             <div
                                 class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
                             >
                                 <span class="font-bold text-blue-400 block"
-                                    >📺 Sorotan Multiview</span
+                                    >Otonomi Mandiri</span
                                 >
                                 <span class="text-slate-400 text-[11px]"
-                                    >Channel YouTube Anda tampil di radar
-                                    patroli.</span
+                                    >Tambah & cabut 2 slot Police Duty Clipper
+                                    Anda kapan saja.</span
                                 >
                             </div>
                             <div
                                 class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
                             >
                                 <span class="font-bold text-blue-400 block"
-                                    >🤝 Bebas Kesepakatan</span
+                                    >Bebas Kesepakatan</span
                                 >
                                 <span class="text-slate-400 text-[11px]"
                                     >Atur penugasan & kesepakatan secara
@@ -595,40 +641,204 @@
                 </div>
             </section>
 
-            <!-- BETA SERVER & OPERATIONAL NOTICE BOX -->
-            <section
-                class="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-3 font-sans"
-            >
+            <!-- BETA SERVER & OPERATIONAL NOTICE BOX (REDESIGNED) -->
+            <section class="space-y-4">
                 <div
-                    class="flex items-center gap-2 text-slate-200 font-mono font-bold text-xs"
+                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3"
                 >
-                    <svg
-                        class="w-4 h-4 text-blue-400 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                    </svg>
+                    <div>
+                        <div
+                            class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 font-mono text-[11px] font-bold uppercase mb-1"
+                        >
+                            <span
+                                class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"
+                            ></span>
+                            <span>System Transparency & VPS Health</span>
+                        </div>
+                        <h2
+                            class="text-xl sm:text-2xl font-black text-white uppercase font-tactical tracking-tight"
+                        >
+                            Informasi Operasional & Resource VPS
+                        </h2>
+                    </div>
                     <span
-                        >Informasi Operasional Server Beta & Pemeliharaan
-                        VPS</span
+                        class="text-xs font-mono text-slate-400 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg shrink-0"
                     >
+                        Status:
+                        <span class="text-emerald-400 font-bold"
+                            >Early Access Beta v2.0</span
+                        >
+                    </span>
                 </div>
-                <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                    Platform saat ini dalam tahap
-                    <strong>Early Access Beta</strong>. Seluruh dana langganan
-                    digunakan 100% untuk mendukung biaya pemeliharaan server VPS
-                    dan pemrosesan enkode video. Pemrosesan klip dilakukan
-                    melalui sistem antrean (*Queue Worker*) dan file klip akan
-                    otomatis dibersihkan dari server dalam kurun waktu 24 jam
-                    demi menjaga kapasitas server.
-                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 font-sans">
+                    <!-- LEFT SIDE: INFRASTRUKTUR & PEMELIHARAAN (5 Cols) -->
+                    <div
+                        class="lg:col-span-5 p-6 rounded-2xl bg-slate-900 border border-slate-800/90 relative overflow-hidden flex flex-col justify-between space-y-4 shadow-lg group hover:border-slate-700 transition duration-300"
+                    >
+                        <div class="space-y-3">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center"
+                            >
+                                <svg
+                                    class="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 01-2-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"
+                                    />
+                                </svg>
+                            </div>
+                            <h3
+                                class="text-lg font-bold text-white uppercase font-tactical"
+                            >
+                                Pengelolaan Server
+                            </h3>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                Seluruh dana langganan digunakan
+                                <strong class="text-white"
+                                    >100% untuk biaya perawatan server &
+                                    pemrosesan video</strong
+                                >. Pemrosesan klip dikelola via antrean agar
+                                server tetap cepat dan stabil.
+                            </p>
+                        </div>
+
+                        <div
+                            class="space-y-2 pt-2 border-t border-slate-800/80 text-xs font-mono"
+                        >
+                            <div
+                                class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/80 border border-slate-800"
+                            >
+                                <span class="text-slate-400"
+                                    >Penyimpanan File Klip:</span
+                                >
+                                <span class="text-emerald-400 font-bold"
+                                    >Dihapus Otomatis (1 Jam)</span
+                                >
+                            </div>
+                            <div
+                                class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/80 border border-slate-800"
+                            >
+                                <span class="text-slate-400"
+                                    >Biaya Server:</span
+                                >
+                                <span class="text-blue-400 font-bold"
+                                    >100% Dana Komunitas</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT SIDE: TRANSPARANSI POTONG SIARAN LANGSUNG (7 Cols) -->
+                    <div
+                        class="lg:col-span-7 p-6 rounded-2xl bg-slate-900 border border-slate-800 relative overflow-hidden space-y-4 shadow-lg group hover:border-slate-700 transition duration-300"
+                    >
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="space-y-1">
+                                <div
+                                    class="inline-flex items-center gap-1.5 text-cyan-400 font-mono font-bold text-xs"
+                                >
+                                    <svg
+                                        class="w-4 h-4 shrink-0 text-cyan-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                                        />
+                                    </svg>
+                                    <span
+                                        >Transparansi Potong Siaran
+                                        Langsung</span
+                                    >
+                                </div>
+                                <h3
+                                    class="text-lg font-bold text-white uppercase font-tactical"
+                                >
+                                    Mengapa Potong Live Stream Dibatasi Khusus
+                                    VIP & Officer?
+                                </h3>
+                            </div>
+                            <span
+                                class="px-2.5 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] font-bold uppercase shrink-0"
+                            >
+                                Membutuhkan Server Besar
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Memotong momen dari
+                            <strong class="text-slate-100"
+                                >siaran langsung YouTube yang sedang berjalan
+                                (Live Stream)</strong
+                            >
+                            membutuhkan daya dan ruang penyimpanan server yang
+                            jauh lebih besar. Karena siaran masih tayang, server
+                            harus mengolah file mentah berukuran sangat besar
+                            secara langsung saat itu juga.
+                        </p>
+
+                        <!-- COMPARISON CARDS INSIDE -->
+                        <div
+                            class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs font-mono"
+                        >
+                            <div
+                                class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5"
+                            >
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-slate-300"
+                                        >Video Selesai Tayang (VOD)</span
+                                    >
+                                    <span
+                                        class="text-[10px] text-emerald-400 font-bold"
+                                        >Proses Ringan</span
+                                    >
+                                </div>
+                                <p
+                                    class="text-[11px] text-slate-400 leading-normal font-sans"
+                                >
+                                    Video yang sudah selesai tayang ukurannya
+                                    sudah dipres oleh YouTube. Ringan & cepat
+                                    untuk semua paket.
+                                </p>
+                            </div>
+
+                            <div
+                                class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-cyan-500/30 transition duration-200"
+                            >
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-cyan-400"
+                                        >Siaran Langsung (Live)</span
+                                    >
+                                    <span
+                                        class="text-[10px] text-cyan-300 font-bold"
+                                        >Beban Server Tinggi</span
+                                    >
+                                </div>
+                                <p
+                                    class="text-[11px] text-slate-400 leading-normal font-sans"
+                                >
+                                    File mentah live stream memakan ruang server
+                                    besar. Khusus paket
+                                    <strong class="text-slate-200"
+                                        >VIP & Officer</strong
+                                    >
+                                    agar server tetap cepat.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- COMPARISON MATRIX TABLE SECTION -->
@@ -698,10 +908,27 @@
                                 <td
                                     class="p-3.5 font-sans font-bold text-white"
                                 >
-                                    Batas Kuota Harian
+                                    Fokus Konten Utama
+                                </td>
+                                <td class="p-3.5 text-slate-400">Umum</td>
+                                <td class="p-3.5 text-slate-200">
+                                    Komunitas & Faction
+                                </td>
+                                <td class="p-3.5 text-blue-300 font-bold">
+                                    Police Duty IME
+                                </td>
+                                <td class="p-3.5 text-white font-bold">
+                                    Bebas / Semua
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/40 transition">
+                                <td
+                                    class="p-3.5 font-sans font-bold text-white"
+                                >
+                                    Batas Kuota Klip
                                 </td>
                                 <td class="p-3.5 text-slate-400">
-                                    3 Klip / Hari
+                                    3 Klip / Minggu
                                 </td>
                                 <td class="p-3.5 text-slate-200">
                                     10 Klip / Hari
@@ -725,7 +952,7 @@
                                 <td class="p-3.5 text-slate-300">
                                     5 Menit (300s)
                                 </td>
-                                <td class="p-3.5 text-slate-300">
+                                <td class="p-3.5 text-blue-300 font-bold">
                                     5 Menit (300s)
                                 </td>
                                 <td class="p-3.5 text-white font-bold">
@@ -755,44 +982,14 @@
                                 <td
                                     class="p-3.5 font-sans font-bold text-white"
                                 >
-                                    YouTube Live DVR Cut
+                                    Potong Siaran Langsung (Live Stream)
                                 </td>
                                 <td class="p-3.5 text-slate-500">Terbatas</td>
-                                <td
-                                    class="p-3.5 text-slate-300 flex items-center gap-1"
-                                >
-                                    <svg
-                                        class="w-3.5 h-3.5 text-emerald-400 shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M5 13l4 4L19 7"
-                                        />
-                                    </svg>
-                                    <span>Aktif</span>
+                                <td class="p-3.5 text-slate-400">
+                                    Terbatas (VOD)
                                 </td>
-                                <td class="p-3.5 text-blue-300">
-                                    <span class="flex items-center gap-1">
-                                        <svg
-                                            class="w-3.5 h-3.5 text-blue-400 shrink-0"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M5 13l4 4L19 7"
-                                            />
-                                        </svg>
-                                        <span>Aktif</span>
-                                    </span>
+                                <td class="p-3.5 text-slate-400">
+                                    Terbatas (VOD)
                                 </td>
                                 <td class="p-3.5 text-white font-bold">
                                     <span class="flex items-center gap-1">
@@ -809,69 +1006,7 @@
                                                 d="M5 13l4 4L19 7"
                                             />
                                         </svg>
-                                        <span>Prioritas HLS Stream</span>
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-800/40 transition">
-                                <td
-                                    class="p-3.5 font-sans font-bold text-white"
-                                >
-                                    Penunjukan Officer (2 Slot)
-                                </td>
-                                <td
-                                    class="p-3.5 text-slate-500 flex items-center gap-1"
-                                >
-                                    <svg
-                                        class="w-3.5 h-3.5 text-slate-500 shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12"
-                                        />
-                                    </svg>
-                                    <span>Tidak Ada</span>
-                                </td>
-                                <td class="p-3.5 text-slate-400">Opsional</td>
-                                <td class="p-3.5 text-blue-300 font-bold">
-                                    <span class="flex items-center gap-1">
-                                        <svg
-                                            class="w-3.5 h-3.5 text-blue-400 shrink-0"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M5 13l4 4L19 7"
-                                            />
-                                        </svg>
-                                        <span>Direct (2 Slot)</span>
-                                    </span>
-                                </td>
-                                <td class="p-3.5 text-slate-300">
-                                    <span class="flex items-center gap-1">
-                                        <svg
-                                            class="w-3.5 h-3.5 text-emerald-400 shrink-0"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M5 13l4 4L19 7"
-                                            />
-                                        </svg>
-                                        <span>Termasuk Penunjukan</span>
+                                        <span>Akses Penuh (Prioritas)</span>
                                     </span>
                                 </td>
                             </tr>
