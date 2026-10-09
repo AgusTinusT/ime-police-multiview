@@ -38,7 +38,14 @@ class User extends Authenticatable
      */
     public function canDelegateClipper(): bool
     {
-        return $this->isOfficer();
+        if (!$this->isOfficer()) {
+            return false;
+        }
+        // Safety guard: a user who received a delegation can NEVER delegate
+        if ($this->clipperDelegationReceived()->exists()) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -120,11 +127,45 @@ class User extends Authenticatable
     }
 
     /**
+     * Get number of clips processed by user this week.
+     */
+    public function getWeeklyClipsCount(): int
+    {
+        return $this->videoClips()->where('created_at', '>=', now()->startOfWeek())->count();
+    }
+
+    /**
      * Get number of clips processed by user today.
      */
     public function getDailyClipsCount(): int
     {
         return $this->videoClips()->whereDate('created_at', now()->toDateString())->count();
+    }
+
+    /**
+     * Get quota clip count based on tier (Weekly for free tier, Daily for creator/ultimate).
+     */
+    public function getClipsQuotaCount(): int
+    {
+        return $this->getClipperTier() === 'free'
+            ? $this->getWeeklyClipsCount()
+            : $this->getDailyClipsCount();
+    }
+
+    /**
+     * Get quota period label (Minggu Ini / Hari Ini).
+     */
+    public function getQuotaPeriodLabel(): string
+    {
+        return $this->getClipperTier() === 'free' ? 'Minggu Ini' : 'Hari Ini';
+    }
+
+    /**
+     * Check if user can export video in 1080p Full HD (Creator & Ultimate tiers only).
+     */
+    public function canUse1080p(): bool
+    {
+        return $this->getClipperTier() !== 'free';
     }
 
     /**

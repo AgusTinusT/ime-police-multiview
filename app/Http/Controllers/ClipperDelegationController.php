@@ -66,13 +66,13 @@ class ClipperDelegationController extends Controller
 
         if ($targetUser->id === $user->id) {
             throw ValidationException::withMessages([
-                'email' => 'Anda tidak dapat mendelegasikan hak penunjukan ke akun sendiri.'
+                'email' => 'Anda tidak dapat mendelegasikan slot Clipper ke akun sendiri.'
             ]);
         }
 
-        if ($targetUser->isAdmin()) {
+        if ($targetUser->isOfficer()) {
             throw ValidationException::withMessages([
-                'email' => 'Pengguna ini sudah memiliki hak Admin.'
+                'email' => 'Pengguna ini sudah memiliki akun Officer / Admin.'
             ]);
         }
 
@@ -92,7 +92,7 @@ class ClipperDelegationController extends Controller
             'tier' => $tierToAssign,
         ]);
 
-        // Upgrade target user role & tier
+        // Assign target user as Clipper (Not Officer, No delegation rights granted)
         $targetUser->role = 'clipper';
         $targetUser->clipper_tier = $tierToAssign;
         $targetUser->save();

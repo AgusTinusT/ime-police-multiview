@@ -1035,6 +1035,14 @@ const userForm = ref({
     clipper_tier: "free",
 });
 
+const onUserRoleChange = () => {
+    if (userForm.value.role === "officer" || userForm.value.role === "admin") {
+        userForm.value.clipper_tier = "ultimate";
+    } else if (userForm.value.role === "clipper") {
+        userForm.value.clipper_tier = "creator";
+    }
+};
+
 const openAddUserModal = () => {
     isEditUser.value = false;
     userForm.value = {
@@ -2315,6 +2323,7 @@ onMounted(() => {
                                 </td>
                                 <td class="p-3.5 space-y-1">
                                     <div class="flex items-center gap-1.5 flex-wrap">
+                                        <!-- Role Badge -->
                                         <span
                                             class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase"
                                             :class="{
@@ -2328,21 +2337,38 @@ onMounted(() => {
                                                     u.role === 'member' || !u.role,
                                             }"
                                         >
-                                            {{ u.role === 'officer' ? 'Officer (2 Slot)' : u.role || 'member' }}
+                                            {{
+                                                u.role === 'admin'
+                                                    ? 'Admin'
+                                                    : u.role === 'officer'
+                                                    ? 'Officer (2 Slot)'
+                                                    : u.role === 'clipper'
+                                                    ? 'Clipper'
+                                                    : 'Member'
+                                            }}
                                         </span>
 
+                                        <!-- Tier / Package Badge -->
                                         <span
                                             class="px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold uppercase"
                                             :class="{
                                                 'bg-amber-950 text-amber-300 border border-amber-800':
-                                                    u.clipper_tier === 'ultimate',
+                                                    (u.clipper_tier === 'ultimate' || u.role === 'officer' || u.role === 'admin'),
                                                 'bg-blue-950 text-blue-300 border border-blue-800':
                                                     u.clipper_tier === 'creator',
                                                 'bg-slate-900 text-slate-400 border border-slate-800':
-                                                    !u.clipper_tier || u.clipper_tier === 'free',
+                                                    (!u.clipper_tier || u.clipper_tier === 'free') && u.role !== 'officer' && u.role !== 'admin',
                                             }"
                                         >
-                                            {{ u.clipper_tier_name || u.clipper_tier || 'Free Tier' }}
+                                            {{
+                                                (u.role === 'officer' || u.role === 'admin')
+                                                    ? 'PRO Ultimate'
+                                                    : u.clipper_tier === 'ultimate'
+                                                    ? 'VIP Supporter (Unlimited)'
+                                                    : u.clipper_tier === 'creator'
+                                                    ? 'IME Clipper (10/hari)'
+                                                    : 'Free Member (3/minggu)'
+                                            }}
                                         </span>
                                     </div>
                                 </td>
@@ -3272,45 +3298,61 @@ onMounted(() => {
                         </div>
                         <div>
                             <label class="block text-slate-300 mb-1 font-bold"
-                                >Role Akses Pengguna *</label
+                                >Role Utama Akun Pengguna *</label
                             >
                             <select
                                 v-model="userForm.role"
+                                @change="onUserRoleChange"
                                 class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
                             >
                                 <option value="member">
-                                    Member (Pengunjung Umum - Kuota 3 Klip/minggu)
+                                    Member (Pengguna Umum / Pengunjung Platform)
                                 </option>
                                 <option value="officer">
-                                    Officer / Streamer RP (Akses Ultimate + Hak Penunjukan 2 Slot Clipper)
+                                    Officer / Streamer RP (Akses Penuh Officer + Hak 2 Slot Clipper)
                                 </option>
                                 <option value="clipper">
-                                    Clipper (IME Content Creator / Editor - Akses Clipper)
+                                    Clipper Komunitas (IME Video Creator / Editor)
                                 </option>
                                 <option value="admin">
-                                    Admin (Akses Penuh Command Center & Dashboard Dispatcher)
+                                    Admin (Administrator Taktis Command Center)
                                 </option>
                             </select>
+                            <span class="text-[10px] text-slate-400 mt-1 block">
+                                Menentukan wewenang sistem & hak fitur penunjukan slot Officer.
+                            </span>
                         </div>
 
-                        <div>
+                        <!-- Clipper Tier / Subscription Package Selection -->
+                        <div
+                            v-if="userForm.role === 'officer' || userForm.role === 'admin'"
+                            class="p-3 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 text-xs"
+                        >
+                            <span class="font-bold">⚡ Akses Otomatis Tier Ultimate:</span>
+                            Akun bertipe {{ userForm.role === 'admin' ? 'Admin' : 'Officer' }} secara otomatis mendapatkan akses **PRO Ultimate** (Unlimited Klip, Durasi 10 Menit, DVR Live Stream, & 2 Slot Penunjukan).
+                        </div>
+
+                        <div v-else>
                             <label class="block text-slate-300 mb-1 font-bold"
-                                >Clipper Tier (Tingkatan Hak Fitur Trimming) *</label
+                                >Paket Fitur Trimming / Clipper Tier *</label
                             >
                             <select
                                 v-model="userForm.clipper_tier"
                                 class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
                             >
                                 <option value="free">
-                                    Free Tier (3 Klip/minggu, Durasi Maks 1 Menit)
+                                    Free Member (Gratis - 3 Klip/minggu, Max 1 Menit)
                                 </option>
                                 <option value="creator">
-                                    Creator Tier (10 Klip/hari, Durasi Maks 5 Menit)
+                                    Clipper Komunitas / Police Duty (10 Klip/hari, Max 5 Menit)
                                 </option>
                                 <option value="ultimate">
-                                    Ultimate Tier (Unlimited Klip, Durasi Maks 10 Menit + DVR Live Stream)
+                                    VIP Supporter Tier (Unlimited Klip, Max 10 Menit + DVR Live Stream)
                                 </option>
                             </select>
+                            <span class="text-[10px] text-slate-400 mt-1 block">
+                                Pilih paket kuota & durasi pemotongan video untuk member ini.
+                            </span>
                         </div>
                     </div>
                     <div

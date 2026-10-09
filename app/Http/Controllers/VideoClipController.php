@@ -100,8 +100,16 @@ class VideoClipController extends Controller
         $durationSeconds = $endSeconds - $startSeconds;
         $user = $request->user();
         $maxDuration = $user->getMaxClipDurationSec();
-        $dailyLimit = $user->getDailyClipsLimit();
-        $dailyCount = $user->getDailyClipsCount();
+        $quotaLimit = $user->getDailyClipsLimit();
+        $quotaCount = $user->getClipsQuotaCount();
+        $periodLabel = $user->getQuotaPeriodLabel();
+
+        // Tier-based Format 1080p Validation
+        if (($validated['format'] ?? '') === 'MP4 1080p' && !$user->canUse1080p()) {
+            throw ValidationException::withMessages([
+                'format' => 'Format MP4 1080p Full HD khusus untuk Paket Clipper & VIP Supporter. Pengguna Free Member dapat memilih 720p, 480p, atau MP3 Audio.'
+            ]);
+        }
 
         // Tier-based Duration Validation
         if ($durationSeconds > $maxDuration) {
@@ -111,10 +119,10 @@ class VideoClipController extends Controller
             ]);
         }
 
-        // Tier-based Daily Quota Validation
-        if ($dailyCount >= $dailyLimit) {
+        // Tier-based Quota Validation (Weekly / Daily)
+        if ($quotaCount >= $quotaLimit) {
             throw ValidationException::withMessages([
-                'youtube_url' => "Kuota pemotongan video harian Anda ({$dailyCount}/{$dailyLimit} klip) telah habis. Silakan ajukan upgrade hak spesial Clipper!"
+                'youtube_url' => "Kuota pemotongan video {$periodLabel} Anda ({$quotaCount}/{$quotaLimit} klip) telah habis. Silakan ajukan upgrade hak spesial Clipper!"
             ]);
         }
 

@@ -426,16 +426,13 @@
                                     v-for="fmt in formatOptions"
                                     :key="fmt.value"
                                     type="button"
-                                    @click="
-                                        isGuest
-                                            ? handleGuestAuth($event)
-                                            : (form.format = fmt.value)
-                                    "
+                                    @click="selectFormat(fmt.value, $event)"
                                     class="relative flex items-center justify-between p-3 rounded-xl border transition-all duration-200 cursor-pointer select-none text-left min-w-0"
                                     :class="[
                                         form.format === fmt.value
                                             ? 'border-sky-500/70 bg-sky-950/30 shadow-md ring-1 ring-sky-500/40'
                                             : 'border-[#182640] bg-[#050b17]/80 hover:bg-[#0d172a] hover:border-slate-700',
+                                        fmt.value === 'MP4 1080p' && !canUse1080p && !isGuest ? 'opacity-60 bg-slate-950/40 border-dashed border-amber-900/40' : '',
                                         isGuest ? 'opacity-80' : '',
                                     ]"
                                 >
@@ -455,10 +452,13 @@
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <span class="text-sm font-semibold text-slate-100 font-sans truncate">{{ fmt.name }}</span>
                                                 <span
-                                                    class="text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0"
-                                                    :class="fmt.tagClass"
+                                                    class="text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1"
+                                                    :class="fmt.value === 'MP4 1080p' && !canUse1080p && !isGuest ? 'bg-amber-950 text-amber-300 border border-amber-800/60' : fmt.tagClass"
                                                 >
-                                                    {{ fmt.tag }}
+                                                    <svg v-if="fmt.value === 'MP4 1080p' && !canUse1080p && !isGuest" class="w-3 h-3 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                                    </svg>
+                                                    <span>{{ fmt.value === 'MP4 1080p' && !canUse1080p && !isGuest ? 'Khusus PRO / Clipper' : fmt.tag }}</span>
                                                 </span>
                                             </div>
                                             <!-- Desktop Use Case Subtitle -->
@@ -550,15 +550,15 @@
                             <div class="flex items-center justify-between mb-1.5">
                                 <span class="text-slate-400 flex items-center gap-1.5">
                                     <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                                    Sisa Kuota Harian:
+                                    Sisa Kuota {{ quotaPeriodLabel }}:
                                 </span>
                                 <span class="font-mono font-bold text-slate-200">
-                                    {{ isClipperOrAdmin ? 'Unlimited' : `${userDailyRemaining} dari ${dailyClipsLimit} Klip` }}
+                                    {{ isUnlimitedQuota ? 'Unlimited' : `${userDailyRemaining} dari ${dailyClipsLimit} Klip` }}
                                 </span>
                             </div>
 
                             <!-- Quota progress visual -->
-                            <div v-if="!isClipperOrAdmin" class="w-full bg-[#0e192e] h-1.5 rounded-full overflow-hidden mb-2">
+                            <div v-if="!isUnlimitedQuota" class="w-full bg-[#0e192e] h-1.5 rounded-full overflow-hidden mb-2">
                                 <div
                                     class="h-full transition-all duration-300 rounded-full"
                                     :class="userDailyRemaining <= 0 ? 'bg-amber-500' : 'bg-sky-500'"
@@ -573,17 +573,20 @@
                                         Masuk Sekarang
                                     </a>
                                 </template>
-                                <template v-else-if="isClipperOrAdmin">
-                                    <span class="text-slate-400">PRO Clipper Active (Unlimited)</span>
+                                <template v-else-if="isUnlimitedQuota">
+                                    <span class="text-slate-400">PRO Ultimate / Officer Active (Unlimited)</span>
                                 </template>
                                 <template v-else-if="userDailyRemaining <= 0">
-                                    <span class="text-amber-400 font-semibold">Kuota hari ini habis</span>
-                                    <Link href="/clipper/pricing" class="text-sky-400 hover:text-sky-300 font-bold underline text-[10px]">
-                                        Naikkan Paket →
+                                    <span class="text-amber-400 font-semibold">Kuota {{ quotaPeriodLabel.toLowerCase() }} habis</span>
+                                    <Link href="/clipper/pricing" class="text-sky-400 hover:text-sky-300 font-bold underline text-[10px] inline-flex items-center gap-1">
+                                        <span>Naikkan Paket</span>
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                        </svg>
                                     </Link>
                                 </template>
                                 <template v-else>
-                                    <span>Tersisa <strong class="text-slate-200 font-mono">{{ userDailyRemaining }} klip</strong> hari ini</span>
+                                    <span>Tersisa <strong class="text-slate-200 font-mono">{{ userDailyRemaining }} klip</strong> {{ quotaPeriodLabel.toLowerCase() }} ({{ user?.clipper_tier_name || 'Free' }})</span>
                                 </template>
                             </div>
                         </div>
@@ -651,7 +654,7 @@
                                 </template>
                                 <template
                                     v-else-if="
-                                        !isClipperOrAdmin &&
+                                        !isUnlimitedQuota &&
                                         userDailyRemaining <= 0
                                     "
                                 >
@@ -668,7 +671,7 @@
                                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                                         />
                                     </svg>
-                                    <span>Kuota Harian Habis (3/3 Klip)</span>
+                                    <span>Kuota {{ quotaPeriodLabel }} Habis ({{ dailyClipsCount }}/{{ dailyClipsLimit }} Klip)</span>
                                 </template>
                                 <template v-else>
                                     <svg
@@ -753,17 +756,166 @@
                             </div>
                         </div>
 
-                        <!-- SIMPLIFIED PLAN COMPARISON CARD (Harmonized Dark Theme) -->
+                        <!-- LOGGED-IN ACCOUNT CONTROL CARD OR GUEST PLAN COMPARISON TEASER -->
                         <div
                             class="bg-[#091120] border border-[#162238] rounded-2xl p-4 shadow-xl flex flex-col gap-3 font-sans mt-3"
                         >
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <div
-                                        class="w-7 h-7 rounded-lg bg-[#0f1d38] border border-[#1b2f56] flex items-center justify-center text-cyan-400 shrink-0"
+                            <!-- VIEW A: FOR LOGGED IN USERS (Dynamic Account Status & Quick Actions) -->
+                            <template v-if="!isGuest">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div
+                                            class="w-7 h-7 rounded-lg bg-[#0f1d38] border border-[#1b2f56] flex items-center justify-center text-cyan-400 shrink-0"
+                                        >
+                                            <svg
+                                                class="w-4 h-4 text-cyan-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-white uppercase tracking-wider">
+                                                Status Akun & Tier Aktif
+                                            </h4>
+                                            <p class="text-[10px] text-slate-400 font-mono truncate max-w-[150px]">
+                                                {{ user?.name || user?.email }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <span
+                                        class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase shrink-0"
+                                        :class="isUnlimitedQuota ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-sky-950 text-sky-300 border border-sky-800'"
                                     >
+                                        {{ user?.clipper_tier_name || 'Free Tier' }}
+                                    </span>
+                                </div>
+
+                                <!-- Dynamic Capabilities Badge & Controls -->
+                                <div class="bg-[#050b17] border border-[#15233c] rounded-xl p-3 space-y-2 text-xs font-mono">
+                                    <div class="flex items-center justify-between text-[11px]">
+                                        <span class="text-slate-400">Durasi Maks:</span>
+                                        <span class="text-slate-200 font-bold">{{ formatSeconds(maxClipDurationSec) }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px]">
+                                        <span class="text-slate-400">Kualitas Maks:</span>
+                                        <span class="text-emerald-400 font-bold">{{ canUse1080p ? '1080p Lossless' : '720p HD' }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px]">
+                                        <span class="text-slate-400">Potong Live DVR:</span>
+                                        <span :class="isUnlimitedQuota ? 'text-emerald-400 font-bold' : 'text-slate-500'">{{ isUnlimitedQuota ? 'Aktif' : 'Terbatas' }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons depending on user role -->
+                                <div class="flex flex-col gap-2 pt-1">
+                                    <button
+                                        v-if="user?.can_delegate_clipper"
+                                        @click="
+                                            showDelegationModal = true;
+                                            fetchDelegations();
+                                        "
+                                        class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-sans"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                        </svg>
+                                        <span>Kelola 2 Slot Clipper Officer ({{ delegationData.used_slots }}/2)</span>
+                                    </button>
+
+                                    <button
+                                        v-else-if="!isUnlimitedQuota && clipperRequestStatus !== 'pending'"
+                                        @click="showRequestClipperModal = true"
+                                        class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-sans"
+                                    >
+                                        <svg class="w-4 h-4 text-amber-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                        </svg>
+                                        <span>Ajukan / Upgrade Hak Clipper</span>
+                                    </button>
+
+                                    <Link
+                                        href="/clipper/pricing"
+                                        class="w-full py-2 px-3 rounded-xl bg-[#0a1426] hover:bg-[#101e38] border border-[#1a2d50] text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-between transition font-mono"
+                                    >
+                                        <span>Panduan & Matriks Fitur</span>
+                                        <span class="text-cyan-400 flex items-center gap-1">
+                                            <span>Lihat Detail</span>
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                            </svg>
+                                        </span>
+                                    </Link>
+                                </div>
+                            </template>
+
+                            <!-- VIEW B: FOR GUESTS ONLY (Teaser Plan Comparison) -->
+                            <template v-else>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div
+                                            class="w-7 h-7 rounded-lg bg-[#0f1d38] border border-[#1b2f56] flex items-center justify-center text-cyan-400 shrink-0"
+                                        >
+                                            <svg
+                                                class="w-4 h-4 text-cyan-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-white uppercase tracking-wider">
+                                                Perbedaan Paket & Akses Spesial
+                                            </h4>
+                                            <p class="text-[10px] text-slate-400">
+                                                Pilih akses sesuai kebutuhan Anda
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Direct Comparison Chips (Free vs PRO / Officer) -->
+                                <div class="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                                    <div
+                                        class="bg-[#050b17] border border-[#15233c] rounded-xl p-2.5 flex flex-col gap-0.5"
+                                    >
+                                        <span class="text-slate-400 text-[10px] font-bold uppercase">FREE MEMBER:</span>
+                                        <span class="text-slate-200 font-semibold text-xs">3 Klip / Minggu</span>
+                                        <span class="text-slate-400 text-[9px]">Maks 1 Menit / Klip</span>
+                                    </div>
+
+                                    <div
+                                        class="bg-[#0d1b33] border border-[#1d3561] rounded-xl p-2.5 flex flex-col gap-0.5"
+                                    >
+                                        <span class="text-cyan-400 text-[10px] font-bold uppercase">OFFICER & PRO:</span>
+                                        <span class="text-white font-semibold text-xs">Unlimited Potong</span>
+                                        <span class="text-cyan-300 text-[9px]">Hak 2 Slot & Lossless</span>
+                                    </div>
+                                </div>
+
+                                <!-- Link Button to Full Pricing Page -->
+                                <Link
+                                    href="/clipper/pricing"
+                                    class="w-full py-2.5 lg:py-4 lg:min-h-[48px] px-3.5 rounded-xl bg-[#0a1426] hover:bg-[#101e38] border border-[#1a2d50] text-xs lg:text-sm font-bold text-slate-200 flex items-center justify-between transition group cursor-pointer shadow-sm active:scale-[0.99]"
+                                >
+                                    <div class="flex items-center gap-2.5 font-mono">
                                         <svg
-                                            class="w-4 h-4 text-cyan-400"
+                                            class="w-3.5 h-3.5 lg:w-4 lg:h-4 text-cyan-400 shrink-0"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -772,109 +924,21 @@
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
                                                 stroke-width="2"
-                                                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                             />
                                         </svg>
+                                        <span>Lihat Opsi Paket & Panduan Officer</span>
                                     </div>
-                                    <div>
-                                        <h4
-                                            class="text-xs font-bold text-white uppercase tracking-wider"
-                                        >
-                                            Perbedaan Paket & Akses Spesial
-                                        </h4>
-                                        <p class="text-[10px] text-slate-400">
-                                            Pilih akses sesuai kebutuhan Anda
-                                        </p>
+                                    <div
+                                        class="flex items-center gap-1 text-cyan-400 group-hover:translate-x-1 transition-transform font-mono text-[11px] lg:text-xs shrink-0"
+                                    >
+                                        <span>Buka Paket</span>
+                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                        </svg>
                                     </div>
-                                </div>
-
-                                <div
-                                    v-if="!isGuest"
-                                    class="flex items-center gap-1.5 shrink-0 font-sans"
-                                >
-                                    <button
-                                        v-if="
-                                            !isClipperOrAdmin &&
-                                            clipperRequestStatus !== 'pending'
-                                        "
-                                        @click="showRequestClipperModal = true"
-                                        class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] transition shadow-sm cursor-pointer"
-                                    >
-                                        Ajukan Hak Spesial
-                                    </button>
-                                    <button
-                                        v-if="user?.can_delegate_clipper"
-                                        @click="
-                                            showDelegationModal = true;
-                                            fetchDelegations();
-                                        "
-                                        class="px-2.5 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition shadow-sm cursor-pointer"
-                                    >
-                                        Penunjukan ({{ delegationData.used_slots }}/2 Slot)
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Direct Comparison Chips (Free vs PRO / Officer) -->
-                            <div class="grid grid-cols-2 gap-2 text-[11px] font-mono">
-                                <div
-                                    class="bg-[#050b17] border border-[#15233c] rounded-xl p-2.5 flex flex-col gap-0.5"
-                                >
-                                    <span
-                                        class="text-slate-400 text-[10px] font-bold uppercase"
-                                        >FREE MEMBER:</span
-                                    >
-                                    <span class="text-slate-200 font-semibold text-xs"
-                                        >3 Klip / Minggu</span
-                                    >
-                                    <span class="text-slate-400 text-[9px]"
-                                        >Maks 5 - 10m / Klip</span
-                                    >
-                                </div>
-
-                                <div
-                                    class="bg-[#0d1b33] border border-[#1d3561] rounded-xl p-2.5 flex flex-col gap-0.5"
-                                >
-                                    <span
-                                        class="text-cyan-400 text-[10px] font-bold uppercase"
-                                        >OFFICER & PRO:</span
-                                    >
-                                    <span class="text-white font-semibold text-xs"
-                                        >Unlimited Potong</span
-                                    >
-                                    <span class="text-cyan-300 text-[9px]"
-                                        >Hak 2 Slot & Lossless</span
-                                    >
-                                </div>
-                            </div>
-
-                            <!-- Link Button to Full Pricing Page -->
-                            <Link
-                                href="/clipper/pricing"
-                                class="w-full py-2.5 lg:py-4 lg:min-h-[48px] px-3.5 rounded-xl bg-[#0a1426] hover:bg-[#101e38] border border-[#1a2d50] text-xs lg:text-sm font-bold text-slate-200 flex items-center justify-between transition group cursor-pointer shadow-sm active:scale-[0.99]"
-                            >
-                                <div class="flex items-center gap-2.5 font-mono">
-                                    <svg
-                                        class="w-3.5 h-3.5 lg:w-4 lg:h-4 text-cyan-400 shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                        />
-                                    </svg>
-                                    <span>Lihat Opsi Paket & Panduan Officer</span>
-                                </div>
-                                <div
-                                    class="flex items-center gap-1 text-cyan-400 group-hover:translate-x-1 transition-transform font-mono text-[11px] lg:text-xs shrink-0"
-                                >
-                                    <span>Buka Paket →</span>
-                                </div>
-                            </Link>
+                                </Link>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -1740,15 +1804,13 @@
                         <h3
                             class="text-xl font-black text-white uppercase tracking-tight font-tactical"
                         >
-                            Kelola Hak Penunjukan Clipper Officer
+                            Penunjukan Slot Police Duty Clipper (2 Slot)
                         </h3>
                         <p
                             class="text-xs sm:text-sm text-slate-300 leading-relaxed"
                         >
                             Sebagai Officer, Anda berhak menunjuk hingga
-                            <strong>2 akun member</strong> secara instan.
-                            Kesepakatan internal sepenuhnya diserahkan kepada
-                            Anda & Clipper.
+                            <strong>2 akun Clipper (Dokumentasi/Editor)</strong> untuk memotong video Police Duty (10 Klip/Hari, Max 5 Menit). Akun yang ditunjuk <strong>HANYA mendapatkan hak Clipper</strong> dan <strong>TIDAK mendapatkan hak penunjukan ulang</strong>.
                         </p>
                     </div>
 
@@ -1952,12 +2014,7 @@
                                     class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 focus:ring-0 outline-none transition font-sans"
                                 >
                                     <option value="creator">
-                                        Content Creator / Editor (10 Klip/hari,
-                                        Durasi Maks 5 Menit)
-                                    </option>
-                                    <option value="ultimate">
-                                        Official Streamer / VIP (Unlimited Klip,
-                                        Durasi Maks 10 Menit)
+                                        Police Duty Clipper (10 Klip/hari, Durasi Maks 5 Menit)
                                     </option>
                                 </select>
                             </div>
@@ -2033,7 +2090,26 @@ const page = usePage();
 const user = computed(() => page.props.auth?.user || null);
 const isGuest = computed(() => !user.value);
 const isClipperOrAdmin = computed(() => user.value?.can_trim_video || false);
-const maxClipDurationSec = computed(() => (isClipperOrAdmin.value ? 600 : 60));
+const isUnlimitedQuota = computed(() => {
+    if (!user.value) return false;
+    return (
+        user.value.clipper_tier === "ultimate" ||
+        (user.value.daily_clips_limit || 0) >= 9999
+    );
+});
+const maxClipDurationSec = computed(
+    () =>
+        user.value?.max_clip_duration_sec ||
+        (isClipperOrAdmin.value ? 600 : 60),
+);
+const quotaPeriodLabel = computed(
+    () =>
+        user.value?.quota_period_label ||
+        (user.value?.clipper_tier === "free" ? "Minggu Ini" : "Hari Ini"),
+);
+const canUse1080p = computed(
+    () => user.value?.can_use_1080p ?? (user.value?.clipper_tier !== "free"),
+);
 const dailyClipsCount = computed(() => user.value?.daily_clips_count || 0);
 const dailyClipsLimit = computed(() => user.value?.daily_clips_limit || 3);
 const userDailyRemaining = computed(() =>
@@ -2609,6 +2685,21 @@ function handleGuestAuth(e) {
     }
 }
 
+function selectFormat(fmtValue, e) {
+    if (isGuest.value) {
+        handleGuestAuth(e);
+        return;
+    }
+    if (fmtValue === "MP4 1080p" && !canUse1080p.value) {
+        formError.value =
+            "Format MP4 1080p Full HD khusus untuk Paket Clipper & VIP Supporter. Pengguna Free Member dapat memilih 720p, 480p, atau MP3 Audio.";
+        form.value.format = "MP4 720p";
+        return;
+    }
+    formError.value = "";
+    form.value.format = fmtValue;
+}
+
 // Submit Trim Job to Laravel API
 async function submitTrim() {
     if (isGuest.value) {
@@ -2618,16 +2709,14 @@ async function submitTrim() {
 
     if (submitCooldownSec.value > 0) return;
 
-    if (!isClipperOrAdmin.value && userDailyRemaining.value <= 0) {
+    if (!isUnlimitedQuota.value && userDailyRemaining.value <= 0) {
         formError.value =
-            "Kuota pemotongan video gratis Anda hari ini (3/3 klip) telah habis. Silakan ajukan Role Clipper untuk kuota unlimited!";
+            `Kuota pemotongan video harian Anda (${dailyClipsCount.value}/${dailyClipsLimit.value} klip) telah habis. Silakan naikkan paket Clipper Anda!`;
         return;
     }
 
     if (!isDurationValid.value) {
-        const maxTxt = isClipperOrAdmin.value
-            ? "10 menit (600s)"
-            : "1 menit (60s)";
+        const maxTxt = `${formatSeconds(maxClipDurationSec.value)} (${maxClipDurationSec.value}s)`;
         formError.value = `Durasi pemotongan tidak valid atau melebihi batas ${maxTxt}.`;
         return;
     }
