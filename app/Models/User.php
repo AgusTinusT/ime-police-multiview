@@ -127,19 +127,25 @@ class User extends Authenticatable
     }
 
     /**
-     * Get number of clips processed by user this week.
+     * Get number of clips processed by user this week (excluding failed clips).
      */
     public function getWeeklyClipsCount(): int
     {
-        return $this->videoClips()->where('created_at', '>=', now()->startOfWeek())->count();
+        return $this->videoClips()
+            ->where('created_at', '>=', now()->startOfWeek())
+            ->where('status', '!=', 'failed')
+            ->count();
     }
 
     /**
-     * Get number of clips processed by user today.
+     * Get number of clips processed by user today (excluding failed clips).
      */
     public function getDailyClipsCount(): int
     {
-        return $this->videoClips()->whereDate('created_at', now()->toDateString())->count();
+        return $this->videoClips()
+            ->whereDate('created_at', now()->toDateString())
+            ->where('status', '!=', 'failed')
+            ->count();
     }
 
     /**

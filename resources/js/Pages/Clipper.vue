@@ -2440,6 +2440,8 @@ const isDurationValid = computed(() => {
 const estimatedFileSize = computed(() => {
     const dur = calculatedSeconds.value || 0;
     if (dur <= 0) return "0 MB";
+
+    const isLiveStream = urlCheckResult.value?.is_live || false;
     let rateMBps = 0.3;
     const fmt = form.value.format || "";
     if (fmt.includes("1080p")) rateMBps = 0.58;
@@ -2447,10 +2449,16 @@ const estimatedFileSize = computed(() => {
     else if (fmt.includes("480p")) rateMBps = 0.13;
     else if (fmt.includes("MP3")) rateMBps = 0.04;
 
+    if (isLiveStream) {
+        const minMB = (dur * rateMBps * 0.9).toFixed(1);
+        const maxMB = (dur * rateMBps * 2.2).toFixed(1);
+        return `~${minMB} - ${maxMB} MB (Live Stream)`;
+    }
+
     const totalMB = (dur * rateMBps).toFixed(1);
     return totalMB < 1
-        ? `${Math.max(50, Math.round(totalMB * 1024))} KB`
-        : `~${totalMB} MB`;
+        ? `${Math.max(50, Math.round(totalMB * 1024))} KB (VOD)`
+        : `~${totalMB} MB (VOD)`;
 });
 
 // Fetch user's Clipper request status
@@ -2752,6 +2760,12 @@ async function submitTrim() {
             response.data.message ||
             "Proses pemotongan video telah dimasukkan ke dalam antrean server!";
         startSubmitCooldown(5);
+
+        // Reactively increment user's daily clips count for instant UI update
+        if (user.value && typeof user.value.daily_clips_count === "number") {
+            user.value.daily_clips_count++;
+        }
+
         await fetchClips();
 
         // Smooth scroll to clips library section so user sees the progress indicator
