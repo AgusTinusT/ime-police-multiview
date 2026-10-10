@@ -1097,6 +1097,7 @@ const saveUser = async () => {
                 Accept: "application/json",
                 "X-CSRF-TOKEN": csrfToken,
             },
+            credentials: "same-origin",
             body: JSON.stringify(userForm.value),
         });
         const json = await res.json();
@@ -1158,6 +1159,7 @@ const handleDeleteUser = async (id, name) => {
                 "X-CSRF-TOKEN": csrfToken,
                 Accept: "application/json",
             },
+            credentials: "same-origin",
         });
         const json = await res.json();
         if (res.ok && json.status === "success") {
