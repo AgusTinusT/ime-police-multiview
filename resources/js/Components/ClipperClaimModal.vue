@@ -9,15 +9,15 @@
             class="bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-800 overflow-hidden relative text-slate-100 my-8"
         >
             <!-- Header -->
-            <div class="p-6 sm:p-7 pb-3 border-b border-slate-800/80">
+            <div class="p-6 sm:p-7 pb-4 border-b border-slate-800/80">
                 <div class="flex items-center justify-between">
                     <span
-                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                     >
                         <span
-                            class="w-1.5 h-1.5 rounded-full bg-blue-400"
+                            class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"
                         ></span>
-                        Verifikasi & Claim Lisensi
+                        Beta Tester Access (FREE)
                     </span>
                     <button
                         @click="close"
@@ -40,31 +40,24 @@
                 </div>
 
                 <h3
-                    class="text-xl sm:text-2xl font-bold text-white mt-3 uppercase font-tactical"
+                    class="text-xl sm:text-2xl font-bold text-white mt-3 uppercase font-tactical tracking-tight"
                 >
-                    Aktivasi & Klaim Lisensi
+                    Pengajuan Hak Akses Clipper
                 </h3>
                 <p class="text-xs text-slate-400 mt-1">
-                    Pilih metode klaim pembayaran paket atau pengajuan hak akses
-                    Officer.
+                    Pendaftaran resmi Clipper Komunitas IME. Seluruh pengajuan
+                    bersifat
+                    <strong class="text-emerald-400">GRATIS</strong> selama masa
+                    Uji Coba Beta.
                 </p>
 
-                <!-- Switcher Tipe Pengajuan -->
-                <div
-                    class="grid grid-cols-2 gap-1 bg-slate-950 p-1 rounded-xl mt-4 border border-slate-800 font-mono text-xs"
-                >
-                    <button
-                        type="button"
-                        @click="switchTab('transfer')"
-                        :class="[
-                            'py-2.5 px-3 font-bold rounded-lg transition flex items-center justify-center gap-1.5',
-                            activeTab === 'transfer'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-400 hover:text-slate-200',
-                        ]"
+                <!-- Status Banner Pembayaran & Officer -->
+                <div class="grid grid-cols-2 gap-2 mt-4 font-mono text-[11px]">
+                    <div
+                        class="p-2.5 rounded-xl bg-blue-950/50 border border-blue-800/60 text-blue-300 flex items-center gap-2"
                     >
                         <svg
-                            class="w-3.5 h-3.5"
+                            class="w-4 h-4 text-blue-400 shrink-0"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -73,24 +66,18 @@
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 stroke-width="2"
-                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
                             />
                         </svg>
-                        <span>Bukti Transfer</span>
-                    </button>
+                        <span>Hak Akses: <strong>GRATIS</strong></span>
+                    </div>
 
-                    <button
-                        type="button"
-                        @click="switchTab('request')"
-                        :class="[
-                            'py-2.5 px-3 font-bold rounded-lg transition flex items-center justify-center gap-1.5',
-                            activeTab === 'request'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'text-slate-400 hover:text-slate-200',
-                        ]"
+                    <div
+                        class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 flex items-center gap-2 opacity-75"
+                        title="Fitur Pembayaran Berbayar Saat Ini Dinonaktifkan"
                     >
                         <svg
-                            class="w-3.5 h-3.5"
+                            class="w-4 h-4 text-amber-400 shrink-0"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -99,11 +86,16 @@
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 stroke-width="2"
-                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                             />
                         </svg>
-                        <span>Akses Officer</span>
-                    </button>
+                        <span
+                            >Pembayaran:
+                            <strong class="text-amber-400"
+                                >NONAKTIF</strong
+                            ></span
+                        >
+                    </div>
                 </div>
             </div>
 
@@ -153,99 +145,42 @@
                     <span>{{ errorMessage }}</span>
                 </div>
 
-                <!-- Info Target Paket -->
+                <!-- Info Target Akses -->
                 <div
                     class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between"
                 >
                     <div class="flex items-center gap-3">
                         <div
-                            class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black text-xs font-tactical"
+                            class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black text-xs font-tactical shrink-0"
                         >
-                            {{ selectedPlanBadge }}
+                            BETA
                         </div>
                         <div>
                             <p
                                 class="text-[11px] font-mono text-slate-400 uppercase tracking-wider"
                             >
-                                {{
-                                    activeTab === "transfer"
-                                        ? "Target Paket Pembayaran"
-                                        : "Tipe Pengajuan"
-                                }}
+                                Peran Hak Akses yang Diajukan
                             </p>
                             <p class="text-xs sm:text-sm font-bold text-white">
-                                {{ selectedPlanName }}
+                                CLIPPER IME ROLEPLAY
                             </p>
                         </div>
                     </div>
                     <span
-                        v-if="activeTab === 'transfer'"
-                        class="text-xs text-blue-400 font-mono font-semibold cursor-pointer hover:underline"
-                        @click="togglePlanSelector"
+                        class="text-[11px] text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 shrink-0"
                     >
-                        {{ showPlanSelector ? "Tutup" : "Ganti" }}
+                        GRATIS
                     </span>
-                    <span
-                        v-else
-                        class="text-[11px] text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20"
-                    >
-                        Gratis Slot
-                    </span>
-                </div>
-
-                <!-- Plan Selector Dropdown (Hanya Tampil di Tab Transfer: Komunitas & VIP) -->
-                <div
-                    v-if="showPlanSelector && activeTab === 'transfer'"
-                    class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 text-xs"
-                >
-                    <label
-                        class="block text-[11px] font-mono text-slate-400 uppercase"
-                        >Pilih Paket Layanan Berbayar:</label
-                    >
-                    <div
-                        class="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono"
-                    >
-                        <button
-                            type="button"
-                            @click="selectPlan('general')"
-                            :class="[
-                                'p-2.5 rounded-lg border text-left transition',
-                                form.request_type === 'general'
-                                    ? 'border-blue-500 bg-blue-500/10 text-white'
-                                    : 'border-slate-800 text-slate-400 hover:border-slate-700',
-                            ]"
-                        >
-                            <span class="font-bold block"
-                                >Komunitas (Rp 5k)</span
-                            >
-                            <span class="text-[10px] text-slate-500"
-                                >Klip IME Group</span
-                            >
-                        </button>
-                        <button
-                            type="button"
-                            @click="selectPlan('vip')"
-                            :class="[
-                                'p-2.5 rounded-lg border text-left transition',
-                                form.request_type === 'vip'
-                                    ? 'border-blue-500 bg-blue-500/10 text-white'
-                                    : 'border-slate-800 text-slate-400 hover:border-slate-700',
-                            ]"
-                        >
-                            <span class="font-bold block">VIP (Rp 10k)</span>
-                            <span class="text-[10px] text-slate-500"
-                                >Unlimited Clips</span
-                            >
-                        </button>
-                    </div>
                 </div>
 
                 <!-- Field Email / Akun -->
                 <div>
                     <label
                         class="block text-xs font-semibold text-slate-300 mb-1.5"
-                        >Alamat Email Terdaftar</label
                     >
+                        Alamat Email Terdaftar
+                        <span class="text-rose-400">*</span>
+                    </label>
                     <input
                         v-model="form.email"
                         type="email"
@@ -254,158 +189,82 @@
                         class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition placeholder:text-slate-500 font-mono"
                     />
                     <p class="text-[11px] text-slate-500 mt-1">
-                        Hak akses akan langsung diaktifkan ke akun dengan email
-                        ini.
+                        Hak akses Clipper akan diaktifkan ke akun pengguna
+                        dengan email ini setelah disetujui.
                     </p>
                 </div>
 
-                <!-- TAB A: BUKTI TRANSFER (Hanya Komunitas & VIP) -->
-                <div v-if="activeTab === 'transfer'" class="space-y-4 pt-1">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label
-                                class="block text-xs font-semibold text-slate-300 mb-1.5"
-                                >ID / Nama Pengirim</label
-                            >
-                            <input
-                                v-model="form.sender_id"
-                                type="text"
-                                placeholder="Contoh: agus_turnip"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition placeholder:text-slate-500 font-mono"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                class="block text-xs font-semibold text-slate-300 mb-1.5"
-                                >Nominal Transfer</label
-                            >
-                            <input
-                                v-model="form.amount"
-                                type="text"
-                                placeholder="Contoh: Rp 5.000 / Rp 10.000"
-                                class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition placeholder:text-slate-500 font-mono"
-                            />
-                        </div>
-                    </div>
-
-                    <!-- Upload File Screenshot Bukti Pembayaran -->
-                    <div>
-                        <label
-                            class="block text-xs font-semibold text-slate-300 mb-1.5"
-                            >Screenshot Bukti Pembayaran / Saweran</label
-                        >
-                        <div
-                            class="border-2 border-dashed border-slate-800 hover:border-blue-500/50 rounded-xl p-4 text-center cursor-pointer transition bg-slate-950/60"
-                            @click="triggerFileInput"
-                        >
-                            <input
-                                ref="fileInput"
-                                type="file"
-                                accept="image/*"
-                                class="hidden"
-                                @change="handleFileUpload"
-                            />
-                            <svg
-                                class="w-7 h-7 text-slate-500 mx-auto mb-1.5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="1.8"
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                />
-                            </svg>
-                            <p class="text-xs text-slate-300 font-medium">
-                                {{
-                                    fileName
-                                        ? fileName
-                                        : "Klik untuk upload screenshot pembayaran"
-                                }}
-                            </p>
-                            <p
-                                class="text-[11px] text-slate-500 mt-0.5 font-mono"
-                            >
-                                PNG, JPG, atau WebP (Maks. 5 MB)
-                            </p>
-                        </div>
-                    </div>
+                <!-- Link Channel YouTube / Media Social -->
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-slate-300 mb-1.5"
+                    >
+                        Link Channel YouTube / Portofolio Klip
+                    </label>
+                    <input
+                        v-model="form.channel_url"
+                        type="url"
+                        placeholder="https://youtube.com/@channel_anda atau link sampel klip..."
+                        class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition placeholder:text-slate-500 font-mono"
+                    />
                 </div>
 
-                <!-- TAB B: PENGAJUAN HAK AKSES OFFICER -->
-                <div v-else class="space-y-4 pt-1">
-                    <div>
-                        <label
-                            class="block text-xs font-semibold text-slate-300 mb-1.5"
-                            >Link Channel YouTube</label
-                        >
+                <!-- Catatan / Alasan Pengajuan -->
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-slate-300 mb-1.5"
+                    >
+                        Alasan / Keterangan Pengajuan Akses Clipper
+                    </label>
+                    <textarea
+                        v-model="form.reason"
+                        rows="3"
+                        placeholder="Tuliskan keterangan singkat keikutsertaan Anda (misal: Editor komunitas IME, Clipper channel YouTube, atau permohonan akses Beta)..."
+                        class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition placeholder:text-slate-500 font-sans"
+                    ></textarea>
+                </div>
+
+                <!-- Upload Screenshot Bukti / Sampel (Opsional) -->
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-slate-300 mb-1.5"
+                    >
+                        Screenshot Bukti Channel / Portofolio (Opsional)
+                    </label>
+                    <div
+                        class="border-2 border-dashed border-slate-800 hover:border-blue-500/50 rounded-xl p-4 text-center cursor-pointer transition bg-slate-950/60"
+                        @click="triggerFileInput"
+                    >
                         <input
-                            v-model="form.channel_url"
-                            type="url"
-                            placeholder="https://youtube.com/@channel_anda"
-                            class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition placeholder:text-slate-500 font-mono"
+                            ref="fileInput"
+                            type="file"
+                            accept="image/*"
+                            class="hidden"
+                            @change="handleFileUpload"
                         />
-                    </div>
-
-                    <div>
-                        <label
-                            class="block text-xs font-semibold text-slate-300 mb-1.5"
-                            >Informasi & Bukti Identitas Officer</label
+                        <svg
+                            class="w-7 h-7 text-slate-500 mx-auto mb-1.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                         >
-                        <textarea
-                            v-model="form.reason"
-                            rows="2"
-                            placeholder="Tuliskan Nama Officer/Karakter, NRP/Pangkat, unit Kepolisian IME, atau penjelasan pengajuan..."
-                            class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition placeholder:text-slate-500 font-sans"
-                        ></textarea>
-                    </div>
-
-                    <!-- Upload Screenshot Bukti Officer -->
-                    <div>
-                        <label
-                            class="block text-xs font-semibold text-slate-300 mb-1.5"
-                            >Screenshot Bukti Akun Officer (Profile MDT/Website
-                            Putih).
-                        </label>
-                        <div
-                            class="border-2 border-dashed border-slate-800 hover:border-blue-500/50 rounded-xl p-4 text-center cursor-pointer transition bg-slate-950/60"
-                            @click="triggerFileInput"
-                        >
-                            <input
-                                ref="fileInput"
-                                type="file"
-                                accept="image/*"
-                                class="hidden"
-                                @change="handleFileUpload"
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.8"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                             />
-                            <svg
-                                class="w-7 h-7 text-slate-500 mx-auto mb-1.5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="1.8"
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                />
-                            </svg>
-                            <p class="text-xs text-slate-300 font-medium">
-                                {{
-                                    fileName
-                                        ? fileName
-                                        : "Klik untuk upload screenshot bukti Officer"
-                                }}
-                            </p>
-                            <p
-                                class="text-[11px] text-slate-500 mt-0.5 font-mono"
-                            >
-                                PNG, JPG, atau WebP (Maks. 5 MB)
-                            </p>
-                        </div>
+                        </svg>
+                        <p class="text-xs text-slate-300 font-medium">
+                            {{
+                                fileName
+                                    ? fileName
+                                    : "Klik untuk upload screenshot channel / bukti keaktifan"
+                            }}
+                        </p>
+                        <p class="text-[11px] text-slate-500 mt-0.5 font-mono">
+                            PNG, JPG, atau WebP (Maks. 5 MB)
+                        </p>
                     </div>
                 </div>
 
@@ -439,9 +298,7 @@
                         <span>{{
                             loading
                                 ? "Mengirim Pengajuan..."
-                                : activeTab === "transfer"
-                                  ? "Kirim Bukti Pembayaran"
-                                  : "Kirim Pengajuan Officer"
+                                : "Kirim Pengajuan Akses Clipper"
                         }}</span>
                         <svg
                             v-if="!loading"
@@ -461,7 +318,8 @@
                     <p
                         class="text-center text-[11px] text-slate-500 mt-2.5 font-mono"
                     >
-                        Verifikasi manual diproses maksimal 1x24 jam kerja.
+                        Notifikasi pengajuan akan langsung diteruskan ke Admin
+                        via Discord.
                     </p>
                 </div>
             </form>
@@ -470,7 +328,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import axios from "axios";
 
@@ -481,96 +339,29 @@ const props = defineProps({
     },
     initialPlan: {
         type: String,
-        default: "general", // general, vip, officer
+        default: "creator",
     },
 });
 
 const emit = defineEmits(["close", "submitted"]);
 
 const page = usePage();
-const activeTab = ref("transfer"); // transfer, request
 const loading = ref(false);
 const successMessage = ref("");
 const errorMessage = ref("");
-const showPlanSelector = ref(false);
 const fileInput = ref(null);
 const fileName = ref("");
 const selectedFile = ref(null);
 
 const form = ref({
     email: page.props.auth?.user?.email || "",
-    request_type: props.initialPlan,
-    sender_id: "",
-    amount: "",
+    request_type: "creator",
     channel_url: "",
     reason: "",
 });
 
-const syncTabAndPlan = (plan) => {
-    if (plan === "officer") {
-        activeTab.value = "request";
-        form.value.request_type = "officer";
-    } else {
-        activeTab.value = "transfer";
-        form.value.request_type = plan === "vip" ? "vip" : "general";
-    }
-};
-
-watch(
-    () => props.initialPlan,
-    (newPlan) => {
-        syncTabAndPlan(newPlan);
-    },
-    { immediate: true },
-);
-
-const switchTab = (tab) => {
-    activeTab.value = tab;
-    showPlanSelector.value = false;
-    if (tab === "transfer") {
-        if (form.value.request_type === "officer") {
-            form.value.request_type = "general";
-        }
-    } else if (tab === "request") {
-        form.value.request_type = "officer";
-    }
-};
-
-const selectedPlanName = computed(() => {
-    switch (form.value.request_type) {
-        case "vip":
-            return "VIP Supporter Tier (Rp 10k)";
-        case "officer":
-            return "Officer";
-        case "general":
-        default:
-            return "Clipper Komunitas IME (Rp 5k)";
-    }
-});
-
-const selectedPlanBadge = computed(() => {
-    switch (form.value.request_type) {
-        case "vip":
-            return "VIP";
-        case "officer":
-            return "POLICE";
-        case "general":
-        default:
-            return "BETA";
-    }
-});
-
 const close = () => {
     emit("close");
-};
-
-const togglePlanSelector = () => {
-    showPlanSelector.value = !showPlanSelector.value;
-};
-
-const selectPlan = (type) => {
-    form.value.request_type = type;
-    showPlanSelector.value = false;
 };
 
 const triggerFileInput = () => {
@@ -600,15 +391,10 @@ const submitForm = async () => {
     try {
         const formData = new FormData();
         formData.append("email", form.value.email);
-        formData.append("request_type", form.value.request_type);
+        formData.append("request_type", "creator");
         formData.append("channel_url", form.value.channel_url || "");
 
-        let customReason = form.value.reason || "";
-        if (activeTab.value === "transfer") {
-            customReason = `[Transfer Bagi-Bagi] Pengirim: ${form.value.sender_id || "-"}, Nominal: ${form.value.amount || "-"}. ${customReason}`;
-        } else {
-            customReason = `[Pengajuan Akses Officer] ${customReason}`;
-        }
+        const customReason = `[Pengajuan Access Clipper Beta] ${form.value.reason || "Permohonan akses Clipper Komunitas."}`;
         formData.append("reason", customReason);
 
         if (selectedFile.value) {
@@ -626,7 +412,8 @@ const submitForm = async () => {
         );
 
         successMessage.value =
-            response.data.message || "Pengajuan klaim berhasil dikirim!";
+            response.data.message ||
+            "Pengajuan akses Clipper berhasil dikirim!";
         setTimeout(() => {
             emit("submitted");
             close();
@@ -634,7 +421,7 @@ const submitForm = async () => {
     } catch (err) {
         errorMessage.value =
             err.response?.data?.message ||
-            "Gagal mengirim pengajuan. Pastikan data diisi dengan benar.";
+            "Gagal mengirim pengajuan. Pastikan email diisi dengan benar.";
     } finally {
         loading.value = false;
     }

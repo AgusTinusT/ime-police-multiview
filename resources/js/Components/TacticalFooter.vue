@@ -7,6 +7,7 @@ import iconFocus from "@/Components/Icons/focus-point-round-844-svgrepo-com.svg"
 import iconRoster from "@/Components/Icons/doc-svgrepo-com.svg";
 import iconFeedback from "@/Components/Icons/report-svgrepo-com.svg";
 import iconUrl from "@/Components/Icons/url-checker-svgrepo-com.svg";
+import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
 
 const { t, locale } = useI18n();
 
@@ -77,6 +78,19 @@ const toggleLanguage = () => {
                         </li>
                         <li>
                             <Link
+                                href="/clipper"
+                                class="text-blue-400 hover:text-blue-300 font-bold transition flex items-center gap-1.5 py-1"
+                            >
+                                <img
+                                    :src="iconCut"
+                                    class="w-3.5 h-3.5 invert opacity-90"
+                                    alt=""
+                                />
+                                <span>Clip Studio (BETA)</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
                                 href="/officers"
                                 class="text-slate-400 hover:text-slate-100 transition flex items-center gap-1.5 py-1"
                             >
@@ -90,15 +104,15 @@ const toggleLanguage = () => {
                         </li>
                         <li>
                             <Link
-                                href="/faq"
+                                href="/clipper/pricing"
                                 class="text-slate-400 hover:text-slate-100 transition flex items-center gap-1.5 py-1"
                             >
                                 <img
-                                    :src="iconRadio"
+                                    :src="iconUrl"
                                     class="w-3.5 h-3.5 invert opacity-80"
                                     alt=""
                                 />
-                                <span>{{ $t("nav.faq") }}</span>
+                                <span>Tarif & Matriks Lisensi</span>
                             </Link>
                         </li>
                         <li>
@@ -112,6 +126,19 @@ const toggleLanguage = () => {
                                     alt=""
                                 />
                                 <span>{{ $t("nav.about") }}</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                href="/faq"
+                                class="text-slate-400 hover:text-slate-100 transition flex items-center gap-1.5 py-1"
+                            >
+                                <img
+                                    :src="iconRadio"
+                                    class="w-3.5 h-3.5 invert opacity-80"
+                                    alt=""
+                                />
+                                <span>{{ $t("nav.faq") }}</span>
                             </Link>
                         </li>
                         <li class="col-span-2">

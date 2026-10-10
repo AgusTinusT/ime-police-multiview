@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { usePage, Link } from "@inertiajs/vue3";
+import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
 
 const page = usePage();
 const isUrlActive = (path) => {
@@ -231,6 +232,24 @@ onUnmounted(() => {
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
                                     </svg>
                                     <span>Multiview Stage</span>
+                                </div>
+                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </Link>
+
+                            <Link
+                                href="/clipper"
+                                @click="closeBottomSheet"
+                                :class="[
+                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                    isUrlActive('/clipper') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-slate-950/60 text-slate-200 hover:bg-slate-800'
+                                ]"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <img :src="iconCut" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
+                                    <div class="flex items-center gap-2">
+                                        <span>Clip Studio (Video Trimmer)</span>
+                                        <span class="px-1.5 py-0.2 text-[9px] font-mono font-bold rounded bg-emerald-950 text-emerald-400 border border-emerald-800">BETA</span>
+                                    </div>
                                 </div>
                                 <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </Link>

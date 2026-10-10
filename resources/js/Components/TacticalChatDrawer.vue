@@ -218,7 +218,7 @@ onUnmounted(() => {
             />
             <span
                 class="font-mono text-xs font-semibold uppercase tracking-wider hidden sm:inline"
-                >Member Chat</span
+                >Chat</span
             >
 
             <!-- Unread Badge (Sleek static badge without bouncing) -->

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ClipperRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class ClipperRequestController extends Controller
@@ -55,7 +57,7 @@ class ClipperRequestController extends Controller
         $validated = $request->validate([
             'request_type' => 'required|string|in:officer,creator,vip,general',
             'channel_url' => 'nullable|string|max:255',
-            'reason' => 'nullable|string|max:500',
+            'reason' => 'nullable|string|max:1000',
         ]);
 
         $clipperRequest = ClipperRequest::create([
@@ -66,10 +68,84 @@ class ClipperRequestController extends Controller
             'status' => 'pending',
         ]);
 
+        // Send Discord Webhook Notification
+        $this->sendDiscordNotification($user, $clipperRequest);
+
         return response()->json([
             'message' => 'Pengajuan hak spesial Clipper berhasil dikirim dan menunggu review Admin.',
             'request' => $clipperRequest,
         ], 201);
+    }
+
+    /**
+     * Send rich Discord Webhook Notification for new Clipper Requests.
+     */
+    private function sendDiscordNotification(User $user, ClipperRequest $clipperRequest)
+    {
+        $webhookUrl = config('services.discord.webhook_url');
+
+        if (empty($webhookUrl)) {
+            return;
+        }
+
+        try {
+            $typeName = match ($clipperRequest->request_type) {
+                'officer' => '🛡️ Police Officer Duty (Slot Officer)',
+                'vip' => '💎 VIP Supporter (Unlimited)',
+                'creator' => '⚡ Clipper Komunitas IME (10 Klip/Hari)',
+                default => '🎬 Clipper General Request',
+            };
+
+            $fields = [
+                [
+                    'name' => '👤 User Pengaju',
+                    'value' => "**{$user->name}**\n`{$user->email}`",
+                    'inline' => true,
+                ],
+                [
+                    'name' => '🎯 Tipe Pengajuan',
+                    'value' => "**{$typeName}**",
+                    'inline' => true,
+                ],
+            ];
+
+            if (!empty($clipperRequest->channel_url)) {
+                $fields[] = [
+                    'name' => '📺 Link Channel YouTube',
+                    'value' => $clipperRequest->channel_url,
+                    'inline' => false,
+                ];
+            }
+
+            if (!empty($clipperRequest->reason)) {
+                $fields[] = [
+                    'name' => '📝 Catatan / Detail Bukti Pengajuan',
+                    'value' => mb_strimwidth($clipperRequest->reason, 0, 1000, '...'),
+                    'inline' => false,
+                ];
+            }
+
+            $payload = [
+                'username' => 'IME Police Clipper Bot',
+                'avatar_url' => 'https://img.icons8.com/fluency/96/video-trimmer.png',
+                'embeds' => [
+                    [
+                        'title' => '📥 Pengajuan Baru: Hak Akses Tactical Clipper',
+                        'description' => "Pengguna **{$user->name}** baru saja mengirimkan form pengajuan hak akses Clipper.",
+                        'color' => 3447003, // Royal Blue
+                        'fields' => $fields,
+                        'footer' => [
+                            'text' => 'IME Police Multiview System • Automatic Notification',
+                        ],
+                        'timestamp' => now()->toISOString(),
+                    ]
+                ]
+            ];
+
+            Http::timeout(5)->post($webhookUrl, $payload);
+        } catch (\Throwable $e) {
+            Log::error('Gagal mengirim Discord Webhook notification: ' . $e->getMessage());
+        }
     }
 
     /**

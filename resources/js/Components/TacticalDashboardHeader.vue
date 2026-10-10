@@ -146,6 +146,21 @@ onUnmounted(() => {
                         <span>{{ $t("nav.multiview") }}</span>
                     </Link>
 
+                    <!-- Clip Studio Feature Link -->
+                    <Link
+                        href="/clipper"
+                        :class="[
+                            'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0 flex items-center gap-1.5',
+                            isUrlActive('/clipper')
+                                ? 'text-white bg-blue-600 font-bold'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
+                        ]"
+                        title="Clip Studio"
+                    >
+                        <span>Clip Studio</span>
+                        <span class="px-1.5 py-0.2 text-[9px] font-mono font-extrabold rounded bg-emerald-950 text-emerald-400 border border-emerald-800/80 shrink-0">BETA</span>
+                    </Link>
+
                     <Link
                         href="/action-clips"
                         :class="[
@@ -168,48 +183,9 @@ onUnmounted(() => {
                                 ? 'text-white bg-blue-600 font-bold'
                                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
                         ]"
-                        title="Officers"
+                        title="Direktori Perwira Kepolisian"
                     >
                         <span>{{ $t("nav.directory") }}</span>
-                    </Link>
-
-                    <Link
-                        href="/about"
-                        :class="[
-                            'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
-                            isUrlActive('/about')
-                                ? 'text-white bg-blue-600 font-bold'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                        ]"
-                        title="About"
-                    >
-                        <span>{{ $t("nav.about") }}</span>
-                    </Link>
-
-                    <Link
-                        href="/faq"
-                        :class="[
-                            'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
-                            isUrlActive('/faq')
-                                ? 'text-white bg-blue-600 font-bold'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                        ]"
-                        title="FAQ"
-                    >
-                        {{ $t("nav.faq") }}
-                    </Link>
-
-                    <Link
-                        href="/feedback"
-                        :class="[
-                            'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
-                            isUrlActive('/feedback')
-                                ? 'text-white bg-blue-600 font-bold'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                        ]"
-                        title="Feedback"
-                    >
-                        {{ $t("nav.feedback") }}
                     </Link>
                 </nav>
             </div>

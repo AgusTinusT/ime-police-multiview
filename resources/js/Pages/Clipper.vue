@@ -243,7 +243,9 @@
                         </div>
 
                         <!-- TIMELINE TRIMMER CARD -->
-                        <div class="bg-[#0b1324] border border-[#17243e] rounded-2xl p-4 space-y-3.5 shadow-xl">
+                        <div
+                            class="bg-[#0b1324] border border-[#17243e] rounded-2xl p-4 space-y-3.5 shadow-xl"
+                        >
                             <!-- Card Header -->
                             <div class="flex items-center justify-between">
                                 <div
@@ -394,34 +396,76 @@
                     <!-- RIGHT COLUMN: EXPORT PARAMETERS & SIDEBAR (4 cols - Desktop panel design from video_trimmer_export_panel.html) -->
                     <div class="lg:col-span-4 space-y-4">
                         <!-- Header Section (video_trimmer_export_panel style) -->
-                        <div class="flex items-center justify-between pb-3.5 border-b border-[#17243e]">
+                        <div
+                            class="flex items-center justify-between pb-3.5 border-b border-[#17243e]"
+                        >
                             <div class="flex items-center gap-2.5">
-                                <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0"
+                                >
+                                    <svg
+                                        class="w-4 h-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                        />
                                     </svg>
                                 </div>
                                 <div>
-                                    <h2 class="text-sm font-semibold tracking-wide uppercase text-slate-100 font-sans">Opsi Ekspor & Format</h2>
-                                    <p class="text-xs text-slate-400 font-sans hidden lg:block">Pilih kualitas output video Anda</p>
+                                    <h2
+                                        class="text-sm font-semibold tracking-wide uppercase text-slate-100 font-sans"
+                                    >
+                                        Opsi Ekspor & Format
+                                    </h2>
+                                    <p
+                                        class="text-xs text-slate-400 font-sans hidden lg:block"
+                                    >
+                                        Pilih kualitas output video Anda
+                                    </p>
                                 </div>
                             </div>
 
                             <!-- Duration Cap Indicator Pill -->
-                            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#050b17] border border-[#182640] text-xs font-medium text-slate-300 font-mono">
-                                <span class="text-slate-400 font-sans">Batas:</span>
-                                <span class="text-sky-400 font-bold">{{ formatSeconds(maxClipDurationSec) }}</span>
+                            <div
+                                class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#050b17] border border-[#182640] text-xs font-medium text-slate-300 font-mono"
+                            >
+                                <span class="text-slate-400 font-sans"
+                                    >Batas:</span
+                                >
+                                <span class="text-sky-400 font-bold">{{
+                                    formatSeconds(maxClipDurationSec)
+                                }}</span>
                             </div>
                         </div>
 
                         <!-- Format Selection Options (Radio style from video_trimmer_export_panel.html) -->
-                        <section class="space-y-2.5" aria-label="Pilihan Kualitas Video">
-                            <div class="flex items-center justify-between px-0.5">
-                                <span class="text-xs font-semibold uppercase tracking-wider text-slate-300 font-sans">Format & Kualitas</span>
-                                <span class="text-[11px] text-slate-400 font-sans hidden lg:inline">Durasi Terpilih: {{ formatSeconds(calculatedSeconds) }}</span>
+                        <section
+                            class="space-y-2.5"
+                            aria-label="Pilihan Kualitas Video"
+                        >
+                            <div
+                                class="flex items-center justify-between px-0.5"
+                            >
+                                <span
+                                    class="text-xs font-semibold uppercase tracking-wider text-slate-300 font-sans"
+                                    >Format & Kualitas</span
+                                >
+                                <span
+                                    class="text-[11px] text-slate-400 font-sans hidden lg:inline"
+                                    >Durasi Terpilih:
+                                    {{ formatSeconds(calculatedSeconds) }}</span
+                                >
                             </div>
 
-                            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-1 gap-2.5">
+                            <div
+                                class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-1 gap-2.5"
+                            >
                                 <button
                                     v-for="fmt in formatOptions"
                                     :key="fmt.value"
@@ -432,45 +476,100 @@
                                         form.format === fmt.value
                                             ? 'border-sky-500/70 bg-sky-950/30 shadow-md ring-1 ring-sky-500/40'
                                             : 'border-[#182640] bg-[#050b17]/80 hover:bg-[#0d172a] hover:border-slate-700',
-                                        fmt.value === 'MP4 1080p' && !canUse1080p && !isGuest ? 'opacity-60 bg-slate-950/40 border-dashed border-amber-900/40' : '',
+                                        fmt.value === 'MP4 1080p' &&
+                                        !canUse1080p &&
+                                        !isGuest
+                                            ? 'opacity-60 bg-slate-950/40 border-dashed border-amber-900/40'
+                                            : '',
                                         isGuest ? 'opacity-80' : '',
                                     ]"
                                 >
-                                    <div class="flex items-start gap-3 min-w-0 flex-1">
+                                    <div
+                                        class="flex items-start gap-3 min-w-0 flex-1"
+                                    >
                                         <!-- Radio Circle Indicator -->
                                         <div
                                             class="w-4 h-4 rounded-full border mt-0.5 flex items-center justify-center shrink-0 transition-colors"
-                                            :class="form.format === fmt.value ? 'border-sky-400' : 'border-slate-600'"
+                                            :class="
+                                                form.format === fmt.value
+                                                    ? 'border-sky-400'
+                                                    : 'border-slate-600'
+                                            "
                                         >
                                             <div
                                                 class="w-2 h-2 rounded-full transition-all"
-                                                :class="form.format === fmt.value ? 'bg-sky-400' : 'bg-transparent'"
+                                                :class="
+                                                    form.format === fmt.value
+                                                        ? 'bg-sky-400'
+                                                        : 'bg-transparent'
+                                                "
                                             ></div>
                                         </div>
 
                                         <div class="space-y-0.5 min-w-0 flex-1">
-                                            <div class="flex items-center gap-2 flex-wrap">
-                                                <span class="text-sm font-semibold text-slate-100 font-sans truncate">{{ fmt.name }}</span>
+                                            <div
+                                                class="flex items-center gap-2 flex-wrap"
+                                            >
+                                                <span
+                                                    class="text-sm font-semibold text-slate-100 font-sans truncate"
+                                                    >{{ fmt.name }}</span
+                                                >
                                                 <span
                                                     class="text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1"
-                                                    :class="fmt.value === 'MP4 1080p' && !canUse1080p && !isGuest ? 'bg-amber-950 text-amber-300 border border-amber-800/60' : fmt.tagClass"
+                                                    :class="
+                                                        fmt.value ===
+                                                            'MP4 1080p' &&
+                                                        !canUse1080p &&
+                                                        !isGuest
+                                                            ? 'bg-amber-950 text-amber-300 border border-amber-800/60'
+                                                            : fmt.tagClass
+                                                    "
                                                 >
-                                                    <svg v-if="fmt.value === 'MP4 1080p' && !canUse1080p && !isGuest" class="w-3 h-3 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                                    <svg
+                                                        v-if="
+                                                            fmt.value ===
+                                                                'MP4 1080p' &&
+                                                            !canUse1080p &&
+                                                            !isGuest
+                                                        "
+                                                        class="w-3 h-3 text-amber-400 shrink-0"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                                        />
                                                     </svg>
-                                                    <span>{{ fmt.value === 'MP4 1080p' && !canUse1080p && !isGuest ? 'Khusus PRO / Clipper' : fmt.tag }}</span>
+                                                    <span>{{
+                                                        fmt.value ===
+                                                            "MP4 1080p" &&
+                                                        !canUse1080p &&
+                                                        !isGuest
+                                                            ? "Khusus PRO / Clipper"
+                                                            : fmt.tag
+                                                    }}</span>
                                                 </span>
                                             </div>
                                             <!-- Desktop Use Case Subtitle -->
-                                            <p class="hidden lg:block text-xs text-slate-400 leading-normal font-sans">
+                                            <p
+                                                class="hidden lg:block text-xs text-slate-400 leading-normal font-sans"
+                                            >
                                                 {{ fmt.useCase }}
                                             </p>
                                         </div>
                                     </div>
 
                                     <!-- Right Est Size / Bitrate Badge -->
-                                    <div class="hidden lg:block pl-3 shrink-0 text-right">
-                                        <span class="text-xs font-mono font-medium text-slate-200 bg-[#070e1b] px-2.5 py-1 rounded-md border border-[#17253e]">
+                                    <div
+                                        class="hidden lg:block pl-3 shrink-0 text-right"
+                                    >
+                                        <span
+                                            class="text-xs font-mono font-medium text-slate-200 bg-[#070e1b] px-2.5 py-1 rounded-md border border-[#17253e]"
+                                        >
                                             {{ fmt.desc }}
                                         </span>
                                     </div>
@@ -479,102 +578,247 @@
                         </section>
 
                         <!-- SUMMARY METADATA CARD (Ringkasan Ekspor from video_trimmer_export_panel.html) -->
-                        <section class="bg-[#050b17]/90 rounded-xl border border-[#17253e] p-3.5 space-y-2.5 font-sans">
-                            <div class="flex items-center justify-between pb-2 border-b border-[#142036]">
-                                <span class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-sky-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                        <section
+                            class="bg-[#050b17]/90 rounded-xl border border-[#17253e] p-3.5 space-y-2.5 font-sans"
+                        >
+                            <div
+                                class="flex items-center justify-between pb-2 border-b border-[#142036]"
+                            >
+                                <span
+                                    class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5"
+                                >
+                                    <svg
+                                        class="w-3.5 h-3.5 text-sky-400"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"
+                                        />
                                     </svg>
                                     Ringkasan Ekspor
                                 </span>
-                                <span class="text-[11px] font-mono font-medium text-sky-400 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800/50">
-                                    {{ formatOptions.find(f => f.value === form.format)?.name || form.format.toUpperCase() }}
+                                <span
+                                    class="text-[11px] font-mono font-medium text-sky-400 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800/50"
+                                >
+                                    {{
+                                        formatOptions.find(
+                                            (f) => f.value === form.format,
+                                        )?.name || form.format.toUpperCase()
+                                    }}
                                 </span>
                             </div>
 
-                            <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+                            <div
+                                class="grid grid-cols-3 gap-2 text-xs font-mono"
+                            >
                                 <!-- Durasi Klip -->
-                                <div class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]">
-                                    <div class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans">
-                                        <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <circle cx="12" cy="12" r="10" stroke-width="2"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/>
+                                <div
+                                    class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]"
+                                >
+                                    <div
+                                        class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans"
+                                    >
+                                        <svg
+                                            class="w-3 h-3 text-slate-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <circle
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke-width="2"
+                                            />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M12 6v6l4 2"
+                                            />
                                         </svg>
                                         Durasi Klip
                                     </div>
                                     <div class="font-medium text-slate-100">
-                                        {{ formatSeconds(calculatedSeconds) }} <span class="text-[11px] text-slate-500 font-sans">({{ calculatedSeconds }}s)</span>
+                                        {{ formatSeconds(calculatedSeconds) }}
+                                        <span
+                                            class="text-[11px] text-slate-500 font-sans"
+                                            >({{ calculatedSeconds }}s)</span
+                                        >
                                     </div>
                                 </div>
 
                                 <!-- Proses -->
-                                <div class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]">
-                                    <div class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans">
-                                        <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                <div
+                                    class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]"
+                                >
+                                    <div
+                                        class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans"
+                                    >
+                                        <svg
+                                            class="w-3 h-3 text-slate-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                                            />
                                         </svg>
                                         Proses Engine
                                     </div>
-                                    <div class="font-medium text-slate-200 font-sans text-[11px] truncate">
-                                        {{ urlCheckResult?.is_live ? 'HLS Live DVR' : 'Lossless Direct' }}
+                                    <div
+                                        class="font-medium text-slate-200 font-sans text-[11px] truncate"
+                                    >
+                                        {{
+                                            urlCheckResult?.is_live
+                                                ? "HLS Live DVR"
+                                                : "Lossless Direct"
+                                        }}
                                     </div>
                                 </div>
 
                                 <!-- Masa Simpan Cloud -->
-                                <div class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]">
-                                    <div class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans">
-                                        <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                <div
+                                    class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]"
+                                >
+                                    <div
+                                        class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans"
+                                    >
+                                        <svg
+                                            class="w-3 h-3 text-slate-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                                            />
                                         </svg>
                                         Masa Simpan Cloud
                                     </div>
-                                    <div class="font-medium text-slate-200 font-sans text-[11px]">1 Jam <span class="text-slate-500 text-[10px]">(Auto-clean)</span></div>
+                                    <div
+                                        class="font-medium text-slate-200 font-sans text-[11px]"
+                                    >
+                                        1 Jam
+                                        <span class="text-slate-500 text-[10px]"
+                                            >(Auto-clean)</span
+                                        >
+                                    </div>
                                 </div>
                             </div>
                         </section>
 
                         <!-- QUOTA & AUTHENTICATION BANNER -->
-                        <div class="rounded-xl p-3 bg-[#050b17]/90 border border-[#17243e] font-sans text-xs">
-                            <div class="flex items-center justify-between mb-1.5">
-                                <span class="text-slate-400 flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                        <div
+                            class="rounded-xl p-3 bg-[#050b17]/90 border border-[#17243e] font-sans text-xs"
+                        >
+                            <div
+                                class="flex items-center justify-between mb-1.5"
+                            >
+                                <span
+                                    class="text-slate-400 flex items-center gap-1.5"
+                                >
+                                    <span
+                                        class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"
+                                    ></span>
                                     Sisa Kuota {{ quotaPeriodLabel }}:
                                 </span>
-                                <span class="font-mono font-bold text-slate-200">
-                                    {{ isUnlimitedQuota ? 'Unlimited' : `${userDailyRemaining} dari ${dailyClipsLimit} Klip` }}
+                                <span
+                                    class="font-mono font-bold text-slate-200"
+                                >
+                                    {{
+                                        isUnlimitedQuota
+                                            ? "Unlimited"
+                                            : `${userDailyRemaining} dari ${dailyClipsLimit} Klip`
+                                    }}
                                 </span>
                             </div>
 
                             <!-- Quota progress visual -->
-                            <div v-if="!isUnlimitedQuota" class="w-full bg-[#0e192e] h-1.5 rounded-full overflow-hidden mb-2">
+                            <div
+                                v-if="!isUnlimitedQuota"
+                                class="w-full bg-[#0e192e] h-1.5 rounded-full overflow-hidden mb-2"
+                            >
                                 <div
                                     class="h-full transition-all duration-300 rounded-full"
-                                    :class="userDailyRemaining <= 0 ? 'bg-amber-500' : 'bg-sky-500'"
-                                    :style="{ width: `${Math.min(100, (dailyClipsCount / dailyClipsLimit) * 100)}%` }"
+                                    :class="
+                                        userDailyRemaining <= 0
+                                            ? 'bg-amber-500'
+                                            : 'bg-sky-500'
+                                    "
+                                    :style="{
+                                        width: `${Math.min(100, (dailyClipsCount / dailyClipsLimit) * 100)}%`,
+                                    }"
                                 ></div>
                             </div>
 
-                            <div class="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+                            <div
+                                class="flex items-center justify-between text-[11px] text-slate-400 pt-0.5"
+                            >
                                 <template v-if="isGuest">
                                     <span>Guest: 3 klip gratis / minggu</span>
-                                    <a href="/login" class="text-sky-400 hover:text-sky-300 font-medium underline underline-offset-2 transition-colors">
+                                    <a
+                                        href="/login"
+                                        class="text-sky-400 hover:text-sky-300 font-medium underline underline-offset-2 transition-colors"
+                                    >
                                         Masuk Sekarang
                                     </a>
                                 </template>
                                 <template v-else-if="isUnlimitedQuota">
-                                    <span class="text-slate-400">PRO Ultimate / Officer Active (Unlimited)</span>
+                                    <span class="text-slate-400"
+                                        >PRO Ultimate / Officer Active
+                                        (Unlimited)</span
+                                    >
                                 </template>
                                 <template v-else-if="userDailyRemaining <= 0">
-                                    <span class="text-amber-400 font-semibold">Kuota {{ quotaPeriodLabel.toLowerCase() }} habis</span>
-                                    <Link href="/clipper/pricing" class="text-sky-400 hover:text-sky-300 font-bold underline text-[10px] inline-flex items-center gap-1">
+                                    <span class="text-amber-400 font-semibold"
+                                        >Kuota
+                                        {{
+                                            quotaPeriodLabel.toLowerCase()
+                                        }}
+                                        habis</span
+                                    >
+                                    <Link
+                                        href="/clipper/pricing"
+                                        class="text-sky-400 hover:text-sky-300 font-bold underline text-[10px] inline-flex items-center gap-1"
+                                    >
                                         <span>Naikkan Paket</span>
-                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                        <svg
+                                            class="w-3 h-3 shrink-0"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M14 5l7 7m0 0l-7 7m7-7H3"
+                                            />
                                         </svg>
                                     </Link>
                                 </template>
                                 <template v-else>
-                                    <span>Tersisa <strong class="text-slate-200 font-mono">{{ userDailyRemaining }} klip</strong> {{ quotaPeriodLabel.toLowerCase() }} ({{ user?.clipper_tier_name || 'Free' }})</span>
+                                    <span
+                                        >Tersisa
+                                        <strong class="text-slate-200 font-mono"
+                                            >{{
+                                                userDailyRemaining
+                                            }}
+                                            klip</strong
+                                        >
+                                        {{ quotaPeriodLabel.toLowerCase() }} ({{
+                                            user?.clipper_tier_name || "Free"
+                                        }})</span
+                                    >
                                 </template>
                             </div>
                         </div>
@@ -659,7 +903,11 @@
                                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                                         />
                                     </svg>
-                                    <span>Kuota {{ quotaPeriodLabel }} Habis ({{ dailyClipsCount }}/{{ dailyClipsLimit }} Klip)</span>
+                                    <span
+                                        >Kuota {{ quotaPeriodLabel }} Habis ({{
+                                            dailyClipsCount
+                                        }}/{{ dailyClipsLimit }} Klip)</span
+                                    >
                                 </template>
                                 <template v-else>
                                     <svg
@@ -770,10 +1018,14 @@
                                             </svg>
                                         </div>
                                         <div>
-                                            <h4 class="text-xs font-bold text-white uppercase tracking-wider">
+                                            <h4
+                                                class="text-xs font-bold text-white uppercase tracking-wider"
+                                            >
                                                 Status Akun & Tier Aktif
                                             </h4>
-                                            <p class="text-[10px] text-slate-400 font-mono truncate max-w-[150px]">
+                                            <p
+                                                class="text-[10px] text-slate-400 font-mono truncate max-w-[150px]"
+                                            >
                                                 {{ user?.name || user?.email }}
                                             </p>
                                         </div>
@@ -781,25 +1033,71 @@
 
                                     <span
                                         class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase shrink-0"
-                                        :class="isUnlimitedQuota ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-sky-950 text-sky-300 border border-sky-800'"
+                                        :class="
+                                            isUnlimitedQuota
+                                                ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                                                : 'bg-sky-950 text-sky-300 border border-sky-800'
+                                        "
                                     >
-                                        {{ user?.clipper_tier_name || 'Free Tier' }}
+                                        {{
+                                            user?.clipper_tier_name ||
+                                            "Free Tier"
+                                        }}
                                     </span>
                                 </div>
 
                                 <!-- Dynamic Capabilities Badge & Controls -->
-                                <div class="bg-[#050b17] border border-[#15233c] rounded-xl p-3 space-y-2 text-xs font-mono">
-                                    <div class="flex items-center justify-between text-[11px]">
-                                        <span class="text-slate-400">Durasi Maks:</span>
-                                        <span class="text-slate-200 font-bold">{{ formatSeconds(maxClipDurationSec) }}</span>
+                                <div
+                                    class="bg-[#050b17] border border-[#15233c] rounded-xl p-3 space-y-2 text-xs font-mono"
+                                >
+                                    <div
+                                        class="flex items-center justify-between text-[11px]"
+                                    >
+                                        <span class="text-slate-400"
+                                            >Durasi Maks:</span
+                                        >
+                                        <span
+                                            class="text-slate-200 font-bold"
+                                            >{{
+                                                formatSeconds(
+                                                    maxClipDurationSec,
+                                                )
+                                            }}</span
+                                        >
                                     </div>
-                                    <div class="flex items-center justify-between text-[11px]">
-                                        <span class="text-slate-400">Kualitas Maks:</span>
-                                        <span class="text-emerald-400 font-bold">{{ canUse1080p ? '1080p Lossless' : '720p HD' }}</span>
+                                    <div
+                                        class="flex items-center justify-between text-[11px]"
+                                    >
+                                        <span class="text-slate-400"
+                                            >Kualitas Maks:</span
+                                        >
+                                        <span
+                                            class="text-emerald-400 font-bold"
+                                            >{{
+                                                canUse1080p
+                                                    ? "1080p Lossless"
+                                                    : "720p HD"
+                                            }}</span
+                                        >
                                     </div>
-                                    <div class="flex items-center justify-between text-[11px]">
-                                        <span class="text-slate-400">Potong Live DVR:</span>
-                                        <span :class="isUnlimitedQuota ? 'text-emerald-400 font-bold' : 'text-slate-500'">{{ isUnlimitedQuota ? 'Aktif' : 'Terbatas' }}</span>
+                                    <div
+                                        class="flex items-center justify-between text-[11px]"
+                                    >
+                                        <span class="text-slate-400"
+                                            >Potong Live DVR:</span
+                                        >
+                                        <span
+                                            :class="
+                                                isUnlimitedQuota
+                                                    ? 'text-emerald-400 font-bold'
+                                                    : 'text-slate-500'
+                                            "
+                                            >{{
+                                                isUnlimitedQuota
+                                                    ? "Aktif"
+                                                    : "Terbatas"
+                                            }}</span
+                                        >
                                     </div>
                                 </div>
 
@@ -813,21 +1111,50 @@
                                         "
                                         class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-sans"
                                     >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                        <svg
+                                            class="w-4 h-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M12 4354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                                            />
                                         </svg>
-                                        <span>Kelola 2 Slot Clipper Officer ({{ delegationData.used_slots }}/2)</span>
+                                        <span
+                                            >Kelola 2 Slot Clipper Officer ({{
+                                                delegationData.used_slots
+                                            }}/2)</span
+                                        >
                                     </button>
 
                                     <button
-                                        v-else-if="!isUnlimitedQuota && clipperRequestStatus !== 'pending'"
+                                        v-else-if="
+                                            !isUnlimitedQuota &&
+                                            clipperRequestStatus !== 'pending'
+                                        "
                                         @click="showRequestClipperModal = true"
                                         class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-sans"
                                     >
-                                        <svg class="w-4 h-4 text-amber-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                        <svg
+                                            class="w-4 h-4 text-amber-300 shrink-0"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                                            />
                                         </svg>
-                                        <span>Ajukan / Upgrade Hak Clipper</span>
+                                        <span
+                                            >Ajukan / Upgrade Hak Clipper</span
+                                        >
                                     </button>
 
                                     <Link
@@ -835,10 +1162,22 @@
                                         class="w-full py-2 px-3 rounded-xl bg-[#0a1426] hover:bg-[#101e38] border border-[#1a2d50] text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-between transition font-mono"
                                     >
                                         <span>Panduan & Matriks Fitur</span>
-                                        <span class="text-cyan-400 flex items-center gap-1">
+                                        <span
+                                            class="text-cyan-400 flex items-center gap-1"
+                                        >
                                             <span>Lihat Detail</span>
-                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                            <svg
+                                                class="w-3.5 h-3.5 shrink-0"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                                                />
                                             </svg>
                                         </span>
                                     </Link>
@@ -867,32 +1206,55 @@
                                             </svg>
                                         </div>
                                         <div>
-                                            <h4 class="text-xs font-bold text-white uppercase tracking-wider">
+                                            <h4
+                                                class="text-xs font-bold text-white uppercase tracking-wider"
+                                            >
                                                 Perbedaan Paket & Akses Spesial
                                             </h4>
-                                            <p class="text-[10px] text-slate-400">
-                                                Pilih akses sesuai kebutuhan Anda
+                                            <p
+                                                class="text-[10px] text-slate-400"
+                                            >
+                                                Pilih akses sesuai kebutuhan
+                                                Anda
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Direct Comparison Chips (Free vs PRO / Officer) -->
-                                <div class="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                                <div
+                                    class="grid grid-cols-2 gap-2 text-[11px] font-mono"
+                                >
                                     <div
                                         class="bg-[#050b17] border border-[#15233c] rounded-xl p-2.5 flex flex-col gap-0.5"
                                     >
-                                        <span class="text-slate-400 text-[10px] font-bold uppercase">FREE MEMBER:</span>
-                                        <span class="text-slate-200 font-semibold text-xs">3 Klip / Minggu</span>
-                                        <span class="text-slate-400 text-[9px]">Maks 1 Menit / Klip</span>
+                                        <span
+                                            class="text-slate-400 text-[10px] font-bold uppercase"
+                                            >FREE MEMBER:</span
+                                        >
+                                        <span
+                                            class="text-slate-200 font-semibold text-xs"
+                                            >3 Klip / Minggu</span
+                                        >
+                                        <span class="text-slate-400 text-[9px]"
+                                            >Maks 1 Menit / Klip</span
+                                        >
                                     </div>
 
                                     <div
                                         class="bg-[#0d1b33] border border-[#1d3561] rounded-xl p-2.5 flex flex-col gap-0.5"
                                     >
-                                        <span class="text-cyan-400 text-[10px] font-bold uppercase">OFFICER & PRO:</span>
-                                        <span class="text-white font-semibold text-xs">Unlimited Potong</span>
-                                        <span class="text-cyan-300 text-[9px]">Hak 2 Slot & Lossless</span>
+                                        <span
+                                            class="text-cyan-400 text-[10px] font-bold uppercase"
+                                            >OFFICER & PRO:</span
+                                        >
+                                        <span
+                                            class="text-white font-semibold text-xs"
+                                            >Unlimited Potong</span
+                                        >
+                                        <span class="text-cyan-300 text-[9px]"
+                                            >Hak 2 Slot & Lossless</span
+                                        >
                                     </div>
                                 </div>
 
@@ -901,7 +1263,9 @@
                                     href="/clipper/pricing"
                                     class="w-full py-2.5 lg:py-4 lg:min-h-[48px] px-3.5 rounded-xl bg-[#0a1426] hover:bg-[#101e38] border border-[#1a2d50] text-xs lg:text-sm font-bold text-slate-200 flex items-center justify-between transition group cursor-pointer shadow-sm active:scale-[0.99]"
                                 >
-                                    <div class="flex items-center gap-2.5 font-mono">
+                                    <div
+                                        class="flex items-center gap-2.5 font-mono"
+                                    >
                                         <svg
                                             class="w-3.5 h-3.5 lg:w-4 lg:h-4 text-cyan-400 shrink-0"
                                             fill="none"
@@ -915,14 +1279,27 @@
                                                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                             />
                                         </svg>
-                                        <span>Lihat Opsi Paket & Panduan Officer</span>
+                                        <span
+                                            >Lihat Opsi Paket & Panduan
+                                            Officer</span
+                                        >
                                     </div>
                                     <div
                                         class="flex items-center gap-1 text-cyan-400 group-hover:translate-x-1 transition-transform font-mono text-[11px] lg:text-xs shrink-0"
                                     >
                                         <span>Buka Paket</span>
-                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                        <svg
+                                            class="w-3.5 h-3.5 shrink-0"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M14 5l7 7m0 0l-7 7m7-7H3"
+                                            />
                                         </svg>
                                     </div>
                                 </Link>
@@ -1434,314 +1811,13 @@
             </div>
         </transition>
 
-        <!-- REQUEST CLIPPER ROLE MODAL OVERLAY -->
-        <transition
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 scale-95"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-150"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-95"
-        >
-            <div
-                v-if="showRequestClipperModal"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90"
-            >
-                <div
-                    class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl relative font-sans"
-                >
-                    <button
-                        @click="showRequestClipperModal = false"
-                        class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 transition"
-                    >
-                        <svg
-                            class="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
-
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <span
-                                class="px-2.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 font-mono text-[10px] font-bold uppercase"
-                                >Hak Spesial Clipper</span
-                            >
-                        </div>
-                        <h3
-                            class="text-xl font-black text-white uppercase font-tactical tracking-tight"
-                        >
-                            Pengajuan Akses & Bukti Clipper
-                        </h3>
-                        <p
-                            class="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans"
-                        >
-                            Pilih kategori profesi Clipper Anda dan sertakan
-                            bukti portofolio / channel untuk penyesuaian promo &
-                            kuota.
-                        </p>
-                    </div>
-
-                    <div
-                        v-if="requestSuccessMsg"
-                        class="p-3 rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-300 text-xs font-semibold"
-                    >
-                        {{ requestSuccessMsg }}
-                    </div>
-
-                    <div
-                        v-if="requestErrMsg"
-                        class="p-3 rounded-lg bg-red-950 border border-red-800 text-red-300 text-xs font-semibold"
-                    >
-                        {{ requestErrMsg }}
-                    </div>
-
-                    <!-- Category Selector Options -->
-                    <div class="space-y-2">
-                        <label
-                            class="block text-xs font-bold uppercase tracking-wider text-slate-200"
-                        >
-                            Kategori Pengajuan
-                            <span class="text-blue-400">*</span>
-                        </label>
-
-                        <div class="space-y-2">
-                            <!-- Option 1: Clipper Komunitas IME Roleplay (General) -->
-                            <label
-                                class="flex items-start space-x-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition"
-                                :class="
-                                    clipperRequestType === 'general'
-                                        ? 'border-blue-500 bg-blue-950/20 ring-1 ring-blue-500/50'
-                                        : ''
-                                "
-                            >
-                                <input
-                                    type="radio"
-                                    name="reqType"
-                                    value="general"
-                                    v-model="clipperRequestType"
-                                    class="mt-1 text-blue-500 focus:ring-0 bg-slate-900 border-slate-700"
-                                />
-                                <div class="flex-1 min-w-0">
-                                    <div
-                                        class="flex items-center justify-between gap-2"
-                                    >
-                                        <span
-                                            class="font-bold text-white text-xs sm:text-sm"
-                                            >Clipper Komunitas IME Roleplay
-                                            (General)</span
-                                        >
-                                        <span
-                                            class="px-2 py-0.5 text-[9px] font-bold rounded bg-blue-950 text-blue-400 border border-blue-800 font-mono shrink-0"
-                                            >Diskon Promo</span
-                                        >
-                                    </div>
-                                    <span
-                                        class="text-xs text-slate-400 block mt-0.5"
-                                        >Suka memotong klip umum komunitas.
-                                        Sertakan bukti channel / hasil
-                                        klip.</span
-                                    >
-                                </div>
-                            </label>
-
-                            <!-- Option 2: Police Duty Clipper -->
-                            <label
-                                class="flex items-start space-x-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition"
-                                :class="
-                                    clipperRequestType === 'officer'
-                                        ? 'border-blue-500 bg-blue-950/20 ring-1 ring-blue-500/50'
-                                        : ''
-                                "
-                            >
-                                <input
-                                    type="radio"
-                                    name="reqType"
-                                    value="officer"
-                                    v-model="clipperRequestType"
-                                    class="mt-1 text-blue-500 focus:ring-0 bg-slate-900 border-slate-700"
-                                />
-                                <div class="flex-1 min-w-0">
-                                    <div
-                                        class="flex items-center justify-between gap-2"
-                                    >
-                                        <span
-                                            class="font-bold text-white text-xs sm:text-sm"
-                                            >Police Duty Clipper (Jalur
-                                            Officer)</span
-                                        >
-                                        <span
-                                            class="px-2 py-0.5 text-[9px] font-bold rounded bg-teal-950 text-teal-300 border border-teal-800 font-mono shrink-0"
-                                            >Direct Slot</span
-                                        >
-                                    </div>
-                                    <span
-                                        class="text-xs text-slate-400 block mt-0.5"
-                                        >Dokumentasi tugas Kepolisian. Langsung
-                                        minta slot dari Officer aktif.</span
-                                    >
-                                </div>
-                            </label>
-
-                            <!-- Option 3: Content Creator / Editor -->
-                            <label
-                                class="flex items-start space-x-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition"
-                                :class="
-                                    clipperRequestType === 'creator'
-                                        ? 'border-blue-500 bg-blue-950/20 ring-1 ring-blue-500/50'
-                                        : ''
-                                "
-                            >
-                                <input
-                                    type="radio"
-                                    name="reqType"
-                                    value="creator"
-                                    v-model="clipperRequestType"
-                                    class="mt-1 text-blue-500 focus:ring-0 bg-slate-900 border-slate-700"
-                                />
-                                <div class="flex-1 min-w-0">
-                                    <div
-                                        class="flex items-center justify-between gap-2"
-                                    >
-                                        <span
-                                            class="font-bold text-white text-xs sm:text-sm"
-                                            >Content Creator / Video
-                                            Editor</span
-                                        >
-                                        <span
-                                            class="px-2 py-0.5 text-[9px] font-bold rounded bg-indigo-950 text-indigo-400 border border-indigo-800 font-mono shrink-0"
-                                            >10 Klip/Hari</span
-                                        >
-                                    </div>
-                                    <span
-                                        class="text-xs text-slate-400 block mt-0.5"
-                                        >Editor YouTube/TikTok IME. Durasi klip
-                                        hingga 5 menit.</span
-                                    >
-                                </div>
-                            </label>
-
-                            <!-- Option 4: VIP Supporter -->
-                            <label
-                                class="flex items-start space-x-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition"
-                                :class="
-                                    clipperRequestType === 'vip'
-                                        ? 'border-blue-500 bg-blue-950/20 ring-1 ring-blue-500/50'
-                                        : ''
-                                "
-                            >
-                                <input
-                                    type="radio"
-                                    name="reqType"
-                                    value="vip"
-                                    v-model="clipperRequestType"
-                                    class="mt-1 text-blue-500 focus:ring-0 bg-slate-900 border-slate-700"
-                                />
-                                <div class="flex-1 min-w-0">
-                                    <div
-                                        class="flex items-center justify-between gap-2"
-                                    >
-                                        <span
-                                            class="font-bold text-white text-xs sm:text-sm"
-                                            >VIP Supporter (Akses Penuh)</span
-                                        >
-                                        <span
-                                            class="px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-mono shrink-0"
-                                            >Unlimited</span
-                                        >
-                                    </div>
-                                    <span
-                                        class="text-xs text-slate-400 block mt-0.5"
-                                        >Akses tanpa batas, durasi 10 menit &
-                                        prioritas antrean server.</span
-                                    >
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Channel & Proof URL Input -->
-                    <div class="space-y-1">
-                        <label
-                            class="block text-xs font-semibold uppercase tracking-wider text-slate-300"
-                        >
-                            Link Channel / Tautan Bukti Portofolio Klip
-                        </label>
-                        <input
-                            v-model="clipperChannelUrl"
-                            type="url"
-                            placeholder="https://www.youtube.com/@channel-anda atau link video klip..."
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:ring-0 outline-none transition font-mono"
-                        />
-                    </div>
-
-                    <!-- Reason Input -->
-                    <div class="space-y-1">
-                        <label
-                            class="block text-xs font-semibold uppercase tracking-wider text-slate-300"
-                        >
-                            Catatan Pengajuan / Bukti Keaktifan (Opsional)
-                        </label>
-                        <textarea
-                            v-model="clipperRequestReason"
-                            rows="2"
-                            placeholder="Tuliskan keterangan singkat, nama Officer penunjuk, atau deskripsi portofolio..."
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:ring-0 outline-none transition"
-                        ></textarea>
-                    </div>
-
-                    <div class="flex items-center justify-end gap-2 pt-2">
-                        <button
-                            @click="showRequestClipperModal = false"
-                            class="py-2.5 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white font-bold text-xs transition"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            @click="submitClipperRequest"
-                            :disabled="isSubmittingRequest"
-                            class="py-2.5 px-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer font-tactical"
-                        >
-                            <svg
-                                v-if="isSubmittingRequest"
-                                class="animate-spin h-4 w-4 text-white"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    class="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    stroke-width="4"
-                                ></circle>
-                                <path
-                                    class="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                ></path>
-                            </svg>
-                            <img
-                                v-else
-                                :src="iconCut"
-                                class="w-3.5 h-3.5 invert opacity-90 shrink-0"
-                                alt=""
-                            />
-                            <span>Kirim Pengajuan</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </transition>
+        <!-- UNIFIED CLAIM & VERIFICATION MODAL (CLIPPER & OFFICER REQUEST) -->
+        <ClipperClaimModal
+            :show="showRequestClipperModal"
+            initial-plan="general"
+            @close="showRequestClipperModal = false"
+            @submitted="fetchClipperStatus"
+        />
 
         <!-- DELEGATION CLIPPER MODAL (FOR OFFICERS/ADMINS - 2 SLOTS) -->
         <transition
@@ -1798,7 +1874,13 @@
                             class="text-xs sm:text-sm text-slate-300 leading-relaxed"
                         >
                             Sebagai Officer, Anda berhak menunjuk hingga
-                            <strong>2 akun Clipper (Dokumentasi/Editor)</strong> untuk memotong video Police Duty (10 Klip/Hari, Max 5 Menit). Akun yang ditunjuk <strong>HANYA mendapatkan hak Clipper</strong> dan <strong>TIDAK mendapatkan hak penunjukan ulang</strong>.
+                            <strong>2 akun Clipper (Dokumentasi/Editor)</strong>
+                            untuk memotong video Police Duty (10 Klip/Hari, Max
+                            5 Menit). Akun yang ditunjuk
+                            <strong>HANYA mendapatkan hak Clipper</strong> dan
+                            <strong
+                                >TIDAK mendapatkan hak penunjukan ulang</strong
+                            >.
                         </p>
                     </div>
 
@@ -2002,7 +2084,8 @@
                                     class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 focus:ring-0 outline-none transition font-sans"
                                 >
                                     <option value="creator">
-                                        Police Duty Clipper (10 Klip/hari, Durasi Maks 5 Menit)
+                                        Police Duty Clipper (10 Klip/hari,
+                                        Durasi Maks 5 Menit)
                                     </option>
                                 </select>
                             </div>
@@ -2063,6 +2146,7 @@
 <script setup>
 import DualRangeTrimmer from "@/Components/DualRangeTrimmer.vue";
 import CustomVideoPlayer from "@/Components/CustomVideoPlayer.vue";
+import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import axios from "axios";
@@ -2096,7 +2180,7 @@ const quotaPeriodLabel = computed(
         (user.value?.clipper_tier === "free" ? "Minggu Ini" : "Hari Ini"),
 );
 const canUse1080p = computed(
-    () => user.value?.can_use_1080p ?? (user.value?.clipper_tier !== "free"),
+    () => user.value?.can_use_1080p ?? user.value?.clipper_tier !== "free",
 );
 const dailyClipsCount = computed(() => user.value?.daily_clips_count || 0);
 const dailyClipsLimit = computed(() => user.value?.daily_clips_limit || 3);
@@ -2706,8 +2790,7 @@ async function submitTrim() {
     if (submitCooldownSec.value > 0) return;
 
     if (!isUnlimitedQuota.value && userDailyRemaining.value <= 0) {
-        formError.value =
-            `Kuota pemotongan video harian Anda (${dailyClipsCount.value}/${dailyClipsLimit.value} klip) telah habis. Silakan naikkan paket Clipper Anda!`;
+        formError.value = `Kuota pemotongan video harian Anda (${dailyClipsCount.value}/${dailyClipsLimit.value} klip) telah habis. Silakan naikkan paket Clipper Anda!`;
         return;
     }
 
