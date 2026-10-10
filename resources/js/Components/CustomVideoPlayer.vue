@@ -69,14 +69,14 @@ let controlsTimeout = null;
 let ytPollTimer = null;
 const iframeId = `yt-custom-player-${Math.random().toString(36).substring(2, 9)}`;
 
-// Extract YouTube ID if src is a YouTube URL
+// Extract YouTube ID if src is a YouTube URL (supports watch, live, shorts, embed, youtu.be)
 const computedYoutubeId = computed(() => {
     if (props.youtubeId) return props.youtubeId;
     if (!props.src) return "";
     const regExp =
-        /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
     const match = props.src.match(regExp);
-    return match && match[2].length === 11 ? match[2] : "";
+    return match && match[1] ? match[1] : "";
 });
 
 const effectiveStart = computed(() => props.startSeconds || 0);
