@@ -418,7 +418,7 @@
                         <section class="space-y-2.5" aria-label="Pilihan Kualitas Video">
                             <div class="flex items-center justify-between px-0.5">
                                 <span class="text-xs font-semibold uppercase tracking-wider text-slate-300 font-sans">Format & Kualitas</span>
-                                <span class="text-[11px] text-slate-400 font-sans hidden lg:inline">Estimasi: {{ formatSeconds(calculatedSeconds) }}</span>
+                                <span class="text-[11px] text-slate-400 font-sans hidden lg:inline">Durasi Terpilih: {{ formatSeconds(calculatedSeconds) }}</span>
                             </div>
 
                             <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-1 gap-2.5">
@@ -492,7 +492,7 @@
                                 </span>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                            <div class="grid grid-cols-3 gap-2 text-xs font-mono">
                                 <!-- Durasi Klip -->
                                 <div class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]">
                                     <div class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans">
@@ -505,18 +505,6 @@
                                     <div class="font-medium text-slate-100">
                                         {{ formatSeconds(calculatedSeconds) }} <span class="text-[11px] text-slate-500 font-sans">({{ calculatedSeconds }}s)</span>
                                     </div>
-                                </div>
-
-                                <!-- Est. Ukuran File -->
-                                <div class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]">
-                                    <div class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans">
-                                        <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1.5 3 3.5 3h9c2 0 3.5-1 3.5-3V7c0-2-1.5-3-3.5-3h-9C5.5 4 4 5 4 7z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11h6m-6 4h4"/>
-                                        </svg>
-                                        Est. Ukuran File
-                                    </div>
-                                    <div class="font-semibold text-emerald-400 font-mono">{{ estimatedFileSize }}</div>
                                 </div>
 
                                 <!-- Proses -->
@@ -2165,7 +2153,7 @@ const formatOptions = [
     {
         value: "MP4 1080p",
         name: "1080p Full HD",
-        desc: "~35 MB",
+        desc: "Full HD 1080p",
         badge: "FHD",
         badgeClass: "bg-[#0f1d38] text-cyan-400 border border-[#1b2f56]",
         tag: "Rekomendasi Utama",
@@ -2175,7 +2163,7 @@ const formatOptions = [
     {
         value: "MP4 720p",
         name: "720p HD",
-        desc: "~18 MB",
+        desc: "HD 720p",
         badge: "HD",
         badgeClass: "bg-[#0a1324] text-slate-400 border border-[#162540]",
         tag: "Cepat & Ringan",
@@ -2185,12 +2173,12 @@ const formatOptions = [
     {
         value: "MP4 480p",
         name: "480p Standard",
-        desc: "~8 MB",
+        desc: "SD 480p",
         badge: "SD",
         badgeClass: "bg-[#0a1324] text-slate-400 border border-[#162540]",
-        tag: "Ukuran Hemat",
+        tag: "Hemat Kuota",
         tagClass: "bg-[#070e1c] text-slate-400 border border-[#14223a]",
-        useCase: "Ukuran file sangat kecil untuk koneksi terbatas",
+        useCase: "Resolusi standar untuk koneksi hemat",
     },
     {
         value: "MP3 Audio",
