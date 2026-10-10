@@ -464,7 +464,7 @@ class DatabaseSeeder extends Seeder
         $this->call(AgenciesRanksDivisionsSeeder::class);
 
         // Automatically fetch real YouTube channel avatars & subscriber counts for officers
-        $this->call(\App\Console\Commands\SyncOfficerSubscribersCommand::class);
+        \Illuminate\Support\Facades\Artisan::call('officer:sync-subscribers');
     }
 }
 
