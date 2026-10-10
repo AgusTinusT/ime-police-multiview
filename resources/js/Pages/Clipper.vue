@@ -1084,36 +1084,10 @@
 
                                 <!-- Action Buttons depending on user role -->
                                 <div class="flex flex-col gap-2 pt-1">
-                                    <button
-                                        v-if="user?.can_delegate_clipper"
-                                        @click="
-                                            showDelegationModal = true;
-                                            fetchDelegations();
-                                        "
-                                        class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-sans"
-                                    >
-                                        <svg
-                                            class="w-4 h-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M12 4354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                                            />
-                                        </svg>
-                                        <span
-                                            >Kelola 2 Slot Clipper Officer ({{
-                                                delegationData.used_slots
-                                            }}/2)</span
-                                        >
-                                    </button>
+
 
                                     <button
-                                        v-else-if="
+                                        v-if="
                                             !isUnlimitedQuota &&
                                             clipperRequestStatus !== 'pending'
                                         "
@@ -2261,23 +2235,9 @@
 
                         <!-- 4. Quick Account / Request Buttons -->
                         <div class="pt-1">
+
                             <button
-                                v-if="user?.can_delegate_clipper"
-                                @click="
-                                    closeMobileClipperMenu();
-                                    showDelegationModal = true;
-                                    fetchDelegations();
-                                "
-                                class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-sans"
-                            >
-                                <span
-                                    >Kelola Slot Clipper Officer ({{
-                                        delegationData.used_slots
-                                    }}/2)</span
-                                >
-                            </button>
-                            <button
-                                v-else-if="
+                                v-if="
                                     !isGuest &&
                                     !isUnlimitedQuota &&
                                     clipperRequestStatus !== 'pending'
