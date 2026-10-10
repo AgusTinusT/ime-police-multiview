@@ -10,12 +10,14 @@
                 <h1
                     class="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight uppercase font-tactical"
                 >
-                    ClipStudio — <span class="text-blue-400">Tactical Video Trimmer</span>
+                    ClipStudio —
+                    <span class="text-blue-400">Tactical Video Trimmer</span>
                 </h1>
                 <p
                     class="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto font-sans leading-relaxed"
                 >
-                    Pemotongan video YouTube presisi tinggi untuk siaran langsung dan tayangan perwira.
+                    Pemotongan video YouTube presisi tinggi untuk siaran
+                    langsung dan tayangan perwira.
                 </p>
 
                 <!-- URL Loader Bar -->
@@ -72,6 +74,48 @@
                             class="tactical-badge cursor-pointer"
                         >
                             {{ sample.shortLabel }}
+                        </button>
+                    </div>
+
+                    <!-- Mobile Special Menu Launcher Banner (< lg) -->
+                    <div class="lg:hidden mt-3">
+                        <button
+                            type="button"
+                            @click="openMobileClipperMenu"
+                            class="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#0b162a] to-[#0a1324] border border-[#1b3154] text-slate-100 hover:text-white text-xs font-bold flex items-center justify-between transition shadow-md active:scale-[0.99] cursor-pointer"
+                        >
+                            <div class="flex items-center gap-2.5">
+                                <div
+                                    class="w-6 h-6 rounded-md bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0"
+                                >
+                                    <svg
+                                        class="w-3.5 h-3.5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                                        />
+                                    </svg>
+                                </div>
+                                <span
+                                    class="font-mono uppercase tracking-wider text-[11px] text-sky-400"
+                                    >Menu Opsi & Format Mobile</span
+                                >
+                            </div>
+                            <div
+                                class="flex items-center gap-2 font-mono text-[11px]"
+                            >
+                                <span
+                                    class="px-2 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800/80"
+                                    >{{ form.format }}</span
+                                >
+                                <span class="text-slate-400">►</span>
+                            </div>
                         </button>
                     </div>
                 </div>
@@ -213,7 +257,7 @@
 
                         <!-- TIMELINE TRIMMER CARD -->
                         <div
-                            class="bg-[#0b1324] border border-[#17243e] rounded-2xl p-4 space-y-3.5 shadow-xl"
+                            class="lg:bg-[#0b1324] lg:border lg:border-[#17243e] lg:rounded-2xl lg:p-4 space-y-3.5 lg:shadow-xl"
                         >
                             <!-- Card Header -->
                             <div class="flex items-center justify-between">
@@ -250,20 +294,42 @@
                                     </svg>
                                     <span>Timeline Trimmer</span>
                                 </div>
-                                <span
-                                    class="text-[10px] font-mono px-2 py-0.5 rounded-full border font-bold"
-                                    :class="
-                                        isDurationValid
-                                            ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-400'
-                                            : 'bg-red-950/40 border-red-500/40 text-red-400'
-                                    "
-                                >
-                                    {{
-                                        isDurationValid
-                                            ? `OK (≤ ${formatSeconds(maxClipDurationSec)})`
-                                            : "Melebihi Batas"
-                                    }}
-                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="text-xs font-mono px-3 py-1.5 rounded-lg border font-bold shrink-0 inline-flex items-center justify-center shadow-sm"
+                                        :class="
+                                            isDurationValid
+                                                ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-400'
+                                                : 'bg-red-950/60 border-red-500/50 text-red-400'
+                                        "
+                                    >
+                                        {{
+                                            isDurationValid
+                                                ? `${formatSeconds(maxClipDurationSec)}`
+                                                : "Melebihi Batas"
+                                        }}
+                                    </span>
+                                    <button
+                                        @click="openMobileClipperMenu"
+                                        class="lg:hidden px-3 py-1.5 rounded-lg bg-sky-950/90 hover:bg-sky-900 border border-sky-700/80 text-sky-300 hover:text-white text-xs font-bold font-mono flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0 shadow-sm"
+                                        title="Buka Menu Opsi & Format Ekspor"
+                                    >
+                                        <svg
+                                            class="w-4 h-4 text-sky-400"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                                            />
+                                        </svg>
+                                        <span>Menu</span>
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Waktu Pemutar Header Indicator -->
@@ -292,8 +358,7 @@
                                         <label
                                             class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300"
                                         >
-                                            Waktu Mulai
-                                            <span class="text-blue-400">*</span>
+                                            Mulai
                                         </label>
                                         <button
                                             type="button"
@@ -301,7 +366,7 @@
                                             class="text-[11px] text-blue-400 hover:text-blue-300 font-mono font-bold flex items-center gap-1 cursor-pointer bg-blue-950/70 hover:bg-blue-900/90 px-2.5 py-1 rounded-md border border-blue-800/60 transition shadow-sm active:scale-95"
                                             title="Set waktu mulai dari posisi pemutar video saat ini"
                                         >
-                                            <span>↓ Set</span>
+                                            <span>Pilih Waktu</span>
                                         </button>
                                     </div>
                                     <input
@@ -323,8 +388,7 @@
                                         <label
                                             class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300"
                                         >
-                                            Waktu Selesai
-                                            <span class="text-blue-400">*</span>
+                                            Selesai
                                         </label>
                                         <button
                                             type="button"
@@ -332,7 +396,7 @@
                                             class="text-[11px] text-blue-400 hover:text-blue-300 font-mono font-bold flex items-center gap-1 cursor-pointer bg-blue-950/70 hover:bg-blue-900/90 px-2.5 py-1 rounded-md border border-blue-800/60 transition shadow-sm active:scale-95"
                                             title="Set waktu selesai dari posisi pemutar video saat ini"
                                         >
-                                            <span>↓ Set</span>
+                                            <span>Pilih Waktu</span>
                                         </button>
                                     </div>
                                     <input
@@ -717,9 +781,7 @@
                                 <template v-else-if="userDailyRemaining <= 0">
                                     <span class="text-amber-400 font-semibold"
                                         >Kuota
-                                        {{
-                                            quotaPeriodLabel.toLowerCase()
-                                        }}
+                                        {{ quotaPeriodLabel.toLowerCase() }}
                                         habis</span
                                     >
                                     <button
@@ -1075,11 +1137,18 @@
                                         @click="showRequestClipperModal = true"
                                         class="w-full py-2.5 px-3.5 rounded-xl bg-[#091326] hover:bg-[#0f1d3a] border border-[#1b2f56] text-slate-300 hover:text-white text-xs font-mono transition flex items-center justify-between cursor-pointer"
                                     >
-                                        <span class="flex items-center gap-1.5 text-slate-300">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                        <span
+                                            class="flex items-center gap-1.5 text-slate-300"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full bg-emerald-400"
+                                            ></span>
                                             <span>Akses Clipper Beta</span>
                                         </span>
-                                        <span class="text-blue-400 font-bold hover:underline">Daftar (Gratis) →</span>
+                                        <span
+                                            class="text-blue-400 font-bold hover:underline"
+                                            >Daftar (Gratis) →</span
+                                        >
                                     </button>
                                 </div>
                             </template>
@@ -1180,9 +1249,7 @@
                                                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                             />
                                         </svg>
-                                        <span
-                                            >Daftar Akses Clipper Beta</span
-                                        >
+                                        <span>Daftar Akses Clipper Beta</span>
                                     </div>
                                     <div
                                         class="flex items-center gap-1 text-cyan-400 group-hover:translate-x-1 transition-transform font-mono text-[11px] lg:text-xs shrink-0"
@@ -1498,77 +1565,6 @@
                     </div>
                 </div>
             </section>
-        </div>
-
-        <!-- STICKY MOBILE BOTTOM ACTION BAR (< 1024px) -->
-        <div
-            class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 border-t border-slate-800 p-3 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 font-sans"
-        >
-            <div class="flex items-center gap-2 font-mono text-xs">
-                <span
-                    class="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-blue-400 font-bold"
-                >
-                    {{ formattedDuration }}
-                </span>
-                <span
-                    class="text-[10px] text-slate-400 font-sans hidden sm:inline flex items-center gap-1"
-                >
-                    <span
-                        v-if="urlCheckResult?.is_live"
-                        class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping inline-block mr-1"
-                    ></span>
-                    <span>{{
-                        urlCheckResult?.is_live ? "Live DVR" : "VOD Stream"
-                    }}</span>
-                </span>
-            </div>
-
-            <button
-                @click="submitTrim"
-                :disabled="
-                    isSubmitting ||
-                    (!isGuest && !isDurationValid) ||
-                    submitCooldownSec > 0
-                "
-                class="py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 flex items-center gap-2 font-tactical shadow-lg cursor-pointer"
-            >
-                <svg
-                    v-if="isSubmitting"
-                    class="animate-spin h-4 w-4 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                >
-                    <circle
-                        class="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        stroke-width="4"
-                    ></circle>
-                    <path
-                        class="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                </svg>
-                <template v-else-if="isGuest">
-                    <img
-                        :src="iconCut"
-                        class="w-4 h-4 invert opacity-90 shrink-0"
-                        alt=""
-                    />
-                    <span>Masuk / Sign In</span>
-                </template>
-                <template v-else>
-                    <img
-                        :src="iconCut"
-                        class="w-4 h-4 invert opacity-90 shrink-0"
-                        alt=""
-                    />
-                    <span>Potong Klip Real</span>
-                </template>
-            </button>
         </div>
 
         <!-- GUEST AUTHENTICATION REQUIRED MODAL OVERLAY -->
@@ -2040,6 +2036,285 @@
                 </div>
             </div>
         </transition>
+
+        <!-- MOBILE CLIPPER MENU BOTTOM SHEET DRAWER -->
+        <Teleport to="body">
+            <div
+                v-if="isMobileClipperMenuOpen"
+                class="fixed inset-0 z-50 flex flex-col justify-end lg:hidden font-sans"
+                role="dialog"
+                aria-modal="true"
+            >
+                <!-- Backdrop -->
+                <div
+                    class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"
+                    @click="closeMobileClipperMenu"
+                ></div>
+
+                <!-- Sheet Panel -->
+                <div
+                    class="relative z-10 w-full max-w-lg mx-auto bg-[#070e1b] border-t border-[#182640] rounded-t-3xl shadow-2xl overflow-hidden max-h-[88vh] flex flex-col animate-in slide-in-from-bottom duration-300"
+                >
+                    <!-- Drag handle & Header -->
+                    <div
+                        class="pt-3 pb-1 flex justify-center cursor-pointer"
+                        @click="closeMobileClipperMenu"
+                    >
+                        <div
+                            class="w-12 h-1.5 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors"
+                        ></div>
+                    </div>
+
+                    <div
+                        class="px-5 py-3 border-b border-[#16243d] flex items-center justify-between"
+                    >
+                        <div class="flex items-center gap-2.5">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0"
+                            >
+                                <svg
+                                    class="w-4 h-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                                    />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3
+                                    class="font-bold text-slate-100 text-sm uppercase tracking-wide font-mono"
+                                >
+                                    Menu Opsi & Ekspor ClipStudio
+                                </h3>
+                                <p class="text-[11px] text-slate-400">
+                                    Pengaturan format, kuota & ekspor klip video
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            @click="closeMobileClipperMenu"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#121f36] transition cursor-pointer"
+                        >
+                            <svg
+                                class="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Drawer Scrollable Content -->
+                    <div class="p-4 sm:p-5 overflow-y-auto space-y-4 pb-8">
+                        <!-- 1. Format Selection Options -->
+                        <section class="space-y-2">
+                            <div
+                                class="flex items-center justify-between px-0.5"
+                            >
+                                <span
+                                    class="text-xs font-semibold uppercase tracking-wider text-slate-300"
+                                    >Format & Kualitas Output</span
+                                >
+                                <span
+                                    class="text-[11px] text-sky-400 font-mono font-bold"
+                                    >{{
+                                        formatSeconds(calculatedSeconds)
+                                    }}</span
+                                >
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-2">
+                                <button
+                                    v-for="fmt in formatOptions"
+                                    :key="'mobile-' + fmt.value"
+                                    type="button"
+                                    @click="selectFormat(fmt.value, $event)"
+                                    class="relative flex items-center justify-between p-3 rounded-xl border transition-all duration-200 cursor-pointer text-left"
+                                    :class="[
+                                        form.format === fmt.value
+                                            ? 'border-sky-500/70 bg-sky-950/40 shadow-md ring-1 ring-sky-500/40'
+                                            : 'border-[#182640] bg-[#050b17]/80 hover:bg-[#0d172a]',
+                                        fmt.value === 'MP4 1080p' &&
+                                        !canUse1080p &&
+                                        !isGuest
+                                            ? 'opacity-60 bg-slate-950/40 border-dashed border-amber-900/40'
+                                            : '',
+                                    ]"
+                                >
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
+                                            :class="
+                                                form.format === fmt.value
+                                                    ? 'border-sky-400'
+                                                    : 'border-slate-600'
+                                            "
+                                        >
+                                            <div
+                                                class="w-2 h-2 rounded-full"
+                                                :class="
+                                                    form.format === fmt.value
+                                                        ? 'bg-sky-400'
+                                                        : 'bg-transparent'
+                                                "
+                                            ></div>
+                                        </div>
+                                        <div>
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
+                                                <span
+                                                    class="text-xs font-bold text-slate-100"
+                                                    >{{ fmt.name }}</span
+                                                >
+                                                <span
+                                                    class="text-[9px] font-medium px-1.5 py-0.5 rounded-full"
+                                                    :class="
+                                                        fmt.value ===
+                                                            'MP4 1080p' &&
+                                                        !canUse1080p &&
+                                                        !isGuest
+                                                            ? 'bg-amber-950 text-amber-300'
+                                                            : fmt.tagClass
+                                                    "
+                                                >
+                                                    {{
+                                                        fmt.value ===
+                                                            "MP4 1080p" &&
+                                                        !canUse1080p &&
+                                                        !isGuest
+                                                            ? "PRO Only"
+                                                            : fmt.tag
+                                                    }}
+                                                </span>
+                                            </div>
+                                            <p
+                                                class="text-[10px] text-slate-400 mt-0.5"
+                                            >
+                                                {{ fmt.useCase }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[10px] font-mono text-slate-300 bg-[#070e1b] px-2 py-1 rounded border border-[#17253e] shrink-0"
+                                    >
+                                        {{ fmt.desc }}
+                                    </span>
+                                </button>
+                            </div>
+                        </section>
+
+                        <!-- 2. Export Summary & Quota -->
+                        <section
+                            class="bg-[#050b17]/90 rounded-xl border border-[#17253e] p-3 space-y-2"
+                        >
+                            <div
+                                class="flex items-center justify-between text-xs pb-1.5 border-b border-[#142036]"
+                            >
+                                <span
+                                    class="text-slate-400 font-semibold uppercase"
+                                    >Durasi Klip Terpilih</span
+                                >
+                                <span class="text-slate-100 font-mono font-bold"
+                                    >{{ formatSeconds(calculatedSeconds) }} ({{
+                                        calculatedSeconds
+                                    }}s)</span
+                                >
+                            </div>
+                            <div
+                                class="flex items-center justify-between text-xs"
+                            >
+                                <span class="text-slate-400"
+                                    >Sisa Kuota {{ quotaPeriodLabel }}:</span
+                                >
+                                <span class="text-sky-400 font-mono font-bold">
+                                    {{
+                                        isUnlimitedQuota
+                                            ? "Unlimited"
+                                            : `${userDailyRemaining} dari ${dailyClipsLimit} Klip`
+                                    }}
+                                </span>
+                            </div>
+                        </section>
+
+                        <!-- 3. Primary Submit CTA Button inside Mobile Drawer -->
+                        <button
+                            @click="
+                                submitTrim();
+                                closeMobileClipperMenu();
+                            "
+                            :disabled="
+                                isSubmitting ||
+                                (!isGuest && !isDurationValid) ||
+                                submitCooldownSec > 0
+                            "
+                            class="w-full py-3.5 px-4 rounded-xl text-white font-semibold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] disabled:opacity-50 font-sans bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500"
+                        >
+                            <img
+                                :src="iconCut"
+                                class="w-4 h-4 invert opacity-90 shrink-0"
+                                alt=""
+                            />
+                            <span>{{
+                                urlCheckResult?.is_live
+                                    ? "POTONG KLIP LIVE (HLS DVR)"
+                                    : `POTONG & SIMPAN KLIP (${form.format.toUpperCase()})`
+                            }}</span>
+                        </button>
+
+                        <!-- 4. Quick Account / Request Buttons -->
+                        <div class="pt-1">
+                            <button
+                                v-if="user?.can_delegate_clipper"
+                                @click="
+                                    closeMobileClipperMenu();
+                                    showDelegationModal = true;
+                                    fetchDelegations();
+                                "
+                                class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-sans"
+                            >
+                                <span
+                                    >Kelola Slot Clipper Officer ({{
+                                        delegationData.used_slots
+                                    }}/2)</span
+                                >
+                            </button>
+                            <button
+                                v-else-if="
+                                    !isGuest &&
+                                    !isUnlimitedQuota &&
+                                    clipperRequestStatus !== 'pending'
+                                "
+                                @click="
+                                    closeMobileClipperMenu();
+                                    showRequestClipperModal = true;
+                                "
+                                class="w-full py-2.5 px-3.5 rounded-xl bg-[#091326] hover:bg-[#0f1d3a] border border-[#1b2f56] text-slate-300 text-xs font-mono transition flex items-center justify-between cursor-pointer"
+                            >
+                                <span>Akses Clipper Beta (Gratis)</span>
+                                <span class="text-blue-400 font-bold"
+                                    >Daftar →</span
+                                >
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </TacticalLayout>
 </template>
 
@@ -2053,6 +2328,7 @@ import axios from "axios";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import iconDelete from "@/Components/Icons/delete-2-svgrepo-com.svg";
+import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
 
 const props = defineProps({
     initialUrl: String,
@@ -2114,6 +2390,29 @@ const assignTierInput = ref("creator");
 const delegationErrMsg = ref("");
 const delegationSuccessMsg = ref("");
 const showTierMatrix = ref(false);
+
+// Mobile Menu Drawer State
+const isMobileClipperMenuOpen = ref(false);
+
+const openMobileClipperMenu = () => {
+    isMobileClipperMenuOpen.value = true;
+    if (typeof document !== "undefined") {
+        document.body.style.overflow = "hidden";
+    }
+};
+
+const closeMobileClipperMenu = () => {
+    isMobileClipperMenuOpen.value = false;
+    if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+    }
+};
+
+const handleKeyDown = (e) => {
+    if (e.key === "Escape" && isMobileClipperMenuOpen.value) {
+        closeMobileClipperMenu();
+    }
+};
 
 // Demo Sample Streams
 const sampleVideos = [
@@ -2368,8 +2667,12 @@ function stopYTTimePolling() {
     }
 }
 
-watch(activeVideoId, (newId) => {
+watch(activeVideoId, (newId, oldId) => {
     playerCurrentSeconds.value = 0;
+    if (newId !== oldId) {
+        form.value.title = "";
+        urlCheckResult.value = null;
+    }
     if (newId) {
         startYTTimePolling();
     } else {
@@ -2641,7 +2944,7 @@ function setSampleVideo(idx) {
     const sample = sampleVideos[idx];
     if (!sample) return;
     form.value.youtube_url = sample.youtubeUrl;
-    form.value.title = sample.title;
+    form.value.title = "";
     form.value.start_time = "00:00:10";
     form.value.end_time = "00:00:40";
     if (sample.durationSec) {
@@ -2724,9 +3027,14 @@ async function submitTrim() {
     isSubmitting.value = true;
     formError.value = "";
     successMessage.value = "";
+    closeMobileClipperMenu();
 
     try {
-        const response = await axios.post("/api/v1/clips/trim", form.value);
+        const payload = {
+            ...form.value,
+            title: form.value.title || urlCheckResult.value?.title || "",
+        };
+        const response = await axios.post("/api/v1/clips/trim", payload);
         successMessage.value =
             response.data.message ||
             "Proses pemotongan video telah dimasukkan ke dalam antrean server!";
@@ -2862,10 +3170,13 @@ onMounted(() => {
         fetchDelegations();
     }
     startPolling();
+    window.addEventListener("keydown", handleKeyDown);
 });
 
 onUnmounted(() => {
     stopPolling();
     stopYTTimePolling();
+    window.removeEventListener("keydown", handleKeyDown);
+    closeMobileClipperMenu();
 });
 </script>

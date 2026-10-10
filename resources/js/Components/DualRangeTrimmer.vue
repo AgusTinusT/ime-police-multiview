@@ -6,7 +6,7 @@
                 class="flex items-center justify-between text-xs flex-wrap gap-1"
             >
                 <span class="text-xs font-mono font-semibold text-slate-300"
-                    >Tambah Durasi Klip:</span
+                    >Set Durasi:</span
                 >
             </div>
             <div
