@@ -6,7 +6,9 @@ import { computed, ref } from "vue";
 import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
 
 // Refactored Sub-Components
+import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
+import TacticalClipperBetaBanner from "@/Components/TacticalClipperBetaBanner.vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
@@ -56,6 +58,7 @@ const streams = ref(props.initialStreams);
 const offlineOfficers = ref(props.initialOfflineOfficers);
 const recentReplays = ref(props.initialReplays || []);
 const isSyncingFeeds = ref(false);
+const showClipperClaimModal = ref(false);
 
 // Featured Spotlight Stream for Hero Section
 
@@ -592,6 +595,11 @@ const scrollToUnitsGrid = () => {
                 class="w-full bg-slate-950 pt-12 sm:pt-16 pb-16 sm:pb-24 relative z-10"
             >
                 <div class="max-w-screen-2xl mx-auto px-3.5 sm:px-6 lg:px-8">
+                    <!-- Informative Clipper Beta Access Banner -->
+                    <TacticalClipperBetaBanner
+                        @open-claim-modal="showClipperClaimModal = true"
+                    />
+
                     <TacticalMonthlyLeaderboard
                         :leaderboard="monthlyLeaderboard"
                     />
@@ -614,5 +622,11 @@ const scrollToUnitsGrid = () => {
 
         <!-- Floating Tactical Community Chat -->
         <TacticalChatDrawer />
+
+        <!-- Clipper Beta Claim Access Modal -->
+        <ClipperClaimModal
+            :show="showClipperClaimModal"
+            @close="showClipperClaimModal = false"
+        />
     </div>
 </template>

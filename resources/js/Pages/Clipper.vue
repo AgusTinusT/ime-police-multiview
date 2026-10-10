@@ -6,47 +6,16 @@
             class="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-8 font-sans"
         >
             <!-- HEADER / HERO & URL INPUT SECTION -->
-            <section class="text-center max-w-4xl mx-auto space-y-4">
-                <div
-                    class="flex items-center justify-center gap-2 text-xs font-mono"
-                >
-                    <Link
-                        href="/clipper/pricing"
-                        class="text-slate-400 hover:text-white transition"
-                        >Pricing & Layanan</Link
-                    >
-                    <span class="text-slate-600">•</span>
-                    <Link
-                        href="/clipper/police-guide"
-                        class="text-blue-400 hover:underline font-bold"
-                        >Panduan Police Duty Clipper (GRATIS) →</Link
-                    >
-                </div>
-
-                <div class="tactical-badge-blue">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span
-                        >Pemrosesan Presisi Lossless YouTube (1080p, 720p, 480p
-                        & MP3 Audio)</span
-                    >
-                </div>
-
+            <section class="text-center max-w-4xl mx-auto space-y-3">
                 <h1
-                    class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight uppercase font-tactical"
+                    class="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight uppercase font-tactical"
                 >
-                    ClipStudio & Layanan Clipper <br class="hidden sm:inline" />
-                    <span class="text-blue-400"
-                        >IME Roleplay & Police Duty</span
-                    >
+                    ClipStudio — <span class="text-blue-400">Tactical Video Trimmer</span>
                 </h1>
                 <p
-                    class="text-sm sm:text-base text-slate-300 max-w-3xl mx-auto font-sans leading-relaxed"
+                    class="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto font-sans leading-relaxed"
                 >
-                    Solusi pemotongan video YouTube presisi tinggi untuk
-                    <strong>Clipper Komunitas IME</strong>,
-                    <strong>Officer Faction</strong>, dan
-                    <strong>VIP Supporter</strong>. Unduh klip video MP4 (1080p,
-                    720p, 480p) atau ekstrak MP3 Audio tanpa watermark.
+                    Pemotongan video YouTube presisi tinggi untuk siaran langsung dan tayangan perwira.
                 </p>
 
                 <!-- URL Loader Bar -->
@@ -610,7 +579,7 @@
                             </div>
 
                             <div
-                                class="grid grid-cols-3 gap-2 text-xs font-mono"
+                                class="grid grid-cols-2 gap-2 text-xs font-mono"
                             >
                                 <!-- Durasi Klip -->
                                 <div
@@ -646,39 +615,6 @@
                                             class="text-[11px] text-slate-500 font-sans"
                                             >({{ calculatedSeconds }}s)</span
                                         >
-                                    </div>
-                                </div>
-
-                                <!-- Proses -->
-                                <div
-                                    class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]"
-                                >
-                                    <div
-                                        class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans"
-                                    >
-                                        <svg
-                                            class="w-3 h-3 text-slate-500"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                                            />
-                                        </svg>
-                                        Proses Engine
-                                    </div>
-                                    <div
-                                        class="font-medium text-slate-200 font-sans text-[11px] truncate"
-                                    >
-                                        {{
-                                            urlCheckResult?.is_live
-                                                ? "HLS Live DVR"
-                                                : "Lossless Direct"
-                                        }}
                                     </div>
                                 </div>
 
@@ -786,11 +722,11 @@
                                         }}
                                         habis</span
                                     >
-                                    <Link
-                                        href="/clipper/pricing"
-                                        class="text-sky-400 hover:text-sky-300 font-bold underline text-[10px] inline-flex items-center gap-1"
+                                    <button
+                                        @click="showRequestClipperModal = true"
+                                        class="text-sky-400 hover:text-sky-300 font-bold underline text-[10px] inline-flex items-center gap-1 cursor-pointer"
                                     >
-                                        <span>Naikkan Paket</span>
+                                        <span>Pengajuan Akses</span>
                                         <svg
                                             class="w-3 h-3 shrink-0"
                                             fill="none"
@@ -804,7 +740,7 @@
                                                 d="M14 5l7 7m0 0l-7 7m7-7H3"
                                             />
                                         </svg>
-                                    </Link>
+                                    </button>
                                 </template>
                                 <template v-else>
                                     <span
@@ -1137,50 +1073,14 @@
                                             clipperRequestStatus !== 'pending'
                                         "
                                         @click="showRequestClipperModal = true"
-                                        class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer font-sans"
+                                        class="w-full py-2.5 px-3.5 rounded-xl bg-[#091326] hover:bg-[#0f1d3a] border border-[#1b2f56] text-slate-300 hover:text-white text-xs font-mono transition flex items-center justify-between cursor-pointer"
                                     >
-                                        <svg
-                                            class="w-4 h-4 text-amber-300 shrink-0"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                                            />
-                                        </svg>
-                                        <span
-                                            >Ajukan / Upgrade Hak Clipper</span
-                                        >
-                                    </button>
-
-                                    <Link
-                                        href="/clipper/pricing"
-                                        class="w-full py-2 px-3 rounded-xl bg-[#0a1426] hover:bg-[#101e38] border border-[#1a2d50] text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-between transition font-mono"
-                                    >
-                                        <span>Panduan & Matriks Fitur</span>
-                                        <span
-                                            class="text-cyan-400 flex items-center gap-1"
-                                        >
-                                            <span>Lihat Detail</span>
-                                            <svg
-                                                class="w-3.5 h-3.5 shrink-0"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                                                />
-                                            </svg>
+                                        <span class="flex items-center gap-1.5 text-slate-300">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                            <span>Akses Clipper Beta</span>
                                         </span>
-                                    </Link>
+                                        <span class="text-blue-400 font-bold hover:underline">Daftar (Gratis) →</span>
+                                    </button>
                                 </div>
                             </template>
 
@@ -1258,9 +1158,10 @@
                                     </div>
                                 </div>
 
-                                <!-- Link Button to Full Pricing Page -->
-                                <Link
-                                    href="/clipper/pricing"
+                                <!-- Button to Open Access Request Modal -->
+                                <button
+                                    type="button"
+                                    @click="showRequestClipperModal = true"
                                     class="w-full py-2.5 lg:py-4 lg:min-h-[48px] px-3.5 rounded-xl bg-[#0a1426] hover:bg-[#101e38] border border-[#1a2d50] text-xs lg:text-sm font-bold text-slate-200 flex items-center justify-between transition group cursor-pointer shadow-sm active:scale-[0.99]"
                                 >
                                     <div
@@ -1280,14 +1181,13 @@
                                             />
                                         </svg>
                                         <span
-                                            >Lihat Opsi Paket & Panduan
-                                            Officer</span
+                                            >Daftar Akses Clipper Beta</span
                                         >
                                     </div>
                                     <div
                                         class="flex items-center gap-1 text-cyan-400 group-hover:translate-x-1 transition-transform font-mono text-[11px] lg:text-xs shrink-0"
                                     >
-                                        <span>Buka Paket</span>
+                                        <span>Daftar Gratis</span>
                                         <svg
                                             class="w-3.5 h-3.5 shrink-0"
                                             fill="none"
@@ -1302,7 +1202,7 @@
                                             />
                                         </svg>
                                     </div>
-                                </Link>
+                                </button>
                             </template>
                         </div>
                     </div>

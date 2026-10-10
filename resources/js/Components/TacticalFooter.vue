@@ -104,19 +104,6 @@ const toggleLanguage = () => {
                         </li>
                         <li>
                             <Link
-                                href="/clipper/pricing"
-                                class="text-slate-400 hover:text-slate-100 transition flex items-center gap-1.5 py-1"
-                            >
-                                <img
-                                    :src="iconUrl"
-                                    class="w-3.5 h-3.5 invert opacity-80"
-                                    alt=""
-                                />
-                                <span>Tarif & Matriks Lisensi</span>
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
                                 href="/about"
                                 class="text-slate-400 hover:text-slate-100 transition flex items-center gap-1.5 py-1"
                             >

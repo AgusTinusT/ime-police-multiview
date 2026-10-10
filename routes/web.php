@@ -112,13 +112,17 @@ use App\Http\Controllers\ClipperRequestController;
 
 // Dedicated Tactical Video Trimmer Workspace Page (Public Teaser & Auth Workspace)
 Route::get('/clipper', [VideoClipController::class, 'clipperPage'])->name('clipper');
-Route::get('/clipper/pricing', [VideoClipController::class, 'pricingPage'])->name('clipper.pricing');
-Route::get('/clipper/police-guide', [VideoClipController::class, 'policeGuidePage'])->name('clipper.police-guide');
+Route::get('/clipper/pricing', function () {
+    return redirect()->route('clipper');
+})->name('clipper.pricing');
+Route::get('/clipper/police-guide', function () {
+    return redirect()->route('clipper');
+})->name('clipper.police-guide');
 Route::get('/police-clipper', function () {
-    return redirect()->route('clipper.police-guide');
+    return redirect()->route('clipper');
 });
 Route::get('/pricing', function () {
-    return redirect()->route('clipper.pricing');
+    return redirect()->route('clipper');
 })->name('pricing');
 
 // Public YouTube URL Checker (For Teaser & Interactive Preview)
