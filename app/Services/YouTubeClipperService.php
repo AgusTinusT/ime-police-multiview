@@ -101,9 +101,9 @@ class YouTubeClipperService
     }
 
     /**
-     * Check if a YouTube video is an active live stream via yt-dlp dump-json.
+     * Get detailed stream status (live, post_live, vod) from YouTube metadata.
      */
-    public function isLiveStream(string $youtubeUrl): bool
+    public function getVideoStatus(string $youtubeUrl): array
     {
         try {
             $ytDlpBin = $this->resolveYtDlpBinary();
@@ -120,16 +120,41 @@ class YouTubeClipperService
             if ($process->isSuccessful()) {
                 $data = json_decode($process->getOutput(), true);
                 if ($data) {
-                    return !empty($data['is_live']) 
-                        || ($data['live_status'] ?? '') === 'is_live'
-                        || ($data['live_status'] ?? '') === 'is_upcoming';
+                    $liveStatus = $data['live_status'] ?? '';
+                    $isLive = !empty($data['is_live']) 
+                        || $liveStatus === 'is_live'
+                        || $liveStatus === 'is_upcoming';
+                    $isPostLive = $liveStatus === 'post_live' || (!empty($data['was_live']) && !$isLive);
+
+                    return [
+                        'is_live' => $isLive,
+                        'is_post_live' => $isPostLive,
+                        'live_status' => $liveStatus,
+                        'duration' => $data['duration'] ?? null,
+                        'title' => $data['title'] ?? null,
+                    ];
                 }
             }
         } catch (\Throwable $e) {
-            Log::warning("YouTubeClipperService::isLiveStream check failed: " . $e->getMessage());
+            Log::warning("YouTubeClipperService::getVideoStatus check failed: " . $e->getMessage());
         }
 
-        return false;
+        return [
+            'is_live' => false,
+            'is_post_live' => false,
+            'live_status' => 'unknown',
+            'duration' => null,
+            'title' => null,
+        ];
+    }
+
+    /**
+     * Check if a YouTube video is an active live stream via yt-dlp dump-json.
+     */
+    public function isLiveStream(string $youtubeUrl): bool
+    {
+        $status = $this->getVideoStatus($youtubeUrl);
+        return $status['is_live'];
     }
 
     /**
@@ -415,6 +440,7 @@ class YouTubeClipperService
 
         array_push(
             $command,
+            '--force-keyframes-at-cuts',
             '--hls-use-mpegts',
             '--concurrent-fragments', '8',
             '--fragment-retries', '10'
@@ -442,7 +468,47 @@ class YouTubeClipperService
 
         if (!$process->isSuccessful()) {
             $errorOutput = $process->getErrorOutput() ?: $process->getOutput();
-            throw new \RuntimeException($errorOutput);
+            Log::warning("trimStandardVod initial attempt failed for clip #{$clip->id}, attempting fallback retry: " . Str::limit($errorOutput, 250));
+
+            // Fallback attempt: remove custom ffmpeg downloader args (which can fail on fragmented streams) and retry
+            $fallbackCommand = [];
+            $skipNext = false;
+            foreach ($command as $i => $arg) {
+                if ($skipNext) {
+                    $skipNext = false;
+                    continue;
+                }
+                if ($arg === '--downloader-args') {
+                    $skipNext = true;
+                    continue;
+                }
+                $fallbackCommand[] = $arg;
+            }
+
+            @unlink($outputPath . '.part');
+            $fallbackProcess = $this->createProcess($fallbackCommand, 600);
+            $fallbackProcess->run();
+
+            if ($fallbackProcess->isSuccessful() && file_exists($outputPath) && filesize($outputPath) > 1000) {
+                Log::info("trimStandardVod fallback succeeded for clip #{$clip->id}");
+                return;
+            }
+
+            $finalError = $fallbackProcess->getErrorOutput() ?: $fallbackProcess->getOutput() ?: $errorOutput;
+
+            // Detect if failure is due to post_live state (stream ended but VOD archive still rendering)
+            if (
+                str_contains($finalError, 'moov atom not found') ||
+                str_contains($finalError, 'Invalid data found when processing input') ||
+                str_contains($finalError, 'source=yt_live_broadcast') ||
+                str_contains($finalError, 'This live event has ended')
+            ) {
+                throw new \RuntimeException(
+                    "Siaran YouTube ini baru saja berakhir dan saat ini masih dalam proses rendering arsip oleh server YouTube (Status: Post-Live). Server Google Video belum menyediakan file rekaman VOD utuh (moov atom belum tersedia). Silakan tunggu sekitar 15-30 menit hingga YouTube menyelesaikan proses arsip VOD, lalu coba potong kembali."
+                );
+            }
+
+            throw new \RuntimeException(Str::limit($finalError, 500));
         }
     }
 }

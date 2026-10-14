@@ -220,6 +220,24 @@
                     <span>{{ urlCheckResult.message }}</span>
                 </div>
 
+                <!-- Post-Live / Processing Warning Banner -->
+                <div
+                    v-if="urlCheckResult && urlCheckResult.is_post_live"
+                    class="p-3.5 rounded-xl bg-amber-950/50 border border-amber-600/70 text-amber-200 flex items-start gap-3 text-xs sm:text-sm shadow-md"
+                >
+                    <svg class="w-5 h-5 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div class="space-y-1">
+                        <div class="font-bold text-amber-300 uppercase tracking-wide font-mono flex items-center gap-1.5">
+                            <span>Status: Siaran Baru Berakhir (Processing VOD)</span>
+                        </div>
+                        <p class="leading-relaxed text-amber-200/90 text-xs font-sans">
+                            {{ urlCheckResult.message }}
+                        </p>
+                    </div>
+                </div>
+
                 <!-- Main Video Preview & Controls Grid (8:4 Balanced Layout) -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     <!-- LEFT COLUMN: VIDEO PLAYER & TIMELINE TRIMMER (8 cols) -->
@@ -2469,6 +2487,9 @@ async function checkYoutubeUrl(urlToTest) {
             urlCheckResult.value = response.data;
             if (response.data.title) {
                 form.value.title = response.data.title;
+            }
+            if (response.data.duration && response.data.duration > 0) {
+                videoDurationSec.value = response.data.duration;
             }
         } else {
             urlCheckResult.value = {

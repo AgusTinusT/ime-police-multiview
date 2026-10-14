@@ -254,6 +254,8 @@ class VideoClipController extends Controller
         $title = null;
         $author = null;
         $isLive = false;
+        $isPostLive = false;
+        $duration = 0;
 
         // Fast zero-quota InnerTube Player API check
         try {
@@ -271,6 +273,16 @@ class VideoClipController extends Controller
                 $isLive = !empty($details['isLive']);
                 $title = $details['title'] ?? null;
                 $author = $details['author'] ?? null;
+                $duration = (int) ($details['lengthSeconds'] ?? 0);
+
+                // Detect post_live (Live streaming ended and in VOD processing state)
+                $reason = strtolower($innerRes->json('playabilityStatus.reason') ?? '');
+                if (!empty($details['isLiveContent']) && !$isLive) {
+                    $isPostLive = true;
+                }
+                if (str_contains($reason, 'selesai') || str_contains($reason, 'ended')) {
+                    $isPostLive = true;
+                }
             }
         } catch (\Throwable $e) {
             // Silently fallback
@@ -281,11 +293,40 @@ class VideoClipController extends Controller
             $isLive = $this->isLiveStream($videoId, $scraper, $rawUrl);
         }
 
-        $telemetryMap = $scraper->getBatchStreamsTelemetry([$videoId]);
-        $telemetry = $telemetryMap[$videoId] ?? null;
+        // If not live, check yt-dlp dump-json to accurately determine post_live status
+        if (!$isLive) {
+            try {
+                $ytDlpBin = $this->resolveYtDlpBinary();
+                $process = new \Symfony\Component\Process\Process([
+                    $ytDlpBin,
+                    '--dump-json',
+                    '--no-warnings',
+                    '--skip-download',
+                    $cleanUrl
+                ]);
+                $process->setTimeout(6);
+                $process->run();
+                if ($process->isSuccessful()) {
+                    $json = json_decode($process->getOutput(), true);
+                    if ($json) {
+                        $liveStatus = $json['live_status'] ?? '';
+                        if ($liveStatus === 'post_live' || (!empty($json['was_live']) && empty($json['is_live']))) {
+                            $isPostLive = true;
+                        }
+                        $title = $title ?: ($json['title'] ?? null);
+                        $author = $author ?: ($json['uploader'] ?? null);
+                        $duration = $duration > 0 ? $duration : (int) ($json['duration'] ?? 0);
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Silently fallback
+            }
+        }
 
-        $videoType = $isLive ? 'LIVE' : 'VOD';
-        $typeLabel = $isLive ? '🔴 Siaran Langsung (LIVE Stream)' : '🎬 Video Rekaman (VOD)';
+        $videoType = $isLive ? 'LIVE' : ($isPostLive ? 'POST_LIVE' : 'VOD');
+        $typeLabel = $isLive 
+            ? '🔴 Siaran Langsung (LIVE Stream)' 
+            : ($isPostLive ? '⏳ Siaran Selesai (Sedang Diproses YouTube)' : '🎬 Video Rekaman (VOD)');
         $thumbnailUrl = "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg";
 
         // Fetch oEmbed metadata for accurate title and author name if missing
@@ -306,21 +347,28 @@ class VideoClipController extends Controller
             }
         }
 
+        $message = 'Link YouTube terverifikasi. Pemotongan presisi siap diproses.';
+        if ($isLive) {
+            $message = '🔴 Siaran Langsung (YouTube Live) terdeteksi. Pemotongan DVR HLS Sequence aktif.';
+        } elseif ($isPostLive) {
+            $message = '⚠️ Siaran langsung ini baru saja selesai dan saat ini sedang dalam proses rendering arsip oleh server YouTube (Status: Post-Live). Pemotongan klip dapat diproses, namun jika segmen CDN Google Video belum stabil, silakan tunggu sekitar 15–30 menit hingga YouTube menyelesaikan VOD utuh.';
+        }
+
         return response()->json([
             'valid' => true,
             'can_trim' => true,
+            'is_post_live' => $isPostLive,
             'video_id' => $videoId,
             'clean_url' => $cleanUrl,
             'is_live' => $isLive,
-            'video_type' => $isLive ? 'LIVE' : 'VOD',
-            'type_label' => $isLive ? '🔴 Siaran Langsung (LIVE Stream)' : '🎬 Video YouTube',
+            'video_type' => $videoType,
+            'type_label' => $typeLabel,
             'title' => $title ?: "YouTube Video Stream [{$videoId}]",
             'channel_name' => $author ?: 'YouTube Channel',
             'thumbnail_url' => $thumbnailUrl,
+            'duration' => $duration,
             'viewers_count' => 0,
-            'message' => $isLive
-                ? '🔴 Siaran Langsung (YouTube Live) terdeteksi. Pemotongan DVR HLS Sequence aktif.'
-                : 'Link YouTube terverifikasi. Pemotongan presisi siap diproses.',
+            'message' => $message,
         ]);
     }
 
