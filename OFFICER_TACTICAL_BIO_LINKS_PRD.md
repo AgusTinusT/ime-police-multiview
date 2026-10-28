@@ -3,7 +3,7 @@
 **Proyek:** Police Tactical Command Center (SASP MotionLife RP)  
 **Domain Produksi:** [https://policeduty.sasp-motionliferp.com/](https://policeduty.sasp-motionliferp.com/)  
 **Target Pengguna:** Perwira Kepolisian (Streamer) & Komunitas Penonton  
-**Status Dokumen:** Draft Revisi v2 — menunggu keputusan pada [Bagian 11](#11-keputusan-terbuka-open-decisions)  
+**Status Dokumen:** Revisi v3 — konsep **Kepemilikan Profil Mandiri** (keputusan D1–D9 final, lihat [Bagian 11](#11-keputusan-terbuka-open-decisions))  
 **Status Implementasi:** 🟡 **Sebagian (± 70% backend MVP, UI admin belum ada)** — lihat [Bagian 12](#12-status-implementasi--hasil-validasi)  
 **Tanggal:** 28 Oktober 2026
 
@@ -11,6 +11,7 @@
 | Versi | Tanggal | Perubahan |
 | :--- | :--- | :--- |
 | v1 | 28 Okt 2026 | Draft awal spesifikasi. |
+| v3 | 28 Okt 2026 | **Koreksi konsep klaim:** klaim = pemilik asli (streamer) *mengambil alih kepemilikan* profil yang sebelumnya didaftarkan admin, lalu mengelola data dinasnya sendiri (nama, callsign, dll.). Matriks edit 5.1 diubah, halaman Profil Dinas Mandiri (4.3) & tabel `officer_change_requests` ditambah, verifikasi token YouTube (Jalur B) naik menjadi jalur utama, keputusan D7–D9. |
 | v2.1 | 28 Okt 2026 | Validasi implementasi terhadap kode di working tree (belum di-commit). Hasil di Bagian 12; checklist Bagian 10 diperbarui. |
 | v2 | 28 Okt 2026 | Review teknis terhadap kode existing: model role berbasis relasi (bukan `users.role`), sumber slug tunggal + redirect, ancaman *account takeover* & allowlist domain, tabel audit log & status akun, otorisasi Policy/anti-IDOR, meta OG server-side, privasi analitik (HMAC + retensi), konsolidasi dengan `clipper_requests`, roadmap & acceptance criteria diperbarui. |
 
@@ -43,11 +44,16 @@ Perwira (streamer) membutuhkan sebuah halaman berbagi tautan (*Link-in-Bio*) res
 - Rekomendasi perwira lain (*Patrol Partners / Squad Streamers*) yang terintegrasi langsung dengan status LIVE.
 - Media sosial dan tautan kustom lainnya.
 
+Selain itu, perwira membutuhkan **kepemilikan atas profilnya sendiri** (*Officer Self-Service Ownership*):
+- Profil perwira awalnya didaftarkan oleh **admin** ke Multiview dan **Direktori Perwira San Andreas**.
+- Ketika streamer asli mendaftar akun di website ini, ia dapat **mengambil alih (klaim) profil tersebut** setelah membuktikan bahwa ia pemilik channel YouTube yang terdaftar.
+- Setelah itu ia dapat **mengubah data dinasnya secara mandiri** (nama karakter, nama streamer, callsign, nomor badge, avatar, dll.) tanpa harus meminta admin, dengan batasan pada Bagian 5.1.
+
 ### Visi Desain:
 Alih-alih menggunakan layanan pihak ketiga yang generik (seperti Linktree), fitur ini menyatu dengan nuansa **Tactical Police Command**, memiliki badge verifikasi resmi kepolisian, dan ke depan dapat dikustomisasi secara modular oleh perwira bersangkutan tanpa merusak konsistensi desain sistem.
 
 ### Di Luar Cakupan (Non-Goals) v1:
-- Verifikasi mandiri otomatis via YouTube (Jalur B) — dijadwalkan setelah MVP.
+- Pendaftaran officer baru oleh member/streamer sendiri — officer baru tetap **hanya ditambahkan oleh admin** (D9).
 - Upload banner kustom (Fase 3 kustomisasi).
 - Domain/subdomain kustom per perwira.
 
@@ -64,6 +70,8 @@ Alih-alih menggunakan layanan pihak ketiga yang generik (seperti Linktree), fitu
 | `clipper_delegations` | Officer dapat mendelegasikan akses clipper ke user lain. | Saat unbind, delegasi yang diberikan officer tersebut harus ikut dicabut. |
 | Chat (`chat_messages`) | Menampilkan `users.name` ke publik. | Di sinilah peniruan nama paling berdampak — bukan di bio-link. |
 | Verifikasi email | `User` belum mengimplementasikan `MustVerifyEmail` (masih dikomentari); session driver `database`. | Verifikasi email + konfigurasi mailer produksi harus diaktifkan sebelum Lapis 4 berlaku. Driver `database` memudahkan pemutusan sesi saat ban. |
+| Pendaftaran officer | Hanya admin (`/api/v1/officers`, middleware `admin`), CLI `officer:manage`, dan `OfficerImportCommand` (`updateOrCreate` berdasarkan `channel_id`). | Import ulang akan **menimpa** data yang sudah diubah pemilik. Import harus melewati field milik pemilik bila officer sudah diklaim. |
+| Akses YouTube | Tidak ada YouTube API key; data channel diambil dengan HTTP ke halaman publik `youtube.com/{handle}` (`SyncOfficerSubscribersCommand`). | Verifikasi token klaim memakai mekanisme fetch yang sama (API v3 opsional bila key tersedia). |
 
 ### Solusi Arsitektur (1-to-1 Bound Architecture)
 - **Tabel `officers` tetap menjadi sumber kebenaran tunggal (*Single Source of Truth*)** untuk data dinas.
@@ -71,6 +79,43 @@ Alih-alih menggunakan layanan pihak ketiga yang generik (seperti Linktree), fitu
   - `user_id IS NULL`: Perwira berstatus **Unclaimed** (hanya dikelola Admin di roster).
   - `user_id = {id}`: Perwira sah dikelola oleh akun streamer yang telah diverifikasi.
 - Satu user hanya boleh terikat ke satu perwira, dan satu perwira hanya memiliki satu akun pengelola (dijamin constraint `UNIQUE`, bukan hanya validasi aplikasi).
+- Setelah terikat, **pemilik menjadi pengelola utama data dinasnya** (sesuai matriks 5.1); admin tetap memegang wewenang moderasi dan dapat membatalkan perubahan.
+
+### Alur Kepemilikan (Contoh: Officer e'ido)
+
+```mermaid
+sequenceDiagram
+    participant A as Admin
+    participant D as Direktori & Multiview
+    participant E as e'ido (Streamer)
+    participant S as Sistem
+    participant Y as YouTube
+
+    A->>D: Daftarkan officer e'ido (channel_id, nama, callsign, rank, agency)
+    Note over D: Status: UNCLAIMED (user_id NULL)<br/>Tampil di direktori & multiview
+    E->>S: Daftar akun + verifikasi email
+    E->>S: Pilih profil "e'ido" dari daftar Unclaimed → Klaim
+    S-->>E: Kode verifikasi SASP-VERIFY-XXXX-XXXX-XXXX (24 jam)
+    E->>Y: Tempel kode di deskripsi channel YouTube
+    E->>S: Klik "Periksa Sekarang"
+    S->>Y: Ambil deskripsi channel berdasarkan officers.channel_id (data admin)
+    alt Kode ditemukan
+        S->>S: Bind user ↔ officer, buat profil bio, audit log, alert Discord
+        S-->>E: Klaim disetujui otomatis → status CLAIMED / VERIFIED
+    else Kode tidak ditemukan / channel tidak bisa diakses
+        S-->>E: Coba lagi, atau ajukan review manual admin (Discord tag)
+    end
+    E->>S: Ubah nama, callsign, badge, avatar sendiri (langsung)
+    E->>S: Ajukan perubahan rank / departemen
+    S->>A: Masuk antrean persetujuan
+    A->>S: Setujui / tolak
+```
+
+Prinsip:
+1. **Admin tetap satu-satunya pintu masuk officer baru** ke direktori (D9). Klaim hanya bisa dilakukan atas profil yang sudah ada.
+2. **Identitas YouTube adalah jangkar kepemilikan**: `channel_id` dan `handle` terkunci untuk pemilik, karena itulah yang dipakai membuktikan kepemilikan dan menghubungkan stream ke multiview.
+3. Setelah diklaim, data yang diubah pemilik **tidak boleh ditimpa** oleh import/sync otomatis.
+4. Jika pemilik di-unbind (Tindakan 3), data terakhir tetap tersimpan dan kembali dikelola admin.
 
 ### Model Hak Akses: Status Officer Diturunkan dari Relasi
 Status officer **tidak lagi disimpan di `users.role`**, melainkan diturunkan dari relasi:
@@ -166,7 +211,9 @@ Diterapkan di `RegisteredUserController` **dan** `ProfileController@update` (uba
 
 ### Lapis 3: Protokol Klaim Akun (Verification Proofs)
 
-#### Jalur A: Direct Binding oleh Admin (Jalur Standar — v1)
+> **Perubahan v3 (D8):** verifikasi token YouTube (Jalur B) menjadi **jalur utama** klaim mandiri. Review manual admin dan direct binding (Jalur A) menjadi jalur cadangan untuk kasus khusus (channel tidak bisa diakses, pindah channel, dsb.).
+
+#### Jalur A: Direct Binding / Review Manual oleh Admin (Jalur Cadangan)
 - Admin memilih user dan officer di menu Admin:
   `Hubungkan User [ID: 8 - Budi] -> Officer [SASP 101 - Budiman]`.
 - Bind dijalankan dalam transaksi DB dengan row lock pada officer; constraint `UNIQUE(user_id)` mencegah dua binding paralel.
@@ -174,13 +221,18 @@ Diterapkan di `RegisteredUserController` **dan** `ProfileController@update` (uba
 - Syarat user yang dapat di-bind: email terverifikasi dan status akun `active`.
 - User juga dapat mengajukan klaim (`officer_claims`, metode `manual_admin`) yang masuk ke antrean admin, sehingga admin tidak perlu mencari user secara manual.
 
-#### Jalur B: Secret Token YouTube Verification (Fase Lanjutan)
-1. Streamer login, memilih profil perwira dari daftar *Unclaimed Officers*.
-2. Sistem menerbitkan token acak ber-entropi tinggi, contoh: `SASP-VERIFY-7KQ2-M9XD-4FTA` (≥ 64 bit). Yang disimpan di DB hanya **hash** token. Berlaku **24 jam** (perubahan deskripsi channel bisa terlambat terbaca oleh API).
-3. Streamer menempelkan token di **deskripsi channel YouTube** (About) atau deskripsi siaran live.
-4. Sistem memeriksa via YouTube Data API v3 (`channels.list?part=snippet` / `videos.list?part=snippet`) **memakai `officers.channel_id` dari master data admin** — URL channel yang dikirim user tidak pernah dipakai sebagai sumber verifikasi.
-5. Token ditemukan → klaim **disetujui otomatis** dan dicatat di audit log, lalu admin menerima notifikasi.
-6. Batasan: maksimal **1 klaim pending per officer** dan **1 klaim pending per user**; rate limit pengecekan 5×/jam per klaim.
+#### Jalur B: Secret Token YouTube Verification (Jalur Utama — v1)
+1. Streamer login (email terverifikasi), memilih profil perwira dari daftar *Unclaimed Officers*, lalu memilih metode **"Verifikasi via YouTube"**.
+2. Sistem membuat `officer_claims` (`verification_method = youtube_token`) dan menerbitkan token acak ber-entropi tinggi, contoh: `SASP-VERIFY-7KQ2-M9XD-4FTA` (≥ 64 bit). Token **ditampilkan sekali**; yang disimpan di DB hanya **hash**-nya. Berlaku **24 jam**.
+3. Streamer menempelkan token di **deskripsi channel YouTube** (About). Deskripsi siaran live yang sedang berjalan juga diterima sebagai alternatif.
+4. Streamer menekan **"Periksa Sekarang"**. Sistem mengambil deskripsi channel **berdasarkan `officers.channel_id` dari master data admin** — URL/handle yang dikirim user tidak pernah dipakai sebagai sumber verifikasi.
+   - Sumber data: YouTube Data API v3 (`channels.list?part=snippet`) bila `YOUTUBE_API_KEY` tersedia; jika tidak, halaman publik `https://www.youtube.com/channel/{channel_id}/about` dengan mekanisme HTTP yang sama seperti `SyncOfficerSubscribersCommand`.
+   - Pencocokan token: case-insensitive, mengabaikan spasi di sekitar token.
+5. Token ditemukan → dalam satu transaksi: klaim `approved` (`reviewed_by = NULL`, alasan "Verifikasi otomatis YouTube"), officer ter-bind, profil bio dibuat/diaktifkan, audit log `claim.auto_approved`, alert Discord ke admin.
+6. Token tidak ditemukan → `check_attempts` bertambah, pesan jelas ke user. Setelah token kedaluwarsa → status `expired`; user dapat membuat token baru.
+7. Batasan: maksimal **1 klaim pending per officer** dan **1 klaim pending per user** (sudah ditegakkan DB); pengecekan maksimal **5×/jam per klaim**; pembuatan token maksimal 3×/hari per user.
+8. Setelah klaim berhasil, streamer boleh menghapus token dari deskripsi channel.
+9. **Officer yang sudah diklaim tidak bisa diklaim ulang** lewat Jalur B. Sengketa (mis. pemilik lama kehilangan akses akun) diselesaikan admin lewat unbind + Jalur A.
 
 ### Lapis 4: Keamanan Akun Officer (Anti Account-Takeover)
 - **Wajib email terverifikasi** sebelum bisa di-bind atau mengelola bio-link.
@@ -244,6 +296,23 @@ Diterapkan di `RegisteredUserController` **dan** `ProfileController@update` (uba
   - Riwayat perubahan link milik sendiri (dari `audit_logs`), sehingga officer bisa menyadari jika ada perubahan yang tidak ia lakukan.
 - Saat profil di-suspend: dasbor read-only dengan banner alasan suspend.
 
+### 4.3 Halaman Profil Dinas Mandiri (`/dashboard/officer-profile`) — baru v3
+- Akses: hanya user yang **terikat** ke officer (admin memakai menu Officer Management seperti biasa).
+- Satu halaman dengan tiga kelompok field sesuai matriks 5.1:
+
+| Kelompok | Field | Perilaku di UI |
+| :--- | :--- | :--- |
+| **Edit langsung** | Nama karakter (`officer_name`), nama streamer (`streamer_name`), avatar (`avatar_url`), patrol zone, divisi (`division_id`) | Simpan → langsung berlaku. |
+| **Edit langsung + cek** | Callsign, nomor badge | Simpan → validasi unik (case-insensitive) di antara officer aktif → langsung berlaku + audit log + alert Discord. |
+| **Lewat persetujuan** | Rank (`rank_id`/`rank`), departemen/agency (`agency_id`/`department`) | Tombol "Ajukan Perubahan" + alasan → masuk `officer_change_requests`; UI menampilkan status *Menunggu persetujuan* / *Ditolak (alasan)*. |
+| **Terkunci** | Channel ID, handle YouTube, slug bio-link | Ditampilkan read-only dengan ikon gembok + teks "Hubungi admin untuk mengubah". |
+
+- Riwayat perubahan profil sendiri (dari `audit_logs`).
+- Perubahan nama karakter/streamer **tetap melalui `NameSkeleton`**: ditolak bila menyerupai nama officer **lain** atau keyword terlarang (mencegah officer A menyamar sebagai officer B).
+- Batas frekuensi: callsign/badge maksimal **1× per 7 hari**, nama maksimal **3× per 30 hari** (mencegah kebingungan penonton dan penyalahgunaan). Admin tidak terkena batas ini.
+- Saat profil di-suspend atau user di-ban: semua field read-only.
+- Setiap perubahan meng-invalidasi cache halaman publik, dan langsung tercermin di Direktori Perwira, Multiview, dan halaman bio-link.
+
 ---
 
 ## 5. Tata Kelola Data, Batasan Edit Mandiri & Kontrol Moderasi Admin
@@ -252,9 +321,15 @@ Untuk menjaga integritas data kepolisian dan mencegah penyalahgunaan tautan (lin
 
 ### 5.1 Matriks Batasan Edit Data (Field Mutability Matrix)
 
-| Kategori Data | Contoh Field | Dapat Diedit Officer? | Wewenang Admin | Alasan Tata Kelola |
+> **Perubahan v3 (D7):** pemilik yang sudah terverifikasi kini mengelola sebagian besar data dinasnya sendiri. Officer yang **belum diklaim** tetap sepenuhnya dikelola admin.
+
+| Kategori Data | Contoh Field | Dapat Diedit Pemilik? | Wewenang Admin | Alasan Tata Kelola |
 | :--- | :--- | :---: | :---: | :--- |
-| **Dinas Kepolisian Resmi** | Callsign, Badge #, Rank, Agency, Channel ID | ❌ **TERKUNCI** | ✅ **Penuh** | Data registri komando resmi in-game RP. |
+| **Identitas Karakter & Streamer** | Nama karakter, nama streamer, avatar, patrol zone, divisi | ✅ **Langsung** (cek `NameSkeleton` untuk nama) | ✅ **Bisa Timpa** | Pemilik paling tahu identitas RP-nya sendiri. |
+| **Penanda Unit** | Callsign, nomor badge | ✅ **Langsung + cek unik + audit + alert** (maks. 1×/7 hari) | ✅ **Bisa Timpa** | Sering berubah di RP, tapi harus unik agar tidak membingungkan multiview & TAC channel. |
+| **Pangkat & Kesatuan** | Rank, departemen/agency | 🟡 **Lewat pengajuan** → disetujui admin | ✅ **Penuh + menyetujui** | Mencegah officer menaikkan pangkat/pindah kesatuan sepihak; tetap butuh keputusan komando. |
+| **Identitas YouTube** | Channel ID, handle | ❌ **TERKUNCI** | ✅ **Penuh** | Jangkar bukti kepemilikan dan sumber stream multiview. |
+| **Status Operasional** | `is_active`, `duty_status`, `bypass_hashtag_check`, menit dinas | ❌ **TERKUNCI** | ✅ **Penuh** | Dikelola sistem/admin. |
 | **Slug URL Publik** | `slug` | ❌ **TERKUNCI** | ✅ **Penuh** (otomatis membuat redirect 301) | Mencegah perebutan/penyalahgunaan URL. |
 | **Profil & Tampilan Publik** | Tagline/Bio, Tema, Accent Color | ✅ **Bebas** | ✅ **Bisa Timpa** | Personalisasi estetika streamer. |
 | **Tautan Donasi** | Saweria, Bagibagi, Trakteer, Sociabuzz | ✅ Dengan re-auth + allowlist + audit | ✅ **Bisa Hapus/Sensor** | Titik serangan utama account takeover. |
@@ -262,7 +337,9 @@ Untuk menjaga integritas data kepolisian dan mencegah penyalahgunaan tautan (lin
 | **Status Publikasi Halaman** | Toggle Aktifkan Bio-Link | ✅ **Bisa Hide** | ✅ **Kill-Switch Mutlak** | Officer menyembunyikan sementara; Admin membekukan paksa. |
 
 > [!NOTE]
-> Pembaruan pangkat atau perpindahan departemen dilakukan Admin di menu **Officer Management** dan otomatis tercermin di halaman bio-link publik (cache halaman diinvalidasi).
+> Pembaruan pangkat atau perpindahan departemen diajukan pemilik dari halaman Profil Dinas Mandiri (atau langsung diubah Admin di menu **Officer Management**). Setelah disetujui, perubahan otomatis tercermin di direktori, multiview, dan halaman bio-link (cache diinvalidasi).
+>
+> **Perlindungan dari import/sync:** untuk officer yang sudah diklaim, `OfficerImportCommand`, `officer:manage`, dan sinkronisasi YouTube **tidak boleh menimpa** field yang dikelola pemilik (nama, callsign, badge, avatar kustom, patrol zone, divisi). Avatar dari YouTube hanya diisi bila pemilik belum mengatur avatar sendiri.
 
 ### 5.2 Prioritas Status (Status Precedence)
 Ada beberapa flag yang saling berkaitan. Urutan evaluasi untuk halaman publik:
@@ -540,6 +617,46 @@ CREATE TABLE link_domain_denylist (
 ```
 Allowlist per tipe (Lapis 5) disimpan di `config/biolinks.php` karena jarang berubah dan perlu ditinjau lewat code review.
 
+### J. Tabel `officer_change_requests` (baru v3 — Pengajuan Perubahan Rank/Agency)
+```sql
+CREATE TABLE officer_change_requests (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    officer_id BIGINT UNSIGNED NOT NULL,
+    requested_by BIGINT UNSIGNED NOT NULL,           -- user pemilik
+    field VARCHAR(40) NOT NULL,                      -- 'rank_id' | 'agency_id' (department diturunkan dari agency)
+    old_value VARCHAR(150) NULL,
+    new_value VARCHAR(150) NOT NULL,
+    reason VARCHAR(255) NULL,                        -- alasan dari pemilik (mis. "Promosi 01/11")
+    status ENUM('pending', 'approved', 'rejected', 'cancelled') DEFAULT 'pending',
+    pending_lock VARCHAR(60) GENERATED ALWAYS AS (IF(status = 'pending', CONCAT(officer_id, ':', field), NULL)) STORED,
+    reviewed_by BIGINT UNSIGNED NULL,
+    reviewed_at TIMESTAMP NULL,
+    review_reason VARCHAR(255) NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    FOREIGN KEY (officer_id) REFERENCES officers(id) ON DELETE CASCADE,
+    FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+    UNIQUE KEY uq_one_pending_per_field (pending_lock),
+    INDEX idx_status_created (status, created_at)
+);
+```
+- Maksimal satu pengajuan pending per officer per field.
+- Saat disetujui, nilai diterapkan dalam transaksi bersama audit log `officer.change_approved`. Jika nilai saat ini sudah berbeda dari `old_value` (admin mengubah lebih dulu), pengajuan ditolak otomatis sebagai *usang*.
+- Pengajuan pending otomatis `cancelled` bila pemilik di-unbind.
+
+### K. Perubahan Tabel `officers` (v3)
+```sql
+ALTER TABLE officers
+ADD COLUMN callsign_normalized VARCHAR(50) GENERATED ALWAYS AS (UPPER(TRIM(callsign))) STORED,
+ADD COLUMN owner_updated_at TIMESTAMP NULL,          -- terakhir diubah oleh pemilik (dipakai import/sync untuk tidak menimpa)
+ADD COLUMN callsign_changed_at TIMESTAMP NULL,       -- untuk batas 1×/7 hari
+ADD COLUMN avatar_is_custom BOOLEAN DEFAULT FALSE;   -- avatar diatur pemilik → sync YouTube tidak menimpa
+-- Keunikan callsign di antara officer aktif ditegakkan di aplikasi (validasi + lock),
+-- karena data lama memakai default '1-ADAM-00' dari OfficerImportCommand.
+-- Sebelum migrasi: jalankan laporan duplikat callsign & badge, rapikan oleh admin.
+```
+
 ---
 
 ## 8. Arsitektur Rute, API & Otorisasi
@@ -567,6 +684,17 @@ PUT    /api/v1/officer/bio-profile             -> Update tagline, tema, accent
 GET    /api/v1/officer/bio-links/history       -> Riwayat perubahan milik sendiri
 POST   /api/v1/officer-claims                  -> Pengajuan klaim (user biasa) [throttle:5,60]
 DELETE /api/v1/officer-claims/{claim}          -> Batalkan klaim pending milik sendiri
+
+// v3 — Klaim mandiri via YouTube (auth, verified, not_banned)
+POST   /api/v1/officer-claims/youtube                 -> Buat klaim + terbitkan token (tampil sekali) [throttle:3,1440]
+POST   /api/v1/officer-claims/{claim}/verify-youtube  -> Periksa token di channel_id officer       [throttle:5,60]
+
+// v3 — Profil Dinas Mandiri (auth, verified, officer, not_banned; hanya pemilik terikat)
+GET    /dashboard/officer-profile                     -> Halaman Profil Dinas Mandiri (Inertia)
+PUT    /api/v1/officer/profile                        -> Ubah field "langsung" & "langsung + cek"   [throttle:10,1]
+POST   /api/v1/officer/change-requests                -> Ajukan perubahan rank/agency
+DELETE /api/v1/officer/change-requests/{request}      -> Batalkan pengajuan pending milik sendiri
+GET    /api/v1/officer/profile/history                -> Riwayat perubahan profil sendiri
 ```
 
 ### C. Rute Admin (`auth`, `admin`)
@@ -589,6 +717,11 @@ POST   /api/v1/admin/link-denylist                  -> Ban domain
 PATCH  /api/v1/admin/bio-profiles/{profile}/suspend -> Kill-switch on/off (+ alasan)
 PATCH  /api/v1/admin/users/{user}/status            -> Ban / unban akun
 GET    /api/v1/admin/audit-logs                     -> Audit trail
+
+// v3 — Persetujuan perubahan rank/agency
+GET    /api/v1/admin/officer-change-requests                   -> Antrean pengajuan
+POST   /api/v1/admin/officer-change-requests/{request}/approve -> Terapkan perubahan (transaksi + audit)
+POST   /api/v1/admin/officer-change-requests/{request}/reject  -> Tolak (alasan wajib)
 ```
 
 ### D. Otorisasi (wajib, anti-IDOR)
@@ -597,6 +730,8 @@ GET    /api/v1/admin/audit-logs                     -> Audit trail
 - **Suspend guard**: semua endpoint tulis officer menolak (423 Locked) jika profil di-suspend.
 - **Middleware baru**: `officer` (berbasis relasi `isOfficer()`) dan `not_banned` (menolak & logout user `status = banned`).
 - **Re-auth**: tambah/ubah link `donation` memerlukan konfirmasi password dalam 15 menit terakhir (`password.confirm`).
+- **Profil Dinas Mandiri (v3)**: endpoint `/api/v1/officer/profile` selalu memakai officer milik `auth()->user()` (tidak menerima `officer_id` dari request untuk non-admin). Request **mengabaikan/menolak** field terkunci (`channel_id`, `handle`, `is_active`, `duty_status`, `bypass_hashtag_check`, `user_id`, `rank_id`, `agency_id`, `department`, `rank`) — pakai whitelist field, bukan `$request->all()`. Perubahan callsign/badge memakai `lockForUpdate` agar dua officer tidak mengambil callsign yang sama bersamaan.
+- **Verifikasi YouTube (v3)**: hanya pembuat klaim yang dapat memanggil `verify-youtube`; channel yang diperiksa selalu `officers.channel_id`.
 
 ---
 
@@ -627,11 +762,14 @@ gantt
     Feature tests (otorisasi, IDOR, allowlist)  :2026-11-25, 2d
     Uji mobile, performa & cache                :2026-11-27, 1d
     Rilis bertahap (beta ke 5 officer)          :2026-11-28, 3d
+    section Fase 4B: Kepemilikan Mandiri (v3)
+    Verifikasi token YouTube (Jalur B utama)    :2026-12-01, 3d
+    Profil Dinas Mandiri + cek unik callsign    :2026-12-04, 3d
+    Pengajuan & persetujuan rank/agency         :2026-12-07, 2d
+    Proteksi import/sync atas data pemilik      :2026-12-09, 1d
     section Fase 5: Lanjutan
-    Preset tema departemen                      :2026-12-01, 3d
-    Telemetri klik & agregat harian             :2026-12-04, 2d
-    2FA TOTP untuk officer                      :2026-12-06, 3d
-    Jalur B verifikasi token YouTube            :2026-12-09, 3d
+    Preset tema departemen                      :2026-12-10, 3d
+    2FA TOTP untuk officer                      :2026-12-13, 3d
 ```
 
 ### Penjelasan Milestone
@@ -640,7 +778,8 @@ gantt
 3. **Milestone 2 — Binding**: admin dapat bind/unbind dengan aman; user dapat mengajukan klaim manual.
 4. **Milestone 3 — Bio-Link Inti**: halaman publik `/@{slug}` dengan preview link yang benar, dasbor officer dengan allowlist domain dan otorisasi ketat, moderasi admin, badge verified di chat.
 5. **Milestone 4 — Hardening**: feature test untuk semua jalur otorisasi, beta terbatas.
-6. **Milestone 5 — Lanjutan**: tema, analitik, 2FA, verifikasi otomatis via YouTube.
+6. **Milestone 4B — Kepemilikan Mandiri (v3)**: streamer mengklaim profilnya sendiri via token YouTube, mengelola nama/callsign/badge/avatar secara mandiri, mengajukan perubahan rank/agency, dan data pemilik terlindung dari import/sync.
+7. **Milestone 5 — Lanjutan**: tema, 2FA.
 
 ### Rencana Migrasi Data
 - Migration hanya menambah kolom/tabel (aditif). Tidak ada data yang dihapus.
@@ -657,6 +796,10 @@ gantt
 - Registrasi dan ubah nama dengan homoglif (`I`→`l`, Cyrillic, zero-width) ditolak.
 - User banned tidak bisa login dan sesi aktifnya diputus.
 - Perubahan slug menghasilkan redirect 301 dari slug lama.
+- (v3) Klaim YouTube: token ditemukan di channel `channel_id` officer → auto-approve; token di channel lain / tidak ada → tetap pending; token kedaluwarsa → `expired`; officer yang sudah diklaim tidak bisa diklaim ulang. HTTP ke YouTube di-*fake* (`Http::fake`) dalam test.
+- (v3) Pemilik tidak bisa mengubah `channel_id`, `handle`, `rank_id`, `agency_id`, `is_active` lewat `/api/v1/officer/profile`; callsign duplikat → 422; batas 1×/7 hari callsign; nama yang menyerupai officer lain → 422.
+- (v3) Pengajuan rank/agency: approve menerapkan nilai + audit; pengajuan usang ditolak; unbind membatalkan pengajuan pending.
+- (v3) `OfficerImportCommand` tidak menimpa field milik pemilik pada officer yang sudah diklaim.
 
 ---
 
@@ -691,12 +834,24 @@ gantt
 - [x] Link `/@{slug}` yang dibagikan di Discord/WhatsApp menampilkan preview (judul, avatar, deskripsi).
 - [ ] Halaman bio-link mencapai LCP < 2,5 detik di jaringan 4G dan nyaman dipakai di lebar 360px. *(Belum diukur.)*
 
+**Kepemilikan Mandiri (v3)**
+- [ ] Streamer dapat mengklaim profil unclaimed miliknya sendiri dengan menempelkan token di deskripsi channel YouTube, dan klaim disetujui otomatis tanpa admin.
+- [ ] Verifikasi selalu memeriksa `officers.channel_id` dari data admin; token di channel lain tidak pernah meloloskan klaim.
+- [ ] Pemilik dapat mengubah nama karakter, nama streamer, avatar, patrol zone, divisi, callsign, dan badge sendiri; perubahan langsung tampil di direktori, multiview, dan bio-link.
+- [ ] Callsign dan badge tetap unik di antara officer aktif; perubahan tercatat di audit log dan memicu alert Discord.
+- [ ] Rank dan departemen/agency hanya berubah setelah pengajuan pemilik disetujui admin.
+- [ ] Channel ID dan handle YouTube tidak dapat diubah oleh pemilik.
+- [ ] Import/sync tidak menimpa data yang telah diubah pemilik.
+
 **Privasi Analitik**
 - [ ] ⚠️ Tidak ada IP mentah atau hash IP polos yang tersimpan; data klik mentah terhapus otomatis setelah 90 hari. *(HMAC salt harian sudah; job pembersihan 90 hari belum dijadwalkan.)*
 
 ---
 
 ## 11. Keputusan Terbuka (Open Decisions)
+
+> ✅ **FINAL (28 Okt 2026, task T-01):** seluruh rekomendasi diadopsi — **D1(a), D2(b), D3(a), D4(a), D5(a), D6(b)**. Tabel di bawah dipertahankan sebagai catatan alasan.
+> ✅ **FINAL v3 (28 Okt 2026):** **D7(a), D8(a), D9(a)** — konsep Kepemilikan Profil Mandiri.
 
 Perlu diputuskan sebelum Fase 0 selesai. Kolom "Rekomendasi" adalah usulan default jika tidak ada keberatan.
 
@@ -708,6 +863,9 @@ Perlu diputuskan sebelum Fase 0 selesai. Kolom "Rekomendasi" adalah usulan defau
 | D4 | Nasib `clipper_requests` dengan `request_type = 'officer'`. | (a) Dihentikan, diarahkan ke klaim officer; (b) Dipertahankan terpisah. | **(a)** — officer yang terikat otomatis mendapat tier clipper officer. |
 | D5 | Kebijakan perubahan link donasi. | (a) Langsung aktif + audit + notifikasi; (b) Status `pending_review` sampai disetujui admin; (c) Langsung aktif, tetapi tertunda 24 jam bila domain berubah. | **(a)** untuk v1 (beban admin rendah); naikkan ke **(c)** jika terjadi insiden. |
 | D6 | Saluran notifikasi ke admin. | (a) Email; (b) Webhook Discord kepolisian; (c) Keduanya. | **(b)** — admin sudah aktif di Discord. |
+| D7 | (v3) Field apa yang boleh diubah pemilik setelah klaim? | (a) Campuran: identitas & callsign/badge langsung, rank/agency lewat persetujuan, channel terkunci; (b) Semua langsung; (c) Semua lewat persetujuan. | **FINAL: (a)** — dipilih product owner 28 Okt 2026. |
+| D8 | (v3) Cara membuktikan kepemilikan saat klaim. | (a) Token YouTube otomatis + review manual sebagai cadangan; (b) Review manual admin saja. | **FINAL: (a)** — Jalur B naik ke inti. |
+| D9 | (v3) Siapa yang boleh mendaftarkan officer baru ke direktori? | (a) Admin saja; (b) Member mengusulkan; (c) Officer daftar sendiri. | **FINAL: (a)** — tetap seperti sekarang. |
 
 ---
 
@@ -716,6 +874,8 @@ Perlu diputuskan sebelum Fase 0 selesai. Kolom "Rekomendasi" adalah usulan defau
 **Tanggal validasi:** 28 Oktober 2026  
 **Cakupan:** seluruh perubahan di working tree branch `main` (**belum di-commit**). Commit terakhir `1d19968` belum memuat fitur ini.  
 **Metode:** membaca kode (migration, model, controller, policy, middleware, service, command, route, halaman Vue), `php artisan route:list`, `php artisan test`, dan `npm run build`.
+
+> ⚠️ **Catatan v3:** validasi di bagian ini dibuat **sebelum** koreksi konsep kepemilikan mandiri. Fitur v3 (Jalur B YouTube sebagai jalur utama, Profil Dinas Mandiri, pengajuan rank/agency, proteksi import/sync) **belum diimplementasikan** — dilacak sebagai Sprint 5 di [task board](OFFICER_TACTICAL_BIO_LINKS_TASKS.md).
 
 ### 12.1 Ringkasan
 
