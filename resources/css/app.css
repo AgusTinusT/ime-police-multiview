@@ -4,6 +4,9 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source not '../../docs';
+@source not '../../*.md';
+@source not '../../tests';
 
 @theme {
   --color-tactical-base: #020617;
@@ -45,6 +48,11 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }
 
