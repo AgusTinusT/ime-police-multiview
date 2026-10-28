@@ -56,6 +56,12 @@ class OfficerClaimController extends Controller
 
         $officer = Officer::findOrFail($request->officer_id);
 
+        if (!$officer->is_active) {
+            throw ValidationException::withMessages([
+                'officer_id' => 'Profil perwira ini berstatus non-aktif sehingga tidak dapat diklaim.',
+            ]);
+        }
+
         if ($officer->user_id !== null) {
             throw ValidationException::withMessages([
                 'officer_id' => 'Profil perwira ini sudah diklaim dan terikat ke akun lain.',
@@ -236,6 +242,12 @@ class OfficerClaimController extends Controller
         }
 
         $officer = Officer::findOrFail($request->officer_id);
+
+        if (!$officer->is_active) {
+            throw ValidationException::withMessages([
+                'officer_id' => 'Profil perwira ini berstatus non-aktif sehingga tidak dapat diklaim.',
+            ]);
+        }
 
         if ($officer->user_id !== null) {
             throw ValidationException::withMessages([

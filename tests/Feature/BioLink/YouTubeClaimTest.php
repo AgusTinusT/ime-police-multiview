@@ -199,4 +199,26 @@ class YouTubeClaimTest extends TestCase
         // Route middleware 'verified' redirects or returns 409/403
         $this->assertTrue(in_array($response->status(), [403, 409, 302], true));
     }
+
+    public function test_cannot_claim_inactive_officer(): void
+    {
+        $inactiveOfficer = Officer::create([
+            'officer_name' => 'Inactive Officer',
+            'streamer_name' => 'Inactive Stream',
+            'handle' => 'inactiveofficer',
+            'channel_id' => 'UC_INACTIVE_123',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'callsign' => '000',
+            'badge_number' => '000',
+            'is_active' => false,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/api/v1/officer-claims/youtube', [
+            'officer_id' => $inactiveOfficer->id,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['officer_id']);
+    }
 }
