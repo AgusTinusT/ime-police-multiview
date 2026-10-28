@@ -73,8 +73,8 @@ class SyncOfficerSubscribersCommand extends Command
                         $updateData['channel_id'] = $realChannelId;
                     }
 
-                    // Extract avatar URL if currently dicebear placeholder or empty
-                    if (str_contains($officer->avatar_url ?? '', 'dicebear') || empty($officer->avatar_url)) {
+                    // Extract avatar URL if currently dicebear placeholder or empty, unless custom set by owner (T-19)
+                    if (!$officer->avatar_is_custom && (str_contains($officer->avatar_url ?? '', 'dicebear') || empty($officer->avatar_url))) {
                         if (preg_match('/"avatar"\s*:\s*\{\s*"thumbnails"\s*:\s*\[\s*\{\s*"url"\s*:\s*"([^"]+)"/i', $html, $am)) {
                             $updateData['avatar_url'] = str_replace('\u0026', '&', $am[1]);
                         } elseif (preg_match('/<meta property="og:image" content="([^"]+)"/i', $html, $am)) {
@@ -84,14 +84,14 @@ class SyncOfficerSubscribersCommand extends Command
 
                     if (!empty($updateData)) {
                         \Illuminate\Support\Facades\DB::transaction(function () use ($officer, $updateData, $oldChannelId, $realChannelId) {
-                            \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+                            \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
                             $officer->update($updateData);
                             if ($oldChannelId && !empty($oldChannelId)) {
                                 \Illuminate\Support\Facades\DB::table('active_streams')
                                     ->where('channel_id', $oldChannelId)
                                     ->update(['channel_id' => $realChannelId]);
                             }
-                            \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+                            \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
                         });
 
                         $totalUpdated++;

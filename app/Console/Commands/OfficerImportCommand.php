@@ -77,21 +77,37 @@ class OfficerImportCommand extends Command
             $department = strtoupper($item['department'] ?? 'LSPD');
             $rank = $item['rank'] ?? 'Officer';
             $badgeNumber = $item['badge_number'] ?? '#000';
-            $patrolZone = $item['patrol_zone'] ?? 'Mission Row / Downtown';
+            $patrolZone = $item['patrol_zone'] ?? null;
+            $existingOfficer = Officer::where('handle', $handle)
+                ->orWhere('channel_id', $channelId)
+                ->first();
+
+            $updateData = [
+                'channel_id' => $channelId,
+                'streamer_name' => $streamerName,
+                'officer_name' => $officerName,
+                'callsign' => $callsign,
+                'department' => $department,
+                'rank' => $rank,
+                'badge_number' => $badgeNumber,
+                'patrol_zone' => $patrolZone,
+                'is_active' => true,
+            ];
+
+            if ($existingOfficer && $existingOfficer->isClaimed()) {
+                // PRD v3 T-19: Do NOT overwrite owner-managed fields on claimed officers
+                foreach (Officer::OWNER_MANAGED_FIELDS as $field) {
+                    unset($updateData[$field]);
+                }
+                $existingOfficer->update($updateData);
+                $this->warn(" ⚠ {$existingOfficer->officer_name} diklaim pemilik — field pemilik dilewati");
+                $successCount++;
+                continue;
+            }
 
             Officer::updateOrCreate(
                 ['handle' => $handle],
-                [
-                    'channel_id' => $channelId,
-                    'streamer_name' => $streamerName,
-                    'officer_name' => $officerName,
-                    'callsign' => $callsign,
-                    'department' => $department,
-                    'rank' => $rank,
-                    'badge_number' => $badgeNumber,
-                    'patrol_zone' => $patrolZone,
-                    'is_active' => true,
-                ]
+                $updateData
             );
 
             $this->line(" <info>✓</info> Berhasil menyimpan: <comment>{$officerName}</comment> ({$handle} - {$callsign} [{$department}])");

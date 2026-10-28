@@ -11,6 +11,21 @@ class Officer extends Model
 {
     use HasFactory;
 
+    public const OWNER_MANAGED_FIELDS = [
+        'officer_name',
+        'streamer_name',
+        'callsign',
+        'badge_number',
+        'avatar_url',
+        'patrol_zone',
+        'division_id',
+    ];
+
+    public function isClaimed(): bool
+    {
+        return $this->user_id !== null;
+    }
+
     protected $fillable = [
         'user_id',
         'channel_id',
@@ -33,6 +48,9 @@ class Officer extends Model
         'monthly_duty_minutes',
         'last_duty_at',
         'bypass_hashtag_check',
+        'owner_updated_at',
+        'callsign_changed_at',
+        'avatar_is_custom',
     ];
 
     protected $casts = [
@@ -41,6 +59,9 @@ class Officer extends Model
         'last_duty_at' => 'datetime',
         'is_active' => 'boolean',
         'bypass_hashtag_check' => 'boolean',
+        'owner_updated_at' => 'datetime',
+        'callsign_changed_at' => 'datetime',
+        'avatar_is_custom' => 'boolean',
     ];
 
     /**
@@ -60,6 +81,14 @@ class Officer extends Model
     }
 
     /**
+     * Rank & Agency Change Requests
+     */
+    public function changeRequests(): HasMany
+    {
+        return $this->hasMany(OfficerChangeRequest::class);
+    }
+
+    /**
      * Claims submitted for this officer
      */
     public function claims(): HasMany
@@ -73,6 +102,11 @@ class Officer extends Model
     public function agency()
     {
         return $this->belongsTo(Agency::class);
+    }
+
+    public function agencyRelation()
+    {
+        return $this->agency();
     }
 
     /**
@@ -89,6 +123,11 @@ class Officer extends Model
     public function division()
     {
         return $this->belongsTo(Division::class);
+    }
+
+    public function divisionRelation()
+    {
+        return $this->division();
     }
 
     /**
