@@ -221,8 +221,14 @@ const buttonStyleClass = computed(() => {
                     </div>
 
                     <!-- Agency / Department Tag -->
-                    <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-wider uppercase bg-slate-800 text-slate-300 border border-slate-700">
-                        <span>{{ officer.department || 'POLICE' }}</span>
+                    <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-wider uppercase bg-slate-800 text-slate-300 border border-slate-700">
+                        <img
+                            v-if="officer.agency_badge_url"
+                            :src="officer.agency_badge_url"
+                            :alt="officer.agency || officer.department || 'Agency'"
+                            class="w-3.5 h-3.5 object-contain rounded-full"
+                        />
+                        <span>{{ officer.agency || officer.department || 'POLICE' }}</span>
                         <span>•</span>
                         <span>{{ officer.rank || 'Officer' }}</span>
                     </div>

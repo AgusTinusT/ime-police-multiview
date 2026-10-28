@@ -143,10 +143,10 @@ class PublicBioLinkController extends Controller
                     'streamer_name' => $officer->streamer_name,
                     'callsign' => $officer->callsign,
                     'badge_number' => $officer->badge_number,
-                    'department' => $officer->department,
-                    'rank' => $officer->rankRelation?->name ?: $officer->rank,
-                    'agency' => $officer->agency?->name ?: $officer->department,
-                    'agency_badge_url' => $officer->agency?->badge_image_url,
+                    'department' => $officer->agency?->agency_code ?: $officer->department,
+                    'rank' => $officer->rankRelation?->rank_title ?: $officer->rank,
+                    'agency' => $officer->agency?->agency_name ?: $officer->department,
+                    'agency_badge_url' => $officer->agency?->badge_logo_url,
                     'avatar_url' => $officer->avatar_url,
                     'duty_status' => $officer->duty_status,
                     'is_live' => $activeStream !== null,
@@ -185,8 +185,10 @@ class PublicBioLinkController extends Controller
                             'officer_name' => $link->recommendedOfficer->officer_name,
                             'streamer_name' => $link->recommendedOfficer->streamer_name,
                             'callsign' => $link->recommendedOfficer->callsign,
-                            'department' => $link->recommendedOfficer->department,
-                            'rank' => $link->recommendedOfficer->rankRelation?->name ?: $link->recommendedOfficer->rank,
+                            'department' => $link->recommendedOfficer->agency?->agency_code ?: $link->recommendedOfficer->department,
+                            'rank' => $link->recommendedOfficer->rankRelation?->rank_title ?: $link->recommendedOfficer->rank,
+                            'agency' => $link->recommendedOfficer->agency?->agency_name ?: $link->recommendedOfficer->department,
+                            'agency_badge_url' => $link->recommendedOfficer->agency?->badge_logo_url,
                             'avatar_url' => $link->recommendedOfficer->avatar_url,
                             'is_live' => $link->recommendedOfficer->activeStream !== null,
                             'active_stream' => $link->recommendedOfficer->activeStream ? [
@@ -279,18 +281,22 @@ class PublicBioLinkController extends Controller
             abort(404, 'Tautan tidak valid atau telah dinonaktifkan.');
         }
 
+        // Privacy-preserving visitor hash (HMAC-SHA256 with daily rotating salt)
+        $ip = $request->ip() ?: '0.0.0.0';
+        $ua = $request->userAgent() ?: 'unknown';
+        $dailySalt = date('Ymd') . config('app.key');
+        $visitorHash = hash_hmac('sha256', "{$ip}|{$ua}", $dailySalt);
+
+        // Host of referer only
+        $referer = $request->headers->get('referer');
+        $refererHost = $referer ? parse_url($referer, PHP_URL_HOST) : null;
+
         // Non-blocking telemetry click recording
         try {
-            $ip = $request->ip();
-            $ipHash = hash('sha256', ($ip ?: '127.0.0.1') . config('app.key'));
-            $ua = substr($request->userAgent() ?: 'unknown', 0, 255);
-
             BioLinkClick::create([
                 'officer_bio_link_id' => $link->id,
-                'officer_bio_profile_id' => $profile->id,
-                'ip_hash' => $ipHash,
-                'user_agent' => $ua,
-                'referrer' => substr($request->headers->get('referer', ''), 0, 255),
+                'visitor_hash' => $visitorHash,
+                'referer_host' => $refererHost,
             ]);
 
             // Increment daily stats
@@ -319,7 +325,7 @@ class PublicBioLinkController extends Controller
     }
 
     /**
-     * Record page view in cache and aggregate via command (T-08).
+     * Record page view in cache and aggregate via command (T-08, B-12).
      */
     protected function recordPageView(OfficerBioProfile $profile): void
     {
@@ -332,13 +338,16 @@ class PublicBioLinkController extends Controller
         try {
             $today = now()->toDateString();
             $cacheKey = "bio_views:{$profile->id}:{$today}";
+
+            // B-12: DatabaseStore requires key to exist before incrementing
+            Cache::add($cacheKey, 0, now()->addDays(2));
             Cache::increment($cacheKey);
 
             $pendingKey = "bio_views_pending:{$today}";
             $pending = Cache::get($pendingKey, []);
             if (!in_array($profile->id, $pending)) {
                 $pending[] = $profile->id;
-                Cache::put($pendingKey, $pending, 86400);
+                Cache::put($pendingKey, $pending, 86400 * 2);
             }
         } catch (\Throwable) {
             // Silently continue if telemetry fails
