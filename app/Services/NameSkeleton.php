@@ -102,14 +102,26 @@ class NameSkeleton
             return ['blocked' => false, 'reason' => null, 'flagged' => false];
         }
 
-        // 1. Check against reserved keywords
+        // 1. Check against reserved keywords (token-based to avoid false positives like Saprudin, Badminton Lover)
         $reserved = config('biolinks.reserved_keywords', [
             'admin', 'sasp', 'lspd', 'bcso', 'sapr', 'command', 'moderator', 'official', 'dispatch',
+            'trooper', 'sheriff', 'captain', 'lieutenant', 'sergeant',
         ]);
+
+        // Break camelCase / PascalCase and split by spaces/punctuation
+        $spaced = preg_replace('/(?<=\p{Ll})(?=\p{Lu})/u', ' ', $name);
+        $spaced = preg_replace('/(?<=\p{Lu})(?=\p{Lu}\p{Ll})/u', ' ', $spaced);
+        $tokens = preg_split('/[\s._\-|~`!@#$%^&*()=+\[\]{}<>?\\/:]+/u', $spaced, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $tokenSkeletons = array_map(fn ($t) => self::make($t), $tokens);
 
         foreach ($reserved as $keyword) {
             $keywordSkeleton = self::make($keyword);
-            if (!empty($keywordSkeleton) && str_contains($skeleton, $keywordSkeleton)) {
+            if (empty($keywordSkeleton)) {
+                continue;
+            }
+
+            // Exact match on full skeleton OR token match
+            if ($skeleton === $keywordSkeleton || in_array($keywordSkeleton, $tokenSkeletons, true)) {
                 return [
                     'blocked' => true,
                     'reason' => 'Nama mengandung kata kunci otoritas kepolisian atau reserved role yang dilarang.',
