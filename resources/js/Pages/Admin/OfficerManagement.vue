@@ -3,6 +3,9 @@ import { ref, computed, onMounted } from "vue";
 import { Head } from "@inertiajs/vue3";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import axios from "axios";
+import OfficerClaimsTab from "@/Components/Admin/OfficerClaimsTab.vue";
+import BioModerationTab from "@/Components/Admin/BioModerationTab.vue";
+import OfficerBindingModal from "@/Components/Admin/OfficerBindingModal.vue";
 
 const props = defineProps({
     stats: {
@@ -15,9 +18,14 @@ const props = defineProps({
             bcso: 0,
             sasp: 0,
             sapr: 0,
+            pending_claims: 0,
         }),
     },
     agenciesMaster: {
+        type: Array,
+        default: () => [],
+    },
+    usersList: {
         type: Array,
         default: () => [],
     },
@@ -26,6 +34,29 @@ const props = defineProps({
         default: () => ({ user: null }),
     },
 });
+
+// Tactical Bio-Link & Officer Binding Modal State (T-05)
+const showBindingModal = ref(false);
+const bindingMode = ref("bind"); // 'bind' | 'unbind' | 'slug'
+const bindingOfficer = ref(null);
+
+const openBindModal = (officer) => {
+    bindingOfficer.value = officer;
+    bindingMode.value = "bind";
+    showBindingModal.value = true;
+};
+
+const openUnbindModal = (officer) => {
+    bindingOfficer.value = officer;
+    bindingMode.value = "unbind";
+    showBindingModal.value = true;
+};
+
+const openSlugModal = (officer) => {
+    bindingOfficer.value = officer;
+    bindingMode.value = "slug";
+    showBindingModal.value = true;
+};
 
 // State
 const officers = ref([]);
@@ -1375,6 +1406,46 @@ onMounted(() => {
                         >{{ usersList.length }}</span
                     >
                 </button>
+                <button
+                    @click="activeTab = 'claims'"
+                    :class="[
+                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
+                        activeTab === 'claims'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
+                    ]"
+                >
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Klaim Perwira</span>
+                    <span
+                        v-if="stats.pending_claims > 0"
+                        class="px-1.5 py-0.2 text-[10px] bg-amber-500/20 text-amber-300 rounded-md font-mono border border-amber-500/40 animate-pulse font-bold"
+                    >
+                        {{ stats.pending_claims }}
+                    </span>
+                    <span
+                        v-else
+                        class="px-1.5 py-0.2 text-[10px] bg-slate-900 text-slate-400 rounded-md font-mono border border-slate-800"
+                    >
+                        0
+                    </span>
+                </button>
+                <button
+                    @click="activeTab = 'moderation'"
+                    :class="[
+                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
+                        activeTab === 'moderation'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
+                    ]"
+                >
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span>Moderasi Bio-Link</span>
+                </button>
             </div>
 
             <!-- TAB 1: OFFICERS -->
@@ -1630,6 +1701,7 @@ onMounted(() => {
                                         Akumulasi Duty & Hashtag Rule
                                     </th>
                                     <th class="py-3 px-4">YouTube Handle</th>
+                                    <th class="py-3 px-4">Akun Terikat & Bio</th>
                                     <th class="py-3 px-4 text-center">
                                         Status
                                     </th>
@@ -1867,6 +1939,62 @@ onMounted(() => {
                                         >
                                             <span>{{ officer.handle }}</span>
                                         </a>
+                                    </td>
+
+                                    <!-- Akun Terikat & Bio -->
+                                    <td class="py-3.5 px-4 font-mono">
+                                        <div v-if="officer.user" class="space-y-1">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-950/70 text-blue-300 border border-blue-800/60">
+                                                    <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                    <span class="truncate max-w-[100px]">{{ officer.user.name }}</span>
+                                                </span>
+                                                <span class="text-[9px] text-slate-500 truncate max-w-[100px]" :title="officer.user.email">({{ officer.user.email }})</span>
+                                            </div>
+                                            <div class="flex items-center gap-1.5 text-[10px]">
+                                                <a
+                                                    :href="`/@${officer.bio_profile?.slug || (officer.handle || '').replace('@', '')}`"
+                                                    target="_blank"
+                                                    class="text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-0.5 font-bold"
+                                                    title="Buka Bio-Link Publik"
+                                                >
+                                                    <span>/@{{ officer.bio_profile?.slug || (officer.handle || '').replace('@', '') }}</span>
+                                                    <svg class="w-2.5 h-2.5 inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                                </a>
+                                                <span v-if="officer.bio_profile?.is_suspended" class="px-1 py-0.2 rounded text-[9px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">SUSPENDED</span>
+                                            </div>
+                                            <div class="flex items-center gap-1 pt-0.5">
+                                                <button
+                                                    @click="openSlugModal(officer)"
+                                                    class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] border border-slate-700 transition"
+                                                    title="Ubah URL Slug Bio-Link"
+                                                >
+                                                    Ubah Slug
+                                                </button>
+                                                <button
+                                                    @click="openUnbindModal(officer)"
+                                                    class="px-1.5 py-0.5 rounded bg-rose-950/70 hover:bg-rose-900 text-rose-300 text-[9px] border border-rose-800/60 transition"
+                                                    title="Lepas ikatan akun user dari perwira ini"
+                                                >
+                                                    Unbind
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div v-else class="space-y-1">
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-950/40 text-amber-400 border border-amber-800/40">
+                                                Unclaimed
+                                            </span>
+                                            <div>
+                                                <button
+                                                    @click="openBindModal(officer)"
+                                                    class="px-2 py-0.5 rounded bg-blue-900/60 hover:bg-blue-800 text-blue-200 text-[10px] font-bold border border-blue-700/60 transition flex items-center gap-1"
+                                                    title="Hubungkan akun user ke perwira ini secara manual"
+                                                >
+                                                    <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                                    <span>Bind User</span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </td>
 
                                     <!-- Status Toggle -->
@@ -2422,6 +2550,16 @@ onMounted(() => {
                 </div>
             </div>
             <!-- END TAB 5 -->
+
+            <!-- TAB 6: KLAIM PERWIRA -->
+            <div v-if="activeTab === 'claims'">
+                <OfficerClaimsTab @toast="showToast" @updated="fetchOfficers" />
+            </div>
+
+            <!-- TAB 7: MODERASI BIO-LINK -->
+            <div v-if="activeTab === 'moderation'">
+                <BioModerationTab @toast="showToast" />
+            </div>
         </div>
 
         <!-- MODAL: ADD / EDIT OFFICER (With Cascading Agency Dropdown) -->
@@ -3495,5 +3633,16 @@ onMounted(() => {
                 </div>
             </div>
         </Teleport>
+
+        <!-- TACTICAL BIO-LINK & BINDING MODAL -->
+        <OfficerBindingModal
+            :show="showBindingModal"
+            :mode="bindingMode"
+            :officer="bindingOfficer"
+            :users-list="usersList"
+            @close="showBindingModal = false"
+            @success="fetchOfficers"
+            @toast="showToast"
+        />
     </TacticalLayout>
 </template>

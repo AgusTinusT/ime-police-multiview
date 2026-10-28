@@ -120,6 +120,36 @@ class OfficerClaimController extends Controller
     }
 
     /**
+     * Get claims submitted by the authenticated user (T-07).
+     */
+    public function myClaims(Request $request): JsonResponse
+    {
+        $claims = OfficerClaim::with('officer')
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'claims' => $claims,
+        ]);
+    }
+
+    /**
+     * Get active officers that are not yet claimed/bound (T-07).
+     */
+    public function unclaimedOfficers(): JsonResponse
+    {
+        $officers = Officer::where('is_active', true)
+            ->whereNull('user_id')
+            ->orderBy('callsign')
+            ->get(['id', 'officer_name', 'streamer_name', 'callsign', 'department', 'rank', 'avatar_url']);
+
+        return response()->json([
+            'officers' => $officers,
+        ]);
+    }
+
+    /**
      * Admin: List claim applications with filter.
      */
     public function index(Request $request): JsonResponse

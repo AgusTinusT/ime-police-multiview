@@ -247,9 +247,12 @@ Route::middleware(['auth', 'verified', 'officer', 'not_banned'])->group(function
 
 // 2. Member Officer Claim Requests
 Route::middleware(['auth', 'verified', 'not_banned'])->prefix('api/v1/officer-claims')->group(function () {
+    Route::get('/mine', [OfficerClaimController::class, 'myClaims']);
     Route::post('/', [OfficerClaimController::class, 'store'])->middleware('throttle:5,60');
     Route::delete('/{claim}', [OfficerClaimController::class, 'destroy']);
 });
+
+Route::middleware(['auth'])->get('/api/v1/officers/unclaimed', [OfficerClaimController::class, 'unclaimedOfficers']);
 
 // 3. Admin Moderation, Binding & Claim Review
 Route::middleware(['auth', 'admin'])->prefix('api/v1/admin')->group(function () {

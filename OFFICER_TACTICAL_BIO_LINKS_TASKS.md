@@ -124,28 +124,28 @@
 
 | ID | Prioritas | Task | Status | Review Notes |
 | :--- | :---: | :--- | :---: | :--- |
-| T-05 | 🟠 P1 | UI Admin: antrean klaim & binding officer | ⬜ To Do | |
-| T-06 | 🟠 P1 | UI Admin: moderasi bio-link, suspend, ban domain, ban user, audit log | ⬜ To Do | |
-| T-07 | 🟠 P1 | UI User: pengajuan klaim officer | ⬜ To Do | |
+| T-05 | 🟠 P1 | UI Admin: antrean klaim & binding officer | 🟣 Ready for Review | Komponen `OfficerClaimsTab.vue` & `OfficerBindingModal.vue` terpasang di `OfficerManagement.vue`. Bind, unbind, ubah slug, approve/reject klaim berfungsi dengan dialog konfirmasi & validasi 422. |
+| T-06 | 🟠 P1 | UI Admin: moderasi bio-link, suspend, ban domain, ban user, audit log | 🟣 Ready for Review | Komponen `BioModerationTab.vue` terpasang di `OfficerManagement.vue`. Fitur moderasi status link, suspend profil, ban domain, ban/unban user, dan audit log viewer aktif. |
+| T-07 | 🟠 P1 | UI User: pengajuan klaim officer | 🟣 Ready for Review | Endpoint `/api/v1/officer-claims/mine` & `/api/v1/officers/unclaimed` dibuat. Modal `OfficerClaimModal.vue` terpasang di `UserAccountMenu.vue` untuk member klaim officer belum terikat. |
 
 **T-05 — Antrean klaim & binding**
-- [ ] Di `/admin/officers`: kolom status "Bound / Unclaimed" + nama user terikat (data sudah dikirim dari `index`).
-- [ ] Aksi per officer: **Bind User** (pencarian user aktif & terverifikasi), **Unbind** (alasan wajib, dialog konfirmasi), **Ubah Slug** (alasan wajib).
-- [ ] Tab "Klaim" dengan badge `pending_claims`: daftar klaim + tombol Approve / Reject (alasan wajib untuk reject).
-- [ ] Semua error 422 dari API tampil sebagai pesan, bukan alert generik.
+- [x] Di `/admin/officers`: kolom status "Bound / Unclaimed" + nama user terikat (data sudah dikirim dari `index`).
+- [x] Aksi per officer: **Bind User** (pencarian user aktif & terverifikasi), **Unbind** (alasan wajib, dialog konfirmasi), **Ubah Slug** (alasan wajib).
+- [x] Tab "Klaim" dengan badge `pending_claims`: daftar klaim + tombol Approve / Reject (alasan wajib untuk reject).
+- [x] Semua error 422 dari API tampil sebagai pesan, bukan alert generik.
 
 **T-06 — Moderasi**
-- [ ] Halaman/tab "Bio-Link Moderation": tabel link dengan filter status, tipe, pencarian; aksi Approve / Flag / Ban (+ opsi ban domain) dan Hapus.
-- [ ] Toggle **Suspend Bio-Link** per profil (alasan wajib).
-- [ ] Ban / Unban user (alasan wajib saat ban).
-- [ ] Viewer audit log (filter action & subject, pagination).
-- [ ] Semua aksi destruktif memakai dialog konfirmasi.
+- [x] Halaman/tab "Bio-Link Moderation": tabel link dengan filter status, tipe, pencarian; aksi Approve / Flag / Ban (+ opsi ban domain) dan Hapus.
+- [x] Toggle **Suspend Bio-Link** per profil (alasan wajib).
+- [x] Ban / Unban user (alasan wajib saat ban).
+- [x] Viewer audit log (filter action & subject, pagination).
+- [x] Semua aksi destruktif memakai dialog konfirmasi.
 
 **T-07 — Pengajuan klaim**
-- [ ] Halaman/ modal untuk user login: daftar officer **unclaimed** (cari nama/callsign), form Discord tag + catatan.
-- [ ] Menampilkan status klaim milik user (pending / approved / rejected + alasan) dan tombol batalkan bila pending.
-- [ ] Tambah endpoint baca: `GET /api/v1/officer-claims/mine` dan `GET /api/v1/officers/unclaimed` (hanya field publik).
-- [ ] Entry point dari `UserAccountMenu.vue` untuk user yang belum terikat officer.
+- [x] Halaman/ modal untuk user login: daftar officer **unclaimed** (cari nama/callsign), form Discord tag + catatan.
+- [x] Menampilkan status klaim milik user (pending / approved / rejected + alasan) dan tombol batalkan bila pending.
+- [x] Tambah endpoint baca: `GET /api/v1/officer-claims/mine` dan `GET /api/v1/officers/unclaimed` (hanya field publik).
+- [x] Entry point dari `UserAccountMenu.vue` untuk user yang belum terikat officer.
 
 ---
 

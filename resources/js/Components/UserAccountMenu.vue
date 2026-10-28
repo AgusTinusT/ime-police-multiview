@@ -4,6 +4,7 @@ import { Link, router, usePage } from "@inertiajs/vue3";
 import { useI18n } from "vue-i18n";
 import iconLogout from "@/Components/Icons/leave-svgrepo-com.svg";
 import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
+import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 
 const page = usePage();
 const { locale } = useI18n();
@@ -15,6 +16,7 @@ const isAdmin = computed(() => {
 
 const isOpen = ref(false);
 const dropdownRef = ref(null);
+const showOfficerClaimModal = ref(false);
 
 const toggleDropdown = () => {
     isOpen.value = !isOpen.value;
@@ -216,6 +218,25 @@ onUnmounted(() => {
                                 </span>
                             </div>
                         </Link>
+
+                        <!-- Claim Officer Profile (For Members) -->
+                        <button
+                            v-else
+                            type="button"
+                            @click="isOpen = false; showOfficerClaimModal = true"
+                            class="flex items-center px-4 py-2.5 text-cyan-300 hover:bg-slate-800 hover:text-cyan-200 transition gap-2.5 font-semibold group text-left w-full cursor-pointer"
+                        >
+                            <span class="text-base shrink-0">🛡️</span>
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Klaim Profil Perwira</span>
+                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40 font-mono">VERIFIKASI</span>
+                                </div>
+                                <span class="text-[10px] text-slate-400 font-normal">
+                                    Ajukan Verifikasi Akun Dinas Anda
+                                </span>
+                            </div>
+                        </button>
 
                         <!-- Tactical Video Trimmer Studio (All Users) -->
                         <Link
@@ -461,5 +482,11 @@ onUnmounted(() => {
                 </div>
             </transition>
         </template>
+
+        <!-- Officer Claim Modal (T-07) -->
+        <OfficerClaimModal
+            :show="showOfficerClaimModal"
+            @close="showOfficerClaimModal = false"
+        />
     </div>
 </template>
