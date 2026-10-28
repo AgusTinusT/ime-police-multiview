@@ -305,4 +305,51 @@ class PublicPageTest extends TestCase
         $this->assertEquals(now()->toDateString(), Carbon::parse($stat->stat_date)->toDateString());
         $this->assertGreaterThanOrEqual(2, $stat->views);
     }
+
+    public function test_public_page_and_live_status_include_viewers_count(): void
+    {
+        $officer = Officer::create([
+            'channel_id' => 'UC_LIVE_VIEWERS',
+            'handle' => '@liveviewers',
+            'streamer_name' => 'Live Streamer',
+            'officer_name' => 'Ofc. Live Viewers',
+            'callsign' => '1-L-123',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+        ]);
+        $profile = BioProfileService::ensureBioProfile($officer);
+        $profile->update(['slug' => 'live-viewers-test']);
+
+        \App\Models\ActiveStream::create([
+            'officer_id' => $officer->id,
+            'channel_id' => 'UC_LIVE_VIEWERS',
+            'video_id' => 'video_123',
+            'title' => 'Patrol Live Stream',
+            'status' => 'LIVE',
+            'viewers_count' => 123,
+        ]);
+
+        $pageResponse = $this->get('/@live-viewers-test');
+        $pageResponse->assertOk();
+        $pageResponse->assertInertia(fn (Assert $page) => $page
+            ->component('Public/BioLink')
+            ->where('officer.is_live', true)
+            ->where('officer.live_stream.viewer_count', 123)
+            ->where('officer.live_stream.video_id', 'video_123')
+            ->missing('officer.live_stream.duty_minutes')
+        );
+
+        $apiResponse = $this->getJson('/api/v1/bio-links/live-viewers-test/live-status');
+        $apiResponse->assertOk();
+        $apiResponse->assertJson([
+            'is_live' => true,
+            'live_stream' => [
+                'video_id' => 'video_123',
+                'title' => 'Patrol Live Stream',
+                'viewer_count' => 123,
+            ],
+        ]);
+        $this->assertArrayNotHasKey('duty_minutes', $apiResponse->json('live_stream'));
+    }
 }

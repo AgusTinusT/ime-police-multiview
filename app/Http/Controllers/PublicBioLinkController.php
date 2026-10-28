@@ -153,8 +153,7 @@ class PublicBioLinkController extends Controller
                     'live_stream' => $activeStream ? [
                         'video_id' => $activeStream->video_id,
                         'title' => $activeStream->title,
-                        'viewer_count' => $activeStream->viewer_count,
-                        'duty_minutes' => $activeStream->duty_minutes,
+                        'viewer_count' => $activeStream->viewers_count,
                     ] : null,
                 ],
                 'profile' => [
@@ -253,8 +252,7 @@ class PublicBioLinkController extends Controller
             'live_stream' => $activeStream ? [
                 'video_id' => $activeStream->video_id,
                 'title' => $activeStream->title,
-                'viewer_count' => $activeStream->viewer_count,
-                'duty_minutes' => $activeStream->duty_minutes,
+                'viewer_count' => $activeStream->viewers_count,
             ] : null,
             'recommended_streams' => $recommended,
         ]);
@@ -342,13 +340,6 @@ class PublicBioLinkController extends Controller
             // B-12: DatabaseStore requires key to exist before incrementing
             Cache::add($cacheKey, 0, now()->addDays(2));
             Cache::increment($cacheKey);
-
-            $pendingKey = "bio_views_pending:{$today}";
-            $pending = Cache::get($pendingKey, []);
-            if (!in_array($profile->id, $pending)) {
-                $pending[] = $profile->id;
-                Cache::put($pendingKey, $pending, 86400 * 2);
-            }
         } catch (\Throwable) {
             // Silently continue if telemetry fails
         }
