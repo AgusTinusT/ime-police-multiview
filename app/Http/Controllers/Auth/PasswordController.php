@@ -27,6 +27,13 @@ class PasswordController extends Controller
 
         Auth::logoutOtherDevices($validated['password']);
 
+        if (\Illuminate\Support\Facades\Schema::hasTable('sessions')) {
+            \Illuminate\Support\Facades\DB::table('sessions')
+                ->where('user_id', $request->user()->id)
+                ->where('id', '!=', $request->session()->getId())
+                ->delete();
+        }
+
         return back();
     }
 }
