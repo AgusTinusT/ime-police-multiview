@@ -1,0 +1,450 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\AuditLog;
+use App\Models\LinkDomainDenylist;
+use App\Models\Officer;
+use App\Models\OfficerBioLink;
+use App\Models\OfficerBioProfile;
+use App\Services\AuditLogger;
+use App\Services\BioProfileService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class OfficerBioLinkController extends Controller
+{
+    /**
+     * Render the Tactical Bio Links Management Dashboard for the authenticated officer.
+     */
+    public function dashboard(Request $request): Response
+    {
+        $user = Auth::user();
+        
+        // Find officer: either directly bound, or if admin allow selecting/previewing an officer
+        $officer = $user->officer;
+
+        if (!$officer && $user->isAdmin()) {
+            $officerId = $request->query('officer_id');
+            $officer = $officerId ? Officer::find($officerId) : (Officer::whereNotNull('user_id')->first() ?: Officer::first());
+        }
+
+        if (!$officer) {
+            abort(404, 'Data perwira tidak ditemukan. Hubungi Admin SASP untuk menghubungkan akun Anda.');
+        }
+
+        $profile = BioProfileService::ensureBioProfile($officer);
+        $profile->load(['links.recommendedOfficer']);
+
+        // Other officers for the recommendation dropdown
+        $otherOfficers = Officer::where('is_active', true)
+            ->where('id', '!=', $officer->id)
+            ->orderBy('officer_name', 'asc')
+            ->get(['id', 'officer_name', 'streamer_name', 'callsign', 'department', 'avatar_url']);
+
+        // Themes and styles config
+        $themes = config('biolinks.theme_presets', []);
+        $buttonStyles = config('biolinks.button_styles', []);
+        $allowedDomains = config('biolinks.allowed_domains', []);
+
+        // Stats summary for this profile
+        $stats = [
+            'total_views' => (int) $profile->dailyStats()->sum('views'),
+            'total_clicks' => (int) $profile->dailyStats()->sum('clicks'),
+            'links_count' => $profile->links()->count(),
+        ];
+
+        return Inertia::render('Officer/BioLinksDashboard', [
+            'officer' => $officer->load('agency', 'rankRelation'),
+            'profile' => $profile,
+            'otherOfficers' => $otherOfficers,
+            'themes' => $themes,
+            'buttonStyles' => $buttonStyles,
+            'allowedDomains' => $allowedDomains,
+            'stats' => $stats,
+        ]);
+    }
+
+    /**
+     * Store a new bio link.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        $officer = $this->resolveOfficer($user, $request);
+        $profile = $officer->bioProfile;
+
+        if (!$profile) {
+            $profile = BioProfileService::ensureBioProfile($officer);
+        }
+
+        if ($profile->is_suspended) {
+            return response()->json([
+                'message' => 'Halaman bio-link Anda sedang dinonaktifkan sementara (Suspended) oleh Komando Kepolisian. Alasan: ' . ($profile->suspension_reason ?: 'Penyelidikan moderasi.'),
+            ], 423);
+        }
+
+        $maxLinks = config('biolinks.limits.max_links_per_profile', 30);
+        if ($profile->links()->count() >= $maxLinks) {
+            return response()->json([
+                'message' => "Batas maksimal link tercapai ({$maxLinks} link per profil).",
+            ], 422);
+        }
+
+        $validated = $this->validateLinkData($request, $officer);
+
+        $maxOrder = $profile->links()->max('sort_order') ?? 0;
+        $validated['officer_bio_profile_id'] = $profile->id;
+        $validated['sort_order'] = $maxOrder + 1;
+        $validated['moderation_status'] = 'approved';
+
+        $link = OfficerBioLink::create($validated);
+
+        if ($link->link_type === 'donation') {
+            AuditLogger::log(
+                'bio_link.donation_added',
+                'officer_bio_link',
+                $link->id,
+                null,
+                ['title' => $link->title, 'url' => $link->url],
+                "Added donation link: {$link->title}"
+            );
+        }
+
+        return response()->json([
+            'message' => 'Tautan berhasil ditambahkan.',
+            'link' => $link->load('recommendedOfficer'),
+        ], 201);
+    }
+
+    /**
+     * Update an existing bio link.
+     */
+    public function update(Request $request, OfficerBioLink $link): JsonResponse
+    {
+        Gate::authorize('update', $link);
+
+        $profile = $link->profile;
+        if ($profile->is_suspended) {
+            return response()->json([
+                'message' => 'Halaman bio-link Anda sedang dinonaktifkan sementara (Suspended) oleh Komando Kepolisian.',
+            ], 423);
+        }
+
+        $officer = $profile->officer;
+        $validated = $this->validateLinkData($request, $officer, $link->id);
+
+        $beforeState = [
+            'title' => $link->title,
+            'subtitle' => $link->subtitle,
+            'url' => $link->url,
+            'link_type' => $link->link_type,
+            'is_highlighted' => $link->is_highlighted,
+        ];
+
+        $link->update($validated);
+
+        if ($link->link_type === 'donation') {
+            AuditLogger::log(
+                'bio_link.donation_changed',
+                'officer_bio_link',
+                $link->id,
+                $beforeState,
+                ['title' => $link->title, 'url' => $link->url],
+                "Updated donation link details"
+            );
+        }
+
+        return response()->json([
+            'message' => 'Tautan berhasil diperbarui.',
+            'link' => $link->load('recommendedOfficer'),
+        ]);
+    }
+
+    /**
+     * Toggle link active / inactive state.
+     */
+    public function toggle(OfficerBioLink $link): JsonResponse
+    {
+        Gate::authorize('toggle', $link);
+
+        if ($link->profile->is_suspended) {
+            return response()->json(['message' => 'Profil sedang disuspend.'], 423);
+        }
+
+        if ($link->moderation_status === 'banned') {
+            return response()->json(['message' => 'Tautan ini telah di-banned oleh Admin dan tidak dapat diaktifkan kembali.'], 403);
+        }
+
+        $link->is_active = !$link->is_active;
+        $link->save();
+
+        return response()->json([
+            'message' => $link->is_active ? 'Tautan diaktifkan.' : 'Tautan disembunyikan.',
+            'is_active' => $link->is_active,
+        ]);
+    }
+
+    /**
+     * Reorder links via drag-and-drop.
+     */
+    public function reorder(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ordered_ids' => 'required|array',
+            'ordered_ids.*' => 'integer',
+        ]);
+
+        $user = Auth::user();
+        $officer = $this->resolveOfficer($user, $request);
+        $profile = $officer->bioProfile;
+
+        if (!$profile || $profile->is_suspended) {
+            return response()->json(['message' => 'Aksi ditolak atau profil suspended.'], 423);
+        }
+
+        $existingIds = $profile->links()->pluck('id')->all();
+        $submittedIds = $request->ordered_ids;
+
+        // Anti-tampering check: submitted list must match existing link IDs
+        if (count($submittedIds) !== count($existingIds) || array_diff($submittedIds, $existingIds)) {
+            return response()->json([
+                'message' => 'Daftar ID tautan tidak valid atau milik profil lain.',
+            ], 422);
+        }
+
+        foreach ($submittedIds as $index => $id) {
+            OfficerBioLink::where('id', $id)->update(['sort_order' => $index + 1]);
+        }
+
+        return response()->json(['message' => 'Urutan tautan berhasil disimpan.']);
+    }
+
+    /**
+     * Delete a bio link.
+     */
+    public function destroy(OfficerBioLink $link): JsonResponse
+    {
+        Gate::authorize('delete', $link);
+
+        if ($link->profile->is_suspended) {
+            return response()->json(['message' => 'Profil sedang disuspend.'], 423);
+        }
+
+        $isDonation = $link->link_type === 'donation';
+        $title = $link->title;
+
+        $link->delete();
+
+        if ($isDonation) {
+            AuditLogger::log(
+                'bio_link.donation_deleted',
+                'officer_bio_link',
+                $link->id,
+                ['title' => $title],
+                null,
+                "Deleted donation link: {$title}"
+            );
+        }
+
+        return response()->json(['message' => 'Tautan telah dihapus.']);
+    }
+
+    /**
+     * Update profile settings (tagline, theme, accent, etc).
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        $officer = $this->resolveOfficer($user, $request);
+        $profile = $officer->bioProfile;
+
+        if (!$profile || $profile->is_suspended) {
+            return response()->json(['message' => 'Aksi ditolak atau profil suspended.'], 423);
+        }
+
+        $request->validate([
+            'display_title' => 'nullable|string|max:120',
+            'bio_tagline' => 'nullable|string|max:255',
+            'theme_preset' => ['required', Rule::in(array_keys(config('biolinks.theme_presets', [])))],
+            'button_style' => ['required', Rule::in(config('biolinks.button_styles', []))],
+            'accent_color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'show_live_stream_banner' => 'boolean',
+            'is_active' => 'boolean',
+        ]);
+
+        $profile->update([
+            'display_title' => $request->display_title,
+            'bio_tagline' => $request->bio_tagline,
+            'theme_preset' => $request->theme_preset,
+            'button_style' => $request->button_style,
+            'accent_color' => $request->accent_color,
+            'show_live_stream_banner' => $request->boolean('show_live_stream_banner', true),
+            'is_active' => $request->boolean('is_active', true),
+        ]);
+
+        return response()->json([
+            'message' => 'Pengaturan tampilan profil bio berhasil disimpan.',
+            'profile' => $profile,
+        ]);
+    }
+
+    /**
+     * View audit history of officer's own bio links.
+     */
+    public function history(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        $officer = $this->resolveOfficer($user, $request);
+        $profile = $officer->bioProfile;
+
+        if (!$profile) {
+            return response()->json(['logs' => []]);
+        }
+
+        $linkIds = $profile->links()->pluck('id')->all();
+
+        $logs = AuditLog::with('actor')
+            ->where(function ($query) use ($profile, $linkIds) {
+                $query->where(function ($q) use ($linkIds) {
+                    $q->where('subject_type', 'officer_bio_link')
+                        ->whereIn('subject_id', $linkIds);
+                })->orWhere(function ($q) use ($profile) {
+                    $q->where('subject_type', 'officer_bio_profile')
+                        ->where('subject_id', $profile->id);
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit(30)
+            ->get();
+
+        return response()->json(['logs' => $logs]);
+    }
+
+    /**
+     * Helper to resolve the operating officer.
+     */
+    protected function resolveOfficer($user, Request $request): Officer
+    {
+        if ($user->officer) {
+            return $user->officer;
+        }
+
+        if ($user->isAdmin() && $request->filled('officer_id')) {
+            return Officer::findOrFail($request->officer_id);
+        }
+
+        abort(403, 'Anda tidak terhubung dengan profil perwira.');
+    }
+
+    /**
+     * Validate link payload and allowlist rules.
+     */
+    protected function validateLinkData(Request $request, Officer $officer, ?int $ignoreLinkId = null): array
+    {
+        $request->validate([
+            'title' => 'required|string|max:120',
+            'subtitle' => 'nullable|string|max:180',
+            'link_type' => ['required', Rule::in(['donation', 'discord', 'officer_recommendation', 'social', 'custom'])],
+            'badge_label' => 'nullable|string|max:30',
+            'is_highlighted' => 'boolean',
+            'icon' => 'nullable|string|max:60',
+        ]);
+
+        $linkType = $request->link_type;
+        $url = trim($request->input('url', ''));
+        $urlHost = null;
+        $recommendedOfficerId = null;
+
+        if ($linkType === 'officer_recommendation') {
+            $request->validate([
+                'recommended_officer_id' => [
+                    'required',
+                    'exists:officers,id',
+                    Rule::notIn([$officer->id]),
+                ],
+            ], [
+                'recommended_officer_id.not_in' => 'Anda tidak dapat merekomendasikan profil Anda sendiri.',
+            ]);
+
+            // Max 4 recommendations check
+            $currentRecommendationsCount = $officer->bioProfile->links()
+                ->where('link_type', 'officer_recommendation')
+                ->when($ignoreLinkId, fn($q) => $q->where('id', '!=', $ignoreLinkId))
+                ->count();
+
+            if ($currentRecommendationsCount >= config('biolinks.limits.max_officer_recommendations', 4)) {
+                throw ValidationException::withMessages([
+                    'recommended_officer_id' => 'Maksimal 4 rekan patroli yang dapat direkomendasikan.',
+                ]);
+            }
+
+            $recommendedOfficerId = $request->recommended_officer_id;
+            $url = null;
+        } else {
+            // URL validation
+            if (empty($url)) {
+                throw ValidationException::withMessages(['url' => 'URL tautan wajib diisi.']);
+            }
+
+            // Must use HTTPS only
+            if (!str_starts_with(strtolower($url), 'https://')) {
+                throw ValidationException::withMessages(['url' => 'Protokol keamanan wajib HTTPS (awali dengan https://).']);
+            }
+
+            // Disallow credentials or dangerous characters
+            $parsed = parse_url($url);
+            if (!$parsed || empty($parsed['host']) || isset($parsed['user']) || isset($parsed['pass'])) {
+                throw ValidationException::withMessages(['url' => 'Format URL tidak valid atau memuat kredensial ilegal.']);
+            }
+
+            $urlHost = strtolower($parsed['host']);
+            // Remove 'www.' prefix for uniform matching
+            $cleanHost = preg_replace('/^www\./', '', $urlHost);
+
+            // Allowlist check per link_type
+            $allowlists = config('biolinks.allowed_domains', []);
+            if (isset($allowlists[$linkType])) {
+                $allowed = false;
+                foreach ($allowlists[$linkType] as $allowedDomain) {
+                    if ($cleanHost === $allowedDomain || str_ends_with($cleanHost, '.' . $allowedDomain)) {
+                        $allowed = true;
+                        break;
+                    }
+                }
+
+                if (!$allowed) {
+                    $domainList = implode(', ', $allowlists[$linkType]);
+                    throw ValidationException::withMessages([
+                        'url' => "Domain '{$cleanHost}' tidak diizinkan untuk tipe {$linkType}. Domain yang diterima: {$domainList}",
+                    ]);
+                }
+            }
+
+            // Denylist check (for custom links or all)
+            if (LinkDomainDenylist::where('host', $cleanHost)->exists()) {
+                throw ValidationException::withMessages([
+                    'url' => "Domain '{$cleanHost}' telah diblokir secara permanen oleh Admin Kepolisian.",
+                ]);
+            }
+        }
+
+        return [
+            'title' => $request->title,
+            'subtitle' => $request->subtitle,
+            'url' => $url,
+            'url_host' => $cleanHost ?? null,
+            'icon' => $request->icon ?: 'external-link',
+            'link_type' => $linkType,
+            'recommended_officer_id' => $recommendedOfficerId,
+            'badge_label' => $request->badge_label,
+            'is_highlighted' => $request->boolean('is_highlighted', false),
+        ];
+    }
+}

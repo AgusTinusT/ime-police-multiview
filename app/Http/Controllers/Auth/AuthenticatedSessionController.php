@@ -31,9 +31,19 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
-
         $user = $request->user();
+
+        if ($user && $user->isBanned()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => 'Akun Anda telah dinonaktifkan (Banned) oleh Komando Kepolisian. Alasan: ' . ($user->banned_reason ?? 'Pelanggaran ketentuan operasional.'),
+            ]);
+        }
+
+        $request->session()->regenerate();
 
         if ($user && $user->isAdmin()) {
             return redirect()->intended(route('admin.officers', absolute: false));

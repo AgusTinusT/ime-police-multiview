@@ -31,6 +31,10 @@ class ProfileController extends Controller
     {
         $request->user()->fill($request->validated());
 
+        if ($request->user()->isDirty('name')) {
+            $request->user()->name_skeleton = \App\Services\NameSkeleton::make($request->user()->name);
+        }
+
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }

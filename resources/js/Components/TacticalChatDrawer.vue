@@ -340,11 +340,27 @@ onUnmounted(() => {
                                 >
 
                                 <!-- Role Badges -->
+                                <a
+                                    v-if="msg.user?.officer"
+                                    :href="msg.user?.officer?.bio_profile?.slug ? '/@' + msg.user.officer.bio_profile.slug : '#'"
+                                    target="_blank"
+                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black font-mono uppercase bg-cyan-950/90 text-cyan-300 border border-cyan-500/50 hover:bg-cyan-900 transition shadow-sm"
+                                    :title="'Verified Officer: ' + msg.user.officer.officer_name + ' (' + msg.user.officer.callsign + ')'"
+                                >
+                                    <span>🛡️</span>
+                                    <span>{{ msg.user.officer.department || 'POLICE' }} #{{ msg.user.officer.callsign }}</span>
+                                </a>
                                 <span
-                                    v-if="msg.user?.role === 'admin'"
+                                    v-else-if="msg.user?.role === 'admin'"
                                     class="px-1.5 py-0.2 rounded text-[9px] font-black font-mono uppercase bg-gradient-to-r from-amber-500 to-orange-500 text-black shadow-sm"
                                 >
                                     DISPATCH ADMIN
+                                </span>
+                                <span
+                                    v-else-if="msg.user?.role === 'officer'"
+                                    class="px-1.5 py-0.2 rounded text-[9px] font-black font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/40"
+                                >
+                                    🛡️ OFFICER
                                 </span>
                                 <span
                                     v-else

@@ -5,18 +5,37 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title inertia>IME RP — SASP Police Duty</title>
+        @if (isset($page['props']['meta']))
+            <title>{{ $page['props']['meta']['title'] ?? 'IME RP — SASP Police Duty' }}</title>
+            <meta name="description" content="{{ $page['props']['meta']['description'] ?? '' }}">
+            <meta property="og:title" content="{{ $page['props']['meta']['title'] ?? '' }}">
+            <meta property="og:description" content="{{ $page['props']['meta']['description'] ?? '' }}">
+            <meta property="og:image" content="{{ $page['props']['meta']['image'] ?? '/images/icons/icon-512x512.png' }}">
+            <meta property="og:url" content="{{ $page['props']['meta']['url'] ?? url()->current() }}">
+            <meta property="og:type" content="profile">
+            <meta name="twitter:card" content="summary_large_image">
+            <meta name="twitter:title" content="{{ $page['props']['meta']['title'] ?? '' }}">
+            <meta name="twitter:description" content="{{ $page['props']['meta']['description'] ?? '' }}">
+            <meta name="twitter:image" content="{{ $page['props']['meta']['image'] ?? '/images/icons/icon-512x512.png' }}">
+            @if (!empty($page['props']['meta']['noindex']))
+                <meta name="robots" content="noindex, nofollow">
+            @else
+                <meta name="robots" content="index, follow">
+            @endif
+        @else
+            <title inertia>IME RP — SASP Police Duty</title>
 
-        <!-- SEO Meta Tags -->
-        <meta name="description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay (LSPD, BCSO, SASP, SAPR). Pantau seluruh siaran langsung perwira patroli secara multiview interaktif.">
-        <meta name="keywords" content="IME RP, Police Duty, SASP, LSPD, BCSO, SAPR, Multiview, FiveM, GTA V Roleplay">
-        <meta name="robots" content="index, follow">
+            <!-- SEO Meta Tags -->
+            <meta name="description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay (LSPD, BCSO, SASP, SAPR). Pantau seluruh siaran langsung perwira patroli secara multiview interaktif.">
+            <meta name="keywords" content="IME RP, Police Duty, SASP, LSPD, BCSO, SAPR, Multiview, FiveM, GTA V Roleplay">
+            <meta name="robots" content="index, follow">
 
-        <!-- OpenGraph Social Media Meta Tags -->
-        <meta property="og:title" content="IME RP — SASP Police Duty | Live Officer Bodycam">
-        <meta property="og:description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay.">
-        <meta property="og:type" content="website">
-        <meta property="og:image" content="/images/icons/icon-512x512.png">
+            <!-- OpenGraph Social Media Meta Tags -->
+            <meta property="og:title" content="IME RP — SASP Police Duty | Live Officer Bodycam">
+            <meta property="og:description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay.">
+            <meta property="og:type" content="website">
+            <meta property="og:image" content="/images/icons/icon-512x512.png">
+        @endif
 
         <!-- Favicon / Browser Icon (With Cache Buster) -->
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ filemtime(public_path('favicon.ico')) }}">

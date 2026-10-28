@@ -220,3 +220,69 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// ==========================================
+// OFFICER TACTICAL BIO-LINK & ANTI-IMPERSONATION HUB
+// ==========================================
+use App\Http\Controllers\OfficerBioLinkController;
+use App\Http\Controllers\OfficerBindingController;
+use App\Http\Controllers\OfficerClaimController;
+use App\Http\Controllers\AdminBioModerationController;
+use App\Http\Controllers\PublicBioLinkController;
+
+// 1. Authenticated Officer Dashboard & API
+Route::middleware(['auth', 'officer', 'not_banned'])->group(function () {
+    Route::get('/dashboard/bio-links', [OfficerBioLinkController::class, 'dashboard'])->name('officer.bio-links');
+    
+    Route::prefix('api/v1/officer')->group(function () {
+        Route::post('/bio-links', [OfficerBioLinkController::class, 'store'])->middleware('throttle:30,1');
+        Route::put('/bio-links/{link}', [OfficerBioLinkController::class, 'update'])->middleware('throttle:30,1');
+        Route::patch('/bio-links/{link}/toggle', [OfficerBioLinkController::class, 'toggle']);
+        Route::post('/bio-links/reorder', [OfficerBioLinkController::class, 'reorder']);
+        Route::delete('/bio-links/{link}', [OfficerBioLinkController::class, 'destroy']);
+        Route::put('/bio-profile', [OfficerBioLinkController::class, 'updateProfile']);
+        Route::get('/bio-links/history', [OfficerBioLinkController::class, 'history']);
+    });
+});
+
+// 2. Member Officer Claim Requests
+Route::middleware(['auth', 'not_banned'])->prefix('api/v1/officer-claims')->group(function () {
+    Route::post('/', [OfficerClaimController::class, 'store'])->middleware('throttle:5,60');
+    Route::delete('/{claim}', [OfficerClaimController::class, 'destroy']);
+});
+
+// 3. Admin Moderation, Binding & Claim Review
+Route::middleware(['auth', 'admin'])->prefix('api/v1/admin')->group(function () {
+    // Claims Review
+    Route::get('/officer-claims', [OfficerClaimController::class, 'index']);
+    Route::post('/officer-claims/{claim}/approve', [OfficerClaimController::class, 'approve']);
+    Route::post('/officer-claims/{claim}/reject', [OfficerClaimController::class, 'reject']);
+
+    // 1-to-1 Bindings
+    Route::post('/officers/{officer}/bind-user', [OfficerBindingController::class, 'bindUser']);
+    Route::post('/officers/{officer}/unbind-user', [OfficerBindingController::class, 'unbindUser']);
+    Route::patch('/bio-profiles/{profile}/slug', [OfficerBindingController::class, 'updateSlug']);
+
+    // Moderation & Kill-Switch
+    Route::get('/bio-links', [AdminBioModerationController::class, 'index']);
+    Route::patch('/bio-links/{link}/moderate', [AdminBioModerationController::class, 'moderate']);
+    Route::delete('/bio-links/{link}', [AdminBioModerationController::class, 'destroy']);
+    Route::post('/link-denylist', [AdminBioModerationController::class, 'banDomain']);
+    Route::patch('/bio-profiles/{profile}/suspend', [AdminBioModerationController::class, 'suspendProfile']);
+    Route::patch('/users/{user}/status', [AdminBioModerationController::class, 'setUserStatus']);
+    Route::get('/audit-logs', [AdminBioModerationController::class, 'auditLogs']);
+});
+
+// 4. Public Safe Redirect (/go/{link})
+Route::get('/go/{link}', [PublicBioLinkController::class, 'handleClick'])->middleware('throttle:60,1')->name('bio.go');
+
+// 5. Legacy / Convenience 301 Redirect (/links/{slug} -> /@{slug})
+Route::get('/links/{slug}', function (string $slug) {
+    return redirect()->to('/@' . $slug, 301);
+});
+
+// 6. Public Officer Tactical Bio-Link Page (Registered last to prevent route shadow)
+Route::get('/@{slug}', [PublicBioLinkController::class, 'show'])
+    ->where('slug', '[a-zA-Z0-9._-]+')
+    ->name('bio.show');
+

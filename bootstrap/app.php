@@ -18,12 +18,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
 
         $middleware->web(append: [
+            \App\Http\Middleware\EnsureNotBanned::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureIsAdmin::class,
+            'officer' => \App\Http\Middleware\EnsureIsOfficer::class,
+            'not_banned' => \App\Http\Middleware\EnsureNotBanned::class,
             'can_trim' => \App\Http\Middleware\CanTrimVideoMiddleware::class,
         ]);
 

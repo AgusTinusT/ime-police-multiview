@@ -28,4 +28,19 @@ class ProfileUpdateRequest extends FormRequest
             ],
         ];
     }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($this->filled('name')) {
+                $check = \App\Services\NameSkeleton::checkName($this->name, $this->user()?->id);
+                if ($check['blocked']) {
+                    $validator->errors()->add('name', $check['reason']);
+                }
+            }
+        });
+    }
 }

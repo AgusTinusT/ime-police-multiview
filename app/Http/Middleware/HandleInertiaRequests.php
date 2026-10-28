@@ -44,6 +44,14 @@ class HandleInertiaRequests extends Middleware
                     'quota_period_label' => $request->user()->getQuotaPeriodLabel(),
                     'can_use_1080p' => $request->user()->canUse1080p(),
                     'max_clip_duration_sec' => $request->user()->getMaxClipDurationSec(),
+                    'officer_profile' => $request->user()->officer ? [
+                        'id' => $request->user()->officer->id,
+                        'officer_name' => $request->user()->officer->officer_name,
+                        'streamer_name' => $request->user()->officer->streamer_name,
+                        'callsign' => $request->user()->officer->callsign,
+                        'badge_number' => $request->user()->officer->badge_number,
+                        'slug' => $request->user()->officer->bioProfile?->slug,
+                    ] : null,
                 ]) : null,
             ],
         ];

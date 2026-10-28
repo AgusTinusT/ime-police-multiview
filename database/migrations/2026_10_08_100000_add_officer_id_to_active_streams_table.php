@@ -22,12 +22,14 @@ return new class extends Migration
         });
 
         // Backfill officer_id for existing active_streams where channel_id matches officers.channel_id
-        \Illuminate\Support\Facades\DB::statement("
-            UPDATE active_streams s
-            JOIN officers o ON s.channel_id = o.channel_id
-            SET s.officer_id = o.id
-            WHERE s.officer_id IS NULL
-        ");
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'mysql') {
+            \Illuminate\Support\Facades\DB::statement("
+                UPDATE active_streams s
+                JOIN officers o ON s.channel_id = o.channel_id
+                SET s.officer_id = o.id
+                WHERE s.officer_id IS NULL
+            ");
+        }
     }
 
     /**

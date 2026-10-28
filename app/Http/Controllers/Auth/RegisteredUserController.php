@@ -37,8 +37,16 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $nameCheck = \App\Services\NameSkeleton::checkName($request->name);
+        if ($nameCheck['blocked']) {
+            throw ValidationException::withMessages([
+                'name' => $nameCheck['reason'],
+            ]);
+        }
+
         $user = User::create([
             'name' => $request->name,
+            'name_skeleton' => \App\Services\NameSkeleton::make($request->name),
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);

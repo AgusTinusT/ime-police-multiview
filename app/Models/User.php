@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'clipper_tier'])]
+#[Fillable(['name', 'email', 'password', 'role', 'status', 'banned_reason', 'banned_at', 'name_skeleton', 'clipper_tier'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -27,10 +29,19 @@ class User extends Authenticatable
 
     /**
      * Check if user is an Officer or Admin.
+     * Derived primarily from officer relation; accepts legacy role === 'officer' during transition.
      */
     public function isOfficer(): bool
     {
-        return in_array($this->role, ['admin', 'officer']);
+        return $this->isAdmin() || $this->officer()->exists() || $this->role === 'officer';
+    }
+
+    /**
+     * Check if user account is banned.
+     */
+    public function isBanned(): bool
+    {
+        return $this->status === 'banned';
     }
 
     /**
@@ -91,7 +102,32 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'banned_at' => 'datetime',
         ];
+    }
+
+    /**
+     * The officer record linked to this user (1:1).
+     */
+    public function officer(): HasOne
+    {
+        return $this->hasOne(Officer::class, 'user_id');
+    }
+
+    /**
+     * Officer claims submitted by this user.
+     */
+    public function claims(): HasMany
+    {
+        return $this->hasMany(OfficerClaim::class);
+    }
+
+    /**
+     * Audit log actions performed by this user.
+     */
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class, 'actor_id');
     }
 
     /**

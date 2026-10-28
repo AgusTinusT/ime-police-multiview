@@ -13,7 +13,9 @@ class ChatMessageController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ChatMessage::with(['user:id,name,email,role']);
+        $userRelations = ['user:id,name,email,role', 'user.officer.bioProfile'];
+
+        $query = ChatMessage::with($userRelations);
 
         if ($request->filled('after_id')) {
             $query->where('id', '>', (int)$request->after_id);
@@ -23,7 +25,7 @@ class ChatMessageController extends Controller
         $messages = $query->orderBy('id', 'desc')->take(50)->get()->reverse()->values();
 
         // Also fetch any pinned message
-        $pinnedMessage = ChatMessage::with(['user:id,name,email,role'])
+        $pinnedMessage = ChatMessage::with($userRelations)
             ->where('is_pinned', true)
             ->latest()
             ->first();
@@ -63,7 +65,7 @@ class ChatMessageController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Pesan terkirim.',
-            'data' => $chat->load(['user:id,name,email,role']),
+            'data' => $chat->load(['user:id,name,email,role', 'user.officer.bioProfile']),
         ], 201);
     }
 

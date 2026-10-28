@@ -198,6 +198,25 @@ onUnmounted(() => {
                             </div>
                         </Link>
 
+                        <!-- Tactical Bio-Link Hub (Officers & Admins) -->
+                        <Link
+                            v-if="$page.props.auth.user.is_officer || isAdmin"
+                            href="/dashboard/bio-links"
+                            @click="isOpen = false"
+                            class="flex items-center px-4 py-2.5 text-cyan-300 hover:bg-slate-800 hover:text-cyan-200 transition gap-2.5 font-semibold group"
+                        >
+                            <span class="text-base shrink-0">🛡️</span>
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Tactical Bio-Link</span>
+                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40 font-mono">HUB</span>
+                                </div>
+                                <span class="text-[10px] text-slate-400 font-normal">
+                                    Kelola Tautan, Donasi & Squad
+                                </span>
+                            </div>
+                        </Link>
+
                         <!-- Tactical Video Trimmer Studio (All Users) -->
                         <Link
                             href="/clipper"

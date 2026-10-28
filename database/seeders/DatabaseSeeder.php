@@ -448,6 +448,47 @@ class DatabaseSeeder extends Seeder
                 'avatar_url' => 'https://api.dicebear.com/7.x/bottts/svg?seed=Lyonablln',
                 'is_active' => true,
             ],
+
+            // Batch 4 (New Officers)
+            [
+                'channel_id' => 'UCULeE1WMdsLRERnA9LlFb-g',
+                'handle' => '@BALGAMING-f6r',
+                'streamer_name' => 'BAL GAMING',
+                'officer_name' => 'Deputy Bal Pratama',
+                'callsign' => '2-BAKER-25',
+                'badge_number' => '#208',
+                'department' => 'BCSO',
+                'rank' => 'Deputy',
+                'patrol_zone' => 'Sandy Shores & Grand Senora',
+                'avatar_url' => 'https://yt3.googleusercontent.com/prhJesUgkvqTP373N-GO6V-rAPoFeZ1XiD4oDHZ-32rQogHhPOX_UBGX-aryKklmnSZpReQLEuk=s900-c-k-c0x00ffffff-no-rj',
+                'is_active' => true,
+            ],
+            [
+                'channel_id' => 'UCXIPI22O9GdwK7_23LIy55g',
+                'handle' => '@itskzn',
+                'streamer_name' => 'kzn',
+                'officer_name' => 'Trooper Kezan Mackenzie',
+                'callsign' => '3-VICTOR-18',
+                'badge_number' => '#305',
+                'department' => 'SASP',
+                'rank' => 'Trooper',
+                'patrol_zone' => 'Los Santos Freeway & Zancudo',
+                'avatar_url' => 'https://yt3.googleusercontent.com/t3v176lit7K6lAxYAW5SCrQC-WbfvGx9kFT_g8OkwMzvrzx8Aj8dHKo9OVipvgjM2rcFntPHFKo=s900-c-k-c0x00ffffff-no-rj',
+                'is_active' => true,
+            ],
+            [
+                'channel_id' => 'UCP_hTj0v46E4_9DUC4Dfqlg',
+                'handle' => '@Rangeritemlucu',
+                'streamer_name' => 'Arinnn',
+                'officer_name' => 'Ranger Arin Luciana',
+                'callsign' => '4-RANGER-02',
+                'badge_number' => '#405',
+                'department' => 'SAPR',
+                'rank' => 'Park Ranger',
+                'patrol_zone' => 'Mount Chiliad & Paleto Forest',
+                'avatar_url' => 'https://yt3.googleusercontent.com/ytc/AIdro_kk0DtxIgCx8llcoHGW-YUUNHd2DH9PLgfZ1JWNyUjxxeg=s900-c-k-c0x00ffffff-no-rj',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($officers as $officerData) {
@@ -462,6 +503,9 @@ class DatabaseSeeder extends Seeder
 
         // Run Agencies, Ranks, Divisions & Link Officers
         $this->call(AgenciesRanksDivisionsSeeder::class);
+
+        // Run Officer Bio Link Seeder for tactical bio-link accounts & profiles
+        $this->call(OfficerBioLinkSeeder::class);
 
         // Automatically fetch real YouTube channel avatars & subscriber counts for officers
         \Illuminate\Support\Facades\Artisan::call('officer:sync-subscribers');

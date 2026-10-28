@@ -12,6 +12,7 @@ class Officer extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'channel_id',
         'handle',
         'streamer_name',
@@ -41,6 +42,30 @@ class Officer extends Model
         'is_active' => 'boolean',
         'bypass_hashtag_check' => 'boolean',
     ];
+
+    /**
+     * Account user managing this officer profile (1:1 relation)
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Tactical Bio Link Profile
+     */
+    public function bioProfile(): HasOne
+    {
+        return $this->hasOne(OfficerBioProfile::class);
+    }
+
+    /**
+     * Claims submitted for this officer
+     */
+    public function claims(): HasMany
+    {
+        return $this->hasMany(OfficerClaim::class);
+    }
 
     /**
      * Relational Agency (LSPD, BCSO, SASP, SAPR)

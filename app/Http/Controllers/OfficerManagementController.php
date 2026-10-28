@@ -19,7 +19,7 @@ class OfficerManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Officer::with(['agency', 'rankRelation', 'division', 'certifications']);
+        $query = Officer::with(['agency', 'rankRelation', 'division', 'certifications', 'user:id,name,email,role,status', 'bioProfile']);
 
         if ($request->filled('dept') && $request->dept !== 'ALL') {
             $query->where('department', $request->dept);
@@ -336,6 +336,8 @@ class OfficerManagementController extends Controller
         $liveCount = ActiveStream::where('status', 'LIVE')->count();
 
         $agenciesMaster = Agency::with(['ranks', 'divisions'])->get();
+        $usersList = \App\Models\User::where('status', 'active')->orderBy('name')->get(['id', 'name', 'email', 'role']);
+        $pendingClaimsCount = \App\Models\OfficerClaim::where('status', 'pending')->count();
 
         return \Inertia\Inertia::render('Admin/OfficerManagement', [
             'stats' => [
@@ -346,8 +348,10 @@ class OfficerManagementController extends Controller
                 'bcso' => $bcsoCount,
                 'sasp' => $saspCount,
                 'sapr' => $saprCount,
+                'pending_claims' => $pendingClaimsCount,
             ],
             'agenciesMaster' => $agenciesMaster,
+            'usersList' => $usersList,
         ]);
     }
 
