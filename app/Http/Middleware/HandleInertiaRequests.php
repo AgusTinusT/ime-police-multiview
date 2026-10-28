@@ -15,6 +15,18 @@ class HandleInertiaRequests extends Middleware
     protected $rootView = 'app';
 
     /**
+     * Handle the incoming request.
+     */
+    public function handle(Request $request, \Closure $next)
+    {
+        if ($request->user() && ! $request->routeIs('bio.show', 'bio.go')) {
+            \Illuminate\Support\Facades\Vite::prefetch(concurrency: 3);
+        }
+
+        return parent::handle($request, $next);
+    }
+
+    /**
      * Determine the current asset version.
      */
     public function version(Request $request): ?string

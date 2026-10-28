@@ -24,8 +24,6 @@ class AppServiceProvider extends ServiceProvider
         if (request()->isSecure() || request()->server('HTTP_X_FORWARDED_PROTO') === 'https' || request()->server('HTTPS') === 'on') {
             URL::forceScheme('https');
         }
-
-        Vite::prefetch(concurrency: 3);
     }
 }
 
