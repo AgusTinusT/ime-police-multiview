@@ -82,7 +82,7 @@ class SelfProfileTest extends TestCase
     {
         $response = $this->actingAs($this->user)->putJson('/api/v1/officer/profile', [
             'officer_name' => 'James W Gordon',
-            'streamer_name' => 'GordonOfficial',
+            'streamer_name' => 'GordonLive',
             'callsign' => '102',
             'badge_number' => '102',
             'patrol_zone' => 'Vinewood Hills',
@@ -94,7 +94,7 @@ class SelfProfileTest extends TestCase
 
         $this->officer->refresh();
         $this->assertEquals('James W Gordon', $this->officer->officer_name);
-        $this->assertEquals('GordonOfficial', $this->officer->streamer_name);
+        $this->assertEquals('GordonLive', $this->officer->streamer_name);
         $this->assertEquals('102', $this->officer->callsign);
         $this->assertEquals('102', $this->officer->badge_number);
         $this->assertEquals('Vinewood Hills', $this->officer->patrol_zone);
