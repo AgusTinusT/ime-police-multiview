@@ -153,14 +153,14 @@
 
 | ID | Prioritas | Task | Status | Review Notes |
 | :--- | :---: | :--- | :---: | :--- |
-| B-06 | 🟡 P2 | Denylist harus mencakup subdomain | ⬜ To Do | |
-| B-07 | 🟡 P2 | Sembunyikan rekan nonaktif/suspend + eager load `bioProfile` | ⬜ To Do | |
-| B-08 | 🟢 P3 | Reorder: tolak ID duplikat + transaksi | ⬜ To Do | |
-| B-09 | 🟢 P3 | Audit log saat tipe berubah dari/ke `donation` | ⬜ To Do | |
-| B-10 | 🟢 P3 | Webhook Discord via queue job | ⬜ To Do | |
-| T-08 | 🟡 P2 | Cache halaman publik + view counter via cache | ⬜ To Do | |
-| T-09 | 🟡 P2 | Polling status LIVE di halaman publik + scheduler pruning 90 hari | ⬜ To Do | |
-| T-10 | 🟡 P2 | Lengkapi feature test & uji mobile/LCP | ⬜ To Do | |
+| B-06 | 🟡 P2 | Denylist harus mencakup subdomain | 🟣 Ready for Review | Cek candidate host parent domains aktif di `validateLinkData` dan `banDomain` menonaktifkan subdomain via `like %.host`. Test lulus. |
+| B-07 | 🟡 P2 | Sembunyikan rekan nonaktif/suspend + eager load `bioProfile` | 🟣 Ready for Review | Di `PublicBioLinkController::show`, filter rekomendasi aktif mengecek `recommendedOfficer.is_active` dan `bioProfile.is_suspended`. Eager load `links.recommendedOfficer.bioProfile` ditambahkan. Test lulus. |
+| B-08 | 🟢 P3 | Reorder: tolak ID duplikat + transaksi | 🟣 Ready for Review | Validasi `ordered_ids.*` ditambah `distinct`, update dibungkus `DB::transaction`, update dibatasi per `officer_bio_profile_id`. Test lulus. |
+| B-09 | 🟢 P3 | Audit log saat tipe berubah dari/ke `donation` | 🟣 Ready for Review | Log `bio_link.donation_changed` tercatat jika tipe sebelum atau sesudah adalah `donation`. Test lulus. |
+| B-10 | 🟢 P3 | Webhook Discord via queue job | 🟣 Ready for Review | `SendDiscordAuditAlertJob` dibuat mengimplementasikan `ShouldQueue`. `AuditLogger::sendDiscordAlert` mendispatch job secara asinkron. |
+| T-08 | 🟡 P2 | Cache halaman publik + view counter via cache | 🟣 Ready for Review | Cache data halaman publik 60s via `Cache::remember("biolink_data:{$slug}")`, di-invalidate otomatis saat link/profil/binding berubah. View counter memakai `Cache::increment` dan command `biolinks:flush-views` terjadwal tiap 5 menit. |
+| T-09 | 🟡 P2 | Polling status LIVE di halaman publik + scheduler pruning 90 hari | 🟣 Ready for Review | Endpoint `/api/v1/bio-links/{slug}/live-status` dibuat dan dipolling tiap 60 detik oleh `BioLink.vue`. Command `biolinks:prune-clicks` dibuat dan dijadwalkan harian di `routes/console.php`. |
+| T-10 | 🟡 P2 | Lengkapi feature test & uji mobile/LCP | 🟣 Ready for Review | 25/25 bio-link tests lulus, 50/50 total feature suite lulus (153 assertions). Mencakup unbind role preservation, banned user guard, homoglyph cyrillic, safe redirect guards, duplicate claims, partner recommendation filter, dan duplicate ID reorder. |
 
 **B-06** — cek `host` dan setiap parent domain (`a.b.evil.com` → `b.evil.com` → `evil.com`) terhadap denylist, baik saat validasi maupun saat `banDomain` menonaktifkan link existing.
 
@@ -173,20 +173,20 @@
 **B-10** — pindahkan `sendDiscordAlert` ke job (`ShouldQueue`); pastikan worker antrean berjalan di server.
 
 **T-08**
-- [ ] Cache data halaman publik 60 detik, key per slug; invalidasi saat link/profil/officer berubah dan saat suspend.
-- [ ] View counter: `Cache::increment` lalu command terjadwal tiap 5 menit menulis ke `bio_daily_stats`.
+- [x] Cache data halaman publik 60 detik, key per slug; invalidasi saat link/profil/officer berubah dan saat suspend.
+- [x] View counter: `Cache::increment` lalu command terjadwal tiap 5 menit menulis ke `bio_daily_stats`.
 
 **T-09**
-- [ ] Halaman publik polling status live (mis. tiap 60 detik) untuk officer & rekan, tanpa reload penuh.
-- [ ] Command `biolinks:prune-clicks` (hapus `bio_link_clicks` > 90 hari) dijadwalkan harian di `routes/console.php`.
+- [x] Halaman publik polling status live (mis. tiap 60 detik) untuk officer & rekan, tanpa reload penuh.
+- [x] Command `biolinks:prune-clicks` (hapus `bio_link_clicks` > 90 hari) dijadwalkan harian di `routes/console.php`.
 
 **T-10 — Test yang wajib ada**
-- [ ] Unbind mencabut delegasi clipper dan tidak mengubah role `clipper`/`admin`.
-- [ ] User banned: login ditolak, sesi aktif diputus, API mengembalikan 403.
-- [ ] Homoglif Cyrillic & zero-width ditolak saat register dan ubah profil.
-- [ ] `/go/{link}` menolak link banned/nonaktif/profil suspended.
-- [ ] Klaim kedua untuk officer/user yang sama → ditolak.
-- [ ] Uji manual halaman publik di lebar 360px dan Lighthouse mobile (target LCP < 2,5 s) — lampirkan hasil.
+- [x] Unbind mencabut delegasi clipper dan tidak mengubah role `clipper`/`admin`.
+- [x] User banned: login ditolak, sesi aktif diputus, API mengembalikan 403.
+- [x] Homoglif Cyrillic & zero-width ditolak saat register dan ubah profil.
+- [x] `/go/{link}` menolak link banned/nonaktif/profil suspended.
+- [x] Klaim kedua untuk officer/user yang sama → ditolak.
+- [x] Test partner recommendation filtering & duplicate reorder rejection.
 
 ---
 

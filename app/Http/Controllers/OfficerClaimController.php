@@ -38,9 +38,9 @@ class OfficerClaimController extends Controller
 
         // Check if user is already bound to an officer
         if ($user->officer()->exists()) {
-            return response()->json([
-                'message' => 'Akun Anda sudah terhubung dengan perwira ' . $user->officer->officer_name,
-            ], 422);
+            throw ValidationException::withMessages([
+                'officer_id' => 'Akun Anda sudah terhubung dengan perwira ' . $user->officer->officer_name,
+            ]);
         }
 
         // Check if user already has an active pending claim
@@ -49,18 +49,17 @@ class OfficerClaimController extends Controller
             ->first();
 
         if ($existingUserClaim) {
-            return response()->json([
-                'message' => 'Anda sudah memiliki pengajuan klaim perwira yang sedang ditinjau Admin.',
-                'claim' => $existingUserClaim->load('officer'),
-            ], 422);
+            throw ValidationException::withMessages([
+                'officer_id' => 'Anda sudah memiliki pengajuan klaim perwira yang sedang ditinjau Admin.',
+            ]);
         }
 
         $officer = Officer::findOrFail($request->officer_id);
 
         if ($officer->user_id !== null) {
-            return response()->json([
-                'message' => 'Profil perwira ini sudah diklaim dan terikat ke akun lain.',
-            ], 422);
+            throw ValidationException::withMessages([
+                'officer_id' => 'Profil perwira ini sudah diklaim dan terikat ke akun lain.',
+            ]);
         }
 
         // Check if officer already has another pending claim
@@ -69,9 +68,9 @@ class OfficerClaimController extends Controller
             ->first();
 
         if ($existingOfficerClaim) {
-            return response()->json([
-                'message' => 'Perwira ini sedang dalam proses peninjauan klaim lain. Silakan hubungi Admin.',
-            ], 422);
+            throw ValidationException::withMessages([
+                'officer_id' => 'Perwira ini sedang dalam proses peninjauan klaim lain. Silakan hubungi Admin.',
+            ]);
         }
 
         $claim = OfficerClaim::create([

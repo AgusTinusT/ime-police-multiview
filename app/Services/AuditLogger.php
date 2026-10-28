@@ -31,14 +31,14 @@ class AuditLogger
             'reason' => $reason,
         ]);
 
-        // Send Discord Tactical Notification if configured (especially for sensitive events)
+        // Send Discord Tactical Notification asynchronously via Queue Job if configured (B-10)
         self::sendDiscordAlert($action, $subjectType, $subjectId, $reason);
 
         return $log;
     }
 
     /**
-     * Send Discord Webhook notification if webhook URL is configured.
+     * Dispatch Discord Webhook notification job if webhook URL is configured (B-10).
      */
     protected static function sendDiscordAlert(string $action, string $subjectType, int $subjectId, ?string $reason): void
     {
@@ -51,24 +51,15 @@ class AuditLogger
             $user = Auth::user();
             $actorName = $user ? "{$user->name} (#{$user->id})" : "System / CLI";
 
-            $payload = [
-                'embeds' => [
-                    [
-                        'title' => "🛡️ Police Tactical Audit: {$action}",
-                        'color' => 0x06b6d4, // Cyan
-                        'fields' => [
-                            ['name' => 'Actor', 'value' => $actorName, 'inline' => true],
-                            ['name' => 'Subject', 'value' => "{$subjectType} #{$subjectId}", 'inline' => true],
-                            ['name' => 'Reason', 'value' => $reason ?: 'N/A', 'inline' => false],
-                        ],
-                        'timestamp' => now()->toIso8601String(),
-                    ]
-                ]
-            ];
-
-            \Illuminate\Support\Facades\Http::timeout(3)->post($webhookUrl, $payload);
+            \App\Jobs\SendDiscordAuditAlertJob::dispatch(
+                $action,
+                $subjectType,
+                $subjectId,
+                $reason,
+                $actorName
+            );
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("Discord audit webhook alert failed: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::warning("Dispatching Discord audit alert job failed: " . $e->getMessage());
         }
     }
 }

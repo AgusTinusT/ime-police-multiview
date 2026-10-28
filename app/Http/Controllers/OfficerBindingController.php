@@ -74,6 +74,8 @@ class OfficerBindingController extends Controller
             $profile->is_active = true;
             $profile->save();
 
+            BioProfileService::invalidatePublicCache($profile->slug);
+
             AuditLogger::log(
                 'officer.bind',
                 'officer',
@@ -120,6 +122,7 @@ class OfficerBindingController extends Controller
             // Hide bio profile (do not delete links)
             if ($lockedOfficer->bioProfile) {
                 $lockedOfficer->bioProfile->update(['is_active' => false]);
+                BioProfileService::invalidatePublicCache($lockedOfficer->bioProfile->slug);
             }
 
             // Revoke all delegations granted by this user
@@ -181,6 +184,9 @@ class OfficerBindingController extends Controller
 
             $profile->slug = $newSlug;
             $profile->save();
+
+            BioProfileService::invalidatePublicCache($oldSlug);
+            BioProfileService::invalidatePublicCache($newSlug);
 
             AuditLogger::log(
                 'bio_profile.slug_changed',

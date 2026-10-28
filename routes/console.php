@@ -26,3 +26,10 @@ Schedule::command('db:backup')->dailyAt('02:00');
 
 // Prune video clips older than 1 hour (runs every 15 minutes)
 Schedule::command('clips:prune --hours=1')->everyFifteenMinutes();
+
+// Tactical Bio-Link: Flush cached page views every 5 minutes (T-08)
+Schedule::command('biolinks:flush-views')->everyFiveMinutes()->runInBackground();
+
+// Tactical Bio-Link: Prune raw link clicks older than 90 days daily at 03:00 AM (T-09)
+Schedule::command('biolinks:prune-clicks --days=90')->dailyAt('03:00');
+

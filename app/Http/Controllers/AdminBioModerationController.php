@@ -8,6 +8,7 @@ use App\Models\OfficerBioLink;
 use App\Models\OfficerBioProfile;
 use App\Models\User;
 use App\Services\AuditLogger;
+use App\Services\BioProfileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,6 +81,10 @@ class AdminBioModerationController extends Controller
 
         $link->save();
 
+        if ($link->profile) {
+            BioProfileService::invalidatePublicCache($link->profile->slug);
+        }
+
         // Optionally ban domain host globally
         if ($request->boolean('ban_domain') && !empty($link->url_host)) {
             LinkDomainDenylist::firstOrCreate(
@@ -119,7 +124,12 @@ class AdminBioModerationController extends Controller
         $title = $link->title;
         $profileId = $link->officer_bio_profile_id;
 
+        $slugToClear = $link->profile?->slug;
         $link->delete();
+
+        if ($slugToClear) {
+            BioProfileService::invalidatePublicCache($slugToClear);
+        }
 
         AuditLogger::log(
             'bio_link.force_deleted',
@@ -203,6 +213,8 @@ class AdminBioModerationController extends Controller
         $profile->suspended_by = $isSuspended ? Auth::id() : null;
         $profile->suspended_at = $isSuspended ? now() : null;
         $profile->save();
+
+        BioProfileService::invalidatePublicCache($profile->slug);
 
         AuditLogger::log(
             $isSuspended ? 'bio_profile.suspended' : 'bio_profile.unsuspended',

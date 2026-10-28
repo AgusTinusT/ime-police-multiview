@@ -5,10 +5,18 @@ namespace App\Services;
 use App\Models\BioSlugRedirect;
 use App\Models\Officer;
 use App\Models\OfficerBioProfile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class BioProfileService
 {
+    /**
+     * Invalidate public cache for a given slug (T-08).
+     */
+    public static function invalidatePublicCache(string $slug): void
+    {
+        Cache::forget("biolink_data:{$slug}");
+    }
     /**
      * Ensure an OfficerBioProfile exists for an officer, generating a slug if new.
      */

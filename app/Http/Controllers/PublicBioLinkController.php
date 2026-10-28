@@ -9,6 +9,7 @@ use App\Models\Officer;
 use App\Models\OfficerBioLink;
 use App\Models\OfficerBioProfile;
 use App\Services\BioProfileService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -38,6 +39,7 @@ class PublicBioLinkController extends Controller
             'links.recommendedOfficer.activeStream',
             'links.recommendedOfficer.agency',
             'links.recommendedOfficer.rankRelation',
+            'links.recommendedOfficer.bioProfile',
         ])->where('slug', $slug)->first();
 
         // 3. Fallback: check if slug matches an officer handle -> 301 Permanent Redirect to official slug
@@ -101,91 +103,158 @@ class PublicBioLinkController extends Controller
         // Precedence 4: Unclaimed officer -> basic roster page without links
         $isUnclaimed = $officer->user_id === null;
 
-        // Increment daily view stats in cache / daily aggregate
+        // Increment daily view stats in cache (T-08)
         $this->recordPageView($profile);
 
-        // Filter links: only active & approved
-        $links = $isUnclaimed ? collect([]) : $profile->links
-            ->filter(fn($l) => $l->is_active && $l->moderation_status === 'approved')
-            ->values();
+        // Cache the rendered page data for 60 seconds per slug (T-08)
+        $pageProps = Cache::remember("biolink_data:{$slug}", 60, function () use ($profile, $officer, $isUnclaimed) {
+            // Check if officer is actively live right now
+            $activeStream = $officer->activeStream;
 
-        // Check if officer is actively live right now
+            // Filter links: only active & approved
+            // B-07: For officer_recommendation, hide if recommendedOfficer.is_active = false or recommendedOfficer.bioProfile.is_suspended = true
+            $links = $isUnclaimed ? collect([]) : $profile->links
+                ->filter(function ($l) {
+                    if (!$l->is_active || $l->moderation_status !== 'approved') {
+                        return false;
+                    }
+                    if ($l->link_type === 'officer_recommendation') {
+                        $ro = $l->recommendedOfficer;
+                        if (!$ro || !$ro->is_active) {
+                            return false;
+                        }
+                        if ($ro->bioProfile && $ro->bioProfile->is_suspended) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                ->values();
+
+            // SEO and Social Media Meta
+            $metaTitle = "{$officer->officer_name} ({$officer->callsign}) — Official SASP Bio Hub";
+            $metaDescription = $profile->bio_tagline ?: "Saluran resmi perwira kepolisian {$officer->streamer_name} di Police Tactical Command Center SASP.";
+            $metaImage = $officer->avatar_url ?: asset('images/icons/icon-512x512.png');
+
+            return [
+                'officer' => [
+                    'id' => $officer->id,
+                    'officer_name' => $officer->officer_name,
+                    'streamer_name' => $officer->streamer_name,
+                    'callsign' => $officer->callsign,
+                    'badge_number' => $officer->badge_number,
+                    'department' => $officer->department,
+                    'rank' => $officer->rankRelation?->name ?: $officer->rank,
+                    'agency' => $officer->agency?->name ?: $officer->department,
+                    'agency_badge_url' => $officer->agency?->badge_image_url,
+                    'avatar_url' => $officer->avatar_url,
+                    'duty_status' => $officer->duty_status,
+                    'is_live' => $activeStream !== null,
+                    'live_stream' => $activeStream ? [
+                        'video_id' => $activeStream->video_id,
+                        'title' => $activeStream->title,
+                        'viewer_count' => $activeStream->viewer_count,
+                        'duty_minutes' => $activeStream->duty_minutes,
+                    ] : null,
+                ],
+                'profile' => [
+                    'id' => $profile->id,
+                    'slug' => $profile->slug,
+                    'display_title' => $profile->display_title ?: $officer->officer_name,
+                    'bio_tagline' => $profile->bio_tagline,
+                    'theme_preset' => $profile->theme_preset,
+                    'button_style' => $profile->button_style,
+                    'accent_color' => $profile->accent_color,
+                    'show_live_stream_banner' => $profile->show_live_stream_banner,
+                    'is_suspended' => false,
+                    'is_unclaimed' => $isUnclaimed,
+                    'is_verified' => !$isUnclaimed,
+                ],
+                'links' => $links->map(function ($link) {
+                    return [
+                        'id' => $link->id,
+                        'title' => $link->title,
+                        'subtitle' => $link->subtitle,
+                        'link_type' => $link->link_type,
+                        'icon' => $link->icon,
+                        'badge_label' => $link->badge_label,
+                        'is_highlighted' => $link->is_highlighted,
+                        'redirect_url' => $link->link_type === 'officer_recommendation' ? null : url('/go/' . $link->id),
+                        'recommended_officer' => $link->recommendedOfficer ? [
+                            'id' => $link->recommendedOfficer->id,
+                            'officer_name' => $link->recommendedOfficer->officer_name,
+                            'streamer_name' => $link->recommendedOfficer->streamer_name,
+                            'callsign' => $link->recommendedOfficer->callsign,
+                            'department' => $link->recommendedOfficer->department,
+                            'rank' => $link->recommendedOfficer->rankRelation?->name ?: $link->recommendedOfficer->rank,
+                            'avatar_url' => $link->recommendedOfficer->avatar_url,
+                            'is_live' => $link->recommendedOfficer->activeStream !== null,
+                            'active_stream' => $link->recommendedOfficer->activeStream ? [
+                                'video_id' => $link->recommendedOfficer->activeStream->video_id,
+                                'title' => $link->recommendedOfficer->activeStream->title,
+                            ] : null,
+                            'bio_slug' => $link->recommendedOfficer->bioProfile?->slug,
+                        ] : null,
+                    ];
+                }),
+                'isSuspended' => false,
+                'isUnclaimed' => $isUnclaimed,
+                'meta' => [
+                    'title' => $metaTitle,
+                    'description' => $metaDescription,
+                    'image' => $metaImage,
+                    'url' => url('/@' . $profile->slug),
+                ],
+            ];
+        });
+
+        return Inertia::render('Public/BioLink', $pageProps);
+    }
+
+    /**
+     * Polling endpoint for real-time live telemetry without full page reload (T-09).
+     */
+    public function liveStatus(string $slug): JsonResponse
+    {
+        $slug = strtolower(trim($slug));
+        $profile = OfficerBioProfile::where('slug', $slug)
+            ->with(['officer.activeStream', 'links.recommendedOfficer.activeStream'])
+            ->first();
+
+        if (!$profile || !$profile->officer) {
+            return response()->json([
+                'is_live' => false,
+                'live_stream' => null,
+                'recommended_streams' => (object) [],
+            ]);
+        }
+
+        $officer = $profile->officer;
         $activeStream = $officer->activeStream;
 
-        // SEO and Social Media Meta
-        $metaTitle = "{$officer->officer_name} ({$officer->callsign}) — Official SASP Bio Hub";
-        $metaDescription = $profile->bio_tagline ?: "Saluran resmi perwira kepolisian {$officer->streamer_name} di Police Tactical Command Center SASP.";
-        $metaImage = $officer->avatar_url ?: asset('images/icons/icon-512x512.png');
-
-        return Inertia::render('Public/BioLink', [
-            'officer' => [
-                'id' => $officer->id,
-                'officer_name' => $officer->officer_name,
-                'streamer_name' => $officer->streamer_name,
-                'callsign' => $officer->callsign,
-                'badge_number' => $officer->badge_number,
-                'department' => $officer->department,
-                'rank' => $officer->rankRelation?->name ?: $officer->rank,
-                'agency' => $officer->agency?->name ?: $officer->department,
-                'agency_badge_url' => $officer->agency?->badge_image_url,
-                'avatar_url' => $officer->avatar_url,
-                'duty_status' => $officer->duty_status,
-                'is_live' => $activeStream !== null,
-                'live_stream' => $activeStream ? [
-                    'video_id' => $activeStream->video_id,
-                    'title' => $activeStream->title,
-                    'viewer_count' => $activeStream->viewer_count,
-                    'duty_minutes' => $activeStream->duty_minutes,
-                ] : null,
-            ],
-            'profile' => [
-                'id' => $profile->id,
-                'slug' => $profile->slug,
-                'display_title' => $profile->display_title ?: $officer->officer_name,
-                'bio_tagline' => $profile->bio_tagline,
-                'theme_preset' => $profile->theme_preset,
-                'button_style' => $profile->button_style,
-                'accent_color' => $profile->accent_color,
-                'show_live_stream_banner' => $profile->show_live_stream_banner,
-                'is_suspended' => false,
-                'is_unclaimed' => $isUnclaimed,
-                'is_verified' => !$isUnclaimed,
-            ],
-            'links' => $links->map(function ($link) {
-                return [
-                    'id' => $link->id,
-                    'title' => $link->title,
-                    'subtitle' => $link->subtitle,
-                    'link_type' => $link->link_type,
-                    'icon' => $link->icon,
-                    'badge_label' => $link->badge_label,
-                    'is_highlighted' => $link->is_highlighted,
-                    'redirect_url' => $link->link_type === 'officer_recommendation' ? null : url('/go/' . $link->id),
-                    'recommended_officer' => $link->recommendedOfficer ? [
-                        'id' => $link->recommendedOfficer->id,
-                        'officer_name' => $link->recommendedOfficer->officer_name,
-                        'streamer_name' => $link->recommendedOfficer->streamer_name,
-                        'callsign' => $link->recommendedOfficer->callsign,
-                        'department' => $link->recommendedOfficer->department,
-                        'rank' => $link->recommendedOfficer->rankRelation?->name ?: $link->recommendedOfficer->rank,
-                        'avatar_url' => $link->recommendedOfficer->avatar_url,
-                        'is_live' => $link->recommendedOfficer->activeStream !== null,
-                        'active_stream' => $link->recommendedOfficer->activeStream ? [
-                            'video_id' => $link->recommendedOfficer->activeStream->video_id,
-                            'title' => $link->recommendedOfficer->activeStream->title,
-                        ] : null,
-                        'bio_slug' => $link->recommendedOfficer->bioProfile?->slug,
+        $recommended = [];
+        foreach ($profile->links as $link) {
+            if ($link->link_type === 'officer_recommendation' && $link->recommendedOfficer) {
+                $ro = $link->recommendedOfficer;
+                $recommended[$link->id] = [
+                    'is_live' => $ro->activeStream !== null,
+                    'active_stream' => $ro->activeStream ? [
+                        'video_id' => $ro->activeStream->video_id,
+                        'title' => $ro->activeStream->title,
                     ] : null,
                 ];
-            }),
-            'isSuspended' => false,
-            'isUnclaimed' => $isUnclaimed,
-            'meta' => [
-                'title' => $metaTitle,
-                'description' => $metaDescription,
-                'image' => $metaImage,
-                'url' => url('/@' . $profile->slug),
-            ],
+            }
+        }
+
+        return response()->json([
+            'is_live' => $activeStream !== null,
+            'live_stream' => $activeStream ? [
+                'video_id' => $activeStream->video_id,
+                'title' => $activeStream->title,
+                'viewer_count' => $activeStream->viewer_count,
+                'duty_minutes' => $activeStream->duty_minutes,
+            ] : null,
+            'recommended_streams' => $recommended,
         ]);
     }
 
@@ -210,22 +279,18 @@ class PublicBioLinkController extends Controller
             abort(404, 'Tautan tidak valid atau telah dinonaktifkan.');
         }
 
-        // Privacy-preserving visitor hash (HMAC-SHA256 with daily rotating salt)
-        $ip = $request->ip() ?: '0.0.0.0';
-        $ua = $request->userAgent() ?: 'unknown';
-        $dailySalt = date('Ymd') . config('app.key');
-        $visitorHash = hash_hmac('sha256', "{$ip}|{$ua}", $dailySalt);
-
-        // Host of referer only
-        $referer = $request->headers->get('referer');
-        $refererHost = $referer ? parse_url($referer, PHP_URL_HOST) : null;
-
-        // Async/lightweight write to bio_link_clicks
+        // Non-blocking telemetry click recording
         try {
+            $ip = $request->ip();
+            $ipHash = hash('sha256', ($ip ?: '127.0.0.1') . config('app.key'));
+            $ua = substr($request->userAgent() ?: 'unknown', 0, 255);
+
             BioLinkClick::create([
                 'officer_bio_link_id' => $link->id,
-                'visitor_hash' => $visitorHash,
-                'referer_host' => $refererHost,
+                'officer_bio_profile_id' => $profile->id,
+                'ip_hash' => $ipHash,
+                'user_agent' => $ua,
+                'referrer' => substr($request->headers->get('referer', ''), 0, 255),
             ]);
 
             // Increment daily stats
@@ -254,7 +319,7 @@ class PublicBioLinkController extends Controller
     }
 
     /**
-     * Record page view in bio_daily_stats (NULL officer_bio_link_id row).
+     * Record page view in cache and aggregate via command (T-08).
      */
     protected function recordPageView(OfficerBioProfile $profile): void
     {
@@ -266,19 +331,15 @@ class PublicBioLinkController extends Controller
 
         try {
             $today = now()->toDateString();
-            $stat = BioDailyStat::firstOrCreate(
-                [
-                    'officer_bio_profile_id' => $profile->id,
-                    'officer_bio_link_id' => null,
-                    'stat_date' => $today,
-                ],
-                [
-                    'views' => 0,
-                    'clicks' => 0,
-                    'unique_visitors' => 0,
-                ]
-            );
-            $stat->increment('views');
+            $cacheKey = "bio_views:{$profile->id}:{$today}";
+            Cache::increment($cacheKey);
+
+            $pendingKey = "bio_views_pending:{$today}";
+            $pending = Cache::get($pendingKey, []);
+            if (!in_array($profile->id, $pending)) {
+                $pending[] = $profile->id;
+                Cache::put($pendingKey, $pending, 86400);
+            }
         } catch (\Throwable) {
             // Silently continue if telemetry fails
         }

@@ -276,7 +276,12 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/admin')->group(function () 
     Route::get('/audit-logs', [AdminBioModerationController::class, 'auditLogs']);
 });
 
-// 4. Public Safe Redirect (/go/{link})
+// 4. Public Live Status Polling API (T-09)
+Route::get('/api/v1/bio-links/{slug}/live-status', [PublicBioLinkController::class, 'liveStatus'])
+    ->where('slug', '[a-zA-Z0-9._-]+')
+    ->middleware('throttle:120,1');
+
+// 5. Public Safe Redirect (/go/{link})
 Route::get('/go/{link}', [PublicBioLinkController::class, 'handleClick'])->middleware('throttle:60,1')->name('bio.go');
 
 // 5. Legacy / Convenience 301 Redirect (/links/{slug} -> /@{slug})

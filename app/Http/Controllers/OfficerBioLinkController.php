@@ -12,6 +12,7 @@ use App\Services\BioProfileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -113,6 +114,8 @@ class OfficerBioLinkController extends Controller
 
         $link = OfficerBioLink::create($validated);
 
+        BioProfileService::invalidatePublicCache($profile->slug);
+
         if ($link->link_type === 'donation') {
             AuditLogger::log(
                 'bio_link.donation_added',
@@ -163,6 +166,8 @@ class OfficerBioLinkController extends Controller
 
         $link->update($validated);
 
+        BioProfileService::invalidatePublicCache($profile->slug);
+
         if ($link->link_type === 'donation' || $beforeState['link_type'] === 'donation') {
             AuditLogger::log(
                 'bio_link.donation_changed',
@@ -198,6 +203,8 @@ class OfficerBioLinkController extends Controller
         $link->is_active = !$link->is_active;
         $link->save();
 
+        BioProfileService::invalidatePublicCache($link->profile->slug);
+
         return response()->json([
             'message' => $link->is_active ? 'Tautan diaktifkan.' : 'Tautan disembunyikan.',
             'is_active' => $link->is_active,
@@ -211,7 +218,7 @@ class OfficerBioLinkController extends Controller
     {
         $request->validate([
             'ordered_ids' => 'required|array',
-            'ordered_ids.*' => 'integer',
+            'ordered_ids.*' => 'integer|distinct',
         ]);
 
         $user = Auth::user();
@@ -232,9 +239,15 @@ class OfficerBioLinkController extends Controller
             ], 422);
         }
 
-        foreach ($submittedIds as $index => $id) {
-            OfficerBioLink::where('id', $id)->update(['sort_order' => $index + 1]);
-        }
+        DB::transaction(function () use ($submittedIds, $profile) {
+            foreach ($submittedIds as $index => $id) {
+                OfficerBioLink::where('officer_bio_profile_id', $profile->id)
+                    ->where('id', $id)
+                    ->update(['sort_order' => $index + 1]);
+            }
+        });
+
+        BioProfileService::invalidatePublicCache($profile->slug);
 
         return response()->json(['message' => 'Urutan tautan berhasil disimpan.']);
     }
@@ -254,6 +267,8 @@ class OfficerBioLinkController extends Controller
         $title = $link->title;
 
         $link->delete();
+
+        BioProfileService::invalidatePublicCache($link->profile->slug);
 
         if ($isDonation) {
             AuditLogger::log(
@@ -301,6 +316,8 @@ class OfficerBioLinkController extends Controller
             'show_live_stream_banner' => $request->boolean('show_live_stream_banner', true),
             'is_active' => $request->boolean('is_active', true),
         ]);
+
+        BioProfileService::invalidatePublicCache($profile->slug);
 
         return response()->json([
             'message' => 'Pengaturan tampilan profil bio berhasil disimpan.',

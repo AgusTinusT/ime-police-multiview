@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
+import axios from "axios";
 
 const props = defineProps({
     officer: {
@@ -29,6 +30,43 @@ const props = defineProps({
     },
 });
 
+// Reactive state for polling updates (T-09)
+const officerState = ref({ ...props.officer });
+const linksState = ref([...props.links]);
+
+// Polling live telemetry every 60 seconds without full reload
+let pollTimer = null;
+const fetchLiveStatus = async () => {
+    if (props.isSuspended || props.isUnclaimed || !props.profile?.slug) return;
+    try {
+        const res = await axios.get(`/api/v1/bio-links/${props.profile.slug}/live-status`);
+        if (res.data) {
+            officerState.value.is_live = res.data.is_live;
+            officerState.value.live_stream = res.data.live_stream;
+
+            if (res.data.recommended_streams) {
+                linksState.value.forEach((l) => {
+                    if (l.link_type === "officer_recommendation" && res.data.recommended_streams[l.id] && l.recommended_officer) {
+                        const rec = res.data.recommended_streams[l.id];
+                        l.recommended_officer.is_live = rec.is_live;
+                        l.recommended_officer.active_stream = rec.active_stream;
+                    }
+                });
+            }
+        }
+    } catch {
+        // Silently skip if network error occurs during background poll
+    }
+};
+
+onMounted(() => {
+    pollTimer = setInterval(fetchLiveStatus, 60000);
+});
+
+onUnmounted(() => {
+    if (pollTimer) clearInterval(pollTimer);
+});
+
 // Toast / Copy notification
 const copied = ref(false);
 const copyCurrentUrl = async () => {
@@ -43,18 +81,18 @@ const copyCurrentUrl = async () => {
     }
 };
 
-// Group links by type
+// Group links by type using reactive linksState
 const donationLinks = computed(() =>
-    props.links.filter((l) => l.link_type === "donation"),
+    linksState.value.filter((l) => l.link_type === "donation"),
 );
 const partnerLinks = computed(() =>
-    props.links.filter((l) => l.link_type === "officer_recommendation"),
+    linksState.value.filter((l) => l.link_type === "officer_recommendation"),
 );
 const socialLinks = computed(() =>
-    props.links.filter((l) => ["social", "discord"].includes(l.link_type)),
+    linksState.value.filter((l) => ["social", "discord"].includes(l.link_type)),
 );
 const customLinks = computed(() =>
-    props.links.filter((l) => l.link_type === "custom"),
+    linksState.value.filter((l) => l.link_type === "custom"),
 );
 
 // Dynamic accent styling
@@ -156,7 +194,7 @@ const buttonStyleClass = computed(() => {
 
                     <!-- Live pulsating badge on avatar -->
                     <div
-                        v-if="officer.is_live"
+                        v-if="officerState.is_live"
                         class="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-red-600 text-white font-mono text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg ring-2 ring-slate-950 animate-pulse"
                     >
                         <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
@@ -209,7 +247,7 @@ const buttonStyleClass = computed(() => {
 
             <!-- LIVE PATROL STREAM CARD (IF ACTIVE & ENABLED) -->
             <div
-                v-if="officer.is_live && profile.show_live_stream_banner && officer.live_stream"
+                v-if="officerState.is_live && profile.show_live_stream_banner && officerState.live_stream"
                 class="w-full mb-6 p-4 rounded-2xl bg-gradient-to-r from-red-950/50 via-slate-900 to-slate-900 border border-red-500/40 shadow-xl relative overflow-hidden group"
             >
                 <div class="flex items-center justify-between gap-2 mb-2">
@@ -224,26 +262,26 @@ const buttonStyleClass = computed(() => {
                     </div>
 
                     <span
-                        v-if="officer.live_stream.viewer_count"
+                        v-if="officerState.live_stream.viewer_count"
                         class="text-[10px] font-mono text-slate-400 bg-slate-950/80 px-2 py-0.5 rounded-md border border-white/5"
                     >
-                        👁️ {{ Number(officer.live_stream.viewer_count).toLocaleString() }} penonton
+                        👁️ {{ Number(officerState.live_stream.viewer_count).toLocaleString() }} penonton
                     </span>
                 </div>
 
                 <h4 class="text-xs font-bold text-slate-100 line-clamp-2 mb-3 leading-snug">
-                    {{ officer.live_stream.title }}
+                    {{ officerState.live_stream.title }}
                 </h4>
 
                 <div class="flex items-center gap-2">
                     <a
-                        :href="`/multiview?streams=${officer.live_stream.video_id}`"
+                        :href="`/multiview?streams=${officerState.live_stream.video_id}`"
                         class="flex-1 py-2 px-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold text-center uppercase tracking-wider transition shadow-md flex items-center justify-center gap-1.5 active:scale-98"
                     >
                         <span>📡 Tonton di Multiview</span>
                     </a>
                     <a
-                        :href="`https://www.youtube.com/watch?v=${officer.live_stream.video_id}`"
+                        :href="`https://www.youtube.com/watch?v=${officerState.live_stream.video_id}`"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs font-semibold text-center transition border border-white/10"

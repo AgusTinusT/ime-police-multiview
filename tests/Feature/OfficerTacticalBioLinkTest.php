@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AuditLog;
 use App\Models\BioSlugRedirect;
+use App\Models\ClipperDelegation;
 use App\Models\Officer;
 use App\Models\OfficerBioLink;
 use App\Models\OfficerBioProfile;
@@ -635,4 +636,346 @@ class OfficerTacticalBioLinkTest extends TestCase
         $response->assertDontSee('very_secret_officer_email@policeduty.com');
         $response->assertSee('Secret Officer');
     }
+
+    /**
+     * T-10: Unbind officer revokes clipper delegations and preserves clipper/admin role.
+     */
+    public function test_unbind_officer_revokes_delegations_and_preserves_clipper_role(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $clipperUser = User::factory()->create([
+            'role' => 'clipper',
+            'clipper_tier' => 'tier_1',
+        ]);
+        $officer = Officer::create([
+            'channel_id' => 'UC_UNBIND_CLIPPER',
+            'handle' => '@unbindclipper',
+            'streamer_name' => 'Clipper Officer',
+            'officer_name' => 'Ofc. Clipper Role',
+            'callsign' => '1-C-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+            'user_id' => $clipperUser->id,
+        ]);
+        BioProfileService::ensureBioProfile($officer);
+
+        // Add a delegation granted by this officer user
+        $trustedClipper = User::factory()->create(['role' => 'clipper']);
+        ClipperDelegation::create([
+            'granted_by_user_id' => $clipperUser->id,
+            'assigned_user_id' => $trustedClipper->id,
+            'tier' => 'tier_1',
+        ]);
+
+        $this->assertEquals(1, ClipperDelegation::where('granted_by_user_id', $clipperUser->id)->count());
+
+        // Unbind officer
+        $response = $this->actingAs($admin)->postJson("/api/v1/admin/officers/{$officer->id}/unbind-user", [
+            'reason' => 'Resignation from police department',
+        ]);
+
+        $response->assertOk();
+        $officer->refresh();
+        $clipperUser->refresh();
+
+        $this->assertNull($officer->user_id);
+        // Crucial test: clipper role must NOT be demoted to 'member'
+        $this->assertEquals('clipper', $clipperUser->role);
+        // Delegations must be revoked
+        $this->assertEquals(0, ClipperDelegation::where('granted_by_user_id', $clipperUser->id)->count());
+    }
+
+    /**
+     * T-10: Banned user cannot log in and API requests return 403.
+     */
+    public function test_banned_user_login_is_rejected_and_api_returns_403(): void
+    {
+        $bannedUser = User::factory()->create([
+            'email' => 'banned_trooper@policeduty.com',
+            'password' => bcrypt('password123'),
+            'status' => 'banned',
+        ]);
+
+        // Attempt login -> validation error on email
+        $response = $this->post('/login', [
+            'email' => 'banned_trooper@policeduty.com',
+            'password' => 'password123',
+        ]);
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+
+        // Direct actingAs API request blocked by not_banned middleware -> 403
+        $this->actingAs($bannedUser)
+            ->postJson('/api/v1/officer-claims', [
+                'officer_id' => 1,
+            ])
+            ->assertStatus(403);
+    }
+
+    /**
+     * T-10: Homoglyphs Cyrillic and zero-width characters are blocked.
+     */
+    public function test_homoglyphs_cyrillic_and_zero_width_rejected(): void
+    {
+        // Cyrillic small letter a (\u0430)
+        $cyrillicA = "\u{0430}";
+        $checkCyrillic = NameSkeleton::checkName("SASP{$cyrillicA}");
+        $this->assertTrue($checkCyrillic['blocked']);
+
+        // Zero-width space (\u200B) is stripped and visual homoglyphs normalized
+        $zeroWidth = "\u{200B}";
+        $this->assertEquals('offlcertrooper', NameSkeleton::make("Officer{$zeroWidth}Trooper"));
+
+        // Registration with Cyrillic homoglyph on reserved police keyword -> blocked
+        $response = $this->post('/register', [
+            'name' => "SASP{$cyrillicA}Trooper",
+            'email' => 'cyrillic@test.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+        $response->assertSessionHasErrors('name');
+    }
+
+    /**
+     * T-10: Safe redirect (/go/{link}) rejects banned, inactive, or suspended profile links.
+     */
+    public function test_safe_redirect_rejects_banned_inactive_or_suspended_links(): void
+    {
+        $user = User::factory()->create(['role' => 'officer']);
+        $officer = Officer::create([
+            'channel_id' => 'UC_REDIRECT_TEST',
+            'handle' => '@redirecttest',
+            'streamer_name' => 'Redirect Streamer',
+            'officer_name' => 'Ofc. Redirect Test',
+            'callsign' => '1-R-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+            'user_id' => $user->id,
+        ]);
+        $profile = BioProfileService::ensureBioProfile($officer);
+
+        // 1. Inactive link -> 404
+        $inactiveLink = OfficerBioLink::create([
+            'officer_bio_profile_id' => $profile->id,
+            'title' => 'Inactive Link',
+            'url' => 'https://discord.gg/test',
+            'link_type' => 'discord',
+            'sort_order' => 1,
+            'is_active' => false,
+            'moderation_status' => 'approved',
+        ]);
+        $this->get("/go/{$inactiveLink->id}")->assertStatus(404);
+
+        // 2. Banned moderation status link -> 404
+        $bannedLink = OfficerBioLink::create([
+            'officer_bio_profile_id' => $profile->id,
+            'title' => 'Banned Link',
+            'url' => 'https://discord.gg/banned',
+            'link_type' => 'discord',
+            'sort_order' => 2,
+            'is_active' => true,
+            'moderation_status' => 'banned',
+        ]);
+        $this->get("/go/{$bannedLink->id}")->assertStatus(404);
+
+        // 3. Profile suspended -> 404
+        $profile->update(['is_suspended' => true]);
+        $validLink = OfficerBioLink::create([
+            'officer_bio_profile_id' => $profile->id,
+            'title' => 'Valid Link on Suspended Profile',
+            'url' => 'https://discord.gg/valid',
+            'link_type' => 'discord',
+            'sort_order' => 3,
+            'is_active' => true,
+            'moderation_status' => 'approved',
+        ]);
+        $this->get("/go/{$validLink->id}")->assertStatus(404);
+    }
+
+    /**
+     * T-10: Second claim for the same officer or by the same user is rejected.
+     */
+    public function test_second_claim_for_same_officer_or_user_is_rejected(): void
+    {
+        $userA = User::factory()->create(['role' => 'member']);
+        $userB = User::factory()->create(['role' => 'member']);
+        $officer = Officer::create([
+            'channel_id' => 'UC_CLAIM_DUP',
+            'handle' => '@claimdup',
+            'streamer_name' => 'Dup Streamer',
+            'officer_name' => 'Trooper Duplicate',
+            'callsign' => '2-D-01',
+            'department' => 'BCSO',
+            'rank' => 'Deputy',
+            'is_active' => true,
+        ]);
+
+        // User A submits claim -> 201
+        $this->actingAs($userA)
+            ->postJson('/api/v1/officer-claims', [
+                'officer_id' => $officer->id,
+                'proof_discord_tag' => 'userA#0001',
+            ])
+            ->assertStatus(201);
+
+        // User A submits another claim while first is pending -> 422
+        $this->actingAs($userA)
+            ->postJson('/api/v1/officer-claims', [
+                'officer_id' => $officer->id,
+                'proof_discord_tag' => 'userA#0001',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('officer_id');
+
+        // User B tries to claim the same officer that already has pending claim -> 422
+        $this->actingAs($userB)
+            ->postJson('/api/v1/officer-claims', [
+                'officer_id' => $officer->id,
+                'proof_discord_tag' => 'userB#0002',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('officer_id');
+    }
+
+    /**
+     * B-07: Partner recommendations hide inactive or suspended officers.
+     */
+    public function test_b07_partner_recommendations_hide_inactive_or_suspended_officers(): void
+    {
+        $user = User::factory()->create(['role' => 'officer']);
+        $mainOfficer = Officer::create([
+            'channel_id' => 'UC_MAIN_SQUAD',
+            'handle' => '@mainsquad',
+            'streamer_name' => 'Main Officer',
+            'officer_name' => 'Ofc. Squad Lead',
+            'callsign' => '1-M-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+            'user_id' => $user->id,
+        ]);
+        $mainProfile = BioProfileService::ensureBioProfile($mainOfficer);
+        $mainProfile->update(['slug' => 'squad-lead-main']);
+
+        // Inactive partner officer
+        $inactivePartner = Officer::create([
+            'channel_id' => 'UC_PARTNER_INACTIVE',
+            'handle' => '@inactivepartner',
+            'streamer_name' => 'Inactive Partner',
+            'officer_name' => 'Ofc. Inactive Partner',
+            'callsign' => '1-I-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => false,
+        ]);
+
+        // Suspended profile partner officer
+        $suspendedPartner = Officer::create([
+            'channel_id' => 'UC_PARTNER_SUSPENDED',
+            'handle' => '@suspendedpartner',
+            'streamer_name' => 'Suspended Partner',
+            'officer_name' => 'Ofc. Suspended Partner',
+            'callsign' => '1-S-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+        ]);
+        $suspendedProfile = BioProfileService::ensureBioProfile($suspendedPartner);
+        $suspendedProfile->update(['is_suspended' => true]);
+
+        // Add both recommendation links to main officer
+        OfficerBioLink::create([
+            'officer_bio_profile_id' => $mainProfile->id,
+            'title' => 'Rekan Inactive',
+            'link_type' => 'officer_recommendation',
+            'recommended_officer_id' => $inactivePartner->id,
+            'sort_order' => 1,
+            'is_active' => true,
+            'moderation_status' => 'approved',
+        ]);
+        OfficerBioLink::create([
+            'officer_bio_profile_id' => $mainProfile->id,
+            'title' => 'Rekan Suspended',
+            'link_type' => 'officer_recommendation',
+            'recommended_officer_id' => $suspendedPartner->id,
+            'sort_order' => 2,
+            'is_active' => true,
+            'moderation_status' => 'approved',
+        ]);
+
+        // Call public bio page
+        $response = $this->get('/@squad-lead-main');
+        $response->assertOk();
+
+        // In Inertia props, links should be filtered out
+        $links = $response->viewData('page')['props']['links'];
+        $this->assertCount(0, $links);
+    }
+
+    /**
+     * B-08: Reorder rejects duplicate IDs.
+     */
+    public function test_b08_reorder_rejects_duplicate_ids(): void
+    {
+        $user = User::factory()->create(['role' => 'officer']);
+        $officer = Officer::create([
+            'channel_id' => 'UC_REORDER_DUP',
+            'handle' => '@reorderdup',
+            'streamer_name' => 'Reorder Streamer',
+            'officer_name' => 'Ofc. Reorder Dup',
+            'callsign' => '1-O-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+            'user_id' => $user->id,
+        ]);
+        $profile = BioProfileService::ensureBioProfile($officer);
+
+        $link = OfficerBioLink::create([
+            'officer_bio_profile_id' => $profile->id,
+            'title' => 'Discord Link',
+            'url' => 'https://discord.gg/lspd',
+            'link_type' => 'discord',
+            'sort_order' => 1,
+            'is_active' => true,
+            'moderation_status' => 'approved',
+        ]);
+
+        // Submitting duplicate IDs [id, id] -> 422 validation error
+        $response = $this->actingAs($user)->postJson('/api/v1/officer/bio-links/reorder', [
+            'ordered_ids' => [$link->id, $link->id],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * T-09: Live status polling API returns telemetry.
+     */
+    public function test_t09_live_status_polling_endpoint(): void
+    {
+        $officer = Officer::create([
+            'channel_id' => 'UC_LIVE_POLL_TEST',
+            'handle' => '@livepolltest',
+            'streamer_name' => 'Live Poll Streamer',
+            'officer_name' => 'Ofc. Live Poll',
+            'callsign' => '1-L-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+        ]);
+        $profile = BioProfileService::ensureBioProfile($officer);
+        $profile->update(['slug' => 'live-poll-test']);
+
+        $response = $this->getJson("/api/v1/bio-links/live-poll-test/live-status");
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'is_live',
+            'live_stream',
+            'recommended_streams',
+        ]);
+    }
 }
+
