@@ -18,6 +18,13 @@ class Rank extends Model
         'base_salary',
     ];
 
+    protected $appends = ['name'];
+
+    public function getNameAttribute(): string
+    {
+        return $this->rank_title ?? '';
+    }
+
     protected $casts = [
         'level' => 'integer',
         'base_salary' => 'decimal:2',

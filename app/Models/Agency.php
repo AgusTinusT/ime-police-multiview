@@ -17,6 +17,18 @@ class Agency extends Model
         'badge_logo_url',
     ];
 
+    protected $appends = ['code', 'name'];
+
+    public function getCodeAttribute(): string
+    {
+        return $this->agency_code ?? '';
+    }
+
+    public function getNameAttribute(): string
+    {
+        return $this->agency_name ?? '';
+    }
+
     public function ranks(): HasMany
     {
         return $this->hasMany(Rank::class)->orderBy('level', 'desc');
