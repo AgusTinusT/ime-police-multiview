@@ -5,6 +5,7 @@ import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import axios from "axios";
 import OfficerClaimsTab from "@/Components/Admin/OfficerClaimsTab.vue";
 import BioModerationTab from "@/Components/Admin/BioModerationTab.vue";
+import AdminChangeRequestsTab from "@/Components/Admin/AdminChangeRequestsTab.vue";
 import OfficerBindingModal from "@/Components/Admin/OfficerBindingModal.vue";
 
 const props = defineProps({
@@ -56,6 +57,61 @@ const openSlugModal = (officer) => {
     bindingOfficer.value = officer;
     bindingMode.value = "slug";
     showBindingModal.value = true;
+};
+
+const toggleSuspendProfile = async (officer) => {
+    if (!officer?.bio_profile) return;
+    const isCurrentlySuspended = !!officer.bio_profile.is_suspended;
+    const targetSuspended = !isCurrentlySuspended;
+
+    let reason = "Pencabutan suspend oleh admin";
+    if (targetSuspended) {
+        reason = prompt(`Masukkan alasan pembekuan (Kill-Switch) halaman bio untuk ${officer.officer_name}:`, "Pelanggaran SOP Kepolisian");
+        if (reason === null) return;
+        if (!reason.trim()) {
+            showToast("Alasan pembekuan wajib diisi.", "error");
+            return;
+        }
+    }
+
+    try {
+        const res = await axios.patch(`/api/v1/admin/bio-profiles/${officer.bio_profile.id}/suspend`, {
+            is_suspended: targetSuspended,
+            reason: reason.trim(),
+        });
+        officer.bio_profile.is_suspended = targetSuspended;
+        officer.bio_profile.suspension_reason = targetSuspended ? reason.trim() : null;
+        showToast(res.data.message || (targetSuspended ? "Bio-link dibekukan." : "Suspend bio-link dicabut."), "success");
+    } catch (err) {
+        showToast(err.response?.data?.message || "Gagal mengubah status suspend bio-link.", "error");
+    }
+};
+
+const toggleBanUser = async (officer) => {
+    if (!officer?.user) return;
+    const isBanned = officer.user.status === 'banned';
+    const targetStatus = isBanned ? 'active' : 'banned';
+
+    let reason = "Pemulihan akun oleh admin";
+    if (!isBanned) {
+        reason = prompt(`Masukkan alasan pemblokiran (Ban Akun) user ${officer.user.name}:`, "Pelanggaran Akun");
+        if (reason === null) return;
+        if (!reason.trim()) {
+            showToast("Alasan pemblokiran akun wajib diisi.", "error");
+            return;
+        }
+    }
+
+    try {
+        const res = await axios.patch(`/api/v1/admin/users/${officer.user.id}/status`, {
+            status: targetStatus,
+            reason: reason.trim(),
+        });
+        officer.user.status = targetStatus;
+        showToast(res.data.message || (targetStatus === 'banned' ? "Akun user berhasil di-ban." : "Ban akun dicabut."), "success");
+    } catch (err) {
+        showToast(err.response?.data?.message || "Gagal mengubah status akun user.", "error");
+    }
 };
 
 // State
@@ -1446,6 +1502,21 @@ onMounted(() => {
                     </svg>
                     <span>Moderasi Bio-Link</span>
                 </button>
+
+                <button
+                    @click="activeTab = 'requests'"
+                    :class="[
+                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
+                        activeTab === 'requests'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
+                    ]"
+                >
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Pengajuan Mutasi</span>
+                </button>
             </div>
 
             <!-- TAB 1: OFFICERS -->
@@ -1944,12 +2015,13 @@ onMounted(() => {
                                     <!-- Akun Terikat & Bio -->
                                     <td class="py-3.5 px-4 font-mono">
                                         <div v-if="officer.user" class="space-y-1">
-                                            <div class="flex items-center gap-1.5">
+                                            <div class="flex items-center gap-1.5 flex-wrap">
                                                 <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-950/70 text-blue-300 border border-blue-800/60">
                                                     <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                                     <span class="truncate max-w-[100px]">{{ officer.user.name }}</span>
                                                 </span>
                                                 <span class="text-[9px] text-slate-500 truncate max-w-[100px]" :title="officer.user.email">({{ officer.user.email }})</span>
+                                                <span v-if="officer.user.status === 'banned'" class="px-1 py-0.2 rounded text-[8px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">BANNED</span>
                                             </div>
                                             <div class="flex items-center gap-1.5 text-[10px]">
                                                 <a
@@ -1963,7 +2035,7 @@ onMounted(() => {
                                                 </a>
                                                 <span v-if="officer.bio_profile?.is_suspended" class="px-1 py-0.2 rounded text-[9px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">SUSPENDED</span>
                                             </div>
-                                            <div class="flex items-center gap-1 pt-0.5">
+                                            <div class="flex items-center gap-1 pt-0.5 flex-wrap">
                                                 <button
                                                     @click="openSlugModal(officer)"
                                                     class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] border border-slate-700 transition"
@@ -1977,6 +2049,23 @@ onMounted(() => {
                                                     title="Lepas ikatan akun user dari perwira ini"
                                                 >
                                                     Unbind
+                                                </button>
+                                                <button
+                                                    v-if="officer.bio_profile"
+                                                    @click="toggleSuspendProfile(officer)"
+                                                    class="px-1.5 py-0.5 rounded text-[9px] border transition"
+                                                    :class="officer.bio_profile.is_suspended ? 'bg-amber-950/60 hover:bg-amber-900 text-amber-300 border-amber-800/60' : 'bg-red-950/50 hover:bg-red-900 text-red-300 border-red-800/60'"
+                                                    :title="officer.bio_profile.is_suspended ? 'Cabut pembekuan bio-link' : 'Bekukan bio-link (Kill Switch)'"
+                                                >
+                                                    {{ officer.bio_profile.is_suspended ? 'Unsuspend' : 'Suspend' }}
+                                                </button>
+                                                <button
+                                                    @click="toggleBanUser(officer)"
+                                                    class="px-1.5 py-0.5 rounded text-[9px] border transition"
+                                                    :class="officer.user.status === 'banned' ? 'bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border-emerald-800/60' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'"
+                                                    :title="officer.user.status === 'banned' ? 'Cabut ban user' : 'Ban akun user ini'"
+                                                >
+                                                    {{ officer.user.status === 'banned' ? 'Unban User' : 'Ban User' }}
                                                 </button>
                                             </div>
                                         </div>
@@ -2559,6 +2648,11 @@ onMounted(() => {
             <!-- TAB 7: MODERASI BIO-LINK -->
             <div v-if="activeTab === 'moderation'">
                 <BioModerationTab @toast="showToast" />
+            </div>
+
+            <!-- TAB 8: PENGAJUAN MUTASI & PANGKAT (PRD v3) -->
+            <div v-if="activeTab === 'requests'">
+                <AdminChangeRequestsTab @toast="showToast" />
             </div>
         </div>
 

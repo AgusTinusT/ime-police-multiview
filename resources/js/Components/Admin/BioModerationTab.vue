@@ -106,6 +106,62 @@ const deleteLink = async (link) => {
     }
 };
 
+const toggleSuspendProfile = async (profile) => {
+    if (!profile) return;
+    const isCurrentlySuspended = !!profile.is_suspended;
+    const targetSuspended = !isCurrentlySuspended;
+
+    let reason = "Pencabutan suspend oleh admin";
+    if (targetSuspended) {
+        reason = prompt(`Masukkan alasan pembekuan (Kill-Switch) halaman bio /@${profile.slug}:`, "Pelanggaran SOP Kepolisian");
+        if (reason === null) return;
+        if (!reason.trim()) {
+            emit("toast", "Alasan pembekuan wajib diisi.", "error");
+            return;
+        }
+    }
+
+    try {
+        const res = await axios.patch(`/api/v1/admin/bio-profiles/${profile.id}/suspend`, {
+            is_suspended: targetSuspended,
+            reason: reason.trim(),
+        });
+        profile.is_suspended = targetSuspended;
+        emit("toast", res.data.message || (targetSuspended ? "Bio-link dibekukan." : "Suspend bio-link dicabut."), "success");
+        fetchLinks(linksPagination.value.current_page);
+    } catch (err) {
+        emit("toast", err.response?.data?.message || "Gagal mengubah status suspend bio-link.", "error");
+    }
+};
+
+const toggleBanUser = async (user) => {
+    if (!user) return;
+    const isBanned = user.status === 'banned';
+    const targetStatus = isBanned ? 'active' : 'banned';
+
+    let reason = "Pemulihan akun oleh admin";
+    if (!isBanned) {
+        reason = prompt(`Masukkan alasan pemblokiran (Ban Akun) user ${user.name}:`, "Pelanggaran Akun");
+        if (reason === null) return;
+        if (!reason.trim()) {
+            emit("toast", "Alasan pemblokiran akun wajib diisi.", "error");
+            return;
+        }
+    }
+
+    try {
+        const res = await axios.patch(`/api/v1/admin/users/${user.id}/status`, {
+            status: targetStatus,
+            reason: reason.trim(),
+        });
+        user.status = targetStatus;
+        emit("toast", res.data.message || (targetStatus === 'banned' ? "Akun user berhasil di-ban." : "Ban akun dicabut."), "success");
+        fetchLinks(linksPagination.value.current_page);
+    } catch (err) {
+        emit("toast", err.response?.data?.message || "Gagal mengubah status akun user.", "error");
+    }
+};
+
 // Global Domain Ban
 const submitBanDomain = async () => {
     if (!banDomainInput.value.trim() || !banDomainReason.value.trim()) {
@@ -335,6 +391,24 @@ onMounted(() => {
                                             title="Hapus Paksa"
                                         >
                                             🗑️
+                                        </button>
+                                        <button
+                                            v-if="link.profile"
+                                            @click="toggleSuspendProfile(link.profile)"
+                                            class="px-2 py-1 rounded text-[11px] border transition"
+                                            :class="link.profile.is_suspended ? 'bg-amber-950 hover:bg-amber-900 text-amber-300 border-amber-700' : 'bg-red-950/60 hover:bg-red-900 text-red-300 border-red-800/80'"
+                                            :title="link.profile.is_suspended ? 'Cabut pembekuan halaman bio ini' : 'Bekukan halaman bio profil ini (Kill Switch)'"
+                                        >
+                                            {{ link.profile.is_suspended ? 'Unsuspend Bio' : 'Suspend Bio' }}
+                                        </button>
+                                        <button
+                                            v-if="link.profile?.officer?.user"
+                                            @click="toggleBanUser(link.profile.officer.user)"
+                                            class="px-2 py-1 rounded text-[11px] border transition"
+                                            :class="link.profile.officer.user.status === 'banned' ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-700' : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-700'"
+                                            :title="link.profile.officer.user.status === 'banned' ? 'Cabut ban user pemilik' : 'Ban akun user pemilik link ini'"
+                                        >
+                                            {{ link.profile.officer.user.status === 'banned' ? 'Unban User' : 'Ban User' }}
                                         </button>
                                     </div>
                                 </td>
