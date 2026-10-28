@@ -227,12 +227,15 @@ require __DIR__.'/auth.php';
 use App\Http\Controllers\OfficerBioLinkController;
 use App\Http\Controllers\OfficerBindingController;
 use App\Http\Controllers\OfficerClaimController;
+use App\Http\Controllers\OfficerSelfProfileController;
+use App\Http\Controllers\OfficerChangeRequestController;
 use App\Http\Controllers\AdminBioModerationController;
 use App\Http\Controllers\PublicBioLinkController;
 
-// 1. Authenticated Officer Dashboard & API
+// 1. Authenticated Officer Dashboard & API (PRD v3 4.2, 4.3, 8B)
 Route::middleware(['auth', 'verified', 'officer', 'not_banned'])->group(function () {
     Route::get('/dashboard/bio-links', [OfficerBioLinkController::class, 'dashboard'])->name('officer.bio-links');
+    Route::get('/dashboard/officer-profile', [OfficerSelfProfileController::class, 'dashboard'])->name('officer.profile');
     
     Route::prefix('api/v1/officer')->group(function () {
         Route::post('/bio-links', [OfficerBioLinkController::class, 'store'])->middleware('throttle:30,1');
@@ -242,13 +245,22 @@ Route::middleware(['auth', 'verified', 'officer', 'not_banned'])->group(function
         Route::delete('/bio-links/{link}', [OfficerBioLinkController::class, 'destroy']);
         Route::put('/bio-profile', [OfficerBioLinkController::class, 'updateProfile']);
         Route::get('/bio-links/history', [OfficerBioLinkController::class, 'history']);
+
+        // v3 Self-Service Officer Profile & Change Requests
+        Route::put('/profile', [OfficerSelfProfileController::class, 'update'])->middleware('throttle:10,1');
+        Route::get('/profile/history', [OfficerSelfProfileController::class, 'history']);
+        Route::get('/change-requests', [OfficerChangeRequestController::class, 'myRequests']);
+        Route::post('/change-requests', [OfficerChangeRequestController::class, 'store'])->middleware('throttle:10,60');
+        Route::delete('/change-requests/{changeRequest}', [OfficerChangeRequestController::class, 'destroy']);
     });
 });
 
-// 2. Member Officer Claim Requests
+// 2. Member Officer Claim Requests (PRD v3 Jalur B & A)
 Route::middleware(['auth', 'verified', 'not_banned'])->prefix('api/v1/officer-claims')->group(function () {
     Route::get('/mine', [OfficerClaimController::class, 'myClaims']);
     Route::post('/', [OfficerClaimController::class, 'store'])->middleware('throttle:5,60');
+    Route::post('/youtube', [OfficerClaimController::class, 'createYouTubeClaim'])->middleware('throttle:3,1440');
+    Route::post('/{claim}/verify-youtube', [OfficerClaimController::class, 'verifyYouTubeClaim'])->middleware('throttle:5,60');
     Route::delete('/{claim}', [OfficerClaimController::class, 'destroy']);
 });
 
@@ -265,6 +277,11 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/admin')->group(function () 
     Route::post('/officers/{officer}/bind-user', [OfficerBindingController::class, 'bindUser']);
     Route::post('/officers/{officer}/unbind-user', [OfficerBindingController::class, 'unbindUser']);
     Route::patch('/bio-profiles/{profile}/slug', [OfficerBindingController::class, 'updateSlug']);
+
+    // v3 Rank & Agency Change Requests Review
+    Route::get('/officer-change-requests', [OfficerChangeRequestController::class, 'index']);
+    Route::post('/officer-change-requests/{changeRequest}/approve', [OfficerChangeRequestController::class, 'approve']);
+    Route::post('/officer-change-requests/{changeRequest}/reject', [OfficerChangeRequestController::class, 'reject']);
 
     // Moderation & Kill-Switch
     Route::get('/bio-links', [AdminBioModerationController::class, 'index']);

@@ -27,69 +27,12 @@ class OfficerBindingController extends Controller
         ]);
 
         $user = User::findOrFail($request->user_id);
+        [$lockedOfficer, $profile] = \App\Services\OfficerBindingService::bind($officer, $user, $request->reason, \Illuminate\Support\Facades\Auth::id());
 
-        if ($user->isBanned()) {
-            throw ValidationException::withMessages([
-                'user_id' => 'User dengan status banned tidak dapat di-bind ke profil perwira.',
-            ]);
-        }
-
-        if (!$user->hasVerifiedEmail()) {
-            throw ValidationException::withMessages([
-                'user_id' => 'User wajib memiliki alamat email yang telah diverifikasi sebelum dihubungkan ke perwira.',
-            ]);
-        }
-
-        // Check if user is already bound to another officer
-        $alreadyBound = Officer::where('user_id', $user->id)
-            ->where('id', '!=', $officer->id)
-            ->first();
-
-        if ($alreadyBound) {
-            throw ValidationException::withMessages([
-                'user_id' => "User ini sudah terikat ke perwira lain: {$alreadyBound->officer_name} ({$alreadyBound->callsign}).",
-            ]);
-        }
-
-        return DB::transaction(function () use ($officer, $user, $request) {
-            // Lock officer row to prevent concurrent race condition
-            $lockedOfficer = Officer::where('id', $officer->id)->lockForUpdate()->firstOrFail();
-
-            // Check if officer is already bound to another user (B-02)
-            if ($lockedOfficer->user_id !== null && $lockedOfficer->user_id !== $user->id) {
-                throw ValidationException::withMessages([
-                    'officer' => 'Perwira ini sudah terikat ke akun lain. Lakukan unbind terlebih dahulu sebelum mengikatkan akun baru.',
-                ]);
-            }
-
-            $beforeState = [
-                'user_id' => $lockedOfficer->user_id,
-            ];
-
-            $lockedOfficer->user_id = $user->id;
-            $lockedOfficer->save();
-
-            // Ensure OfficerBioProfile exists
-            $profile = BioProfileService::ensureBioProfile($lockedOfficer);
-            $profile->is_active = true;
-            $profile->save();
-
-            BioProfileService::invalidatePublicCache($profile->slug);
-
-            AuditLogger::log(
-                'officer.bind',
-                'officer',
-                $lockedOfficer->id,
-                $beforeState,
-                ['user_id' => $user->id, 'profile_slug' => $profile->slug],
-                $request->reason ?? "Bound to user {$user->name} ({$user->email})"
-            );
-
-            return response()->json([
-                'message' => "Berhasil menghubungkan {$lockedOfficer->officer_name} ke user {$user->name}.",
-                'officer' => $lockedOfficer->load(['user', 'bioProfile']),
-            ]);
-        });
+        return response()->json([
+            'message' => "Berhasil menghubungkan {$lockedOfficer->officer_name} ke user {$user->name}.",
+            'officer' => $lockedOfficer->load(['user', 'bioProfile']),
+        ]);
     }
 
     /**
@@ -118,6 +61,13 @@ class OfficerBindingController extends Controller
 
             $lockedOfficer->user_id = null;
             $lockedOfficer->save();
+
+            // Cancel any pending change requests (PRD T-17)
+            $lockedOfficer->changeRequests()->where('status', 'pending')->update([
+                'status' => 'cancelled',
+                'pending_lock' => null,
+                'review_reason' => 'Dibatalkan otomatis karena ikatan perwira diputus (unbind).',
+            ]);
 
             // Hide bio profile (do not delete links)
             if ($lockedOfficer->bioProfile) {
