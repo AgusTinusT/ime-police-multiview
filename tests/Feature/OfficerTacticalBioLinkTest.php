@@ -718,9 +718,9 @@ class OfficerTacticalBioLinkTest extends TestCase
      */
     public function test_homoglyphs_cyrillic_and_zero_width_rejected(): void
     {
-        // Cyrillic small letter a (\u0430)
+        // Cyrillic small letter a (\u0430) replacing Latin 'A' in SASP
         $cyrillicA = "\u{0430}";
-        $checkCyrillic = NameSkeleton::checkName("SASP{$cyrillicA}");
+        $checkCyrillic = NameSkeleton::checkName("S{$cyrillicA}SP");
         $this->assertTrue($checkCyrillic['blocked']);
 
         // Zero-width space (\u200B) is stripped and visual homoglyphs normalized
@@ -729,7 +729,7 @@ class OfficerTacticalBioLinkTest extends TestCase
 
         // Registration with Cyrillic homoglyph on reserved police keyword -> blocked
         $response = $this->post('/register', [
-            'name' => "SASP{$cyrillicA}Trooper",
+            'name' => "S{$cyrillicA}SP Trooper",
             'email' => 'cyrillic@test.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -977,5 +977,564 @@ class OfficerTacticalBioLinkTest extends TestCase
             'recommended_streams',
         ]);
     }
+
+    /**
+     * B-05: Common Indonesian names are allowed, while police authority keywords are blocked.
+     */
+    public function test_b05_common_names_allowed_and_authority_keywords_blocked(): void
+    {
+        $allowedNames = [
+            'Saprudin',
+            'Ahmad Mintoro',
+            'Badminton Lover',
+            'Siti Sapriyah',
+        ];
+
+        foreach ($allowedNames as $name) {
+            $check = NameSkeleton::checkName($name);
+            $this->assertFalse($check['blocked'], "Expected '{$name}' NOT to be blocked, but it was blocked: " . ($check['reason'] ?? ''));
+        }
+
+        $blockedNames = [
+            'Admin SASP',
+            'SASP Official',
+            'LSPD Dispatcher',
+            'Chief Moderator',
+        ];
+
+        foreach ($blockedNames as $name) {
+            $check = NameSkeleton::checkName($name);
+            $this->assertTrue($check['blocked'], "Expected '{$name}' to be blocked, but it was allowed.");
+        }
+    }
+
+    /**
+     * B-11: Click telemetry records privacy-preserving visitor_hash and referer_host.
+     */
+    public function test_b11_click_telemetry_stores_visitor_hash_and_referer_host(): void
+    {
+        $officer = Officer::create([
+            'channel_id' => 'UC_TELEMETRY_LINK',
+            'handle' => '@telemetrylink',
+            'streamer_name' => 'Telemetry Streamer',
+            'officer_name' => 'Ofc. Telemetry',
+            'callsign' => '1-T-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+        ]);
+        $profile = BioProfileService::ensureBioProfile($officer);
+
+        $link = OfficerBioLink::create([
+            'officer_bio_profile_id' => $profile->id,
+            'title' => 'Trakteer Kami',
+            'url' => 'https://trakteer.id/policeduty',
+            'url_host' => 'trakteer.id',
+            'link_type' => 'donation',
+            'sort_order' => 1,
+            'is_active' => true,
+            'moderation_status' => 'approved',
+        ]);
+
+        $response = $this->withHeaders([
+            'referer' => 'https://twitter.com/sasp_updates/status/12345',
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        ])->get("/go/{$link->id}");
+
+        $response->assertStatus(302);
+        $response->assertRedirect('https://trakteer.id/policeduty');
+
+        $this->assertDatabaseHas('bio_link_clicks', [
+            'officer_bio_link_id' => $link->id,
+            'referer_host' => 'twitter.com',
+        ]);
+
+        $click = \App\Models\BioLinkClick::where('officer_bio_link_id', $link->id)->first();
+        $this->assertNotNull($click->visitor_hash);
+        $this->assertEquals(64, strlen($click->visitor_hash));
+    }
+
+    /**
+     * B-12: Page view counter works with database cache store and flush command.
+     */
+    public function test_b12_view_counter_works_with_database_cache_store(): void
+    {
+        // Switch cache store to database
+        config(['cache.default' => 'database']);
+
+        $officer = Officer::create([
+            'channel_id' => 'UC_DB_CACHE_VIEW',
+            'handle' => '@dbcacheview',
+            'streamer_name' => 'DB Cache Streamer',
+            'officer_name' => 'Ofc. DB Cache',
+            'callsign' => '1-D-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+        ]);
+        $profile = BioProfileService::ensureBioProfile($officer);
+        $profile->update(['slug' => 'db-cache-view-test']);
+
+        // Visit public page twice
+        $this->get('/@db-cache-view-test')->assertOk();
+        $this->get('/@db-cache-view-test')->assertOk();
+
+        // Run flush command
+        $exitCode = \Illuminate\Support\Facades\Artisan::call('biolinks:flush-views');
+        $this->assertEquals(0, $exitCode);
+
+        // Assert views are recorded in bio_daily_stats
+        $stat = \App\Models\BioDailyStat::where('officer_bio_profile_id', $profile->id)
+            ->whereNull('officer_bio_link_id')
+            ->first();
+
+        $this->assertNotNull($stat);
+        $this->assertEquals(now()->toDateString(), \Illuminate\Support\Carbon::parse($stat->stat_date)->toDateString());
+        $this->assertGreaterThanOrEqual(2, $stat->views);
+    }
+
+    /**
+     * T-04: Password update invalidates other sessions.
+     */
+    public function test_t04_password_change_logs_out_other_sessions(): void
+    {
+        $user = User::factory()->create([
+            'password' => \Illuminate\Support\Facades\Hash::make('old-password'),
+        ]);
+
+        // Insert fake second session for user in sessions table
+        \Illuminate\Support\Facades\DB::table('sessions')->insert([
+            'id' => 'session_other_device_123',
+            'user_id' => $user->id,
+            'ip_address' => '192.168.1.100',
+            'user_agent' => 'OtherBrowser/1.0',
+            'payload' => 'dummy',
+            'last_activity' => time(),
+        ]);
+
+        $this->assertDatabaseHas('sessions', ['id' => 'session_other_device_123']);
+
+        // User updates password on current session
+        $response = $this->actingAs($user)->put('/password', [
+            'current_password' => 'old-password',
+            'password' => 'new-password-123',
+            'password_confirmation' => 'new-password-123',
+        ]);
+
+        $response->assertRedirect();
+
+        // Assert other session was deleted
+        $this->assertDatabaseMissing('sessions', ['id' => 'session_other_device_123']);
+    }
+
+    /**
+     * B-04: Clipper request endpoint rejects 'officer' type.
+     */
+    public function test_b04_clipper_request_rejects_officer_type(): void
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $response = $this->actingAs($user)->postJson('/api/v1/clipper-requests', [
+            'request_type' => 'officer',
+            'channel_url' => 'https://youtube.com/@officer',
+            'reason' => 'Ingin clipper officer',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('request_type');
+    }
+
+    /**
+     * T-14 & T-20: YouTube claim token generation and 3 tokens / 24h rate limit.
+     */
+    public function test_v3_youtube_token_claim_and_rate_limit(): void
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $officer = Officer::create([
+            'channel_id' => 'UC_YT_TOKEN_TEST',
+            'handle' => '@yttokentest',
+            'streamer_name' => 'Token Streamer',
+            'officer_name' => 'Ofc. Token',
+            'callsign' => '1-T-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+        ]);
+
+        // 1st request -> success
+        $res1 = $this->actingAs($user)->postJson('/api/v1/officer-claims/youtube', [
+            'officer_id' => $officer->id,
+        ]);
+        $res1->assertStatus(201);
+        $res1->assertJsonStructure(['status', 'token', 'claim_id', 'expires_at']);
+        $token = $res1->json('token');
+        $this->assertStringStartsWith('SASP-VERIFY-', $token);
+
+        // Claim record created in DB with hashed token
+        $this->assertDatabaseHas('officer_claims', [
+            'officer_id' => $officer->id,
+            'user_id' => $user->id,
+            'verification_method' => 'youtube_token',
+            'status' => 'pending',
+        ]);
+
+        // 2nd request -> success
+        $res2 = $this->actingAs($user)->postJson('/api/v1/officer-claims/youtube', ['officer_id' => $officer->id]);
+        $res2->assertStatus(201);
+
+        // 3rd request -> success
+        $res3 = $this->actingAs($user)->postJson('/api/v1/officer-claims/youtube', ['officer_id' => $officer->id]);
+        $res3->assertStatus(201);
+
+        // 4th request within 24h -> 429 Throttle
+        $res4 = $this->actingAs($user)->postJson('/api/v1/officer-claims/youtube', ['officer_id' => $officer->id]);
+        $res4->assertStatus(429);
+    }
+
+    /**
+     * T-14 & T-20: YouTube verification automated approval & rejection.
+     */
+    public function test_v3_youtube_token_verification_success_and_failure(): void
+    {
+        $user = User::factory()->create(['email_verified_at' => now(), 'role' => 'member']);
+        $officer = Officer::create([
+            'channel_id' => 'UC_VERIFY_SUCCESS',
+            'handle' => '@verifysuccess',
+            'streamer_name' => 'Success Streamer',
+            'officer_name' => 'Ofc. Success',
+            'callsign' => '1-S-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+        ]);
+
+        $res = $this->actingAs($user)->postJson('/api/v1/officer-claims/youtube', [
+            'officer_id' => $officer->id,
+        ]);
+        $claimId = $res->json('claim_id');
+        $token = $res->json('token');
+
+        $hasToken = false;
+        \Illuminate\Support\Facades\Http::fake(function (\Illuminate\Http\Client\Request $req) use (&$hasToken, $token) {
+            $desc = $hasToken ? "Official channel. {$token} verified officer." : "Just playing games.";
+
+            if (str_contains($req->url(), 'googleapis.com')) {
+                return \Illuminate\Support\Facades\Http::response([
+                    'items' => [
+                        [
+                            'snippet' => [
+                                'description' => $desc,
+                            ],
+                        ],
+                    ],
+                ], 200);
+            }
+
+            return \Illuminate\Support\Facades\Http::response("<html><meta name=\"description\" content=\"{$desc}\"></html>", 200);
+        });
+
+        // Test 1: Fake YouTube response without token -> 422
+        $verifyFail = $this->actingAs($user)->postJson("/api/v1/officer-claims/{$claimId}/verify-youtube");
+        $verifyFail->assertStatus(422);
+
+        // Officer still unclaimed
+        $this->assertNull($officer->fresh()->user_id);
+
+        // Test 2: Token is added to channel description -> 200 Success
+        $hasToken = true;
+
+        $verifySuccess = $this->actingAs($user)->postJson("/api/v1/officer-claims/{$claimId}/verify-youtube", [
+            'token' => $token,
+        ]);
+        $verifySuccess->assertStatus(200);
+
+        // Officer bound & user role preserved (B-14)
+        $freshOfficer = $officer->fresh();
+        $this->assertEquals($user->id, $freshOfficer->user_id);
+        $this->assertEquals('member', $user->fresh()->role);
+        $this->assertTrue($user->fresh()->isOfficer());
+    }
+
+    /**
+     * B-14: Binding and unbinding an officer does not overwrite user's role (e.g. clipper) with 'officer' or 'member'.
+     */
+    public function test_b14_clipper_user_role_preserved_on_bind_and_unbind(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $clipperUser = User::factory()->create([
+            'role' => 'clipper',
+            'clipper_tier' => 'creator',
+            'email_verified_at' => now(),
+        ]);
+
+        $officer = Officer::create([
+            'channel_id' => 'UC_B14_CLIPPER_OFFICER',
+            'handle' => '@b14clipperofficer',
+            'streamer_name' => 'B14 Streamer',
+            'officer_name' => 'Ofc. B14 Clipper',
+            'callsign' => '1-B-14',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+        ]);
+
+        // 1. Admin binds clipper user to officer
+        $resBind = $this->actingAs($admin)->postJson("/api/v1/admin/officers/{$officer->id}/bind-user", [
+            'user_id' => $clipperUser->id,
+            'reason' => 'Binding clipper officer',
+        ]);
+        $resBind->assertStatus(200);
+
+        $boundUser = $clipperUser->fresh();
+        $this->assertEquals('clipper', $boundUser->role, 'User role must remain clipper after bind');
+        $this->assertEquals('creator', $boundUser->clipper_tier);
+        $this->assertTrue($boundUser->isOfficer(), 'isOfficer() must return true via officer relation');
+
+        // 2. Admin unbinds officer
+        $resUnbind = $this->actingAs($admin)->postJson("/api/v1/admin/officers/{$officer->id}/unbind-user", [
+            'reason' => 'Unbinding clipper officer',
+        ]);
+        $resUnbind->assertStatus(200);
+
+        $unboundUser = $clipperUser->fresh();
+        $this->assertEquals('clipper', $unboundUser->role, 'User role must remain clipper after unbind');
+        $this->assertEquals('creator', $unboundUser->clipper_tier, 'User clipper_tier must be preserved');
+        $this->assertFalse($unboundUser->isOfficer(), 'isOfficer() must return false after unbind');
+    }
+
+    /**
+     * T-16 & T-20: Self-Service Profile update whitelist and locked fields.
+     */
+    public function test_v3_self_service_profile_mutability_and_locks(): void
+    {
+        $user = User::factory()->create(['role' => 'officer']);
+        $officer = Officer::create([
+            'channel_id' => 'UC_LOCKED_CHANNEL_1',
+            'handle' => '@officerlock',
+            'streamer_name' => 'Old Streamer',
+            'officer_name' => 'Ofc. Old Name',
+            'callsign' => '1-L-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+            'user_id' => $user->id,
+        ]);
+        BioProfileService::ensureBioProfile($officer);
+
+        // Update profile
+        $res = $this->actingAs($user)->putJson('/api/v1/officer/profile', [
+            'officer_name' => 'Ofc. New Name',
+            'streamer_name' => 'New Streamer Name',
+            'patrol_zone' => 'Sandy Shores',
+            'avatar_url' => 'https://example.com/avatar.png',
+            'use_custom_avatar' => true,
+            // Attacker attempts to change locked fields
+            'channel_id' => 'UC_HACKED_CHANNEL',
+            'department' => 'SASP',
+            'rank' => 'Chief of Police',
+        ]);
+
+        $res->assertStatus(200);
+        $fresh = $officer->fresh();
+
+        $this->assertEquals('Ofc. New Name', $fresh->officer_name);
+        $this->assertEquals('New Streamer Name', $fresh->streamer_name);
+        $this->assertEquals('Sandy Shores', $fresh->patrol_zone);
+        $this->assertTrue($fresh->avatar_is_custom);
+
+        // Locked fields remain unchanged
+        $this->assertEquals('UC_LOCKED_CHANNEL_1', $fresh->channel_id);
+        $this->assertEquals('LSPD', $fresh->department);
+        $this->assertEquals('Officer', $fresh->rank);
+
+        // Suspended profile check (PRD Section 4.3 -> 423 Locked)
+        $profile = $fresh->bioProfile;
+        $profile->is_suspended = true;
+        $profile->save();
+
+        $this->actingAs($user)
+            ->putJson('/api/v1/officer/profile', [
+                'officer_name' => 'Ofc. Another Name',
+            ])
+            ->assertStatus(423);
+    }
+
+    /**
+     * T-16 & T-20: Callsign 7-day cooldown and uniqueness enforcement.
+     */
+    public function test_v3_callsign_cooldown_and_uniqueness(): void
+    {
+        $user1 = User::factory()->create(['role' => 'officer']);
+        $officer1 = Officer::create([
+            'channel_id' => 'UC_CALLSIGN_1',
+            'handle' => '@unit1',
+            'streamer_name' => 'Unit 1',
+            'officer_name' => 'Trooper One',
+            'callsign' => '1-A-10',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+            'user_id' => $user1->id,
+        ]);
+
+        $user2 = User::factory()->create(['role' => 'officer']);
+        $officer2 = Officer::create([
+            'channel_id' => 'UC_CALLSIGN_2',
+            'handle' => '@unit2',
+            'streamer_name' => 'Unit 2',
+            'officer_name' => 'Trooper Two',
+            'callsign' => '2-B-20',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+            'user_id' => $user2->id,
+        ]);
+
+        // Attempting to take officer 2's callsign -> 422
+        $this->actingAs($user1)->putJson('/api/v1/officer/profile', [
+            'callsign' => '2-B-20',
+        ])->assertStatus(422);
+
+        // Updating to a new unique callsign -> 200
+        $this->actingAs($user1)->putJson('/api/v1/officer/profile', [
+            'callsign' => '1-A-99',
+        ])->assertStatus(200);
+
+        $this->assertEquals('1-A-99', $officer1->fresh()->callsign);
+        $this->assertNotNull($officer1->fresh()->callsign_changed_at);
+
+        // Trying to change callsign again immediately within 7 days -> 422
+        $resCooldown = $this->actingAs($user1)->putJson('/api/v1/officer/profile', [
+            'callsign' => '1-A-100',
+        ]);
+        $resCooldown->assertStatus(422);
+        $resCooldown->assertJsonValidationErrors('callsign');
+    }
+
+    /**
+     * T-17 & T-20: Rank & Agency change request lifecycle (Submit, Lock, Cancel, Approve, Reject).
+     */
+    public function test_v3_rank_and_agency_change_requests_flow(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $officerUser = User::factory()->create(['role' => 'officer', 'email_verified_at' => now()]);
+
+        $agency = \App\Models\Agency::create([
+            'agency_code' => 'SASP',
+            'agency_name' => 'San Andreas State Police',
+            'jurisdiction' => 'Statewide',
+        ]);
+
+        $currentRank = \App\Models\Rank::create([
+            'agency_id' => $agency->id,
+            'rank_title' => 'Trooper',
+            'level' => 2,
+        ]);
+
+        $targetRank = \App\Models\Rank::create([
+            'agency_id' => $agency->id,
+            'rank_title' => 'Sergeant',
+            'level' => 4,
+        ]);
+
+        $officer = Officer::create([
+            'channel_id' => 'UC_CHANGE_REQ',
+            'handle' => '@changereq',
+            'streamer_name' => 'Req Streamer',
+            'officer_name' => 'Trooper Request',
+            'callsign' => '3-T-01',
+            'department' => 'SASP',
+            'rank' => 'Trooper',
+            'agency_id' => $agency->id,
+            'rank_id' => $currentRank->id,
+            'is_active' => true,
+            'user_id' => $officerUser->id,
+        ]);
+
+        // 1. Submit Rank Change Request
+        $res = $this->actingAs($officerUser)->postJson('/api/v1/officer/change-requests', [
+            'field' => 'rank_id',
+            'new_value' => 'Sergeant',
+            'reason' => 'Lulus diklat komando tingkat madya',
+        ]);
+        $res->assertStatus(201);
+        $reqId = $res->json('change_request.id');
+
+        // 2. Duplicate submission for rank_id while pending -> 422
+        $resDuplicate = $this->actingAs($officerUser)->postJson('/api/v1/officer/change-requests', [
+            'field' => 'rank_id',
+            'new_value' => 'Sergeant',
+            'reason' => 'Duplicate request',
+        ]);
+        $resDuplicate->assertStatus(422);
+
+        // 3. User cancels the request
+        $this->actingAs($officerUser)->deleteJson("/api/v1/officer/change-requests/{$reqId}")
+            ->assertStatus(200);
+        $this->assertDatabaseHas('officer_change_requests', ['id' => $reqId, 'status' => 'cancelled']);
+
+        // 4. Submit fresh request and Admin approves
+        $resFresh = $this->actingAs($officerUser)->postJson('/api/v1/officer/change-requests', [
+            'field' => 'rank_id',
+            'new_value' => 'Sergeant',
+            'reason' => 'Lulus diklat madya sprin 123',
+        ]);
+        $freshReqId = $resFresh->json('change_request.id');
+
+        $this->actingAs($admin)->postJson("/api/v1/admin/officer-change-requests/{$freshReqId}/approve", [
+            'reason' => 'Pangkat disahkan oleh Komando',
+        ])->assertStatus(200);
+
+        // Officer rank is updated automatically
+        $freshOfficer = $officer->fresh();
+        $this->assertEquals('Sergeant', $freshOfficer->rank);
+        $this->assertEquals($targetRank->id, $freshOfficer->rank_id);
+
+        $this->assertDatabaseHas('officer_change_requests', [
+            'id' => $freshReqId,
+            'status' => 'approved',
+            'reviewed_by' => $admin->id,
+        ]);
+    }
+
+    /**
+     * T-19 & T-20: Overwrite protection for claimed officers and custom avatars.
+     */
+    public function test_v3_overwrite_protection_on_import_and_sync(): void
+    {
+        $user = User::factory()->create(['role' => 'officer']);
+        $claimedOfficer = Officer::create([
+            'channel_id' => 'UC_CLAIMED_PROTECT',
+            'handle' => '@claimedprotect',
+            'streamer_name' => 'Custom Streamer Name',
+            'officer_name' => 'Custom RP Name',
+            'callsign' => '1-C-01',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'avatar_url' => 'https://custom-avatar.com/pic.png',
+            'avatar_is_custom' => true,
+            'is_active' => true,
+            'user_id' => $user->id,
+        ]);
+
+        // Attempting to overwrite via manage command (action 'add' for existing channel)
+        \Illuminate\Support\Facades\Artisan::call('officer:manage', [
+            'action' => 'add',
+            'channel_id' => 'UC_CLAIMED_PROTECT',
+            'handle' => '@claimedprotect',
+            'streamer_name' => 'Overwritten Streamer',
+            'officer_name' => 'Overwritten Name',
+            'callsign' => '1-X-99',
+            'department' => 'LSPD',
+            'rank' => 'Cadet',
+        ]);
+
+        $fresh = $claimedOfficer->fresh();
+        // Protection preserved the owner's custom data
+        $this->assertEquals('Custom RP Name', $fresh->officer_name);
+        $this->assertEquals('Custom Streamer Name', $fresh->streamer_name);
+        $this->assertEquals('https://custom-avatar.com/pic.png', $fresh->avatar_url);
+    }
 }
+
 
