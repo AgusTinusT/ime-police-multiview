@@ -209,7 +209,30 @@ class OfficerManagementController extends Controller
             $validated['bypass_hashtag_check'] = $request->boolean('bypass_hashtag_check');
         }
 
+        $beforeState = [
+            'officer_name' => $officer->officer_name,
+            'callsign' => $officer->callsign,
+            'rank' => $officer->rank,
+            'department' => $officer->department,
+        ];
+
         $officer->update($validated);
+
+        if ($officer->bioProfile) {
+            \App\Services\BioProfileService::invalidatePublicCache($officer->bioProfile->slug);
+        }
+
+        // PRD v3 T-19: If officer is claimed, log admin override
+        if ($officer->user_id !== null) {
+            \App\Services\AuditLogger::log(
+                'officer.admin_override',
+                'officer',
+                $officer->id,
+                $beforeState,
+                $validated,
+                'Admin melakukan penyesuaian/override manual pada data perwira yang sudah terikat pemilik'
+            );
+        }
 
         return response()->json([
             'status' => 'success',

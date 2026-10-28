@@ -101,6 +101,12 @@ class OfficerManageCommand extends Command
         
         $channelId = $this->argument('channel_id') ?? $this->ask('YouTube Channel ID (Opsional, tekan Enter jika tidak tahu)', 'UC_' . \Illuminate\Support\Str::slug(str_replace('@', '', $handle), '_'));
 
+        $existing = Officer::where('handle', $handle)->first();
+        if ($existing && $existing->user_id !== null) {
+            $this->warn("⚠ Perwira {$existing->officer_name} ({$existing->handle}) sudah diklaim oleh pemilik akun. Mengabaikan penimpaan identitas dinas.");
+            return;
+        }
+
         $officer = Officer::updateOrCreate(
             ['handle' => $handle],
             [
