@@ -451,7 +451,7 @@ defineExpose({
 
         <!-- Custom Player Controls Bar -->
         <div
-            class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent p-3 pt-6 space-y-2 transition-opacity duration-300 z-20"
+            class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-slate-950 via-slate-950/90 to-transparent p-3 pt-6 space-y-2 transition-opacity duration-300 z-20"
             :class="
                 showControls || !isPlaying
                     ? 'opacity-100'
@@ -470,7 +470,7 @@ defineExpose({
                     step="0.1"
                     :value="displayCurrentTime"
                     @input="handleScrubInput($event.target.value)"
-                    class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer focus:outline-none accent-blue-500"
+                    class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer focus:outline-hidden accent-blue-500"
                 />
             </div>
 
@@ -556,7 +556,7 @@ defineExpose({
                         @change="
                             setPlaybackRate(parseFloat($event.target.value))
                         "
-                        class="bg-slate-900 text-slate-300 border border-slate-800 text-[11px] font-mono rounded-md px-1.5 py-1 focus:outline-none cursor-pointer"
+                        class="bg-slate-900 text-slate-300 border border-slate-800 text-[11px] font-mono rounded-md px-1.5 py-1 focus:outline-hidden cursor-pointer"
                         title="Kecepatan Putar (Playback Speed)"
                     >
                         <option :value="0.5">0.5x</option>

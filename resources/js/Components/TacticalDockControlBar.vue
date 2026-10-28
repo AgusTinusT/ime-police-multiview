@@ -135,7 +135,7 @@ const getDeptIcon = (dept) => {
                         <span>All units</span>
                     </div>
                     <span
-                        class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
+                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                         >{{ getDeptCount("ALL") }}</span
                     >
                 </button>
@@ -160,7 +160,7 @@ const getDeptIcon = (dept) => {
                         <span>LSPD Metro</span>
                     </div>
                     <span
-                        class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
+                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                         >{{ getDeptCount("LSPD") }}</span
                     >
                 </button>
@@ -185,7 +185,7 @@ const getDeptIcon = (dept) => {
                         <span>BCSO Sheriff</span>
                     </div>
                     <span
-                        class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
+                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                         >{{ getDeptCount("BCSO") }}</span
                     >
                 </button>
@@ -210,7 +210,7 @@ const getDeptIcon = (dept) => {
                         <span>SASP State</span>
                     </div>
                     <span
-                        class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
+                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                         >{{ getDeptCount("SASP") }}</span
                     >
                 </button>
@@ -235,7 +235,7 @@ const getDeptIcon = (dept) => {
                         <span>SAPR Ranger</span>
                     </div>
                     <span
-                        class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
+                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                         >{{ getDeptCount("SAPR") }}</span
                     >
                 </button>
@@ -260,7 +260,7 @@ const getDeptIcon = (dept) => {
                         <span>Watchlist</span>
                     </div>
                     <span
-                        class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
+                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
                         >{{ getDeptCount("PERSONAL") }}</span
                     >
                 </button>
@@ -298,7 +298,7 @@ const getDeptIcon = (dept) => {
                             >TAC {{ i }}</span
                         >
                         <span
-                            class="text-[9px] px-1 rounded font-mono"
+                            class="text-[9px] px-1 rounded-sm font-mono"
                             :class="
                                 getDeptCount(`TAC_${i}`) > 0
                                     ? 'bg-amber-400 text-black font-bold'
@@ -399,12 +399,12 @@ const getDeptIcon = (dept) => {
                         emit('update:searchFilter', $event.target.value)
                     "
                     placeholder="Cari perwira, callsign, divisi, judul..."
-                    class="w-full bg-slate-950 text-white placeholder-slate-500 text-xs px-3 py-2 pr-8 rounded-md border border-slate-800 focus:outline-none focus:border-blue-500 font-sans"
+                    class="w-full bg-slate-950 text-white placeholder-slate-500 text-xs px-3 py-2 pr-8 rounded-md border border-slate-800 focus:outline-hidden focus:border-blue-500 font-sans"
                 />
                 <button
                     v-if="searchFilter"
                     @click="emit('update:searchFilter', '')"
-                    class="absolute right-2.5 text-slate-400 hover:text-white text-xs font-bold p-0.5 rounded"
+                    class="absolute right-2.5 text-slate-400 hover:text-white text-xs font-bold p-0.5 rounded-sm"
                 >
                     ✕
                 </button>
@@ -457,7 +457,7 @@ const getDeptIcon = (dept) => {
                     selectedDeptLabel
                 }}</span>
                 <span
-                    class="px-1.5 py-0.2 rounded bg-slate-950 border border-slate-800 text-blue-400 text-[10px] font-mono font-bold"
+                    class="px-1.5 py-0.2 rounded-sm bg-slate-950 border border-slate-800 text-blue-400 text-[10px] font-mono font-bold"
                     >{{ visibleStreamsCount }}</span
                 >
                 <span class="text-[10px] text-slate-400">▾</span>

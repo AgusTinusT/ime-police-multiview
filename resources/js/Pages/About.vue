@@ -497,7 +497,7 @@ const props = defineProps({
                                 Setiap perwira yang sedang siaran live di
                                 YouTube dengan hashtag
                                 <code
-                                    class="bg-slate-950 px-1.5 py-0.5 rounded text-blue-400 border border-slate-800 font-mono"
+                                    class="bg-slate-950 px-1.5 py-0.5 rounded-sm text-blue-400 border border-slate-800 font-mono"
                                     >#imepolice</code
                                 >
                                 akan otomatis terdeteksi dan masuk ke layar

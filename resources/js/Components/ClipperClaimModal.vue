@@ -1,7 +1,7 @@
 <template>
     <div
         v-if="show"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto font-sans"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs overflow-y-auto font-sans"
         @click.self="close"
     >
         <!-- Modal Container -->
@@ -186,7 +186,7 @@
                         type="email"
                         required
                         placeholder="nama@email.com"
-                        class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition placeholder:text-slate-500 font-mono"
+                        class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-hidden focus:border-blue-500 transition placeholder:text-slate-500 font-mono"
                     />
                     <p class="text-[11px] text-slate-500 mt-1">
                         Hak akses Clipper akan diaktifkan ke akun pengguna
@@ -205,7 +205,7 @@
                         v-model="form.channel_url"
                         type="url"
                         placeholder="https://youtube.com/@channel_anda atau link sampel klip..."
-                        class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition placeholder:text-slate-500 font-mono"
+                        class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-hidden focus:border-blue-500 transition placeholder:text-slate-500 font-mono"
                     />
                 </div>
 
@@ -220,7 +220,7 @@
                         v-model="form.reason"
                         rows="3"
                         placeholder="Tuliskan keterangan singkat keikutsertaan Anda (misal: Editor komunitas IME, Clipper channel YouTube, atau permohonan akses Beta)..."
-                        class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-blue-500 transition placeholder:text-slate-500 font-sans"
+                        class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-hidden focus:border-blue-500 transition placeholder:text-slate-500 font-sans"
                     ></textarea>
                 </div>
 

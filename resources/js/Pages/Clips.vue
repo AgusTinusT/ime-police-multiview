@@ -715,7 +715,7 @@ onUnmounted(() => {
                 >
                     <!-- TACTICAL VIDEO FRAME CONTAINER (PORTRAIT REEL ON MOBILE, 16:9 CINEMA ON DESKTOP) -->
                     <div
-                        class="relative w-full aspect-[3/3] sm:aspect-video max-h-[calc(100dvh-175px)] sm:max-h-[calc(100dvh-105px)] landscape:max-h-[calc(100dvh-60px)] rounded-xl border border-slate-800/80 shadow-2xl overflow-hidden bg-black flex items-center justify-center"
+                        class="relative w-full aspect-3/3 sm:aspect-video max-h-[calc(100dvh-175px)] sm:max-h-[calc(100dvh-105px)] landscape:max-h-[calc(100dvh-60px)] rounded-xl border border-slate-800/80 shadow-2xl overflow-hidden bg-black flex items-center justify-center"
                     >
                         <!-- CUSTOM VIDEO PLAYER (MATCHING CLIPPER.VUE CUSTOM PLAYER UI) -->
                         <CustomVideoPlayer
@@ -852,7 +852,7 @@ onUnmounted(() => {
                             </div>
 
                             <span
-                                class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400"
+                                class="px-2 py-0.5 rounded-sm bg-slate-900 border border-slate-800 text-slate-400"
                             >
                                 #{{
                                     currentShortClip.officer_name
@@ -864,7 +864,7 @@ onUnmounted(() => {
                                 }}
                             </span>
                             <span
-                                class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400"
+                                class="px-2 py-0.5 rounded-sm bg-slate-900 border border-slate-800 text-slate-400"
                             >
                                 ⏱️
                                 {{ formatTime(currentShortClip.start_seconds) }}
@@ -1010,7 +1010,7 @@ onUnmounted(() => {
     <Teleport to="body">
         <div
             v-if="isAddModalOpen"
-            class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 overflow-y-auto"
+            class="fixed inset-0 z-100 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 overflow-y-auto"
         >
             <div
                 class="relative w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-6 space-y-5 text-slate-100 font-sans"
@@ -1051,7 +1051,7 @@ onUnmounted(() => {
                             v-model="newClipForm.youtube_url"
                             type="url"
                             placeholder="https://www.youtube.com/watch?v=..."
-                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 font-mono focus:border-blue-500 focus:outline-none"
+                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 font-mono focus:border-blue-500 focus:outline-hidden"
                         />
                     </div>
 
@@ -1066,7 +1066,7 @@ onUnmounted(() => {
                             v-model="newClipForm.title"
                             type="text"
                             placeholder="Contoh: Pursuit 10-80 Sektor Downtown Los Santos"
-                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 focus:border-blue-500 focus:outline-none"
+                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 focus:border-blue-500 focus:outline-hidden"
                         />
                     </div>
 
@@ -1083,7 +1083,7 @@ onUnmounted(() => {
                                 v-model="newClipForm.start_time"
                                 type="text"
                                 placeholder="00:00:10"
-                                class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 font-mono text-center focus:border-blue-500 focus:outline-none font-bold"
+                                class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 font-mono text-center focus:border-blue-500 focus:outline-hidden font-bold"
                             />
                             <span
                                 class="text-[10px] text-slate-500 block font-mono"
@@ -1101,7 +1101,7 @@ onUnmounted(() => {
                                 v-model="newClipForm.end_time"
                                 type="text"
                                 placeholder="00:01:00"
-                                class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 font-mono text-center focus:border-blue-500 focus:outline-none font-bold"
+                                class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 font-mono text-center focus:border-blue-500 focus:outline-hidden font-bold"
                             />
                             <span
                                 class="text-[10px] text-slate-500 block font-mono"
@@ -1119,7 +1119,7 @@ onUnmounted(() => {
                         </label>
                         <select
                             v-model="newClipForm.officer_id"
-                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:border-blue-500 focus:outline-none cursor-pointer"
+                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:border-blue-500 focus:outline-hidden cursor-pointer"
                         >
                             <option value="">
                                 -- Pilih Petugas / Officer --
@@ -1146,7 +1146,7 @@ onUnmounted(() => {
                             v-model="newClipForm.creator_name"
                             type="text"
                             placeholder="Nama panggilan Anda..."
-                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 focus:border-blue-500 focus:outline-none font-mono"
+                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 focus:border-blue-500 focus:outline-hidden font-mono"
                         />
                     </div>
                 </div>

@@ -26,7 +26,7 @@ const emit = defineEmits([
     <!-- FLOATING TAC CHANNEL EXPIRATION WARNING ALERT -->
     <div
         v-if="expiringTacChannel"
-        class="fixed bottom-20 md:bottom-16 right-4 z-[60] bg-slate-950/95 border border-amber-500/80 shadow-2xl rounded-lg px-4 py-3 flex items-center space-x-3 text-xs max-w-sm animate-in slide-in-from-bottom duration-300 pointer-events-auto backdrop-blur-md"
+        class="fixed bottom-20 md:bottom-16 right-4 z-60 bg-slate-950/95 border border-amber-500/80 shadow-2xl rounded-lg px-4 py-3 flex items-center space-x-3 text-xs max-w-sm animate-in slide-in-from-bottom duration-300 pointer-events-auto backdrop-blur-md"
     >
         <div
             class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0"
@@ -74,7 +74,7 @@ const emit = defineEmits([
     <!-- FLOATING TACTICAL ACTION TOAST -->
     <div
         v-if="tacticalToast"
-        class="fixed bottom-20 md:bottom-16 right-4 z-[60] bg-slate-900 border border-amber-800 rounded-md px-4 py-2.5 flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200 pointer-events-auto"
+        class="fixed bottom-20 md:bottom-16 right-4 z-60 bg-slate-900 border border-amber-800 rounded-md px-4 py-2.5 flex items-center space-x-2.5 text-xs font-mono text-amber-300 animate-in slide-in-from-bottom duration-200 pointer-events-auto"
     >
         <img
             :src="iconRadio"

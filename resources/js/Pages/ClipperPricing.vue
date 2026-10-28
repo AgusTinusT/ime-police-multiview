@@ -3,12 +3,12 @@
         <Head title="Paket Layanan & Pricing Clipper - ClipStudio IME Police" />
 
         <div
-            class="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 space-y-12 font-sans"
+            class="relative z-10 max-w-(--breakpoint-2xl) mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 space-y-12 font-sans"
         >
             <!-- HERO HEADER SECTION -->
             <section class="text-center max-w-3xl mx-auto space-y-4">
                 <div
-                    class="inline-flex items-center gap-2 px-3 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300 text-xs font-mono"
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-slate-900 border border-slate-800 text-slate-300 text-xs font-mono"
                 >
                     <span class="w-2 h-2 rounded-full bg-blue-500"></span>
                     <span>Paket & Akses Clipper IME Police</span>
@@ -73,7 +73,7 @@
                         </p>
                     </div>
                     <span
-                        class="text-xs font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded"
+                        class="text-xs font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-sm"
                     >
                         Format: 1080p • 720p • 480p • MP3
                     </span>
@@ -87,7 +87,7 @@
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <span
-                                    class="px-2.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono text-[11px] font-bold uppercase"
+                                    class="px-2.5 py-0.5 rounded-sm bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono text-[11px] font-bold uppercase"
                                     >Rekomendasi Utama</span
                                 >
                                 <span
@@ -228,12 +228,12 @@
 
                     <!-- CARD 2: CLIPPER KOMUNITAS IME (DISKON BETA RP 5K) -->
                     <div
-                        class="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4 flex flex-col justify-between relative shadow-sm"
+                        class="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4 flex flex-col justify-between relative shadow-xs"
                     >
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <span
-                                    class="px-2.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-mono text-[11px] uppercase"
+                                    class="px-2.5 py-0.5 rounded-sm bg-slate-800 text-slate-300 border border-slate-700 font-mono text-[11px] uppercase"
                                     >General Clipper</span
                                 >
                                 <span
@@ -379,12 +379,12 @@
 
                     <!-- CARD 3: ULTIMATE VIP SUPPORTER TIER (RP 10K PROMO BETA) -->
                     <div
-                        class="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4 flex flex-col justify-between relative shadow-sm"
+                        class="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4 flex flex-col justify-between relative shadow-xs"
                     >
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <span
-                                    class="px-2.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-mono text-[11px] uppercase"
+                                    class="px-2.5 py-0.5 rounded-sm bg-slate-800 text-slate-300 border border-slate-700 font-mono text-[11px] uppercase"
                                     >VIP Supporter</span
                                 >
                                 <span
@@ -517,7 +517,7 @@
                 >
                     <div class="space-y-3 max-w-2xl">
                         <div
-                            class="inline-flex items-center gap-2 px-3 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono font-bold uppercase"
+                            class="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono font-bold uppercase"
                         >
                             <svg
                                 class="w-4 h-4"
@@ -648,7 +648,7 @@
                 >
                     <div>
                         <div
-                            class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 font-mono text-[11px] font-bold uppercase mb-1"
+                            class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-sm bg-blue-500/10 border border-blue-500/20 text-blue-400 font-mono text-[11px] font-bold uppercase mb-1"
                         >
                             <span
                                 class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"
@@ -770,7 +770,7 @@
                                 </h3>
                             </div>
                             <span
-                                class="px-2.5 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] font-bold uppercase shrink-0"
+                                class="px-2.5 py-1 rounded-sm bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-[10px] font-bold uppercase shrink-0"
                             >
                                 Membutuhkan Server Besar
                             </span>

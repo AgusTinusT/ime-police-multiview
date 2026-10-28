@@ -218,7 +218,7 @@ const playClipModal = (clip) => {
             <div class="flex items-center space-x-2 flex-wrap gap-y-2">
                 <h3 class="text-xs font-medium text-slate-200 uppercase tracking-tight font-mono flex items-center gap-2">
                     <span>Kumpulan Klip Aksi</span>
-                    <span class="px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800 font-mono text-[10px]">
+                    <span class="px-2 py-0.5 rounded-sm bg-slate-950 text-slate-400 border border-slate-800 font-mono text-[10px]">
                         {{ filteredClips.length }} Klip
                     </span>
                 </h3>
@@ -227,8 +227,8 @@ const playClipModal = (clip) => {
                 <div class="flex items-center bg-slate-950 border border-slate-800 rounded-md p-0.5 font-mono text-[11px]">
                     <button
                         @click="clipScopeFilter = 'officer'"
-                        :class="clipScopeFilter === 'officer' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
-                        class="px-2.5 py-1 rounded transition-colors cursor-pointer flex items-center gap-1"
+                        :class="clipScopeFilter === 'officer' ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-2.5 py-1 rounded-sm transition-colors cursor-pointer flex items-center gap-1"
                         title="Tampilkan semua klip dari officer ini (seluruh riwayat video)"
                     >
                         <span>Semua Klip Officer</span>
@@ -236,8 +236,8 @@ const playClipModal = (clip) => {
                     </button>
                     <button
                         @click="clipScopeFilter = 'stream'"
-                        :class="clipScopeFilter === 'stream' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
-                        class="px-2.5 py-1 rounded transition-colors cursor-pointer flex items-center gap-1"
+                        :class="clipScopeFilter === 'stream' ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-slate-400 hover:text-slate-200'"
+                        class="px-2.5 py-1 rounded-sm transition-colors cursor-pointer flex items-center gap-1"
                         title="Hanya tampilkan klip dari siaran video yang sedang diputar"
                     >
                         <span>Siaran Ini</span>
@@ -253,7 +253,7 @@ const playClipModal = (clip) => {
                     type="text"
                     maxlength="50"
                     placeholder="Cari klip atau pembuat..."
-                    class="bg-slate-950 border border-slate-800 rounded-md px-2.5 py-1 text-slate-200 text-xs placeholder:text-slate-500 outline-none focus:border-blue-500 transition-colors w-full sm:w-44"
+                    class="bg-slate-950 border border-slate-800 rounded-md px-2.5 py-1 text-slate-200 text-xs placeholder:text-slate-500 outline-hidden focus:border-blue-500 transition-colors w-full sm:w-44"
                 />
 
                 <button
@@ -288,7 +288,7 @@ const playClipModal = (clip) => {
                         <div v-if="canDeleteClip(clip)" class="absolute top-2 right-2 z-20">
                             <button
                                 @click.stop="deleteClip(clip.id)"
-                                class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-400 hover:text-red-400 bg-slate-950/90 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors flex items-center gap-1 cursor-pointer"
+                                class="px-2 py-0.5 rounded-sm text-[10px] font-mono text-slate-400 hover:text-red-400 bg-slate-950/90 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 transition-colors flex items-center gap-1 cursor-pointer"
                                 title="Hapus Klip"
                             >
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -299,13 +299,13 @@ const playClipModal = (clip) => {
                         </div>
 
                         <!-- DURATION OVERLAY -->
-                        <div class="absolute bottom-2 right-2 bg-slate-950/90 px-2 py-0.5 rounded font-mono text-[10px] text-slate-300 border border-slate-800 z-10">
+                        <div class="absolute bottom-2 right-2 bg-slate-950/90 px-2 py-0.5 rounded-sm font-mono text-[10px] text-slate-300 border border-slate-800 z-10">
                             {{ formatTime(clip.start_seconds) }} - {{ formatTime(clip.end_seconds) }}
                         </div>
 
                         <!-- PLAY BUTTON OVERLAY -->
                         <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
-                            <div class="w-9 h-9 rounded bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center">
+                            <div class="w-9 h-9 rounded-sm bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center">
                                 <svg class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24">
                                     <path d="M8 5v14l11-7z"/>
                                 </svg>
@@ -317,7 +317,7 @@ const playClipModal = (clip) => {
                     <div class="p-3.5 flex flex-col justify-between flex-1 space-y-2.5">
                         <div>
                             <h4
-                                class="text-xs font-medium text-slate-200 group-hover:text-slate-100 transition-colors line-clamp-2 leading-relaxed cursor-pointer break-words"
+                                class="text-xs font-medium text-slate-200 group-hover:text-slate-100 transition-colors line-clamp-2 leading-relaxed cursor-pointer wrap-break-word"
                                 @click="playClipModal(clip)"
                                 :title="clip.title"
                             >
@@ -340,7 +340,7 @@ const playClipModal = (clip) => {
             <div v-if="hasMoreClips" class="pt-4 flex flex-col items-center justify-center space-y-2">
                 <button
                     @click="loadMore"
-                    class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 rounded-lg text-xs font-mono transition-colors flex items-center gap-2 cursor-pointer shadow"
+                    class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 rounded-lg text-xs font-mono transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
                 >
                     <svg class="w-3.5 h-3.5 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -381,12 +381,12 @@ const playClipModal = (clip) => {
             <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-3xl w-full p-4 space-y-3">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <div class="flex items-center space-x-2 truncate">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-300 bg-slate-950 border border-slate-800">
+                        <span class="px-2 py-0.5 rounded-sm text-[10px] font-mono text-slate-300 bg-slate-950 border border-slate-800">
                             CLIP
                         </span>
                         <h3 class="text-xs font-medium text-slate-200 truncate font-mono">{{ activePlayingClip.title }}</h3>
                     </div>
-                    <button @click="activePlayingClip = null" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded bg-slate-800 cursor-pointer">✕ Close</button>
+                    <button @click="activePlayingClip = null" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded-sm bg-slate-800 cursor-pointer">✕ Close</button>
                 </div>
 
                 <div class="relative aspect-video w-full bg-slate-950 rounded-lg overflow-hidden border border-slate-800">

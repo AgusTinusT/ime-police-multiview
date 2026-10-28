@@ -108,7 +108,7 @@ const handleSearch = () => {
                             v-model="quickAddInput.videoUrlOrId"
                             type="text"
                             placeholder="Contoh: https://www.youtube.com/watch?v=dQw4w9WgXcQ atau dQw4w9WgXcQ"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 font-mono"
                         />
                     </div>
 
@@ -121,7 +121,7 @@ const handleSearch = () => {
                                 v-model="quickAddInput.officerName"
                                 type="text"
                                 placeholder="Misal: Officer John"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-sans"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 font-sans"
                             />
                         </div>
 
@@ -133,7 +133,7 @@ const handleSearch = () => {
                                 v-model="quickAddInput.callsign"
                                 type="text"
                                 placeholder="Misal: 1A-12"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono uppercase"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 font-mono uppercase"
                             />
                         </div>
 
@@ -143,7 +143,7 @@ const handleSearch = () => {
                             </label>
                             <select 
                                 v-model="quickAddInput.department"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-xs text-white focus:outline-hidden focus:border-blue-500 font-mono"
                             >
                                 <option value="LSPD">LSPD (Los Santos PD)</option>
                                 <option value="LSCSD">LSCSD (Sheriff Dept)</option>
@@ -176,7 +176,7 @@ const handleSearch = () => {
                             v-model="searchQuery"
                             type="text"
                             placeholder="Cari kata kunci hashtag live..."
-                            class="flex-1 bg-slate-950 border border-slate-800 rounded-md px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+                            class="flex-1 bg-slate-950 border border-slate-800 rounded-md px-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 font-mono"
                             @keyup.enter="handleSearch"
                         />
                         <button 

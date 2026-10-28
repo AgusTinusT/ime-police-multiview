@@ -122,7 +122,7 @@ const handleUpdateSlug = async () => {
 <template>
     <div
         v-if="show && officer"
-        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
     >
         <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl p-5 shadow-2xl text-left space-y-4 font-mono text-xs">
             <!-- HEADER -->
@@ -166,7 +166,7 @@ const handleUpdateSlug = async () => {
             </div>
 
             <!-- ERROR ALERT -->
-            <div v-if="formError" class="p-2.5 rounded bg-rose-950 border border-rose-500 text-rose-200 text-xs">
+            <div v-if="formError" class="p-2.5 rounded-sm bg-rose-950 border border-rose-500 text-rose-200 text-xs">
                 {{ formError }}
             </div>
 
@@ -178,11 +178,11 @@ const handleUpdateSlug = async () => {
                         v-model="userSearch"
                         type="text"
                         placeholder="Filter nama / email user..."
-                        class="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-500 outline-none mb-1"
+                        class="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-500 outline-hidden mb-1"
                     />
                     <select
                         v-model="selectedUserId"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-hidden"
                     >
                         <option value="">-- Pilih User ({{ filteredUsers.length }} akun) --</option>
                         <option v-for="u in filteredUsers" :key="u.id" :value="u.id">
@@ -197,7 +197,7 @@ const handleUpdateSlug = async () => {
                         v-model="reasonInput"
                         type="text"
                         placeholder="Contoh: Streamer resmi SASP"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-hidden"
                     />
                 </div>
 
@@ -230,7 +230,7 @@ const handleUpdateSlug = async () => {
                         v-model="reasonInput"
                         rows="2"
                         placeholder="Contoh: Resign / Dishonorable discharge / Pergantian streamer"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-rose-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-rose-500 outline-hidden"
                     ></textarea>
                 </div>
 
@@ -261,7 +261,7 @@ const handleUpdateSlug = async () => {
                             v-model="slugInput"
                             type="text"
                             placeholder="nama-slug-baru"
-                            class="w-full px-3 py-2 rounded-r-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-none"
+                            class="w-full px-3 py-2 rounded-r-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-hidden"
                         />
                     </div>
                     <p class="text-[10px] text-slate-400">
@@ -275,7 +275,7 @@ const handleUpdateSlug = async () => {
                         v-model="reasonInput"
                         type="text"
                         placeholder="Contoh: Penyesuaian nama panggilan dinas"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-hidden"
                     />
                 </div>
 

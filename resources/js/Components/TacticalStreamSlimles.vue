@@ -306,7 +306,7 @@ const getStreamTac = (videoId) => {
             <div
                 v-else
                 id="row-unified-dispatch"
-                class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-1 focus:outline-none"
+                class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-1 focus:outline-hidden"
             >
                 <div
                     v-for="stream in combinedStreams"
@@ -331,7 +331,7 @@ const getStreamTac = (videoId) => {
                             loading="lazy"
                         />
                         <div
-                            class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/60 pointer-events-none"
+                            class="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-slate-950/60 pointer-events-none"
                         ></div>
 
                         <!-- Card Top Badges -->

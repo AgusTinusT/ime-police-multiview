@@ -2,7 +2,7 @@
     <TacticalLayout>
         <Head title="Panduan Hak Akses Police Duty Clipper - ClipStudio IME Police" />
 
-        <div class="relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 space-y-10 font-sans">
+        <div class="relative z-10 max-w-(--breakpoint-xl) mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24 space-y-10 font-sans">
             
             <!-- BREADCRUMB NAVIGATION -->
             <nav class="flex items-center gap-2 text-xs font-mono text-slate-400">
@@ -15,7 +15,7 @@
 
             <!-- HERO HEADER SECTION -->
             <section class="text-center max-w-3xl mx-auto space-y-4">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300 text-xs font-mono">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-slate-900 border border-slate-800 text-slate-300 text-xs font-mono">
                     <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                     <span>Panduan Resmi Platform & Cara Mendapatkan Akses</span>
                 </div>
@@ -55,7 +55,7 @@
             <!-- SECTION 1: APA ITUS POLICE DUTY CLIPPER -->
             <section class="p-6 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
                 <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
-                    <div class="p-2 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <div class="p-2 rounded-sm bg-blue-500/10 text-blue-400 border border-blue-500/20">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
@@ -106,7 +106,7 @@
                     <!-- STEP 1 -->
                     <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-3 relative">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-mono font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded border border-blue-500/20">LANGKAH 01</span>
+                            <span class="text-xs font-mono font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-sm border border-blue-500/20">LANGKAH 01</span>
                             <span class="text-[11px] font-mono text-slate-500">Temukan Streamer</span>
                         </div>
                         <h3 class="text-base font-bold text-white">Temukan Officer yang Sedang Patroli</h3>
@@ -124,14 +124,14 @@
                     <!-- STEP 2 -->
                     <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-3 relative">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-mono font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded border border-blue-500/20">LANGKAH 02</span>
+                            <span class="text-xs font-mono font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-sm border border-blue-500/20">LANGKAH 02</span>
                             <span class="text-[11px] font-mono text-slate-500">Komunikasi</span>
                         </div>
                         <h3 class="text-base font-bold text-white">Hubungi Officer & Tunjukkan Channel Klip</h3>
                         <p class="text-xs text-slate-400 leading-relaxed">
                             Sapa Officer di chat livestream atau Discord komunitas. Tanyakan apakah mereka memiliki slot Clipper kosong dan tunjukkan minat Anda untuk membantu klip aksi patrolinya.
                         </p>
-                        <div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-[11px] text-slate-400 font-mono flex items-center gap-1.5">
+                        <div class="p-2.5 rounded-sm bg-slate-950 border border-slate-800 text-[11px] text-slate-400 font-mono flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             <span>Tip: Tunjukkan link channel YouTube/TikTok Anda atau hasil pemotongan klip sebelumnya!</span>
                         </div>
@@ -140,14 +140,14 @@
                     <!-- STEP 3 -->
                     <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-3 relative">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-mono font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded border border-blue-500/20">LANGKAH 03</span>
+                            <span class="text-xs font-mono font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-sm border border-blue-500/20">LANGKAH 03</span>
                             <span class="text-[11px] font-mono text-slate-500">Penunjukan Direct</span>
                         </div>
                         <h3 class="text-base font-bold text-white">Officer Memasukkan Akun Anda (2 Slot)</h3>
                         <p class="text-xs text-slate-400 leading-relaxed">
                             Setiap Officer memiliki <strong>2 Slot Otonomi Mandiri</strong>. Officer cukup membuka menu pengelolaan Clipper di akunnya dan memasukkan Username atau Email akun Anda.
                         </p>
-                        <div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-[11px] text-slate-400 font-mono flex items-center gap-1.5">
+                        <div class="p-2.5 rounded-sm bg-slate-950 border border-slate-800 text-[11px] text-slate-400 font-mono flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                             <span>Tanpa perlu menunggu persetujuan Admin! Hak akses diberikan secara instan oleh Officer.</span>
                         </div>
@@ -156,7 +156,7 @@
                     <!-- STEP 4 -->
                     <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-3 relative">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-mono font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20">LANGKAH 04</span>
+                            <span class="text-xs font-mono font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-sm border border-emerald-500/20">LANGKAH 04</span>
                             <span class="text-[11px] font-mono text-slate-500">Akses Aktif</span>
                         </div>
                         <h3 class="text-base font-bold text-white">Akses Trimmer Aktif & Siap Digunakan</h3>

@@ -79,7 +79,7 @@ const getDeptCount = (deptId) => {
         class="w-full bg-slate-950 border-b border-slate-800 sticky top-0 z-40 py-2.5 sm:py-3"
     >
         <div
-            class="max-w-screen-2xl mx-auto w-full px-3 sm:px-4 lg:px-8 flex items-center justify-between gap-3 text-slate-100"
+            class="max-w-(--breakpoint-2xl) mx-auto w-full px-3 sm:px-4 lg:px-8 flex items-center justify-between gap-3 text-slate-100"
         >
             <!-- LEFT BRANDING: Police Duty (Navigates to Dashboard) -->
             <Link
@@ -92,7 +92,7 @@ const getDeptCount = (deptId) => {
                 >
                     <img
                         :src="logoSaspColor"
-                        class="w-full h-full object-contain rounded"
+                        class="w-full h-full object-contain rounded-sm"
                         alt="Police Badge"
                     />
                 </div>
@@ -133,7 +133,7 @@ const getDeptCount = (deptId) => {
                                 ? 'bg-blue-700/80 text-white'
                                 : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
                         "
-                        class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
+                        class="text-[10px] px-1.5 py-0.2 rounded-sm font-mono font-bold transition"
                         >{{ getDeptCount("ALL") }}</span
                     >
                 </button>
@@ -158,7 +158,7 @@ const getDeptCount = (deptId) => {
                                 ? 'bg-blue-700/80 text-white'
                                 : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
                         "
-                        class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
+                        class="text-[10px] px-1.5 py-0.2 rounded-sm font-mono font-bold transition"
                         >{{ getDeptCount("LSPD") }}</span
                     >
                 </button>
@@ -183,7 +183,7 @@ const getDeptCount = (deptId) => {
                                 ? 'bg-blue-700/80 text-white'
                                 : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
                         "
-                        class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
+                        class="text-[10px] px-1.5 py-0.2 rounded-sm font-mono font-bold transition"
                         >{{ getDeptCount("BCSO") }}</span
                     >
                 </button>
@@ -208,7 +208,7 @@ const getDeptCount = (deptId) => {
                                 ? 'bg-blue-700/80 text-white'
                                 : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
                         "
-                        class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
+                        class="text-[10px] px-1.5 py-0.2 rounded-sm font-mono font-bold transition"
                         >{{ getDeptCount("SASP") }}</span
                     >
                 </button>
@@ -233,7 +233,7 @@ const getDeptCount = (deptId) => {
                                 ? 'bg-blue-700/80 text-white'
                                 : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
                         "
-                        class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
+                        class="text-[10px] px-1.5 py-0.2 rounded-sm font-mono font-bold transition"
                         >{{ getDeptCount("SAPR") }}</span
                     >
                 </button>
@@ -269,7 +269,7 @@ const getDeptCount = (deptId) => {
                                 ? 'bg-blue-700/80 text-white'
                                 : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
                         "
-                        class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
+                        class="text-[10px] px-1.5 py-0.2 rounded-sm font-mono font-bold transition"
                         >{{ getDeptCount("TAC") }}</span
                     >
                 </button>
@@ -294,7 +294,7 @@ const getDeptCount = (deptId) => {
                                 ? 'bg-blue-700/80 text-white'
                                 : 'bg-transparent text-slate-500 group-hover:bg-slate-800/80 group-hover:text-slate-200'
                         "
-                        class="text-[10px] px-1.5 py-0.2 rounded font-mono font-bold transition"
+                        class="text-[10px] px-1.5 py-0.2 rounded-sm font-mono font-bold transition"
                         >{{ getDeptCount("PERSONAL") }}</span
                     >
                 </button>
@@ -305,7 +305,7 @@ const getDeptCount = (deptId) => {
 
                 <Link
                     href="/action-clips"
-                    class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-bold font-mono transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                     title="Buka TacClips — Galeri Momen Aksi Kepolisian"
                 >
                     <svg
@@ -329,7 +329,7 @@ const getDeptCount = (deptId) => {
 
         <!-- MOBILE SECONDARY NAV RIBBON (< md) -->
         <div
-            class="flex md:hidden max-w-screen-2xl mx-auto w-full px-3 py-2 items-center space-x-2 overflow-x-auto scrollbar-none border-t border-slate-800/80 mt-2 bg-slate-950/95"
+            class="flex md:hidden max-w-(--breakpoint-2xl) mx-auto w-full px-3 py-2 items-center space-x-2 overflow-x-auto scrollbar-none border-t border-slate-800/80 mt-2 bg-slate-950/95"
         >
             <button
                 @click="emit('update:selectedDepartment', 'ALL')"
@@ -343,7 +343,7 @@ const getDeptCount = (deptId) => {
                 <span>ALL</span>
                 <span
                     v-if="selectedDepartment === 'ALL'"
-                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    class="text-[10px] px-1.5 py-0.2 rounded-sm bg-blue-700/80 text-white font-mono font-bold"
                     >{{ getDeptCount("ALL") }}</span
                 >
             </button>
@@ -360,7 +360,7 @@ const getDeptCount = (deptId) => {
                 <span>LSPD</span>
                 <span
                     v-if="selectedDepartment === 'LSPD'"
-                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    class="text-[10px] px-1.5 py-0.2 rounded-sm bg-blue-700/80 text-white font-mono font-bold"
                     >{{ getDeptCount("LSPD") }}</span
                 >
             </button>
@@ -377,7 +377,7 @@ const getDeptCount = (deptId) => {
                 <span>BCSO</span>
                 <span
                     v-if="selectedDepartment === 'BCSO'"
-                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    class="text-[10px] px-1.5 py-0.2 rounded-sm bg-blue-700/80 text-white font-mono font-bold"
                     >{{ getDeptCount("BCSO") }}</span
                 >
             </button>
@@ -394,7 +394,7 @@ const getDeptCount = (deptId) => {
                 <span>SASP</span>
                 <span
                     v-if="selectedDepartment === 'SASP'"
-                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    class="text-[10px] px-1.5 py-0.2 rounded-sm bg-blue-700/80 text-white font-mono font-bold"
                     >{{ getDeptCount("SASP") }}</span
                 >
             </button>
@@ -411,7 +411,7 @@ const getDeptCount = (deptId) => {
                 <span>SAPR</span>
                 <span
                     v-if="selectedDepartment === 'SAPR'"
-                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    class="text-[10px] px-1.5 py-0.2 rounded-sm bg-blue-700/80 text-white font-mono font-bold"
                     >{{ getDeptCount("SAPR") }}</span
                 >
             </button>
@@ -433,7 +433,7 @@ const getDeptCount = (deptId) => {
                 <span>TAC</span>
                 <span
                     v-if="selectedDepartment.startsWith('TAC_')"
-                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    class="text-[10px] px-1.5 py-0.2 rounded-sm bg-blue-700/80 text-white font-mono font-bold"
                     >{{ getDeptCount("TAC") }}</span
                 >
             </button>
@@ -450,7 +450,7 @@ const getDeptCount = (deptId) => {
                 <span>WATCHLIST</span>
                 <span
                     v-if="selectedDepartment === 'PERSONAL'"
-                    class="text-[10px] px-1.5 py-0.2 rounded bg-blue-700/80 text-white font-mono font-bold"
+                    class="text-[10px] px-1.5 py-0.2 rounded-sm bg-blue-700/80 text-white font-mono font-bold"
                     >{{ getDeptCount("PERSONAL") }}</span
                 >
             </button>

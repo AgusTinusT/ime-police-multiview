@@ -124,7 +124,7 @@ const deleteImpression = (id) => {
             >
                 <div class="flex items-center space-x-3.5">
                     <div
-                        class="w-12 h-12 rounded bg-slate-950 border border-slate-800 flex items-center justify-center font-bold text-base text-slate-300 font-mono shrink-0"
+                        class="w-12 h-12 rounded-sm bg-slate-950 border border-slate-800 flex items-center justify-center font-bold text-base text-slate-300 font-mono shrink-0"
                     >
                         {{
                             officer?.callsign ||
@@ -135,7 +135,7 @@ const deleteImpression = (id) => {
                     <div>
                         <div class="flex items-center space-x-2">
                             <span
-                                class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-950 text-slate-300 border border-slate-800"
+                                class="px-2 py-0.5 rounded-sm text-[10px] font-mono bg-slate-950 text-slate-300 border border-slate-800"
                             >
                                 {{
                                     officer?.department ||
@@ -204,15 +204,15 @@ const deleteImpression = (id) => {
                 <div class="flex items-center space-x-2 text-slate-400">
                     <span class="text-slate-300 font-medium">Sertifikasi:</span>
                     <span
-                        class="px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800"
+                        class="px-2 py-0.5 rounded-sm bg-slate-950 text-slate-300 border border-slate-800"
                         >High Pursuit Driver</span
                     >
                     <span
-                        class="px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800"
+                        class="px-2 py-0.5 rounded-sm bg-slate-950 text-slate-300 border border-slate-800"
                         >Air Support Lead</span
                     >
                     <span
-                        class="px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800"
+                        class="px-2 py-0.5 rounded-sm bg-slate-950 text-slate-300 border border-slate-800"
                         >Negotiator</span
                     >
                 </div>
@@ -231,7 +231,7 @@ const deleteImpression = (id) => {
                     >
                         <span>Kesan & Lore Komunitas</span>
                         <span
-                            class="px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800 font-mono text-[10px]"
+                            class="px-2 py-0.5 rounded-sm bg-slate-950 text-slate-400 border border-slate-800 font-mono text-[10px]"
                         >
                             {{ impressions.length }}
                         </span>
@@ -274,7 +274,7 @@ const deleteImpression = (id) => {
             >
                 <div class="flex items-start space-x-3">
                     <div
-                        class="w-8 h-8 rounded bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-medium text-xs text-slate-400 shrink-0 mt-0.5"
+                        class="w-8 h-8 rounded-sm bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-medium text-xs text-slate-400 shrink-0 mt-0.5"
                     >
                         {{
                             newCommentAuthor
@@ -302,7 +302,7 @@ const deleteImpression = (id) => {
                                 v-model="newCommentContent"
                                 rows="3"
                                 placeholder="Buat catatan kesan atau rekap RP perwira ini..."
-                                class="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-md p-2.5 text-slate-100 text-xs font-mono outline-none resize-none leading-relaxed"
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-md p-2.5 text-slate-100 text-xs font-mono outline-hidden resize-none leading-relaxed"
                             ></textarea>
 
                             <div
@@ -315,7 +315,7 @@ const deleteImpression = (id) => {
                                         v-model="newCommentAuthor"
                                         type="text"
                                         placeholder="Panggilan Anda (Opsional)"
-                                        class="bg-slate-950 border border-slate-800 rounded-md px-2.5 py-1 text-slate-200 text-xs outline-none focus:border-slate-700 w-48"
+                                        class="bg-slate-950 border border-slate-800 rounded-md px-2.5 py-1 text-slate-200 text-xs outline-hidden focus:border-slate-700 w-48"
                                     />
                                 </div>
 
@@ -358,7 +358,7 @@ const deleteImpression = (id) => {
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center space-x-2.5">
                             <div
-                                class="w-7 h-7 rounded bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-medium text-xs text-slate-300"
+                                class="w-7 h-7 rounded-sm bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-medium text-xs text-slate-300"
                             >
                                 {{ item.author_name.charAt(0) }}
                             </div>
@@ -369,7 +369,7 @@ const deleteImpression = (id) => {
                                         >{{ item.author_name }}</span
                                     >
                                     <span
-                                        class="text-[10px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-800 font-mono"
+                                        class="text-[10px] px-1.5 py-0.2 rounded-sm bg-slate-950 text-slate-400 border border-slate-800 font-mono"
                                     >
                                         {{ item.author_role }}
                                     </span>
@@ -384,7 +384,7 @@ const deleteImpression = (id) => {
                         <!-- ADMIN ACTION: DELETE COMMENT -->
                         <button
                             @click="deleteImpression(item.id)"
-                            class="px-2 py-1 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-red-400 border border-slate-800 hover:border-slate-700 rounded text-[10px] font-mono transition-colors flex items-center gap-1 cursor-pointer"
+                            class="px-2 py-1 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-red-400 border border-slate-800 hover:border-slate-700 rounded-sm text-[10px] font-mono transition-colors flex items-center gap-1 cursor-pointer"
                             title="Hapus Komentar (Akses Admin)"
                         >
                             <svg

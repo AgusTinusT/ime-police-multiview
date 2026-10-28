@@ -480,7 +480,7 @@ const btnActive = "bg-blue-600 border-blue-500 text-white";
 
     <div
         class="bg-[#070b12] text-slate-100 font-sans antialiased flex flex-col"
-        :class="isNarrow ? 'min-h-[100dvh] pb-20' : 'h-[100dvh] overflow-hidden'"
+        :class="isNarrow ? 'min-h-dvh pb-20' : 'h-dvh overflow-hidden'"
     >
         <TacticalDashboardHeader v-if="showChrome" />
 
@@ -491,7 +491,7 @@ const btnActive = "bg-blue-600 border-blue-500 text-white";
         >
             <div class="flex items-center gap-2 min-w-0 mr-auto">
                 <h1 class="font-heading text-base sm:text-xl font-bold tracking-wide leading-none">MULTIVIEW</h1>
-                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-600/15 border border-red-500/30 text-[10px] font-bold text-red-400 whitespace-nowrap">
+                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-red-600/15 border border-red-500/30 text-[10px] font-bold text-red-400 whitespace-nowrap">
                     <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                     {{ totalLive }} LIVE
                 </span>
@@ -595,20 +595,20 @@ const btnActive = "bg-blue-600 border-blue-500 text-white";
                             />
 
                             <!-- Label -->
-                            <div class="tile-controls absolute top-0 inset-x-0 flex items-start gap-1 p-1 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
-                                <span class="shrink-0 w-5 h-5 rounded bg-black/70 text-[10px] font-mono font-bold flex items-center justify-center text-slate-300">{{ i + 1 }}</span>
+                            <div class="tile-controls absolute top-0 inset-x-0 flex items-start gap-1 p-1 bg-linear-to-b from-black/80 to-transparent pointer-events-none">
+                                <span class="shrink-0 w-5 h-5 rounded-sm bg-black/70 text-[10px] font-mono font-bold flex items-center justify-center text-slate-300">{{ i + 1 }}</span>
                                 <div class="min-w-0 flex-1 leading-tight" :class="isThumb(i) ? 'hidden' : ''">
-                                    <p class="text-xs font-bold text-white truncate drop-shadow">
+                                    <p class="text-xs font-bold text-white truncate drop-shadow-sm">
                                         {{ infoOf(id)?.officer?.officer_name || infoOf(id)?.title || id }}
                                     </p>
                                     <p class="flex items-center gap-1 text-[10px] text-slate-300 truncate">
                                         <span
                                             v-if="deptOf(infoOf(id))"
-                                            class="px-1 rounded-sm font-bold text-white"
+                                            class="px-1 rounded-xs font-bold text-white"
                                             :class="deptColor[deptOf(infoOf(id))] || 'bg-slate-600'"
                                         >{{ deptOf(infoOf(id)) }}</span>
                                         <span class="font-mono">{{ infoOf(id)?.officer?.callsign }}</span>
-                                        <span v-if="!liveIds.has(id)" class="px-1 rounded-sm bg-slate-700 font-bold">OFFLINE</span>
+                                        <span v-if="!liveIds.has(id)" class="px-1 rounded-xs bg-slate-700 font-bold">OFFLINE</span>
                                     </p>
                                 </div>
                             </div>
@@ -624,7 +624,7 @@ const btnActive = "bg-blue-600 border-blue-500 text-white";
                                 >
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
                                 </button>
-                                <button type="button" class="tile-btn hover:!bg-red-600" title="Tutup POV" @click="removeStream(id)">
+                                <button type="button" class="tile-btn hover:bg-red-600!" title="Tutup POV" @click="removeStream(id)">
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18" /></svg>
                                 </button>
                             </div>
@@ -632,10 +632,10 @@ const btnActive = "bg-blue-600 border-blue-500 text-white";
                             <!-- Audio toggle: always visible so the active sound source is obvious -->
                             <button
                                 type="button"
-                                class="absolute right-1.5 tile-btn !w-8 !h-8"
+                                class="absolute right-1.5 tile-btn w-8! h-8!"
                                 :class="[
                                     isThumb(i) ? 'bottom-1.5' : 'bottom-10',
-                                    audioId === id ? '!bg-blue-600 !opacity-100' : 'tile-controls',
+                                    audioId === id ? 'bg-blue-600! opacity-100!' : 'tile-controls',
                                 ]"
                                 :title="audioId === id ? 'Bisukan' : 'Dengarkan POV ini'"
                                 @click="toggleAudio(id)"
@@ -785,7 +785,7 @@ const btnActive = "bg-blue-600 border-blue-500 text-white";
         <Transition name="fade">
             <div
                 v-if="toast"
-                class="fixed left-1/2 -translate-x-1/2 bottom-24 md:bottom-6 z-[60] px-4 py-2 rounded-lg bg-slate-100 text-slate-900 text-sm font-semibold shadow-xl"
+                class="fixed left-1/2 -translate-x-1/2 bottom-24 md:bottom-6 z-60 px-4 py-2 rounded-lg bg-slate-100 text-slate-900 text-sm font-semibold shadow-xl"
             >
                 {{ toast }}
             </div>

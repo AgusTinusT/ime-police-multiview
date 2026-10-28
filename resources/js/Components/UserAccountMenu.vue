@@ -55,7 +55,7 @@ onUnmounted(() => {
         <template v-if="$page.props.auth?.user">
             <button
                 @click.stop="toggleDropdown"
-                class="h-8 flex items-center space-x-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 transition group cursor-pointer focus:outline-none shrink-0"
+                class="h-8 flex items-center space-x-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 transition group cursor-pointer focus:outline-hidden shrink-0"
                 :title="`Logged in as ${$page.props.auth.user.name} (${$page.props.auth.user.role || 'member'})`"
             >
                 <!-- Username -->
@@ -211,7 +211,7 @@ onUnmounted(() => {
                             <div class="flex flex-col">
                                 <div class="flex items-center gap-1.5">
                                     <span>Tactical Bio-Link</span>
-                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40 font-mono">HUB</span>
+                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded-sm bg-cyan-950 text-cyan-300 border border-cyan-500/40 font-mono">HUB</span>
                                 </div>
                                 <span class="text-[10px] text-slate-400 font-normal">
                                     Kelola Tautan, Donasi & Squad
@@ -230,7 +230,7 @@ onUnmounted(() => {
                             <div class="flex flex-col">
                                 <div class="flex items-center gap-1.5">
                                     <span>Profil Dinas Saya</span>
-                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded bg-blue-950 text-blue-300 border border-blue-500/40 font-mono">PERWIRA</span>
+                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded-sm bg-blue-950 text-blue-300 border border-blue-500/40 font-mono">PERWIRA</span>
                                 </div>
                                 <span class="text-[10px] text-slate-400 font-normal">
                                     Identitas, Callsign & Mutasi Pangkat
@@ -249,7 +249,7 @@ onUnmounted(() => {
                             <div class="flex flex-col">
                                 <div class="flex items-center gap-1.5">
                                     <span>Klaim Profil Perwira</span>
-                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40 font-mono">VERIFIKASI</span>
+                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded-sm bg-cyan-950 text-cyan-300 border border-cyan-500/40 font-mono">VERIFIKASI</span>
                                 </div>
                                 <span class="text-[10px] text-slate-400 font-normal">
                                     Ajukan Verifikasi Akun Dinas Anda
@@ -271,8 +271,8 @@ onUnmounted(() => {
                             <div class="flex flex-col">
                                 <div class="flex items-center gap-1.5">
                                     <span>Tactical Video Trimmer</span>
-                                    <span v-if="!$page.props.auth.user.can_trim_video" class="px-1.5 py-0.2 text-[9px] font-bold rounded bg-blue-950 text-blue-400 border border-blue-800/60 font-mono">Free</span>
-                                    <span v-else class="px-1.5 py-0.2 text-[9px] font-bold rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-mono">PRO</span>
+                                    <span v-if="!$page.props.auth.user.can_trim_video" class="px-1.5 py-0.2 text-[9px] font-bold rounded-sm bg-blue-950 text-blue-400 border border-blue-800/60 font-mono">Free</span>
+                                    <span v-else class="px-1.5 py-0.2 text-[9px] font-bold rounded-sm bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-mono">PRO</span>
                                 </div>
                                 <span
                                     class="text-[10px] text-slate-400 font-normal"
@@ -324,7 +324,7 @@ onUnmounted(() => {
                             <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">
                                 Bahasa / Language
                             </span>
-                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-blue-400 font-bold border border-slate-800">
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-sm bg-slate-950 text-blue-400 font-bold border border-slate-800">
                                 {{ locale.toUpperCase() }}
                             </span>
                         </div>
@@ -334,11 +334,11 @@ onUnmounted(() => {
                                 :class="[
                                     'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
                                     locale === 'id'
-                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-sm'
+                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-xs'
                                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
                                 ]"
                             >
-                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded bg-slate-900 border border-slate-700">ID</span>
+                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded-sm bg-slate-900 border border-slate-700">ID</span>
                                 <span>Indonesia</span>
                             </button>
                             <button
@@ -346,11 +346,11 @@ onUnmounted(() => {
                                 :class="[
                                     'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
                                     locale === 'en'
-                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-sm'
+                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-xs'
                                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
                                 ]"
                             >
-                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded bg-slate-900 border border-slate-700">EN</span>
+                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded-sm bg-slate-900 border border-slate-700">EN</span>
                                 <span>English</span>
                             </button>
                         </div>
@@ -378,7 +378,7 @@ onUnmounted(() => {
         <template v-else>
             <button
                 @click.stop="toggleDropdown"
-                class="h-8 flex items-center space-x-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 transition group cursor-pointer focus:outline-none shrink-0"
+                class="h-8 flex items-center space-x-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 transition group cursor-pointer focus:outline-hidden shrink-0"
                 title="Menu Pengunjung & Masuk / Guest Menu & Sign In"
             >
                 <!-- Guest Label -->
@@ -433,7 +433,7 @@ onUnmounted(() => {
                             <div class="flex flex-col">
                                 <div class="flex items-center gap-1.5">
                                     <span>Tactical Trimmer</span>
-                                    <span class="px-1.5 py-0.2 text-[9px] font-bold rounded bg-blue-950 text-blue-400 border border-blue-800/60 font-mono">Demo</span>
+                                    <span class="px-1.5 py-0.2 text-[9px] font-bold rounded-sm bg-blue-950 text-blue-400 border border-blue-800/60 font-mono">Demo</span>
                                 </div>
                                 <span class="text-[10px] text-slate-400 font-normal">Coba Potong Video YouTube Gratis</span>
                             </div>
@@ -467,7 +467,7 @@ onUnmounted(() => {
                             <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">
                                 Bahasa / Language
                             </span>
-                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-blue-400 font-bold border border-slate-800">
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-sm bg-slate-950 text-blue-400 font-bold border border-slate-800">
                                 {{ locale.toUpperCase() }}
                             </span>
                         </div>
@@ -477,11 +477,11 @@ onUnmounted(() => {
                                 :class="[
                                     'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
                                     locale === 'id'
-                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-sm'
+                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-xs'
                                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
                                 ]"
                             >
-                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded bg-slate-900 border border-slate-700">ID</span>
+                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded-sm bg-slate-900 border border-slate-700">ID</span>
                                 <span>Indonesia</span>
                             </button>
                             <button
@@ -489,11 +489,11 @@ onUnmounted(() => {
                                 :class="[
                                     'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
                                     locale === 'en'
-                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-sm'
+                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-xs'
                                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
                                 ]"
                             >
-                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded bg-slate-900 border border-slate-700">EN</span>
+                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded-sm bg-slate-900 border border-slate-700">EN</span>
                                 <span>English</span>
                             </button>
                         </div>

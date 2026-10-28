@@ -206,7 +206,7 @@ onMounted(() => {
 <template>
     <div
         v-if="show"
-        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 font-sans"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 font-sans"
     >
         <div class="w-full max-w-lg bg-slate-900 border border-cyan-500/30 rounded-2xl p-6 shadow-2xl text-left space-y-4 max-h-[90vh] overflow-y-auto">
             <!-- Header -->
@@ -251,7 +251,7 @@ onMounted(() => {
                 class="p-4 rounded-xl bg-slate-950 border border-cyan-500/40 space-y-3"
             >
                 <div class="flex items-center justify-between">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-cyan-950 text-cyan-400 border border-cyan-500/40">
+                    <span class="px-2 py-0.5 rounded-sm text-[10px] font-mono font-black bg-cyan-950 text-cyan-400 border border-cyan-500/40">
                         ⚡ VERIFIKASI YOUTUBE AKTIF
                     </span>
                     <span class="text-[10px] text-slate-400 font-mono">
@@ -322,7 +322,7 @@ onMounted(() => {
                 class="p-4 rounded-xl bg-slate-950 border border-amber-500/40 space-y-2.5"
             >
                 <div class="flex items-center justify-between">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-amber-950 text-amber-400 border border-amber-500/40">
+                    <span class="px-2 py-0.5 rounded-sm text-[10px] font-mono font-black bg-amber-950 text-amber-400 border border-amber-500/40">
                         ⏳ REVIEW MANUAL ADMIN
                     </span>
                     <span class="text-[10px] text-slate-400 font-mono">
@@ -361,19 +361,19 @@ onMounted(() => {
                         type="button"
                         @click="claimMode = 'youtube'"
                         class="py-2 px-3 rounded-lg font-bold transition flex items-center justify-center gap-1.5"
-                        :class="claimMode === 'youtube' ? 'bg-cyan-600 text-black shadow' : 'text-slate-400 hover:text-white'"
+                        :class="claimMode === 'youtube' ? 'bg-cyan-600 text-black shadow-sm' : 'text-slate-400 hover:text-white'"
                     >
                         <span>⚡ Token YouTube</span>
-                        <span class="text-[9px] uppercase px-1 py-0.2 rounded bg-black/30 font-mono">Utama</span>
+                        <span class="text-[9px] uppercase px-1 py-0.2 rounded-sm bg-black/30 font-mono">Utama</span>
                     </button>
                     <button
                         type="button"
                         @click="claimMode = 'manual'"
                         class="py-2 px-3 rounded-lg font-bold transition flex items-center justify-center gap-1.5"
-                        :class="claimMode === 'manual' ? 'bg-cyan-600 text-black shadow' : 'text-slate-400 hover:text-white'"
+                        :class="claimMode === 'manual' ? 'bg-cyan-600 text-black shadow-sm' : 'text-slate-400 hover:text-white'"
                     >
                         <span>📝 Review Admin</span>
-                        <span class="text-[9px] uppercase px-1 py-0.2 rounded bg-black/30 font-mono">Cadangan</span>
+                        <span class="text-[9px] uppercase px-1 py-0.2 rounded-sm bg-black/30 font-mono">Cadangan</span>
                     </button>
                 </div>
 
@@ -386,11 +386,11 @@ onMounted(() => {
                         v-model="searchQuery"
                         type="text"
                         placeholder="Cari nama perwira, callsign, atau departemen..."
-                        class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none mb-1.5"
+                        class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden mb-1.5"
                     />
                     <select
                         v-model="selectedOfficerId"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                     >
                         <option value="">-- Pilih Perwira Dari Roster ({{ filteredOfficers.length }} tersedia) --</option>
                         <option v-for="o in filteredOfficers" :key="o.id" :value="o.id">
@@ -437,7 +437,7 @@ onMounted(() => {
                             v-model="proofDiscordTag"
                             type="text"
                             placeholder="Contoh: username#1234 atau username"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                         />
                         <p class="text-[10px] text-slate-400 font-sans">
                             Admin SASP akan menghubungi Discord ini untuk memvalidasi identitas perwira jika channel tidak dapat diakses.
@@ -452,7 +452,7 @@ onMounted(() => {
                             v-model="notes"
                             rows="2"
                             placeholder="Alasan memakai verifikasi manual..."
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                         ></textarea>
                     </div>
 

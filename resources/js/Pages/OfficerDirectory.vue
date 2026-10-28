@@ -682,7 +682,7 @@ const filteredOfficers = computed(() => {
                             v-model="searchQuery"
                             type="text"
                             :placeholder="$t('directory.search_placeholder')"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md pl-10 pr-9 py-2 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition duration-200"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md pl-10 pr-9 py-2 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-slate-500 focus:outline-hidden focus:border-blue-500 transition duration-200"
                         />
                         <button
                             v-if="searchQuery"
@@ -702,7 +702,7 @@ const filteredOfficers = computed(() => {
                         <div class="relative">
                             <select
                                 v-model="statusFilter"
-                                class="appearance-none bg-slate-950 border border-slate-800 rounded-md pl-3 py-2 pr-7 text-xs text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
+                                class="appearance-none bg-slate-950 border border-slate-800 rounded-md pl-3 py-2 pr-7 text-xs text-slate-200 focus:outline-hidden focus:border-blue-500 cursor-pointer"
                             >
                                 <option value="all">Semua Status Akun</option>
                                 <option value="online">
@@ -718,7 +718,7 @@ const filteredOfficers = computed(() => {
                         <div class="relative">
                             <select
                                 v-model="sortBy"
-                                class="appearance-none bg-slate-950 border border-slate-800 rounded-md pl-3 py-2 pr-7 text-xs text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
+                                class="appearance-none bg-slate-950 border border-slate-800 rounded-md pl-3 py-2 pr-7 text-xs text-slate-200 focus:outline-hidden focus:border-blue-500 cursor-pointer"
                             >
                                 <option value="status">
                                     Terakhir Aktif (10-8 Live)
@@ -1509,7 +1509,7 @@ const filteredOfficers = computed(() => {
                             type="text"
                             required
                             placeholder="Contoh: dr. Adelia Putri / Ofc. Budi"
-                            class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                            class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-hidden focus:border-blue-500"
                         />
                     </div>
 
@@ -1524,7 +1524,7 @@ const filteredOfficers = computed(() => {
                                 v-model="newOfficerForm.callsign"
                                 type="text"
                                 placeholder="1-ADAM-12"
-                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500"
+                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-hidden focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -1537,7 +1537,7 @@ const filteredOfficers = computed(() => {
                                 v-model="newOfficerForm.badge_number"
                                 type="text"
                                 placeholder="#302 / +62 812..."
-                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500"
+                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-hidden focus:border-blue-500"
                             />
                         </div>
                     </div>
@@ -1551,7 +1551,7 @@ const filteredOfficers = computed(() => {
                             </label>
                             <select
                                 v-model="newOfficerForm.department"
-                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500 cursor-pointer"
+                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-hidden focus:border-blue-500 cursor-pointer"
                             >
                                 <option value="LSPD">LSPD (Police)</option>
                                 <option value="BCSO">BCSO (Sheriff)</option>
@@ -1573,7 +1573,7 @@ const filteredOfficers = computed(() => {
                                 v-model="newOfficerForm.rank"
                                 type="text"
                                 placeholder="Sergeant / Officer II"
-                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                                class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-hidden focus:border-blue-500"
                             />
                         </div>
                     </div>
@@ -1586,7 +1586,7 @@ const filteredOfficers = computed(() => {
                             v-model="newOfficerForm.handle"
                             type="text"
                             placeholder="@HandleYouTube"
-                            class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-none focus:border-blue-500"
+                            class="w-full px-3.5 py-2.5 rounded-md bg-slate-900 border border-slate-800 text-slate-100 text-xs font-mono focus:outline-hidden focus:border-blue-500"
                         />
                     </div>
 

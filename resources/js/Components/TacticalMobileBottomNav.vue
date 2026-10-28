@@ -164,7 +164,7 @@ onUnmounted(() => {
         >
             <!-- Backdrop Overlay -->
             <div
-                class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"
+                class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity"
                 @click="closeBottomSheet"
             ></div>
 
@@ -246,7 +246,7 @@ onUnmounted(() => {
                                     <img :src="iconCut" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
                                     <div class="flex items-center gap-2">
                                         <span>Clip Studio (Video Trimmer)</span>
-                                        <span class="px-1.5 py-0.2 text-[9px] font-mono font-bold rounded bg-emerald-950 text-emerald-400 border border-emerald-800">BETA</span>
+                                        <span class="px-1.5 py-0.2 text-[9px] font-mono font-bold rounded-sm bg-emerald-950 text-emerald-400 border border-emerald-800">BETA</span>
                                     </div>
                                 </div>
                                 <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>

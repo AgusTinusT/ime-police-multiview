@@ -150,8 +150,8 @@ const buttonStyleClass = computed(() => {
         :style="{ '--accent-col': accentColor }"
     >
         <!-- TACTICAL BACKGROUND GRID & SCANLINES -->
-        <div class="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(#0ea5e9_1px,transparent_1px)] [background-size:24px_24px] z-0"></div>
-        <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-96 bg-gradient-to-b from-cyan-600/15 via-blue-600/5 to-transparent blur-3xl pointer-events-none z-0"></div>
+        <div class="fixed inset-0 pointer-events-none opacity-20 bg-[radial-gradient(#0ea5e9_1px,transparent_1px)] bg-size-[24px_24px] z-0"></div>
+        <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-96 bg-linear-to-b from-cyan-600/15 via-blue-600/5 to-transparent blur-3xl pointer-events-none z-0"></div>
 
         <!-- MAIN CONTAINER (MOBILE FIRST 440px) -->
         <div class="w-full max-w-md relative z-10 flex flex-col items-center">
@@ -169,7 +169,7 @@ const buttonStyleClass = computed(() => {
                 <div class="flex items-center gap-2">
                     <button
                         @click="copyCurrentUrl"
-                        class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700/80 hover:border-cyan-400/60 text-slate-300 hover:text-white text-[11px] font-mono flex items-center gap-1.5 transition active:scale-95 shadow-sm"
+                        class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700/80 hover:border-cyan-400/60 text-slate-300 hover:text-white text-[11px] font-mono flex items-center gap-1.5 transition active:scale-95 shadow-xs"
                         title="Bagikan Tautan"
                     >
                         <span>{{ copied ? "✓ Tersalin" : "🔗 Bagikan" }}</span>
@@ -182,7 +182,7 @@ const buttonStyleClass = computed(() => {
                 <!-- Avatar with Animated Tactical Border -->
                 <div class="relative mb-3.5 group">
                     <div
-                        class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-cyan-500 via-blue-600 to-amber-500 shadow-xl relative"
+                        class="w-24 h-24 rounded-full p-1 bg-linear-to-tr from-cyan-500 via-blue-600 to-amber-500 shadow-xl relative"
                         :style="{ borderColor: accentColor }"
                     >
                         <img
@@ -207,7 +207,7 @@ const buttonStyleClass = computed(() => {
                     <!-- VERIFIED SEAL -->
                     <div
                         v-if="profile.is_verified"
-                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black font-mono tracking-wider uppercase bg-cyan-950/80 text-cyan-300 border border-cyan-500/50 shadow-sm"
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black font-mono tracking-wider uppercase bg-cyan-950/80 text-cyan-300 border border-cyan-500/50 shadow-xs"
                     >
                         <span>🛡️ VERIFIED OFFICER</span>
                         <span class="text-slate-400">#{{ officer.callsign }}</span>
@@ -254,7 +254,7 @@ const buttonStyleClass = computed(() => {
             <!-- LIVE PATROL STREAM CARD (IF ACTIVE & ENABLED) -->
             <div
                 v-if="officerState.is_live && profile.show_live_stream_banner && officerState.live_stream"
-                class="w-full mb-6 p-4 rounded-2xl bg-gradient-to-r from-red-950/50 via-slate-900 to-slate-900 border border-red-500/40 shadow-xl relative overflow-hidden group"
+                class="w-full mb-6 p-4 rounded-2xl bg-linear-to-r from-red-950/50 via-slate-900 to-slate-900 border border-red-500/40 shadow-xl relative overflow-hidden group"
             >
                 <div class="flex items-center justify-between gap-2 mb-2">
                     <div class="flex items-center gap-2">
@@ -344,7 +344,7 @@ const buttonStyleClass = computed(() => {
                         <span class="text-[10px] font-black font-mono tracking-widest text-amber-400 uppercase">
                             🪙 DUKUNGAN & DONASI
                         </span>
-                        <div class="flex-1 h-px bg-gradient-to-r from-amber-500/30 to-transparent"></div>
+                        <div class="flex-1 h-px bg-linear-to-r from-amber-500/30 to-transparent"></div>
                     </div>
 
                     <a
@@ -357,7 +357,7 @@ const buttonStyleClass = computed(() => {
                         :class="[
                             buttonStyleClass,
                             link.is_highlighted
-                                ? 'ring-1 ring-amber-400/60 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-900'
+                                ? 'ring-1 ring-amber-400/60 bg-linear-to-r from-amber-950/40 via-slate-900 to-slate-900'
                                 : 'hover:border-amber-400/50'
                         ]"
                     >
@@ -372,7 +372,7 @@ const buttonStyleClass = computed(() => {
                                     </h3>
                                     <span
                                         v-if="link.badge_label"
-                                        class="px-1.5 py-0.2 rounded text-[9px] font-black font-mono uppercase bg-amber-500 text-black shrink-0"
+                                        class="px-1.5 py-0.2 rounded-sm text-[9px] font-black font-mono uppercase bg-amber-500 text-black shrink-0"
                                     >
                                         {{ link.badge_label }}
                                     </span>
@@ -395,7 +395,7 @@ const buttonStyleClass = computed(() => {
                         <span class="text-[10px] font-black font-mono tracking-widest text-cyan-400 uppercase">
                             🚓 REKAN PATROLI (SQUAD)
                         </span>
-                        <div class="flex-1 h-px bg-gradient-to-r from-cyan-500/30 to-transparent"></div>
+                        <div class="flex-1 h-px bg-linear-to-r from-cyan-500/30 to-transparent"></div>
                     </div>
 
                     <div class="grid grid-cols-1 gap-2.5">
@@ -429,7 +429,7 @@ const buttonStyleClass = computed(() => {
                                         </h4>
                                         <span
                                             v-if="link.recommended_officer?.is_live"
-                                            class="px-1 rounded text-[8px] font-black font-mono uppercase bg-red-600 text-white shrink-0"
+                                            class="px-1 rounded-sm text-[8px] font-black font-mono uppercase bg-red-600 text-white shrink-0"
                                         >
                                             LIVE
                                         </span>
@@ -468,7 +468,7 @@ const buttonStyleClass = computed(() => {
                         <span class="text-[10px] font-black font-mono tracking-widest text-blue-400 uppercase">
                             💬 KOMUNITAS & MEDIA SOSIAL
                         </span>
-                        <div class="flex-1 h-px bg-gradient-to-r from-blue-500/30 to-transparent"></div>
+                        <div class="flex-1 h-px bg-linear-to-r from-blue-500/30 to-transparent"></div>
                     </div>
 
                     <a
@@ -506,7 +506,7 @@ const buttonStyleClass = computed(() => {
                         <span class="text-[10px] font-black font-mono tracking-widest text-slate-400 uppercase">
                             🌐 TAUTAN LAINNYA
                         </span>
-                        <div class="flex-1 h-px bg-gradient-to-r from-slate-500/30 to-transparent"></div>
+                        <div class="flex-1 h-px bg-linear-to-r from-slate-500/30 to-transparent"></div>
                     </div>
 
                     <a
@@ -529,7 +529,7 @@ const buttonStyleClass = computed(() => {
                                     </h3>
                                     <span
                                         v-if="link.badge_label"
-                                        class="px-1.5 py-0.2 rounded text-[9px] font-bold font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/30 shrink-0"
+                                        class="px-1.5 py-0.2 rounded-sm text-[9px] font-bold font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/30 shrink-0"
                                     >
                                         {{ link.badge_label }}
                                     </span>

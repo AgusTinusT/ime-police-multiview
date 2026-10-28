@@ -50,7 +50,7 @@ const handleClear = () => {
             @input="handleInput"
             type="text"
             :placeholder="placeholder"
-            class="w-full bg-transparent border-0 border-none ring-0 focus:ring-0 focus:outline-none focus:border-none shadow-none px-3 py-1.5 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-tactical-muted"
+            class="w-full bg-transparent border-0 border-none ring-0 focus:ring-0 focus:outline-hidden focus:border-none shadow-none px-3 py-1.5 text-xs sm:text-sm font-sans text-slate-100 placeholder:text-tactical-muted"
         />
         <button
             v-if="modelValue"
@@ -66,7 +66,7 @@ const handleClear = () => {
             class="hidden sm:flex items-center pr-2.5 pointer-events-none shrink-0"
         >
             <kbd
-                class="px-2 py-0.5 text-[10px] font-mono font-semibold text-tactical-muted bg-tactical-base border border-tactical-border rounded"
+                class="px-2 py-0.5 text-[10px] font-mono font-semibold text-tactical-muted bg-tactical-base border border-tactical-border rounded-sm"
             >ESC</kbd>
         </div>
     </div>

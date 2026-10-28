@@ -331,7 +331,7 @@ const submitFeedbackForm = async () => {
                             type="text"
                             required
                             :placeholder="titlePlaceholder"
-                            class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition"
+                            class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs sm:text-sm focus:outline-hidden focus:border-blue-500 transition"
                         />
                     </div>
 
@@ -350,7 +350,7 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.typo_wrong"
                                 type="text"
                                 placeholder="Contoh: 'Pengamban Patroli'"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500 font-mono"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-hidden focus:border-blue-500 font-mono"
                             />
                         </div>
                         <div>
@@ -363,7 +363,7 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.typo_correct"
                                 type="text"
                                 placeholder="Contoh: 'Pengembangan Patroli'"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500 font-mono"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-hidden focus:border-blue-500 font-mono"
                             />
                         </div>
                     </div>
@@ -383,7 +383,7 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.officer_name"
                                 type="text"
                                 placeholder="Ofc. Budi / 1-ADAM-12"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-hidden focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -394,7 +394,7 @@ const submitFeedbackForm = async () => {
                             </label>
                             <select
                                 v-model="feedbackForm.department"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500 font-mono cursor-pointer"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-hidden focus:border-blue-500 font-mono cursor-pointer"
                             >
                                 <option value="LSPD">LSPD (Police)</option>
                                 <option value="BCSO">BCSO (Sheriff)</option>
@@ -421,7 +421,7 @@ const submitFeedbackForm = async () => {
                             required
                             rows="4"
                             :placeholder="descriptionPlaceholder"
-                            class="w-full px-4 py-3 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition leading-relaxed"
+                            class="w-full px-4 py-3 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs sm:text-sm focus:outline-hidden focus:border-blue-500 transition leading-relaxed"
                         ></textarea>
                     </div>
 
@@ -437,7 +437,7 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.image_url"
                                 type="url"
                                 placeholder="Tempelkan URL Gambar (contoh: https://i.imgur.com/example.png atau Discord attachment link)..."
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-none focus:border-blue-500"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-hidden focus:border-blue-500"
                             />
                             <div
                                 class="border border-dashed border-slate-800 rounded-md p-4 text-center bg-slate-950 text-xs text-slate-400 space-y-1"
@@ -474,7 +474,7 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.sender_name"
                                 type="text"
                                 placeholder="Contoh: Citizen Ray / raymond@gmail.com"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-none focus:border-blue-500"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-hidden focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -487,7 +487,7 @@ const submitFeedbackForm = async () => {
                                 v-model="feedbackForm.handle_or_url"
                                 type="url"
                                 placeholder="https://youtube.com/@handle atau link halaman terkait"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-none focus:border-blue-500"
+                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-hidden focus:border-blue-500"
                             />
                         </div>
                     </div>

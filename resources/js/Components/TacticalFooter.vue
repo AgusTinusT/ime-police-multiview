@@ -20,7 +20,7 @@ const toggleLanguage = () => {
     <footer
         class="mt-auto bg-tactical-base border-t border-tactical-border text-tactical-muted font-sans pt-8 pb-6 px-4 sm:px-6 lg:px-8"
     >
-        <div class="max-w-screen-2xl mx-auto space-y-6">
+        <div class="max-w-(--breakpoint-2xl) mx-auto space-y-6">
             <!-- Top Footer Grid: Branding, Quick Navigation & System Status -->
             <div
                 class="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-tactical-border"
@@ -33,7 +33,7 @@ const toggleLanguage = () => {
                         >
                             <img
                                 :src="logoSaspColor"
-                                class="w-full h-full object-contain rounded"
+                                class="w-full h-full object-contain rounded-sm"
                                 alt="SASP Badge"
                             />
                         </div>
@@ -160,7 +160,7 @@ const toggleLanguage = () => {
                             locale === "id" ? "Bahasa Indonesia" : "English"
                         }}</span>
                         <span
-                            class="text-[10px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 font-mono"
+                            class="text-[10px] px-1.5 py-0.5 rounded-sm bg-blue-950 text-blue-400 border border-blue-800 font-mono"
                         >
                             {{ locale.toUpperCase() }}
                         </span>

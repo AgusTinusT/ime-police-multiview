@@ -143,7 +143,7 @@ const highlightKeyword = (text) => {
     const regex = new RegExp(`(${q})`, "gi");
     return text.replace(
         regex,
-        '<mark class="bg-blue-500/25 text-blue-200 font-bold px-1 py-0.5 rounded border-b border-blue-400">$1</mark>',
+        '<mark class="bg-blue-500/25 text-blue-200 font-bold px-1 py-0.5 rounded-sm border-b border-blue-400">$1</mark>',
     );
 };
 </script>

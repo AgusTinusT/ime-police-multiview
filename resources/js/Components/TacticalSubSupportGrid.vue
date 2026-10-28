@@ -208,7 +208,7 @@ const openChannel = (url) => {
                             </h3>
                         </div>
                         <span
-                            class="hidden sm:inline-block text-[11px] font-mono text-blue-400 bg-blue-950/70 px-2 py-0.5 rounded border border-blue-800/80 font-medium"
+                            class="hidden sm:inline-block text-[11px] font-mono text-blue-400 bg-blue-950/70 px-2 py-0.5 rounded-sm border border-blue-800/80 font-medium"
                         >
                             {{ $t("sub_support.live_3_days") }}
                         </span>
@@ -254,7 +254,7 @@ const openChannel = (url) => {
                                     <div class="flex items-center gap-1 mt-0.5">
                                         <span
                                             :class="[
-                                                'px-1.5 py-0.2 rounded text-[8px] font-mono font-bold border shrink-0',
+                                                'px-1.5 py-0.2 rounded-sm text-[8px] font-mono font-bold border shrink-0',
                                                 getDeptBadgeClass(
                                                     officer.department,
                                                 ),

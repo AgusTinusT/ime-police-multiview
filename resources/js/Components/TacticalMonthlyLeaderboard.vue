@@ -257,13 +257,13 @@ const openChannel = (url) => {
                         </p>
                         <span
                             v-if="topStreamers[1].is_live"
-                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-red-400 bg-red-950/60 px-1.5 sm:px-2 py-0.5 rounded border border-red-900/80"
+                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-red-400 bg-red-950/60 px-1.5 sm:px-2 py-0.5 rounded-sm border border-red-900/80"
                         >
                             10-8 LIVE STREAMING
                         </span>
                         <span
                             v-else
-                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 px-1.5 sm:px-2 py-0.5 rounded border border-slate-800"
+                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 px-1.5 sm:px-2 py-0.5 rounded-sm border border-slate-800"
                         >
                             10-7 STANDBY
                         </span>
@@ -361,7 +361,7 @@ const openChannel = (url) => {
                             class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover border-2 border-amber-400"
                         />
                         <span
-                            class="absolute -bottom-1 -right-1 px-1 sm:px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 text-[8px] sm:text-[9px] font-bold font-mono"
+                            class="absolute -bottom-1 -right-1 px-1 sm:px-1.5 py-0.2 rounded-sm bg-amber-400 text-slate-950 text-[8px] sm:text-[9px] font-bold font-mono"
                         >
                             EMAS
                         </span>
@@ -379,7 +379,7 @@ const openChannel = (url) => {
                         </p>
                         <span
                             v-if="topStreamers[0].is_live"
-                            class="mt-1 sm:mt-2 text-[9px] sm:text-[10px] font-mono font-semibold text-red-400 bg-red-950/60 px-2 py-0.5 rounded border border-red-900/80 inline-flex items-center gap-1.5"
+                            class="mt-1 sm:mt-2 text-[9px] sm:text-[10px] font-mono font-semibold text-red-400 bg-red-950/60 px-2 py-0.5 rounded-sm border border-red-900/80 inline-flex items-center gap-1.5"
                         >
                             10-8 LIVE PATROLI ({{
                                 topStreamers[0].live_viewers
@@ -387,7 +387,7 @@ const openChannel = (url) => {
                         </span>
                         <span
                             v-else
-                            class="mt-1 sm:mt-2 text-[9px] sm:text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 inline-flex items-center gap-1.5"
+                            class="mt-1 sm:mt-2 text-[9px] sm:text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 px-2 py-0.5 rounded-sm border border-slate-800 inline-flex items-center gap-1.5"
                         >
                             10-7 STANDBY
                         </span>
@@ -508,13 +508,13 @@ const openChannel = (url) => {
                         </p>
                         <span
                             v-if="topStreamers[2].is_live"
-                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-red-400 bg-red-950/60 px-1.5 sm:px-2 py-0.5 rounded border border-red-900/80"
+                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-red-400 bg-red-950/60 px-1.5 sm:px-2 py-0.5 rounded-sm border border-red-900/80"
                         >
                             10-8 LIVE STREAMING
                         </span>
                         <span
                             v-else
-                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 px-1.5 sm:px-2 py-0.5 rounded border border-slate-800"
+                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 px-1.5 sm:px-2 py-0.5 rounded-sm border border-slate-800"
                         >
                             10-7 STANDBY
                         </span>

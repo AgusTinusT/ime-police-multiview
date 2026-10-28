@@ -388,7 +388,7 @@ const handleAvatarError = (e) => {
             <div class="flex items-center space-x-2.5 min-w-0 flex-1">
                 <!-- Department Badge at left of title -->
                 <span
-                    class="px-2 py-0.5 text-[10px] font-mono font-bold rounded border tracking-wider shrink-0"
+                    class="px-2 py-0.5 text-[10px] font-mono font-bold rounded-sm border tracking-wider shrink-0"
                     :class="getDeptBadgeClass(officerDepartment)"
                 >
                     {{ officerDepartment }}
@@ -447,7 +447,7 @@ const handleAvatarError = (e) => {
                             </div>
                             <button
                                 @click="isTacPopoverOpen = false"
-                                class="text-slate-400 hover:text-slate-200 text-xs font-mono px-1.5 py-0.5 rounded bg-slate-800 cursor-pointer"
+                                class="text-slate-400 hover:text-slate-200 text-xs font-mono px-1.5 py-0.5 rounded-sm bg-slate-800 cursor-pointer"
                             >
                                 ✕
                             </button>
@@ -466,10 +466,10 @@ const handleAvatarError = (e) => {
                                 @click="selectTacChannel(`TAC_${i}`)"
                                 :class="
                                     activeTacChannel === `TAC_${i}`
-                                        ? 'bg-blue-600 text-white border-blue-500 font-bold shadow'
+                                        ? 'bg-blue-600 text-white border-blue-500 font-bold shadow-sm'
                                         : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
                                 "
-                                class="px-1 py-1.5 rounded border transition-colors cursor-pointer flex flex-col items-center justify-center leading-none gap-0.5"
+                                class="px-1 py-1.5 rounded-sm border transition-colors cursor-pointer flex flex-col items-center justify-center leading-none gap-0.5"
                                 :title="`Alokasikan ke Radio TAC ${i}`"
                             >
                                 <span
@@ -586,7 +586,7 @@ const handleAvatarError = (e) => {
                 <img
                     :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`"
                     :alt="stream.title"
-                    class="w-full h-full object-cover opacity-20 blur-sm"
+                    class="w-full h-full object-cover opacity-20 blur-xs"
                 />
                 <div
                     class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 z-10 space-y-3.5 text-center"
@@ -729,7 +729,7 @@ const handleAvatarError = (e) => {
                     >
                         <span
                             v-if="officerCallsign"
-                            class="px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-300 bg-slate-900 border border-slate-800 rounded shrink-0"
+                            class="px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-300 bg-slate-900 border border-slate-800 rounded-sm shrink-0"
                         >
                             {{ officerCallsign }}
                         </span>
@@ -927,7 +927,7 @@ const handleAvatarError = (e) => {
 
                     <div
                         v-if="stream.description || fetchedDescription"
-                        class="whitespace-pre-wrap leading-relaxed break-words max-h-96 overflow-y-auto pr-2 scrollbar-thin select-text text-slate-300"
+                        class="whitespace-pre-wrap leading-relaxed wrap-break-word max-h-96 overflow-y-auto pr-2 scrollbar-thin select-text text-slate-300"
                         v-html="
                             formatDescriptionWithLinks(
                                 stream.description || fetchedDescription,
@@ -975,7 +975,7 @@ const handleAvatarError = (e) => {
                         </div>
                         <button
                             @click="activeFocusTab = 'clips'"
-                            class="text-slate-400 hover:text-slate-200 text-xs font-mono px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer"
+                            class="text-slate-400 hover:text-slate-200 text-xs font-mono px-2.5 py-1 rounded-sm bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer"
                         >
                             ✕ Tutup Form
                         </button>
@@ -999,7 +999,7 @@ const handleAvatarError = (e) => {
                                         >
                                     </div>
                                     <span
-                                        class="text-[10px] font-mono bg-slate-950 border border-slate-800 text-slate-400 px-2 py-0.5 rounded"
+                                        class="text-[10px] font-mono bg-slate-950 border border-slate-800 text-slate-400 px-2 py-0.5 rounded-sm"
                                     >
                                         BETA
                                     </span>
@@ -1081,7 +1081,7 @@ const handleAvatarError = (e) => {
                                     type="text"
                                     maxlength="100"
                                     placeholder="Contoh: High Speed Pursuit di Freeway & PIT Maneuver"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs transition-colors"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs transition-colors"
                                 />
                             </div>
 
@@ -1239,7 +1239,7 @@ const handleAvatarError = (e) => {
                                         type="text"
                                         maxlength="30"
                                         placeholder="Panggilan Anda (Opsional, Maks 30 Karakter)"
-                                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 text-xs focus:border-blue-500 outline-none transition-colors"
+                                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 text-xs focus:border-blue-500 outline-hidden transition-colors"
                                     />
                                 </div>
                                 <button

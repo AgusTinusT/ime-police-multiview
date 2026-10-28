@@ -308,7 +308,7 @@ const activeCount = computed(
                                                 'visibility_panel.search_placeholder',
                                             )
                                         "
-                                        class="w-full bg-slate-950 border border-slate-800 rounded-md pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-700 font-mono"
+                                        class="w-full bg-slate-950 border border-slate-800 rounded-md pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-hidden focus:border-slate-700 font-mono"
                                     />
                                     <img
                                         :src="iconSearch"
@@ -318,7 +318,7 @@ const activeCount = computed(
                                     <button
                                         v-if="searchQuery"
                                         @click="searchQuery = ''"
-                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold leading-none p-0.5 rounded"
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold leading-none p-0.5 rounded-sm"
                                     >
                                         ✕
                                     </button>
@@ -393,7 +393,7 @@ const activeCount = computed(
                                 >
                                     <span
                                         v-if="getOfficerRank(officer.raw) > 0"
-                                        class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950/80 text-amber-400 border border-amber-800/80 shrink-0"
+                                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono font-bold bg-amber-950/80 text-amber-400 border border-amber-800/80 shrink-0"
                                         title="Urutan Prioritas Penayangan Grid"
                                     >
                                         #{{ getOfficerRank(officer.raw) }}
@@ -425,7 +425,7 @@ const activeCount = computed(
                                                 {{ officer.officer_name }}
                                             </span>
                                             <span
-                                                class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold border"
+                                                class="px-1.5 py-0.2 rounded-sm text-[9px] font-mono font-bold border"
                                                 :class="
                                                     getDeptBadgeClass(
                                                         officer.department,
@@ -505,7 +505,7 @@ const activeCount = computed(
                                                         officer.raw,
                                                     )
                                                 "
-                                                class="px-1 py-0.2 rounded text-[9px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 leading-none cursor-pointer"
+                                                class="px-1 py-0.2 rounded-sm text-[9px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 leading-none cursor-pointer"
                                                 title="Naikkan Urutan Prioritas"
                                             >
                                                 <svg
@@ -529,7 +529,7 @@ const activeCount = computed(
                                                         officer.raw,
                                                     )
                                                 "
-                                                class="px-1 py-0.2 rounded text-[9px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 leading-none cursor-pointer"
+                                                class="px-1 py-0.2 rounded-sm text-[9px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 leading-none cursor-pointer"
                                                 title="Turunkan Urutan Prioritas"
                                             >
                                                 <svg
@@ -587,7 +587,7 @@ const activeCount = computed(
                                 <button
                                     v-if="(customStreamOrder || []).length > 0"
                                     @click="emit('reset-priority')"
-                                    class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 hover:border-slate-700 text-[10px] transition-colors cursor-pointer flex items-center gap-1"
+                                    class="px-2 py-1 rounded-sm bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 hover:border-slate-700 text-[10px] transition-colors cursor-pointer flex items-center gap-1"
                                     title="Reset seluruh urutan prioritas ke standar"
                                 >
                                     <svg

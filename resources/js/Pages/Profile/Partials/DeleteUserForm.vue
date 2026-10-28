@@ -77,7 +77,7 @@ const closeModal = () => {
                         type="password"
                         placeholder="Masukkan Password Anda"
                         @keyup.enter="deleteUser"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 transition text-xs"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-red-500 transition text-xs"
                     />
                     <div v-if="form.errors.password" class="text-red-400 text-[11px] mt-1">
                         {{ form.errors.password }}

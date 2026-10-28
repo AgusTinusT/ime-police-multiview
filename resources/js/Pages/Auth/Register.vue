@@ -58,7 +58,7 @@ const submit = () => {
                             required
                             autofocus
                             placeholder="John Doe"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                         />
                         <div v-if="form.errors.name" class="text-red-400 text-[11px] mt-1">
                             {{ form.errors.name }}
@@ -73,7 +73,7 @@ const submit = () => {
                             v-model="form.email"
                             required
                             placeholder="nama@email.com"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                         />
                         <div v-if="form.errors.email" class="text-red-400 text-[11px] mt-1">
                             {{ form.errors.email }}
@@ -88,7 +88,7 @@ const submit = () => {
                             v-model="form.password"
                             required
                             placeholder="Minimal 8 karakter"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                         />
                         <div v-if="form.errors.password" class="text-red-400 text-[11px] mt-1">
                             {{ form.errors.password }}
@@ -103,7 +103,7 @@ const submit = () => {
                             v-model="form.password_confirmation"
                             required
                             placeholder="Ulangi password"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                         />
                         <div v-if="form.errors.password_confirmation" class="text-red-400 text-[11px] mt-1">
                             {{ form.errors.password_confirmation }}

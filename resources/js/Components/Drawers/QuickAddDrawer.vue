@@ -210,7 +210,7 @@ const isPersonalStream = (channelOrHandle) => {
                                 type="text"
                                 required
                                 placeholder="Ketik hashtag misal #imeroleplay #burgenk..."
-                                class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-20 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 font-mono placeholder-slate-500"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-20 py-2.5 text-xs text-slate-200 focus:outline-hidden focus:border-purple-500 font-mono placeholder-slate-500"
                             />
                             <img
                                 :src="iconSearch"
@@ -220,7 +220,7 @@ const isPersonalStream = (channelOrHandle) => {
                             <button
                                 type="submit"
                                 :disabled="isLiveSearching"
-                                class="absolute right-1.5 top-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-1"
+                                class="absolute right-1.5 top-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-sm transition flex items-center gap-1"
                             >
                                 <img
                                     v-if="isLiveSearching"
@@ -316,7 +316,7 @@ const isPersonalStream = (channelOrHandle) => {
                                         loading="lazy"
                                     />
                                     <div
-                                        class="absolute bottom-1 right-1 bg-black/80 px-1 py-0.2 rounded text-[9px] font-mono text-red-400 font-bold"
+                                        class="absolute bottom-1 right-1 bg-black/80 px-1 py-0.2 rounded-sm text-[9px] font-mono text-red-400 font-bold"
                                     >
                                         LIVE
                                     </div>
@@ -381,7 +381,7 @@ const isPersonalStream = (channelOrHandle) => {
                                         <a
                                             :href="`https://www.youtube.com/watch?v=${item.video_id}`"
                                             target="_blank"
-                                            class="p-1 hover:text-white text-slate-400 hover:bg-slate-800 rounded transition flex items-center justify-center"
+                                            class="p-1 hover:text-white text-slate-400 hover:bg-slate-800 rounded-sm transition flex items-center justify-center"
                                             title="Open on YouTube"
                                         >
                                             <img
@@ -413,7 +413,7 @@ const isPersonalStream = (channelOrHandle) => {
                                 type="text"
                                 required
                                 placeholder="https://youtube.com/watch?v=xxxxxxxxxxx or dQw4w9WgXcQ"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono placeholder-slate-600"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-hidden focus:border-emerald-500 font-mono placeholder-slate-600"
                             />
                         </div>
 
@@ -427,7 +427,7 @@ const isPersonalStream = (channelOrHandle) => {
                                     v-model="quickAddInput.officerName"
                                     type="text"
                                     placeholder="Ofc. Raymond"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-hidden focus:border-emerald-500 placeholder-slate-600"
                                 />
                             </div>
                             <div>
@@ -439,7 +439,7 @@ const isPersonalStream = (channelOrHandle) => {
                                     v-model="quickAddInput.callsign"
                                     type="text"
                                     placeholder="1-ADAM-99"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono placeholder-slate-600"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-hidden focus:border-emerald-500 font-mono placeholder-slate-600"
                                 />
                             </div>
                         </div>
@@ -452,7 +452,7 @@ const isPersonalStream = (channelOrHandle) => {
                                 >
                                 <select
                                     v-model="quickAddInput.department"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-hidden focus:border-emerald-500"
                                 >
                                     <option value="LSPD">LSPD (Police)</option>
                                     <option value="BCSO">BCSO (Sheriff)</option>
@@ -468,7 +468,7 @@ const isPersonalStream = (channelOrHandle) => {
                                     v-model="quickAddInput.patrolZone"
                                     type="text"
                                     placeholder="Mission Row"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 placeholder-slate-600"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-hidden focus:border-emerald-500 placeholder-slate-600"
                                 />
                             </div>
                         </div>
@@ -561,11 +561,11 @@ const isPersonalStream = (channelOrHandle) => {
                                 <img
                                     v-if="savedItem.thumbnail"
                                     :src="savedItem.thumbnail"
-                                    class="w-12 h-8 rounded object-cover shrink-0 border border-slate-800"
+                                    class="w-12 h-8 rounded-sm object-cover shrink-0 border border-slate-800"
                                 />
                                 <div
                                     v-else
-                                    class="w-12 h-8 rounded bg-slate-950 border border-slate-800 flex items-center justify-center text-xs text-slate-500 shrink-0"
+                                    class="w-12 h-8 rounded-sm bg-slate-950 border border-slate-800 flex items-center justify-center text-xs text-slate-500 shrink-0"
                                 >
                                     <img
                                         :src="iconPersonal"
@@ -576,7 +576,7 @@ const isPersonalStream = (channelOrHandle) => {
                                 <div class="min-w-0">
                                     <div class="flex items-center gap-1.5">
                                         <span
-                                            class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold shrink-0"
+                                            class="text-[9px] px-1.5 py-0.2 rounded-sm font-mono font-bold shrink-0"
                                             :class="
                                                 savedItem.isOnline
                                                     ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'

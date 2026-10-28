@@ -50,7 +50,7 @@ const updatePassword = () => {
                     type="password"
                     autocomplete="current-password"
                     placeholder="••••••••"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                 />
                 <div v-if="form.errors.current_password" class="text-red-400 text-[11px] mt-1">
                     {{ form.errors.current_password }}
@@ -66,7 +66,7 @@ const updatePassword = () => {
                     type="password"
                     autocomplete="new-password"
                     placeholder="••••••••"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                 />
                 <div v-if="form.errors.password" class="text-red-400 text-[11px] mt-1">
                     {{ form.errors.password }}
@@ -81,7 +81,7 @@ const updatePassword = () => {
                     type="password"
                     autocomplete="new-password"
                     placeholder="••••••••"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                 />
                 <div v-if="form.errors.password_confirmation" class="text-red-400 text-[11px] mt-1">
                     {{ form.errors.password_confirmation }}

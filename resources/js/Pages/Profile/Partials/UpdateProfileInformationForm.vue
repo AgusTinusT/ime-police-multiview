@@ -43,7 +43,7 @@ const form = useForm({
                     autofocus
                     autocomplete="name"
                     placeholder="Nama Lengkap / Callsign"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                 />
                 <div v-if="form.errors.name" class="text-red-400 text-[11px] mt-1">
                     {{ form.errors.name }}
@@ -59,7 +59,7 @@ const form = useForm({
                     required
                     autocomplete="username"
                     placeholder="nama@email.com"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                 />
                 <div v-if="form.errors.email" class="text-red-400 text-[11px] mt-1">
                     {{ form.errors.email }}

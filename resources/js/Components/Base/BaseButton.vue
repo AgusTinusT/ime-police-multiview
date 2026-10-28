@@ -9,7 +9,7 @@ const props = defineProps({
     },
     variant: {
         type: String,
-        default: "primary", // 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline'
+        default: "primary", // 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline-solid'
     },
     size: {
         type: String,
@@ -41,7 +41,7 @@ const buttonClasses = computed(() => {
         variantClass = "bg-tactical-panel hover:bg-tactical-surface border border-tactical-border text-slate-300 hover:text-white";
     } else if (props.variant === "danger") {
         variantClass = "bg-rose-600 hover:bg-rose-500 text-white shadow-md";
-    } else if (props.variant === "outline") {
+    } else if (props.variant === "outline-solid") {
         variantClass = "bg-transparent border border-tactical-border text-slate-300 hover:border-tactical-border-light hover:text-white";
     } else if (props.variant === "ghost") {
         variantClass = "bg-transparent hover:bg-tactical-surface text-slate-400 hover:text-slate-100";

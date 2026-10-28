@@ -68,7 +68,7 @@ const getDeptBadgeClass = (dept) => {
         >
             <div class="flex items-center space-x-2 min-w-0">
                 <span
-                    class="px-1.5 py-0.5 text-[11px] font-black rounded border tracking-wider shrink-0 opacity-90"
+                    class="px-1.5 py-0.5 text-[11px] font-black rounded-sm border tracking-wider shrink-0 opacity-90"
                     :class="getDeptBadgeClass(stream.officer?.department)"
                 >
                     {{ stream.officer?.department || "UNIT" }}
@@ -127,7 +127,7 @@ const getDeptBadgeClass = (dept) => {
                 ></iframe>
                 <button
                     @click="emit('toggle-stop-feed', stream.video_id)"
-                    class="absolute top-2 left-2 bg-black/80 hover:bg-red-900/80 text-white text-[10px] px-2 py-0.5 rounded border border-white/20 z-20 font-mono cursor-pointer"
+                    class="absolute top-2 left-2 bg-black/80 hover:bg-red-900/80 text-white text-[10px] px-2 py-0.5 rounded-sm border border-white/20 z-20 font-mono cursor-pointer"
                     title="Tutup Video / Stop Feed"
                 >
                     ✕ Stop Feed
@@ -145,7 +145,7 @@ const getDeptBadgeClass = (dept) => {
                     class="absolute inset-0 bg-slate-950/70 flex flex-col items-center justify-center p-3 pointer-events-none"
                 >
                     <div
-                        class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800"
+                        class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-slate-900 px-1.5 py-0.5 rounded-sm border border-slate-800"
                     >
                         <span
                             class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"
@@ -208,7 +208,7 @@ const getDeptBadgeClass = (dept) => {
                 >
                     <span
                         v-if="stream.officer?.callsign"
-                        class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-800/90 text-slate-300 border border-slate-700/60 font-mono text-[9px] font-semibold tracking-wider shrink-0"
+                        class="hidden sm:inline-block px-1.5 py-0.5 rounded-sm bg-slate-800/90 text-slate-300 border border-slate-700/60 font-mono text-[9px] font-semibold tracking-wider shrink-0"
                     >
                         {{ stream.officer.callsign }}
                     </span>
@@ -232,7 +232,7 @@ const getDeptBadgeClass = (dept) => {
                             emit('update:selectedLayout', 'focus');
                             emit('set-focus-stream', stream.video_id);
                         "
-                        class="p-1 hover:text-blue-400 text-slate-300 rounded hover:bg-slate-800 transition cursor-pointer"
+                        class="p-1 hover:text-blue-400 text-slate-300 rounded-sm hover:bg-slate-800 transition cursor-pointer"
                         title="Focus"
                     >
                         <img
@@ -247,7 +247,7 @@ const getDeptBadgeClass = (dept) => {
                                 ? 'bg-slate-800 text-blue-400 border border-slate-700'
                                 : 'text-slate-300 hover:text-blue-400 hover:bg-slate-800'
                         "
-                        class="p-1 rounded transition flex items-center justify-center cursor-pointer"
+                        class="p-1 rounded-sm transition flex items-center justify-center cursor-pointer"
                     >
                         <img
                             :src="
@@ -261,7 +261,7 @@ const getDeptBadgeClass = (dept) => {
                     <a
                         :href="`https://www.youtube.com/watch?v=${stream.video_id}`"
                         target="_blank"
-                        class="p-1 hover:text-white text-slate-300 rounded hover:bg-slate-800 transition"
+                        class="p-1 hover:text-white text-slate-300 rounded-sm hover:bg-slate-800 transition"
                     >
                         <img
                             :src="iconExternal"
@@ -279,7 +279,7 @@ const getDeptBadgeClass = (dept) => {
             <div class="flex items-center space-x-1.5 min-w-0 flex-1">
                 <span
                     v-if="stream.officer?.callsign"
-                    class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/60 font-mono text-[10px] font-semibold shrink-0"
+                    class="px-1.5 py-0.5 rounded-sm bg-slate-800 text-slate-300 border border-slate-700/60 font-mono text-[10px] font-semibold shrink-0"
                 >
                     {{ stream.officer.callsign }}
                 </span>
@@ -312,7 +312,7 @@ const getDeptBadgeClass = (dept) => {
                 <!-- Focus Button -->
                 <button
                     @click.stop="emit('set-focus-stream', stream.video_id)"
-                    class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                    class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95 shadow-xs"
                 >
                     <img :src="iconFocus" class="w-3.5 h-3.5 invert" />
                     <span>Fokus</span>

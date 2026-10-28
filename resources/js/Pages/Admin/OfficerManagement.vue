@@ -1624,7 +1624,7 @@ onMounted(() => {
                                 v-model="searchQuery"
                                 type="text"
                                 placeholder="Search officer name, callsign, badge, handle..."
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 rounded-md px-4 py-2 pl-10 text-xs sm:text-sm focus:outline-none focus:border-blue-500"
+                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 rounded-md px-4 py-2 pl-10 text-xs sm:text-sm focus:outline-hidden focus:border-blue-500"
                             />
                             <svg
                                 class="w-4 h-4 text-slate-500 absolute left-3.5 top-2.5 pointer-events-none"
@@ -1677,7 +1677,7 @@ onMounted(() => {
                         <div class="relative shrink-0">
                             <select
                                 v-model="selectedStatus"
-                                class="appearance-none bg-slate-950 border border-slate-800 text-slate-200 rounded-md pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-none focus:border-blue-500 cursor-pointer"
+                                class="appearance-none bg-slate-950 border border-slate-800 text-slate-200 rounded-md pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-hidden focus:border-blue-500 cursor-pointer"
                             >
                                 <option value="ALL">All Statuses</option>
                                 <option value="ACTIVE">Active Only</option>
@@ -1957,7 +1957,7 @@ onMounted(() => {
                                             <button
                                                 @click="openDutyModal(officer)"
                                                 title="Kelola/Sesuaikan Waktu Jam Patroli"
-                                                class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] border border-slate-700 transition flex items-center gap-1"
+                                                class="px-1.5 py-0.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] border border-slate-700 transition flex items-center gap-1"
                                             >
                                                 <svg
                                                     class="w-2.5 h-2.5 text-amber-300 shrink-0"
@@ -1980,7 +1980,7 @@ onMounted(() => {
                                                 @click="
                                                     toggleHashtagBypass(officer)
                                                 "
-                                                class="px-2 py-0.5 rounded text-[10px] font-bold border transition flex items-center space-x-1"
+                                                class="px-2 py-0.5 rounded-sm text-[10px] font-bold border transition flex items-center space-x-1"
                                                 :class="
                                                     officer.bypass_hashtag_check
                                                         ? 'bg-purple-950/80 text-purple-300 border-purple-700/60 hover:bg-purple-900'
@@ -2016,12 +2016,12 @@ onMounted(() => {
                                     <td class="py-3.5 px-4 font-mono">
                                         <div v-if="officer.user" class="space-y-1">
                                             <div class="flex items-center gap-1.5 flex-wrap">
-                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-950/70 text-blue-300 border border-blue-800/60">
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[10px] font-bold bg-blue-950/70 text-blue-300 border border-blue-800/60">
                                                     <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                                     <span class="truncate max-w-[100px]">{{ officer.user.name }}</span>
                                                 </span>
                                                 <span class="text-[9px] text-slate-500 truncate max-w-[100px]" :title="officer.user.email">({{ officer.user.email }})</span>
-                                                <span v-if="officer.user.status === 'banned'" class="px-1 py-0.2 rounded text-[8px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">BANNED</span>
+                                                <span v-if="officer.user.status === 'banned'" class="px-1 py-0.2 rounded-sm text-[8px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">BANNED</span>
                                             </div>
                                             <div class="flex items-center gap-1.5 text-[10px]">
                                                 <a
@@ -2033,19 +2033,19 @@ onMounted(() => {
                                                     <span>/@{{ officer.bio_profile?.slug || (officer.handle || '').replace('@', '') }}</span>
                                                     <svg class="w-2.5 h-2.5 inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                                                 </a>
-                                                <span v-if="officer.bio_profile?.is_suspended" class="px-1 py-0.2 rounded text-[9px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">SUSPENDED</span>
+                                                <span v-if="officer.bio_profile?.is_suspended" class="px-1 py-0.2 rounded-sm text-[9px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">SUSPENDED</span>
                                             </div>
                                             <div class="flex items-center gap-1 pt-0.5 flex-wrap">
                                                 <button
                                                     @click="openSlugModal(officer)"
-                                                    class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] border border-slate-700 transition"
+                                                    class="px-1.5 py-0.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] border border-slate-700 transition"
                                                     title="Ubah URL Slug Bio-Link"
                                                 >
                                                     Ubah Slug
                                                 </button>
                                                 <button
                                                     @click="openUnbindModal(officer)"
-                                                    class="px-1.5 py-0.5 rounded bg-rose-950/70 hover:bg-rose-900 text-rose-300 text-[9px] border border-rose-800/60 transition"
+                                                    class="px-1.5 py-0.5 rounded-sm bg-rose-950/70 hover:bg-rose-900 text-rose-300 text-[9px] border border-rose-800/60 transition"
                                                     title="Lepas ikatan akun user dari perwira ini"
                                                 >
                                                     Unbind
@@ -2053,7 +2053,7 @@ onMounted(() => {
                                                 <button
                                                     v-if="officer.bio_profile"
                                                     @click="toggleSuspendProfile(officer)"
-                                                    class="px-1.5 py-0.5 rounded text-[9px] border transition"
+                                                    class="px-1.5 py-0.5 rounded-sm text-[9px] border transition"
                                                     :class="officer.bio_profile.is_suspended ? 'bg-amber-950/60 hover:bg-amber-900 text-amber-300 border-amber-800/60' : 'bg-red-950/50 hover:bg-red-900 text-red-300 border-red-800/60'"
                                                     :title="officer.bio_profile.is_suspended ? 'Cabut pembekuan bio-link' : 'Bekukan bio-link (Kill Switch)'"
                                                 >
@@ -2061,7 +2061,7 @@ onMounted(() => {
                                                 </button>
                                                 <button
                                                     @click="toggleBanUser(officer)"
-                                                    class="px-1.5 py-0.5 rounded text-[9px] border transition"
+                                                    class="px-1.5 py-0.5 rounded-sm text-[9px] border transition"
                                                     :class="officer.user.status === 'banned' ? 'bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border-emerald-800/60' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'"
                                                     :title="officer.user.status === 'banned' ? 'Cabut ban user' : 'Ban akun user ini'"
                                                 >
@@ -2070,13 +2070,13 @@ onMounted(() => {
                                             </div>
                                         </div>
                                         <div v-else class="space-y-1">
-                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-950/40 text-amber-400 border border-amber-800/40">
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[10px] font-bold bg-amber-950/40 text-amber-400 border border-amber-800/40">
                                                 Unclaimed
                                             </span>
                                             <div>
                                                 <button
                                                     @click="openBindModal(officer)"
-                                                    class="px-2 py-0.5 rounded bg-blue-900/60 hover:bg-blue-800 text-blue-200 text-[10px] font-bold border border-blue-700/60 transition flex items-center gap-1"
+                                                    class="px-2 py-0.5 rounded-sm bg-blue-900/60 hover:bg-blue-800 text-blue-200 text-[10px] font-bold border border-blue-700/60 transition flex items-center gap-1"
                                                     title="Hubungkan akun user ke perwira ini secara manual"
                                                 >
                                                     <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
@@ -2569,7 +2569,7 @@ onMounted(() => {
 
                                         <!-- Tier / Package Badge -->
                                         <span
-                                            class="px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold uppercase"
+                                            class="px-1.5 py-0.5 rounded-sm text-[9px] font-mono font-semibold uppercase"
                                             :class="{
                                                 'bg-amber-950 text-amber-300 border border-amber-800':
                                                     (u.clipper_tier === 'ultimate' || u.role === 'officer' || u.role === 'admin'),
@@ -2693,7 +2693,7 @@ onMounted(() => {
                                 v-model="form.handle"
                                 type="text"
                                 placeholder="@channelname"
-                                class="flex-1 bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2 focus:outline-none focus:border-blue-500"
+                                class="flex-1 bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2 focus:outline-hidden focus:border-blue-500"
                             />
                             <button
                                 @click="verifyYouTubeChannel"
@@ -2865,7 +2865,7 @@ onMounted(() => {
                                 <input
                                     v-model="form.is_active"
                                     type="checkbox"
-                                    class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-blue-500"
+                                    class="w-4 h-4 rounded-sm bg-slate-950 border-slate-800 text-blue-500"
                                 />
                                 <span class="text-slate-200 font-bold"
                                     >Status Aktif Dimonitor</span
@@ -2905,7 +2905,7 @@ onMounted(() => {
                                 <input
                                     v-model="form.bypass_hashtag_check"
                                     type="checkbox"
-                                    class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-purple-500"
+                                    class="w-4 h-4 rounded-sm bg-slate-950 border-slate-800 text-purple-500"
                                 />
                                 <div>
                                     <span
@@ -3500,7 +3500,7 @@ onMounted(() => {
                                 v-model="userForm.name"
                                 type="text"
                                 placeholder="Contoh: John Doe"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
+                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-hidden focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -3511,7 +3511,7 @@ onMounted(() => {
                                 v-model="userForm.email"
                                 type="email"
                                 placeholder="nama@email.com"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
+                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-hidden focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -3527,7 +3527,7 @@ onMounted(() => {
                                 v-model="userForm.password"
                                 type="password"
                                 placeholder="Minimal 6 karakter"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
+                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-hidden focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -3537,7 +3537,7 @@ onMounted(() => {
                             <select
                                 v-model="userForm.role"
                                 @change="onUserRoleChange"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
+                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-hidden focus:border-blue-500"
                             >
                                 <option value="member">
                                     Member (Pengguna Umum / Pengunjung Platform)
@@ -3572,7 +3572,7 @@ onMounted(() => {
                             >
                             <select
                                 v-model="userForm.clipper_tier"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500"
+                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-hidden focus:border-blue-500"
                             >
                                 <option value="free">
                                     Free Member (Gratis - 3 Klip/minggu, Max 1 Menit)

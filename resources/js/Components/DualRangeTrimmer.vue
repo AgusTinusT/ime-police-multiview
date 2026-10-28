@@ -17,7 +17,7 @@
                     :key="preset"
                     @click="applyPreset(preset)"
                     type="button"
-                    class="py-2 px-1 min-h-[36px] rounded-lg bg-[#0a1224] hover:bg-[#121e36] text-slate-200 border border-[#192742] transition font-bold cursor-pointer active:scale-95 text-center flex items-center justify-center shadow-sm"
+                    class="py-2 px-1 min-h-[36px] rounded-lg bg-[#0a1224] hover:bg-[#121e36] text-slate-200 border border-[#192742] transition font-bold cursor-pointer active:scale-95 text-center flex items-center justify-center shadow-xs"
                     :title="`Atur Waktu Selesai otomatis +${preset >= 60 ? preset / 60 + ' menit' : preset + ' detik'} dari Waktu Mulai`"
                 >
                     +{{ preset >= 60 ? preset / 60 + "m" : preset + "s" }}
@@ -38,28 +38,28 @@
                     <button
                         @click="nudgeStart(-5)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-sm"
+                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
                     >
                         -5s
                     </button>
                     <button
                         @click="nudgeStart(-1)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-sm"
+                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
                     >
                         -1s
                     </button>
                     <button
                         @click="nudgeStart(1)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-sm"
+                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
                     >
                         +1s
                     </button>
                     <button
                         @click="nudgeStart(5)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-sm"
+                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
                     >
                         +5s
                     </button>
@@ -77,28 +77,28 @@
                     <button
                         @click="nudgeEnd(-5)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-sm"
+                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
                     >
                         -5s
                     </button>
                     <button
                         @click="nudgeEnd(-1)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-sm"
+                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
                     >
                         -1s
                     </button>
                     <button
                         @click="nudgeEnd(1)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-sm"
+                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
                     >
                         +1s
                     </button>
                     <button
                         @click="nudgeEnd(5)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-sm"
+                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
                     >
                         +5s
                     </button>

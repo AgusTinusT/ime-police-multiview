@@ -212,7 +212,7 @@ const switchTab = (tab) => {
                 <div>
                     <h1 class="text-sm sm:text-base font-black font-mono tracking-wider uppercase text-white flex items-center gap-2">
                         <span>PROFIL DINAS PERWIRA</span>
-                        <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40">
+                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-sm bg-cyan-950 text-cyan-300 border border-cyan-500/40">
                             PRD v3
                         </span>
                     </h1>
@@ -290,10 +290,10 @@ const switchTab = (tab) => {
                             <h2 class="text-xl font-black font-mono uppercase text-white tracking-wide">
                                 {{ officer.officer_name }}
                             </h2>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-black font-mono uppercase bg-emerald-950 text-emerald-300 border border-emerald-500/40">
+                            <span class="px-2 py-0.5 rounded-sm text-[10px] font-black font-mono uppercase bg-emerald-950 text-emerald-300 border border-emerald-500/40">
                                 TERVERIFIKASI
                             </span>
-                            <span v-if="officer.avatar_is_custom" class="px-2 py-0.5 rounded text-[9px] font-bold font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/30">
+                            <span v-if="officer.avatar_is_custom" class="px-2 py-0.5 rounded-sm text-[9px] font-bold font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/30">
                                 AVATAR KUSTOM
                             </span>
                         </div>
@@ -360,7 +360,7 @@ const switchTab = (tab) => {
                         <div>
                             <h3 class="text-sm font-bold font-mono uppercase text-white flex items-center gap-2">
                                 <span>Grup 1: Identitas Karakter & Streamer</span>
-                                <span class="px-2 py-0.5 rounded text-[9px] font-black bg-emerald-950 text-emerald-300 border border-emerald-500/30">
+                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-black bg-emerald-950 text-emerald-300 border border-emerald-500/30">
                                     LANGSUNG
                                 </span>
                             </h3>
@@ -378,7 +378,7 @@ const switchTab = (tab) => {
                             <input
                                 v-model="form.officer_name"
                                 type="text"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-none"
+                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden"
                                 placeholder="Contoh: Saprudin Mintoro"
                             />
                         </div>
@@ -390,7 +390,7 @@ const switchTab = (tab) => {
                             <input
                                 v-model="form.streamer_name"
                                 type="text"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-none"
+                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden"
                                 placeholder="Contoh: Bang Sapru Gaming"
                             />
                         </div>
@@ -402,7 +402,7 @@ const switchTab = (tab) => {
                             <input
                                 v-model="form.patrol_zone"
                                 type="text"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-none"
+                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden"
                                 placeholder="Contoh: Vinewood Hills & Sandy Shores"
                             />
                         </div>
@@ -413,7 +413,7 @@ const switchTab = (tab) => {
                             </label>
                             <select
                                 v-model="form.division_id"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-none"
+                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden"
                             >
                                 <option value="">-- Tanpa Penugasan Khusus --</option>
                                 <option
@@ -434,14 +434,14 @@ const switchTab = (tab) => {
                                 <input
                                     v-model="form.avatar_url"
                                     type="url"
-                                    class="flex-1 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-none"
+                                    class="flex-1 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden"
                                     placeholder="https://i.imgur.com/..."
                                 />
                                 <label class="flex items-center gap-2 cursor-pointer select-none text-xs font-mono text-slate-300">
                                     <input
                                         v-model="form.use_custom_avatar"
                                         type="checkbox"
-                                        class="rounded bg-slate-950 border-slate-700 text-cyan-500 focus:ring-0"
+                                        class="rounded-sm bg-slate-950 border-slate-700 text-cyan-500 focus:ring-0"
                                     />
                                     <span>Gunakan Avatar Kustom (Kunci dari Overwrite Sync YouTube)</span>
                                 </label>
@@ -456,7 +456,7 @@ const switchTab = (tab) => {
                         <div>
                             <h3 class="text-sm font-bold font-mono uppercase text-white flex items-center gap-2">
                                 <span>Grup 2: Penanda Unit & Callsign</span>
-                                <span class="px-2 py-0.5 rounded text-[9px] font-black bg-amber-950 text-amber-300 border border-amber-500/30">
+                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-black bg-amber-950 text-amber-300 border border-amber-500/30">
                                     COOLDOWN 7 HARI
                                 </span>
                             </h3>
@@ -479,7 +479,7 @@ const switchTab = (tab) => {
                                 v-model="form.callsign"
                                 :disabled="!canChangeCallsign"
                                 type="text"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-none disabled:opacity-50 disabled:cursor-not-allowed uppercase"
+                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden disabled:opacity-50 disabled:cursor-not-allowed uppercase"
                                 placeholder="Contoh: 1-ADAM-12"
                             />
                             <p class="text-[10px] text-slate-500 font-mono mt-1">
@@ -495,7 +495,7 @@ const switchTab = (tab) => {
                                 v-model="form.badge_number"
                                 :disabled="!canChangeCallsign"
                                 type="text"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-none disabled:opacity-50 disabled:cursor-not-allowed font-mono"
+                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden disabled:opacity-50 disabled:cursor-not-allowed font-mono"
                                 placeholder="Contoh: 704"
                             />
                         </div>
@@ -508,7 +508,7 @@ const switchTab = (tab) => {
                         <div>
                             <h3 class="text-sm font-bold font-mono uppercase text-white flex items-center gap-2">
                                 <span>Grup 3: Pangkat & Kesatuan</span>
-                                <span class="px-2 py-0.5 rounded text-[9px] font-black bg-blue-950 text-blue-300 border border-blue-500/30">
+                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-black bg-blue-950 text-blue-300 border border-blue-500/30">
                                     LEWAT PENGAJUAN KOMANDO
                                 </span>
                             </h3>
@@ -553,7 +553,7 @@ const switchTab = (tab) => {
                         <div>
                             <h3 class="text-sm font-bold font-mono uppercase text-white flex items-center gap-2">
                                 <span>Grup 4: Identitas Terkunci</span>
-                                <span class="px-2 py-0.5 rounded text-[9px] font-black bg-rose-950 text-rose-300 border border-rose-500/30">
+                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-black bg-rose-950 text-rose-300 border border-rose-500/30">
                                     LOCKED 🔒
                                 </span>
                             </h3>
@@ -640,12 +640,12 @@ const switchTab = (tab) => {
                     >
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded text-[9px] font-bold font-mono uppercase bg-slate-800 text-slate-300">
+                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-bold font-mono uppercase bg-slate-800 text-slate-300">
                                     {{ req.field === 'rank_id' ? 'Kenaikan Pangkat' : 'Mutasi Kesatuan' }}
                                 </span>
                                 <span
                                     :class="[
-                                        'px-2 py-0.5 rounded text-[9px] font-bold font-mono uppercase',
+                                        'px-2 py-0.5 rounded-sm text-[9px] font-bold font-mono uppercase',
                                         req.status === 'pending' ? 'bg-amber-950 text-amber-300 border border-amber-500/30' :
                                         req.status === 'approved' ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' :
                                         'bg-rose-950 text-rose-300 border border-rose-500/30'
@@ -721,7 +721,7 @@ const switchTab = (tab) => {
                     >
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-800 text-cyan-300">
+                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase bg-slate-800 text-cyan-300">
                                     {{ log.action }}
                                 </span>
                                 <span class="text-[10px] text-slate-500">
@@ -740,7 +740,7 @@ const switchTab = (tab) => {
         <!-- MODAL: AJUKAN KENAIKAN PANGKAT / MUTASI KESATUAN -->
         <div
             v-if="isRequestModalOpen"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in"
         >
             <div class="w-full max-w-md rounded-2xl bg-slate-900 border border-white/10 p-6 shadow-2xl space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -788,7 +788,7 @@ const switchTab = (tab) => {
                         <label class="block text-slate-400 mb-1">Kesatuan Tujuan <span class="text-rose-400">*</span></label>
                         <select
                             v-model="requestForm.new_value"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-cyan-500"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-hidden focus:border-cyan-500"
                         >
                             <option value="">-- Pilih Kesatuan Tujuan --</option>
                             <option
@@ -806,7 +806,7 @@ const switchTab = (tab) => {
                         <label class="block text-slate-400 mb-1">Pangkat Tujuan <span class="text-rose-400">*</span></label>
                         <select
                             v-model="requestForm.new_value"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-cyan-500"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-hidden focus:border-cyan-500"
                         >
                             <option value="">-- Pilih Pangkat Tujuan --</option>
                             <option
@@ -827,7 +827,7 @@ const switchTab = (tab) => {
                         <textarea
                             v-model="requestForm.reason"
                             rows="3"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-none focus:border-cyan-500"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-hidden focus:border-cyan-500"
                             placeholder="Contoh: Telah lulus diklat perwira / Nomor Sprin: SP/124/X/2026/SASP"
                         ></textarea>
                     </div>

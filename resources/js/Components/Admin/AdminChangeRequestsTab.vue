@@ -68,7 +68,7 @@ onMounted(() => {
             <div>
                 <h2 class="text-sm font-bold text-white uppercase flex items-center gap-2">
                     <span>Pengajuan Pangkat & Kesatuan (PRD v3)</span>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-blue-950 text-blue-300 border border-blue-500/40">
+                    <span class="px-2 py-0.5 rounded-sm text-[10px] font-black bg-blue-950 text-blue-300 border border-blue-500/40">
                         KOMANDO REVIEW
                     </span>
                 </h2>
@@ -171,7 +171,7 @@ onMounted(() => {
                             <!-- Field & Change details -->
                             <td class="py-3 px-4">
                                 <div class="flex items-center gap-1.5 mb-1">
-                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-800 text-cyan-300">
+                                    <span class="px-1.5 py-0.5 rounded-sm text-[9px] font-bold uppercase bg-slate-800 text-cyan-300">
                                         {{ req.field === 'rank_id' ? 'Kenaikan Pangkat' : 'Mutasi Kesatuan' }}
                                     </span>
                                 </div>
@@ -206,7 +206,7 @@ onMounted(() => {
                                 <div class="flex flex-col items-center gap-1.5">
                                     <span
                                         :class="[
-                                            'px-2 py-0.5 rounded text-[10px] font-bold uppercase',
+                                            'px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase',
                                             req.status === 'pending' ? 'bg-amber-950 text-amber-300 border border-amber-500/40' :
                                             req.status === 'approved' ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40' :
                                             'bg-rose-950 text-rose-300 border border-rose-500/40'
@@ -218,14 +218,14 @@ onMounted(() => {
                                     <div v-if="req.status === 'pending'" class="flex items-center gap-1.5 mt-1">
                                         <button
                                             @click="handleApprove(req)"
-                                            class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold transition cursor-pointer"
+                                            class="px-2.5 py-1 rounded-sm bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold transition cursor-pointer"
                                             title="Setujui dan mutasikan pangkat/kesatuan perwira ini"
                                         >
                                             ✓ Setujui
                                         </button>
                                         <button
                                             @click="handleReject(req)"
-                                            class="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-bold transition cursor-pointer"
+                                            class="px-2.5 py-1 rounded-sm bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-bold transition cursor-pointer"
                                             title="Tolak pengajuan ini"
                                         >
                                             ✕ Tolak

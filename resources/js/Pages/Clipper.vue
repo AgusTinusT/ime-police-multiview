@@ -3,7 +3,7 @@
         <Head title="ClipStudio - Tactical Video Clipper & Media Hub" />
 
         <div
-            class="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-8 font-sans"
+            class="relative z-10 max-w-(--breakpoint-2xl) mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-8 font-sans"
         >
             <!-- HEADER / HERO & URL INPUT SECTION -->
             <section class="text-center max-w-4xl mx-auto space-y-3">
@@ -40,7 +40,7 @@
                             type="url"
                             @keyup.enter="loadVideoFromInput"
                             placeholder="Tempel tautan YouTube di sini (contoh: https://www.youtube.com/watch?v=...)"
-                            class="w-full bg-transparent border-0 focus:border-0 focus:ring-0 focus:outline-none px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 font-mono shadow-none outline-none"
+                            class="w-full bg-transparent border-0 focus:border-0 focus:ring-0 focus:outline-hidden px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 font-mono shadow-none outline-hidden"
                         />
                         <button
                             @click="loadVideoFromInput"
@@ -297,7 +297,7 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span
-                                        class="text-xs font-mono px-3 py-1.5 rounded-lg border font-bold shrink-0 inline-flex items-center justify-center shadow-sm"
+                                        class="text-xs font-mono px-3 py-1.5 rounded-lg border font-bold shrink-0 inline-flex items-center justify-center shadow-xs"
                                         :class="
                                             isDurationValid
                                                 ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-400'
@@ -312,7 +312,7 @@
                                     </span>
                                     <button
                                         @click="openMobileClipperMenu"
-                                        class="lg:hidden px-3 py-1.5 rounded-lg bg-sky-950/90 hover:bg-sky-900 border border-sky-700/80 text-sky-300 hover:text-white text-xs font-bold font-mono flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0 shadow-sm"
+                                        class="lg:hidden px-3 py-1.5 rounded-lg bg-sky-950/90 hover:bg-sky-900 border border-sky-700/80 text-sky-300 hover:text-white text-xs font-bold font-mono flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0 shadow-xs"
                                         title="Buka Menu Opsi & Format Ekspor"
                                     >
                                         <svg
@@ -364,7 +364,7 @@
                                         <button
                                             type="button"
                                             @click="captureStartTime"
-                                            class="text-[11px] text-blue-400 hover:text-blue-300 font-mono font-bold flex items-center gap-1 cursor-pointer bg-blue-950/70 hover:bg-blue-900/90 px-2.5 py-1 rounded-md border border-blue-800/60 transition shadow-sm active:scale-95"
+                                            class="text-[11px] text-blue-400 hover:text-blue-300 font-mono font-bold flex items-center gap-1 cursor-pointer bg-blue-950/70 hover:bg-blue-900/90 px-2.5 py-1 rounded-md border border-blue-800/60 transition shadow-xs active:scale-95"
                                             title="Set waktu mulai dari posisi pemutar video saat ini"
                                         >
                                             <span>Pilih Waktu</span>
@@ -394,7 +394,7 @@
                                         <button
                                             type="button"
                                             @click="captureEndTime"
-                                            class="text-[11px] text-blue-400 hover:text-blue-300 font-mono font-bold flex items-center gap-1 cursor-pointer bg-blue-950/70 hover:bg-blue-900/90 px-2.5 py-1 rounded-md border border-blue-800/60 transition shadow-sm active:scale-95"
+                                            class="text-[11px] text-blue-400 hover:text-blue-300 font-mono font-bold flex items-center gap-1 cursor-pointer bg-blue-950/70 hover:bg-blue-900/90 px-2.5 py-1 rounded-md border border-blue-800/60 transition shadow-xs active:scale-95"
                                             title="Set waktu selesai dari posisi pemutar video saat ini"
                                         >
                                             <span>Pilih Waktu</span>
@@ -633,7 +633,7 @@
                                     Ringkasan Ekspor
                                 </span>
                                 <span
-                                    class="text-[11px] font-mono font-medium text-sky-400 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800/50"
+                                    class="text-[11px] font-mono font-medium text-sky-400 bg-sky-950/60 px-2 py-0.5 rounded-sm border border-sky-800/50"
                                 >
                                     {{
                                         formatOptions.find(
@@ -834,9 +834,9 @@
                                 class="w-full py-3.5 lg:py-4 px-4 rounded-xl text-white font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed font-sans"
                                 :class="
                                     isGuest
-                                        ? 'bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-sky-500/25'
+                                        ? 'bg-linear-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-sky-500/25'
                                         : isDurationValid
-                                          ? 'bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-sky-500/25'
+                                          ? 'bg-linear-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-sky-500/25'
                                           : 'bg-slate-800 text-slate-400 border border-slate-700'
                                 "
                             >
@@ -985,7 +985,7 @@
                                     class="w-full h-1.5 bg-[#142036] rounded-full overflow-hidden"
                                 >
                                     <div
-                                        class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 animate-pulse w-full"
+                                        class="h-full bg-linear-to-r from-blue-500 to-cyan-400 animate-pulse w-full"
                                     ></div>
                                 </div>
                             </div>
@@ -1031,7 +1031,7 @@
                                     </div>
 
                                     <span
-                                        class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase shrink-0"
+                                        class="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase shrink-0"
                                         :class="
                                             isUnlimitedQuota
                                                 ? 'bg-amber-950 text-amber-300 border border-amber-800'
@@ -1206,7 +1206,7 @@
                                 <button
                                     type="button"
                                     @click="showRequestClipperModal = true"
-                                    class="w-full py-2.5 lg:py-4 lg:min-h-[48px] px-3.5 rounded-xl bg-[#0a1426] hover:bg-[#101e38] border border-[#1a2d50] text-xs lg:text-sm font-bold text-slate-200 flex items-center justify-between transition group cursor-pointer shadow-sm active:scale-[0.99]"
+                                    class="w-full py-2.5 lg:py-4 lg:min-h-[48px] px-3.5 rounded-xl bg-[#0a1426] hover:bg-[#101e38] border border-[#1a2d50] text-xs lg:text-sm font-bold text-slate-200 flex items-center justify-between transition group cursor-pointer shadow-xs active:scale-[0.99]"
                                 >
                                     <div
                                         class="flex items-center gap-2.5 font-mono"
@@ -1448,7 +1448,7 @@
                                     >
                                     <span>•</span>
                                     <span
-                                        class="text-blue-400 font-semibold px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px]"
+                                        class="text-blue-400 font-semibold px-1.5 py-0.5 rounded-sm bg-slate-950 border border-slate-800 text-[10px]"
                                         >{{ clip.format || "MP4 1080p" }}</span
                                     >
                                 </div>
@@ -1486,7 +1486,7 @@
                             v-if="
                                 clip.status === 'failed' && clip.error_message
                             "
-                            class="text-[10px] p-2 rounded-md bg-slate-950 border border-red-900/50 text-red-400 font-mono break-words"
+                            class="text-[10px] p-2 rounded-md bg-slate-950 border border-red-900/50 text-red-400 font-mono wrap-break-word"
                         >
                             {{ clip.error_message }}
                         </div>
@@ -1728,11 +1728,11 @@
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
                             <span
-                                class="px-2.5 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/80 font-mono text-[10px] font-bold uppercase"
+                                class="px-2.5 py-0.5 rounded-sm bg-amber-950 text-amber-400 border border-amber-800/80 font-mono text-[10px] font-bold uppercase"
                                 >Hak Otonomi Officer</span
                             >
                             <span
-                                class="px-2.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800/80 font-mono text-[10px] font-bold uppercase"
+                                class="px-2.5 py-0.5 rounded-sm bg-blue-950 text-blue-400 border border-blue-800/80 font-mono text-[10px] font-bold uppercase"
                                 >2 Slot Penunjukan</span
                             >
                         </div>
@@ -1808,7 +1808,7 @@
                             class="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800"
                         >
                             <div
-                                class="h-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all duration-300"
+                                class="h-full bg-linear-to-r from-emerald-500 to-blue-500 transition-all duration-300"
                                 :style="{
                                     width: `${(delegationData.used_slots / 2) * 100}%`,
                                 }"
@@ -1867,7 +1867,7 @@
                                             }}</span
                                         >
                                         <span
-                                            class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-slate-900 text-emerald-400 border border-slate-800 font-mono uppercase"
+                                            class="px-1.5 py-0.5 text-[9px] font-bold rounded-sm bg-slate-900 text-emerald-400 border border-slate-800 font-mono uppercase"
                                         >
                                             {{
                                                 del.tier === "ultimate"
@@ -1941,7 +1941,7 @@
                                     v-model="assignEmailInput"
                                     type="email"
                                     placeholder="contoh: user@gmail.com"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:ring-0 outline-none transition font-mono"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:ring-0 outline-hidden transition font-mono"
                                 />
                             </div>
 
@@ -1952,7 +1952,7 @@
                                 >
                                 <select
                                     v-model="assignTierInput"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 focus:ring-0 outline-none transition font-sans"
+                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 focus:ring-0 outline-hidden transition font-sans"
                                 >
                                     <option value="creator">
                                         Police Duty Clipper (10 Klip/hari,
@@ -2022,7 +2022,7 @@
             >
                 <!-- Backdrop -->
                 <div
-                    class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"
+                    class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity"
                     @click="closeMobileClipperMenu"
                 ></div>
 
@@ -2185,7 +2185,7 @@
                                         </div>
                                     </div>
                                     <span
-                                        class="text-[10px] font-mono text-slate-300 bg-[#070e1b] px-2 py-1 rounded border border-[#17253e] shrink-0"
+                                        class="text-[10px] font-mono text-slate-300 bg-[#070e1b] px-2 py-1 rounded-sm border border-[#17253e] shrink-0"
                                     >
                                         {{ fmt.desc }}
                                     </span>
@@ -2237,7 +2237,7 @@
                                 (!isGuest && !isDurationValid) ||
                                 submitCooldownSec > 0
                             "
-                            class="w-full py-3.5 px-4 rounded-xl text-white font-semibold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] disabled:opacity-50 font-sans bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500"
+                            class="w-full py-3.5 px-4 rounded-xl text-white font-semibold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] disabled:opacity-50 font-sans bg-linear-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500"
                         >
                             <img
                                 :src="iconCut"
@@ -2284,7 +2284,7 @@ import DualRangeTrimmer from "@/Components/DualRangeTrimmer.vue";
 import CustomVideoPlayer from "@/Components/CustomVideoPlayer.vue";
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
-import { Head, Link, usePage } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import axios from "axios";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 

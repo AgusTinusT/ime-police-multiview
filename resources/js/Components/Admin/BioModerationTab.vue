@@ -229,21 +229,21 @@ onMounted(() => {
                 <button
                     @click="onSubTabChange('links')"
                     class="px-3.5 py-1.5 rounded-lg font-bold transition border"
-                    :class="subTab === 'links' ? 'bg-cyan-600 text-black border-cyan-500 shadow-sm' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'"
+                    :class="subTab === 'links' ? 'bg-cyan-600 text-black border-cyan-500 shadow-xs' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'"
                 >
                     🔗 Moderasi Tautan Global
                 </button>
                 <button
                     @click="onSubTabChange('domains')"
                     class="px-3.5 py-1.5 rounded-lg font-bold transition border"
-                    :class="subTab === 'domains' ? 'bg-cyan-600 text-black border-cyan-500 shadow-sm' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'"
+                    :class="subTab === 'domains' ? 'bg-cyan-600 text-black border-cyan-500 shadow-xs' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'"
                 >
                     🚫 Denylist Domain
                 </button>
                 <button
                     @click="onSubTabChange('audit')"
                     class="px-3.5 py-1.5 rounded-lg font-bold transition border"
-                    :class="subTab === 'audit' ? 'bg-cyan-600 text-black border-cyan-500 shadow-sm' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'"
+                    :class="subTab === 'audit' ? 'bg-cyan-600 text-black border-cyan-500 shadow-xs' : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'"
                 >
                     📜 Log Audit Keamanan
                 </button>
@@ -260,7 +260,7 @@ onMounted(() => {
                         @keyup.enter="fetchLinks(1)"
                         type="text"
                         placeholder="Cari judul tautan, URL, host..."
-                        class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-md px-3 py-1.5 text-xs focus:border-cyan-500 outline-none"
+                        class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-md px-3 py-1.5 text-xs focus:border-cyan-500 outline-hidden"
                     />
                     <button
                         @click="fetchLinks(1)"
@@ -338,7 +338,7 @@ onMounted(() => {
                                 </td>
 
                                 <td class="py-3.5 px-4">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-950 text-slate-300 border border-slate-800">
+                                    <span class="px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase bg-slate-950 text-slate-300 border border-slate-800">
                                         {{ link.link_type }}
                                     </span>
                                     <div class="text-[10px] text-slate-400 mt-1">
@@ -348,7 +348,7 @@ onMounted(() => {
 
                                 <td class="py-3.5 px-4">
                                     <span
-                                        class="px-2 py-0.5 rounded text-[10px] font-black uppercase"
+                                        class="px-2 py-0.5 rounded-sm text-[10px] font-black uppercase"
                                         :class="{
                                             'bg-emerald-950 text-emerald-300 border border-emerald-500/40': link.moderation_status === 'approved',
                                             'bg-amber-950 text-amber-300 border border-amber-500/40': link.moderation_status === 'flagged',
@@ -367,27 +367,27 @@ onMounted(() => {
                                         <button
                                             v-if="link.moderation_status !== 'approved'"
                                             @click="openModerateModal(link, 'approved')"
-                                            class="px-2 py-1 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px]"
+                                            class="px-2 py-1 rounded-sm bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px]"
                                         >
                                             ✓ Approve
                                         </button>
                                         <button
                                             v-if="link.moderation_status !== 'flagged'"
                                             @click="openModerateModal(link, 'flagged')"
-                                            class="px-2 py-1 rounded bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 text-[11px]"
+                                            class="px-2 py-1 rounded-sm bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 text-[11px]"
                                         >
                                             ! Flag
                                         </button>
                                         <button
                                             v-if="link.moderation_status !== 'banned'"
                                             @click="openModerateModal(link, 'banned')"
-                                            class="px-2 py-1 rounded bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 text-[11px]"
+                                            class="px-2 py-1 rounded-sm bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 text-[11px]"
                                         >
                                             ✕ Ban
                                         </button>
                                         <button
                                             @click="deleteLink(link)"
-                                            class="px-2 py-1 rounded bg-slate-950 hover:bg-rose-950 text-slate-400 hover:text-rose-400 border border-slate-800 text-[11px]"
+                                            class="px-2 py-1 rounded-sm bg-slate-950 hover:bg-rose-950 text-slate-400 hover:text-rose-400 border border-slate-800 text-[11px]"
                                             title="Hapus Paksa"
                                         >
                                             🗑️
@@ -395,7 +395,7 @@ onMounted(() => {
                                         <button
                                             v-if="link.profile"
                                             @click="toggleSuspendProfile(link.profile)"
-                                            class="px-2 py-1 rounded text-[11px] border transition"
+                                            class="px-2 py-1 rounded-sm text-[11px] border transition"
                                             :class="link.profile.is_suspended ? 'bg-amber-950 hover:bg-amber-900 text-amber-300 border-amber-700' : 'bg-red-950/60 hover:bg-red-900 text-red-300 border-red-800/80'"
                                             :title="link.profile.is_suspended ? 'Cabut pembekuan halaman bio ini' : 'Bekukan halaman bio profil ini (Kill Switch)'"
                                         >
@@ -404,7 +404,7 @@ onMounted(() => {
                                         <button
                                             v-if="link.profile?.officer?.user"
                                             @click="toggleBanUser(link.profile.officer.user)"
-                                            class="px-2 py-1 rounded text-[11px] border transition"
+                                            class="px-2 py-1 rounded-sm text-[11px] border transition"
                                             :class="link.profile.officer.user.status === 'banned' ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-700' : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-700'"
                                             :title="link.profile.officer.user.status === 'banned' ? 'Cabut ban user pemilik' : 'Ban akun user pemilik link ini'"
                                         >
@@ -435,7 +435,7 @@ onMounted(() => {
                         v-model="banDomainInput"
                         type="text"
                         placeholder="Contoh: phishing-site.xyz atau judi-online.com"
-                        class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-rose-500 outline-none"
+                        class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-rose-500 outline-hidden"
                     />
                 </div>
 
@@ -445,7 +445,7 @@ onMounted(() => {
                         v-model="banDomainReason"
                         type="text"
                         placeholder="Contoh: Terdeteksi URL scam donasi / phishing kredensial"
-                        class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-rose-500 outline-none"
+                        class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-rose-500 outline-hidden"
                     />
                 </div>
 
@@ -467,7 +467,7 @@ onMounted(() => {
                 </span>
                 <button
                     @click="fetchAuditLogs(auditPagination.current_page)"
-                    class="px-2.5 py-1 rounded bg-slate-950 hover:bg-slate-800 text-cyan-400 border border-slate-800 text-xs"
+                    class="px-2.5 py-1 rounded-sm bg-slate-950 hover:bg-slate-800 text-cyan-400 border border-slate-800 text-xs"
                 >
                     ↻ Refresh
                 </button>
@@ -522,7 +522,7 @@ onMounted(() => {
         <!-- MODERATE MODAL -->
         <div
             v-if="showModerateModal"
-            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
         >
             <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl p-5 shadow-2xl text-left space-y-4">
                 <div class="flex items-center gap-2 text-white font-bold border-b border-white/10 pb-2">
@@ -540,7 +540,7 @@ onMounted(() => {
                         v-model="moderationReason"
                         type="text"
                         placeholder="Contoh: Link disetujui / Link terindikasi penipuan"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-hidden"
                     />
                 </div>
 
@@ -549,7 +549,7 @@ onMounted(() => {
                         v-model="alsoBanDomain"
                         type="checkbox"
                         id="banDomainChk"
-                        class="w-4 h-4 rounded text-rose-600 bg-slate-800 border-slate-700"
+                        class="w-4 h-4 rounded-sm text-rose-600 bg-slate-800 border-slate-700"
                     />
                     <label for="banDomainChk" class="text-xs text-rose-300 cursor-pointer">
                         Blokir juga seluruh domain ({{ activeLink?.url_host }}) secara global

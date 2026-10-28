@@ -530,7 +530,7 @@ const getCustomOrderRank = (item) => {
                             </div>
                             <button
                                 @click="isRightChatOpen = false"
-                                class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-1.5 py-0.2 rounded"
+                                class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-1.5 py-0.2 rounded-sm"
                             >
                                 ✕ Close
                             </button>
@@ -641,7 +641,7 @@ const getCustomOrderRank = (item) => {
                             </div>
                             <button
                                 @click="emit('update:activeChatVideoId', null)"
-                                class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded transition"
+                                class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded-sm transition"
                             >
                                 ✕ Close
                             </button>

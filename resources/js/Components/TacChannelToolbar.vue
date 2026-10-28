@@ -41,7 +41,7 @@ const departmentTitle = computed(() => {
 <template>
     <div class="mb-4 space-y-2.5 font-sans">
         <!-- Main Channel HUD Toolbar -->
-        <div class="bg-gradient-to-r from-amber-950/70 via-slate-900/95 to-slate-950 border border-amber-500/40 rounded-xl p-3 shadow-xl backdrop-blur flex flex-wrap items-center justify-between gap-3">
+        <div class="bg-linear-to-r from-amber-950/70 via-slate-900/95 to-slate-950 border border-amber-500/40 rounded-xl p-3 shadow-xl backdrop-blur-sm flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center space-x-3">
                 <div class="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
                     <img v-if="iconRadio" :src="iconRadio" class="w-5 h-5 brightness-0 invert opacity-90" alt="Radio" />
@@ -82,7 +82,7 @@ const departmentTitle = computed(() => {
         <!-- Expiration Alert Banner (Triggers in last 60 seconds) -->
         <div 
             v-if="remainingSeconds > 0 && remainingSeconds <= 60"
-            class="bg-red-950/95 border-2 border-red-500 rounded-xl p-3.5 shadow-2xl backdrop-blur flex flex-wrap items-center justify-between gap-3 animate-pulse"
+            class="bg-red-950/95 border-2 border-red-500 rounded-xl p-3.5 shadow-2xl backdrop-blur-sm flex flex-wrap items-center justify-between gap-3 animate-pulse"
         >
             <div class="flex items-center space-x-3">
                 <div class="w-8 h-8 rounded-full bg-red-500/30 border border-red-400 flex items-center justify-center text-red-300 text-base font-bold shrink-0">

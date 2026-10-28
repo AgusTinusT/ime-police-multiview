@@ -224,7 +224,7 @@ onUnmounted(() => {
             <!-- Unread Badge (Sleek static badge without bouncing) -->
             <span
                 v-if="unreadCount > 0"
-                class="px-1.5 py-0.2 rounded-full bg-red-600 text-white font-mono text-[9px] font-bold border border-slate-900 shadow-sm"
+                class="px-1.5 py-0.2 rounded-full bg-red-600 text-white font-mono text-[9px] font-bold border border-slate-900 shadow-xs"
             >
                 {{ unreadCount }}
             </span>
@@ -237,7 +237,7 @@ onUnmounted(() => {
         >
             <!-- PANEL HEADER -->
             <div
-                class="px-4 py-3.5 bg-gradient-to-r from-blue-950/80 via-slate-900 to-slate-950 border-b border-blue-900/40 flex items-center justify-between"
+                class="px-4 py-3.5 bg-linear-to-r from-blue-950/80 via-slate-900 to-slate-950 border-b border-blue-900/40 flex items-center justify-between"
             >
                 <div class="flex items-center space-x-2.5">
                     <img
@@ -344,7 +344,7 @@ onUnmounted(() => {
                                     v-if="msg.user?.officer"
                                     :href="msg.user?.officer?.bio_profile?.slug ? '/@' + msg.user.officer.bio_profile.slug : '#'"
                                     target="_blank"
-                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black font-mono uppercase bg-cyan-950/90 text-cyan-300 border border-cyan-500/50 hover:bg-cyan-900 transition shadow-sm"
+                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[9px] font-black font-mono uppercase bg-cyan-950/90 text-cyan-300 border border-cyan-500/50 hover:bg-cyan-900 transition shadow-xs"
                                     :title="'Verified Officer: ' + msg.user.officer.officer_name + ' (' + msg.user.officer.callsign + ')'"
                                 >
                                     <span>🛡️</span>
@@ -352,19 +352,19 @@ onUnmounted(() => {
                                 </a>
                                 <span
                                     v-else-if="msg.user?.role === 'admin'"
-                                    class="px-1.5 py-0.2 rounded text-[9px] font-black font-mono uppercase bg-gradient-to-r from-amber-500 to-orange-500 text-black shadow-sm"
+                                    class="px-1.5 py-0.2 rounded-sm text-[9px] font-black font-mono uppercase bg-linear-to-r from-amber-500 to-orange-500 text-black shadow-xs"
                                 >
                                     DISPATCH ADMIN
                                 </span>
                                 <span
                                     v-else-if="msg.user?.role === 'officer'"
-                                    class="px-1.5 py-0.2 rounded text-[9px] font-black font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/40"
+                                    class="px-1.5 py-0.2 rounded-sm text-[9px] font-black font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/40"
                                 >
                                     🛡️ OFFICER
                                 </span>
                                 <span
                                     v-else
-                                    class="px-1.5 py-0.2 rounded text-[9px] font-bold font-mono uppercase bg-blue-950 text-blue-300 border border-blue-500/30"
+                                    class="px-1.5 py-0.2 rounded-sm text-[9px] font-bold font-mono uppercase bg-blue-950 text-blue-300 border border-blue-500/30"
                                 >
                                     MEMBER
                                 </span>
@@ -378,7 +378,7 @@ onUnmounted(() => {
 
                         <!-- Message Text -->
                         <div
-                            class="bg-slate-900/90 border border-slate-800/80 rounded-2xl rounded-tl-xs px-3 py-2 text-xs text-slate-200 leading-relaxed break-words relative shadow-sm"
+                            class="bg-slate-900/90 border border-slate-800/80 rounded-2xl rounded-tl-xs px-3 py-2 text-xs text-slate-200 leading-relaxed wrap-break-word relative shadow-xs"
                         >
                             {{ msg.message }}
                         </div>
@@ -428,7 +428,7 @@ onUnmounted(() => {
                         type="text"
                         placeholder="Tulis pesan obrolan..."
                         maxlength="500"
-                        class="flex-1 bg-slate-950/90 border border-slate-800 text-slate-100 placeholder-slate-500 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-blue-500 shadow-inner font-sans"
+                        class="flex-1 bg-slate-950/90 border border-slate-800 text-slate-100 placeholder-slate-500 rounded-xl px-3.5 py-2 text-xs focus:outline-hidden focus:border-blue-500 shadow-inner font-sans"
                     />
                     <button
                         type="submit"

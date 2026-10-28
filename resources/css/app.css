@@ -1,56 +1,99 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/forms';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+  --color-tactical-base: #020617;
+  --color-tactical-panel: #0f172a;
+  --color-tactical-surface: #1e293b;
+  --color-tactical-border: #1e293b;
+  --color-tactical-border-light: #334155;
+  --color-tactical-text: #f8fafc;
+  --color-tactical-muted: #94a3b8;
+  --color-tactical-accent: #2563eb;
+
+  --color-dept-lspd: #2563eb;
+  --color-dept-bcso: #d97706;
+  --color-dept-sasp: #475569;
+  --color-dept-sapr: #059669;
+
+  --font-sans:
+    'Plus Jakarta Sans', Inter, ui-sans-serif, system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  --font-tactical: 'Rajdhani', sans-serif;
+  --font-heading: 'Rajdhani', sans-serif;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/* 🔴 TAMBAHKAN DESIGN PATTERN / REUSABLE STYLES DI SINI */
+
+@utility tactical-card {
+  /* Base Tactical Card */
+  @apply bg-tactical-panel border border-tactical-border rounded-xl p-5 shadow-xs transition-all;
+}
+
+@utility tactical-card-hover {
+  @apply tactical-card hover:border-tactical-border-light hover:bg-tactical-surface/50;
+}
+
+@utility tactical-badge {
+  /* Base Tactical Badge */
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-950 border border-tactical-border text-xs font-mono text-slate-300;
+}
+
+@utility tactical-badge-blue {
+  @apply tactical-badge border-blue-500/30 text-blue-400 bg-blue-500/10;
+}
+
+@utility tactical-badge-amber {
+  @apply tactical-badge border-amber-500/30 text-amber-400 bg-amber-500/10;
+}
+
+@utility btn-tactical-primary {
+  /* Base Tactical Button */
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95;
+}
+
+@utility btn-tactical-secondary {
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-tactical-panel hover:bg-tactical-surface border border-tactical-border text-slate-300 font-mono text-xs font-semibold uppercase tracking-wider transition-all active:scale-95;
+}
+
+@utility scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+  &::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
 
 @layer base {
     h1, h2, h3, h4, h5, h6, .font-heading, .font-tactical {
         font-family: 'Rajdhani', sans-serif;
         letter-spacing: 0.02em;
-    }
-}
-
-/* 🔴 TAMBAHKAN DESIGN PATTERN / REUSABLE STYLES DI SINI */
-@layer components {
-    /* Base Tactical Card */
-    .tactical-card {
-        @apply bg-tactical-panel border border-tactical-border rounded-xl p-5 shadow-sm transition-all;
-    }
-    
-    .tactical-card-hover {
-        @apply tactical-card hover:border-tactical-border-light hover:bg-tactical-surface/50;
-    }
-
-    /* Base Tactical Badge */
-    .tactical-badge {
-        @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-950 border border-tactical-border text-xs font-mono text-slate-300;
-    }
-    
-    .tactical-badge-blue {
-        @apply tactical-badge border-blue-500/30 text-blue-400 bg-blue-500/10;
-    }
-
-    .tactical-badge-amber {
-        @apply tactical-badge border-amber-500/30 text-amber-400 bg-amber-500/10;
-    }
-
-    /* Base Tactical Button */
-    .btn-tactical-primary {
-        @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95;
-    }
-
-    .btn-tactical-secondary {
-        @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-tactical-panel hover:bg-tactical-surface border border-tactical-border text-slate-300 font-mono text-xs font-semibold uppercase tracking-wider transition-all active:scale-95;
-    }
-}
-
-@layer utilities {
-    .scrollbar-none {
-        -ms-overflow-style: none !important;
-        scrollbar-width: none !important;
-    }
-    .scrollbar-none::-webkit-scrollbar {
-        display: none !important;
-        width: 0 !important;
-        height: 0 !important;
     }
 }

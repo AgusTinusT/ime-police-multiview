@@ -46,7 +46,7 @@ const handleSubmit = () => {
                         </p>
                     </div>
                 </div>
-                <button @click="emit('close')" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded bg-slate-800">✕</button>
+                <button @click="emit('close')" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded-sm bg-slate-800">✕</button>
             </div>
 
             <!-- FORM BODY -->
@@ -55,7 +55,7 @@ const handleSubmit = () => {
                     <label class="block text-slate-300 font-medium mb-1">Tipe Kesan / Catatan</label>
                     <select
                         v-model="impressionType"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs cursor-pointer"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs cursor-pointer"
                     >
                         <option value="COMMUNITY_NOTE">Catatan Komunitas & Rekap RP</option>
                         <option value="TACTICAL_RATING">Rating & Ulasan Gaya Taktis / Pursuit</option>
@@ -70,7 +70,7 @@ const handleSubmit = () => {
                         v-model="authorName"
                         type="text"
                         placeholder="Contoh: Citizen_V"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs"
                     />
                 </div>
 
@@ -80,7 +80,7 @@ const handleSubmit = () => {
                         v-model="content"
                         rows="4"
                         placeholder="Bagikan ulasan atau rekap gaya patroli perwira ini..."
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md p-3 text-slate-100 focus:border-blue-500 outline-none text-xs leading-relaxed resize-none"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-md p-3 text-slate-100 focus:border-blue-500 outline-hidden text-xs leading-relaxed resize-none"
                     ></textarea>
                 </div>
             </div>

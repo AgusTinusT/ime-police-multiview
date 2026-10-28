@@ -121,7 +121,7 @@ const handleSubmit = () => {
 </script>
 
 <template>
-    <div v-if="isOpen" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div v-if="isOpen" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-5 space-y-4 shadow-2xl">
             <!-- MODAL HEADER -->
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -134,7 +134,7 @@ const handleSubmit = () => {
                         <p class="text-[10px] text-slate-400 font-mono">Pratinjau Video & Bookmark Klip Siaran</p>
                     </div>
                 </div>
-                <button @click="emit('close')" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded bg-slate-800 cursor-pointer">✕</button>
+                <button @click="emit('close')" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded-sm bg-slate-800 cursor-pointer">✕</button>
             </div>
 
             <!-- EMBEDDED MINI PREVIEW PLAYER -->
@@ -160,7 +160,7 @@ const handleSubmit = () => {
                         v-model="title"
                         type="text"
                         placeholder="Misal: PIT Maneuver di Highway 68..."
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs"
                     />
                 </div>
 
@@ -171,21 +171,21 @@ const handleSubmit = () => {
                         <button
                             @click="setDurationPreset(30)"
                             :class="durationPreset === 30 ? 'bg-slate-800 text-slate-100 border-slate-700 font-bold' : 'bg-slate-950 text-slate-400 border-slate-800'"
-                            class="px-2.5 py-1 rounded border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
+                            class="px-2.5 py-1 rounded-sm border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
                         >
                             30 Detik
                         </button>
                         <button
                             @click="setDurationPreset(60)"
                             :class="durationPreset === 60 ? 'bg-slate-800 text-slate-100 border-slate-700 font-bold' : 'bg-slate-950 text-slate-400 border-slate-800'"
-                            class="px-2.5 py-1 rounded border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
+                            class="px-2.5 py-1 rounded-sm border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
                         >
                             60 Detik
                         </button>
                         <button
                             @click="setDurationPreset(90)"
                             :class="durationPreset === 90 ? 'bg-slate-800 text-slate-100 border-slate-700 font-bold' : 'bg-slate-950 text-slate-400 border-slate-800'"
-                            class="px-2.5 py-1 rounded border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
+                            class="px-2.5 py-1 rounded-sm border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
                         >
                             90 Detik
                         </button>
@@ -199,7 +199,7 @@ const handleSubmit = () => {
                             v-model="startTime"
                             type="text"
                             placeholder="00:00:00"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs text-center font-semibold"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs text-center font-semibold"
                         />
                     </div>
                     <div>
@@ -208,7 +208,7 @@ const handleSubmit = () => {
                             v-model="endTime"
                             type="text"
                             placeholder="00:00:30"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs text-center font-semibold"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs text-center font-semibold"
                         />
                     </div>
                 </div>
@@ -219,7 +219,7 @@ const handleSubmit = () => {
                         v-model="authorName"
                         type="text"
                         placeholder="Panggilan Anda"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-none text-xs"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs"
                     />
                 </div>
             </div>

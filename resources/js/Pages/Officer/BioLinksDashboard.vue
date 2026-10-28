@@ -357,7 +357,7 @@ const domainHint = computed(() => {
                                 <h2 class="text-base font-black font-mono uppercase text-white">
                                     {{ officer.officer_name }}
                                 </h2>
-                                <span class="px-2 py-0.5 rounded text-[9px] font-black font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/40">
+                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-black font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/40">
                                     VERIFIED
                                 </span>
                             </div>
@@ -365,12 +365,12 @@ const domainHint = computed(() => {
                                 {{ officer.department }} • {{ officer.rank }} • Callsign #{{ officer.callsign }}
                             </p>
                             <div class="mt-2 flex items-center gap-2">
-                                <code class="px-2 py-1 rounded bg-slate-950 border border-white/10 text-cyan-300 font-mono text-[11px] select-all">
+                                <code class="px-2 py-1 rounded-sm bg-slate-950 border border-white/10 text-cyan-300 font-mono text-[11px] select-all">
                                     /@{{ profile.slug }}
                                 </code>
                                 <button
                                     @click="copyPublicUrl"
-                                    class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono transition"
+                                    class="px-2 py-1 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono transition"
                                 >
                                     {{ copied ? "✓ Tersalin" : "Salin URL" }}
                                 </button>
@@ -450,14 +450,14 @@ const domainHint = computed(() => {
                                     <button
                                         @click="moveLink(idx, -1)"
                                         :disabled="idx === 0 || profile.is_suspended"
-                                        class="w-6 h-5 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-[10px] text-slate-300 flex items-center justify-center transition"
+                                        class="w-6 h-5 rounded-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-[10px] text-slate-300 flex items-center justify-center transition"
                                     >
                                         ▲
                                     </button>
                                     <button
                                         @click="moveLink(idx, 1)"
                                         :disabled="idx === localLinks.length - 1 || profile.is_suspended"
-                                        class="w-6 h-5 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-[10px] text-slate-300 flex items-center justify-center transition"
+                                        class="w-6 h-5 rounded-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-[10px] text-slate-300 flex items-center justify-center transition"
                                     >
                                         ▼
                                     </button>
@@ -479,7 +479,7 @@ const domainHint = computed(() => {
                                             {{ link.title }}
                                         </h4>
                                         <span
-                                            class="px-1.5 py-0.2 rounded text-[8px] font-mono font-bold uppercase"
+                                            class="px-1.5 py-0.2 rounded-sm text-[8px] font-mono font-bold uppercase"
                                             :class="link.link_type === 'donation' ? 'bg-amber-950 text-amber-300 border border-amber-500/30' : 'bg-slate-800 text-slate-300'"
                                         >
                                             {{ link.link_type }}
@@ -542,7 +542,7 @@ const domainHint = computed(() => {
                         <input
                             v-model="appearanceForm.display_title"
                             type="text"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                             placeholder="Contoh: Ofc. John Doe"
                         />
                     </div>
@@ -553,7 +553,7 @@ const domainHint = computed(() => {
                         <textarea
                             v-model="appearanceForm.bio_tagline"
                             rows="2"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-sans text-white focus:border-cyan-500 outline-none resize-none"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-sans text-white focus:border-cyan-500 outline-hidden resize-none"
                             placeholder="Tuliskan motto patroli atau info jadwal streaming Anda..."
                         ></textarea>
                     </div>
@@ -583,7 +583,7 @@ const domainHint = computed(() => {
                         <label class="block text-xs font-mono text-slate-300 uppercase">Gaya Tombol (Button Style)</label>
                         <select
                             v-model="appearanceForm.button_style"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                         >
                             <option v-for="style in buttonStyles" :key="style" :value="style">
                                 {{ style.replace('_', ' ').toUpperCase() }}
@@ -603,7 +603,7 @@ const domainHint = computed(() => {
                             <input
                                 v-model="appearanceForm.accent_color"
                                 type="text"
-                                class="w-36 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white uppercase focus:border-cyan-500 outline-none"
+                                class="w-36 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white uppercase focus:border-cyan-500 outline-hidden"
                             />
                         </div>
                     </div>
@@ -617,7 +617,7 @@ const domainHint = computed(() => {
                         <input
                             v-model="appearanceForm.show_live_stream_banner"
                             type="checkbox"
-                            class="w-4 h-4 rounded text-cyan-600 focus:ring-0 bg-slate-800 border-slate-700"
+                            class="w-4 h-4 rounded-sm text-cyan-600 focus:ring-0 bg-slate-800 border-slate-700"
                         />
                     </div>
 
@@ -691,7 +691,7 @@ const domainHint = computed(() => {
                                 class="w-16 h-16 rounded-full border-2 border-cyan-400 bg-slate-900 object-cover mb-2 shadow-lg"
                                 alt=""
                             />
-                            <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-mono font-black bg-cyan-950 text-cyan-300 border border-cyan-500/40 mb-1">
+                            <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[8px] font-mono font-black bg-cyan-950 text-cyan-300 border border-cyan-500/40 mb-1">
                                 🛡️ VERIFIED OFFICER
                             </div>
                             <h4 class="text-sm font-black font-mono uppercase text-white leading-tight">
@@ -710,7 +710,7 @@ const domainHint = computed(() => {
                             <div
                                 v-for="l in localLinks.filter((x) => x.is_active)"
                                 :key="l.id"
-                                class="p-2.5 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-between text-left shadow-sm"
+                                class="p-2.5 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-between text-left shadow-xs"
                             >
                                 <div class="flex items-center gap-2 min-w-0">
                                     <span class="text-xs">
@@ -749,7 +749,7 @@ const domainHint = computed(() => {
         <!-- ADD / EDIT LINK MODAL -->
         <div
             v-if="isModalOpen"
-            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
         >
             <div class="w-full max-w-md bg-slate-900 border border-white/10 rounded-2xl p-5 shadow-2xl text-left space-y-4">
                 <div class="flex items-center justify-between border-b border-white/10 pb-3">
@@ -769,7 +769,7 @@ const domainHint = computed(() => {
                     <label class="block text-xs font-mono text-slate-300 uppercase">Tipe Tautan</label>
                     <select
                         v-model="linkForm.link_type"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                     >
                         <option value="donation">🪙 Donasi (Saweria, Bagibagi, Trakteer, Sociabuzz)</option>
                         <option value="discord">💬 Komunitas Discord</option>
@@ -784,7 +784,7 @@ const domainHint = computed(() => {
                     <label class="block text-xs font-mono text-slate-300 uppercase">Pilih Perwira Rekanan</label>
                     <select
                         v-model="linkForm.recommended_officer_id"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                     >
                         <option value="">-- Pilih Perwira Patroli --</option>
                         <option v-for="o in otherOfficers" :key="o.id" :value="o.id">
@@ -801,7 +801,7 @@ const domainHint = computed(() => {
                     <input
                         v-model="linkForm.url"
                         type="url"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                         placeholder="https://..."
                     />
                     <p class="text-[10px] text-cyan-400/90 font-mono leading-tight mt-1">
@@ -815,7 +815,7 @@ const domainHint = computed(() => {
                     <input
                         v-model="linkForm.title"
                         type="text"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                         placeholder="Contoh: Saweria Donasi Taktis"
                     />
                 </div>
@@ -826,7 +826,7 @@ const domainHint = computed(() => {
                     <input
                         v-model="linkForm.subtitle"
                         type="text"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                         placeholder="Contoh: Min 10k TTS On / Komunitas Resmi"
                     />
                 </div>
@@ -837,7 +837,7 @@ const domainHint = computed(() => {
                     <input
                         v-model="linkForm.badge_label"
                         type="text"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
                         placeholder="Contoh: NEW, REKOMENDASI, 24/7"
                     />
                 </div>
@@ -848,7 +848,7 @@ const domainHint = computed(() => {
                     <input
                         v-model="linkForm.is_highlighted"
                         type="checkbox"
-                        class="w-4 h-4 rounded text-cyan-600 focus:ring-0 bg-slate-800 border-slate-700"
+                        class="w-4 h-4 rounded-sm text-cyan-600 focus:ring-0 bg-slate-800 border-slate-700"
                     />
                 </div>
 
@@ -874,7 +874,7 @@ const domainHint = computed(() => {
         <!-- PASSWORD CONFIRMATION MODAL (T-03) -->
         <div
             v-if="isPasswordConfirmModalOpen"
-            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
         >
             <div class="w-full max-w-sm bg-slate-900 border border-amber-500/30 rounded-2xl p-5 shadow-2xl text-left space-y-4">
                 <div class="flex items-center gap-2 text-amber-400 font-mono text-sm font-bold border-b border-white/10 pb-2">
@@ -889,7 +889,7 @@ const domainHint = computed(() => {
                         type="password"
                         @keyup.enter="submitPasswordConfirmation"
                         placeholder="Masukkan password akun Anda..."
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-amber-400 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-amber-400 outline-hidden"
                         autofocus
                     />
                     <p v-if="passwordConfirmError" class="text-[11px] font-mono text-rose-400 pt-1">

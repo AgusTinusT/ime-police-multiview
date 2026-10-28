@@ -141,7 +141,7 @@ defineExpose({
                     class="px-3 py-1.5 rounded-lg text-xs font-bold transition border"
                     :class="
                         statusFilter === st.key
-                            ? 'bg-cyan-600 text-black border-cyan-500 shadow-sm'
+                            ? 'bg-cyan-600 text-black border-cyan-500 shadow-xs'
                             : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
                     "
                 >
@@ -219,7 +219,7 @@ defineExpose({
                             <!-- Status Badge -->
                             <td class="py-3.5 px-4">
                                 <span
-                                    class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"
+                                    class="px-2 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-wider"
                                     :class="{
                                         'bg-amber-950 text-amber-300 border border-amber-500/40': claim.status === 'pending',
                                         'bg-emerald-950 text-emerald-300 border border-emerald-500/40': claim.status === 'approved',
@@ -242,13 +242,13 @@ defineExpose({
                                 <div v-if="claim.status === 'pending'" class="flex items-center justify-end gap-1.5">
                                     <button
                                         @click="openApproveModal(claim)"
-                                        class="px-2.5 py-1 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 transition font-bold"
+                                        class="px-2.5 py-1 rounded-sm bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 transition font-bold"
                                     >
                                         ✓ Setujui
                                     </button>
                                     <button
                                         @click="openRejectModal(claim)"
-                                        class="px-2.5 py-1 rounded bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 transition font-bold"
+                                        class="px-2.5 py-1 rounded-sm bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 transition font-bold"
                                     >
                                         ✕ Tolak
                                     </button>
@@ -272,7 +272,7 @@ defineExpose({
                     <button
                         @click="fetchClaims(pagination.current_page - 1)"
                         :disabled="pagination.current_page <= 1"
-                        class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 disabled:opacity-40"
+                        class="px-2 py-1 rounded-sm bg-slate-900 hover:bg-slate-800 disabled:opacity-40"
                     >
                         Prev
                     </button>
@@ -280,7 +280,7 @@ defineExpose({
                     <button
                         @click="fetchClaims(pagination.current_page + 1)"
                         :disabled="pagination.current_page >= pagination.last_page"
-                        class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 disabled:opacity-40"
+                        class="px-2 py-1 rounded-sm bg-slate-900 hover:bg-slate-800 disabled:opacity-40"
                     >
                         Next
                     </button>
@@ -291,7 +291,7 @@ defineExpose({
         <!-- APPROVE MODAL -->
         <div
             v-if="showApproveModal"
-            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
         >
             <div class="w-full max-w-md bg-slate-900 border border-emerald-500/40 rounded-2xl p-5 shadow-2xl text-left space-y-4">
                 <div class="flex items-center gap-2 text-emerald-400 font-bold border-b border-white/10 pb-2">
@@ -302,7 +302,7 @@ defineExpose({
                     Anda akan menghubungkan akun user <strong class="text-white">{{ activeClaim?.user?.name }}</strong> dengan profil dinas perwira <strong class="text-cyan-300">{{ activeClaim?.officer?.officer_name }} ({{ activeClaim?.officer?.callsign }})</strong>.
                 </p>
 
-                <div v-if="formError" class="p-2.5 rounded bg-rose-950 border border-rose-500 text-rose-200 text-xs">
+                <div v-if="formError" class="p-2.5 rounded-sm bg-rose-950 border border-rose-500 text-rose-200 text-xs">
                     {{ formError }}
                 </div>
 
@@ -312,7 +312,7 @@ defineExpose({
                         v-model="actionReason"
                         type="text"
                         placeholder="Contoh: Terverifikasi via voice channel kepolisian"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-emerald-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-emerald-500 outline-hidden"
                     />
                 </div>
 
@@ -337,7 +337,7 @@ defineExpose({
         <!-- REJECT MODAL -->
         <div
             v-if="showRejectModal"
-            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
         >
             <div class="w-full max-w-md bg-slate-900 border border-rose-500/40 rounded-2xl p-5 shadow-2xl text-left space-y-4">
                 <div class="flex items-center gap-2 text-rose-400 font-bold border-b border-white/10 pb-2">
@@ -348,7 +348,7 @@ defineExpose({
                     Pengajuan klaim dari <strong class="text-white">{{ activeClaim?.user?.name }}</strong> untuk <strong class="text-cyan-300">{{ activeClaim?.officer?.officer_name }}</strong> akan ditolak.
                 </p>
 
-                <div v-if="formError" class="p-2.5 rounded bg-rose-950 border border-rose-500 text-rose-200 text-xs">
+                <div v-if="formError" class="p-2.5 rounded-sm bg-rose-950 border border-rose-500 text-rose-200 text-xs">
                     {{ formError }}
                 </div>
 
@@ -358,7 +358,7 @@ defineExpose({
                         v-model="actionReason"
                         rows="2"
                         placeholder="Contoh: Tag Discord tidak merespon / Bukan pemilik kanal resmi"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-rose-500 outline-none"
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-rose-500 outline-hidden"
                     ></textarea>
                 </div>
 

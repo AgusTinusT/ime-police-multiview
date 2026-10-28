@@ -118,7 +118,7 @@ const formatViewers = (n) => {
                             loading="lazy"
                             class="w-full h-full object-cover"
                         />
-                        <span class="absolute bottom-1 left-1 px-1 rounded bg-red-600 text-[9px] font-bold text-white">LIVE</span>
+                        <span class="absolute bottom-1 left-1 px-1 rounded-sm bg-red-600 text-[9px] font-bold text-white">LIVE</span>
                         <div
                             v-if="isSelected(s.video_id)"
                             class="absolute inset-0 bg-blue-600/50 flex items-center justify-center"
@@ -134,7 +134,7 @@ const formatViewers = (n) => {
                         <div class="mt-1 flex items-center gap-1.5 text-[10px]">
                             <span
                                 v-if="deptOf(s)"
-                                class="px-1.5 py-px rounded border font-bold"
+                                class="px-1.5 py-px rounded-sm border font-bold"
                                 :class="deptBadge[deptOf(s)] || 'border-slate-600 text-slate-300'"
                             >{{ deptOf(s) }}</span>
                             <span class="font-mono text-slate-500 truncate">{{ s.officer?.callsign }}</span>

@@ -8,7 +8,7 @@ const props = defineProps({
     },
     variant: {
         type: String,
-        default: "default", // 'default' | 'hover' | 'outline' | 'flat'
+        default: "default", // 'default' | 'hover' | 'outline-solid' | 'flat'
     },
     padding: {
         type: String,
@@ -22,7 +22,7 @@ const cardClasses = computed(() => {
     let variantClass = "bg-tactical-panel border border-tactical-border";
     if (props.variant === "hover") {
         variantClass = "bg-tactical-panel border border-tactical-border hover:border-tactical-border-light hover:bg-tactical-surface/50";
-    } else if (props.variant === "outline") {
+    } else if (props.variant === "outline-solid") {
         variantClass = "bg-transparent border border-tactical-border";
     } else if (props.variant === "flat") {
         variantClass = "bg-tactical-base border border-tactical-border";

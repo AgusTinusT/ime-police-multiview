@@ -181,7 +181,7 @@ const scrollToUnitsGrid = () => {
     >
         <!-- Crisp Minimalist Grid Overlay -->
         <div
-            class="fixed inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none z-0"
+            class="fixed inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] bg-size-[24px_24px] opacity-20 pointer-events-none z-0"
         ></div>
         <!-- Refactored Tactical Header Bar Component -->
         <TacticalDashboardHeader
@@ -214,7 +214,7 @@ const scrollToUnitsGrid = () => {
 
                 <!-- Inner Content Container (Restricted to max-w-screen-2xl) -->
                 <div
-                    class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 lg:pt-14 pb-10 sm:pb-14 relative z-10"
+                    class="max-w-(--breakpoint-2xl) mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 lg:pt-14 pb-10 sm:pb-14 relative z-10"
                 >
                     <div
                         class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
@@ -384,7 +384,7 @@ const scrollToUnitsGrid = () => {
                                         >
                                     </div>
                                     <span
-                                        class="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/80 font-medium"
+                                        class="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-sm border border-emerald-800/80 font-medium"
                                         >{{
                                             $t("dashboard.live_metrics")
                                         }}</span
@@ -529,7 +529,7 @@ const scrollToUnitsGrid = () => {
                                         >
                                     </div>
                                     <p
-                                        class="text-xs font-mono text-slate-400 bg-slate-900 p-2 rounded border border-slate-800 leading-relaxed"
+                                        class="text-xs font-mono text-slate-400 bg-slate-900 p-2 rounded-sm border border-slate-800 leading-relaxed"
                                     >
                                         {{ $t("dashboard.transmission_log") }}
                                     </p>
@@ -576,7 +576,7 @@ const scrollToUnitsGrid = () => {
                 id="units-grid"
                 class="w-full bg-[#0a0f1d] pt-10 sm:pt-14 pb-12 sm:pb-16 scroll-mt-6 relative z-10"
             >
-                <div class="max-w-screen-2xl mx-auto px-3.5 sm:px-6 lg:px-8">
+                <div class="max-w-(--breakpoint-2xl) mx-auto px-3.5 sm:px-6 lg:px-8">
                     <TacticalStreamSlimles
                         :is-syncing-feeds="isSyncingFeeds"
                         :all-active-streams="allActiveStreams"
@@ -594,7 +594,7 @@ const scrollToUnitsGrid = () => {
                 id="leaderboard-section"
                 class="w-full bg-slate-950 pt-12 sm:pt-16 pb-16 sm:pb-24 relative z-10"
             >
-                <div class="max-w-screen-2xl mx-auto px-3.5 sm:px-6 lg:px-8">
+                <div class="max-w-(--breakpoint-2xl) mx-auto px-3.5 sm:px-6 lg:px-8">
                     <!-- Informative Clipper Beta Access Banner -->
                     <TacticalClipperBetaBanner
                         @open-claim-modal="showClipperClaimModal = true"
@@ -611,7 +611,7 @@ const scrollToUnitsGrid = () => {
                 id="support-section"
                 class="w-full bg-[#0a0f1d] py-12 sm:py-16 relative z-10"
             >
-                <div class="max-w-screen-2xl mx-auto px-3.5 sm:px-6 lg:px-8">
+                <div class="max-w-(--breakpoint-2xl) mx-auto px-3.5 sm:px-6 lg:px-8">
                     <TacticalSubSupportGrid :officers="supportOfficers" />
                 </div>
             </section>

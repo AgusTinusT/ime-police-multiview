@@ -187,7 +187,7 @@ const filteredReleases = computed(() => {
                 >
                     <!-- Timeline Marker Dot -->
                     <div
-                        class="absolute -left-[7px] top-2 w-3.5 h-3.5 rounded-full border transition duration-300"
+                        class="absolute left-[-7px] top-2 w-3.5 h-3.5 rounded-full border transition duration-300"
                         :class="
                             rel.isLatest
                                 ? 'bg-blue-500 border-blue-400'

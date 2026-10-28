@@ -71,7 +71,7 @@ onUnmounted(() => {
         v-if="isVisible && currentAnnouncement" 
         @mouseenter="stopTimer" 
         @mouseleave="startTimer"
-        class="bg-gradient-to-r from-blue-950/90 via-indigo-950/95 to-slate-950 border border-blue-500/40 rounded-2xl p-3 sm:p-4 mb-4 shadow-2xl backdrop-blur-xl transition-all duration-300 relative overflow-hidden font-sans group"
+        class="bg-linear-to-r from-blue-950/90 via-indigo-950/95 to-slate-950 border border-blue-500/40 rounded-2xl p-3 sm:p-4 mb-4 shadow-2xl backdrop-blur-xl transition-all duration-300 relative overflow-hidden font-sans group"
     >
         <div class="flex items-start sm:items-center justify-between gap-3 relative z-10">
             <!-- Banner Main Content -->
@@ -83,7 +83,7 @@ onUnmounted(() => {
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center space-x-2 flex-wrap gap-y-1">
                         <span 
-                            class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md bg-blue-600 text-white font-mono shadow-sm"
+                            class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md bg-blue-600 text-white font-mono shadow-xs"
                         >
                             {{ currentAnnouncement.badge_text || 'DISPATCH ANNOUNCEMENT' }}
                         </span>

@@ -105,7 +105,7 @@ const handleRegister = () => {
                                 type="email"
                                 required
                                 placeholder="perwira@ime-rp.com"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <span v-if="loginForm.errors.email" class="text-[11px] text-red-400 mt-1 block">{{ loginForm.errors.email }}</span>
                         </div>
@@ -117,14 +117,14 @@ const handleRegister = () => {
                                 type="password"
                                 required
                                 placeholder="••••••••"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <span v-if="loginForm.errors.password" class="text-[11px] text-red-400 mt-1 block">{{ loginForm.errors.password }}</span>
                         </div>
 
                         <div class="flex items-center justify-between text-xs pt-1">
                             <label class="flex items-center space-x-2 text-slate-400 cursor-pointer">
-                                <input type="checkbox" v-model="loginForm.remember" class="rounded bg-slate-900 border-slate-800 text-blue-600 focus:ring-blue-500" />
+                                <input type="checkbox" v-model="loginForm.remember" class="rounded-sm bg-slate-900 border-slate-800 text-blue-600 focus:ring-blue-500" />
                                 <span>Remember me</span>
                             </label>
                         </div>
@@ -147,7 +147,7 @@ const handleRegister = () => {
                                 type="text"
                                 required
                                 placeholder="Agus Tinus Turnip"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <span v-if="registerForm.errors.name" class="text-[11px] text-red-400 mt-1 block">{{ registerForm.errors.name }}</span>
                         </div>
@@ -159,7 +159,7 @@ const handleRegister = () => {
                                 type="email"
                                 required
                                 placeholder="nama@email.com"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <span v-if="registerForm.errors.email" class="text-[11px] text-red-400 mt-1 block">{{ registerForm.errors.email }}</span>
                         </div>
@@ -171,7 +171,7 @@ const handleRegister = () => {
                                 type="password"
                                 required
                                 placeholder="Minimal 8 karakter"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                             <span v-if="registerForm.errors.password" class="text-[11px] text-red-400 mt-1 block">{{ registerForm.errors.password }}</span>
                         </div>
@@ -183,7 +183,7 @@ const handleRegister = () => {
                                 type="password"
                                 required
                                 placeholder="Ulangi password"
-                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </div>
 

@@ -81,7 +81,7 @@ onUnmounted(() => {
         class="bg-tactical-base/90 backdrop-blur-md border-b border-tactical-border px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 sticky top-0 z-40"
     >
         <div
-            class="max-w-screen-2xl mx-auto w-full flex items-center justify-between gap-2"
+            class="max-w-(--breakpoint-2xl) mx-auto w-full flex items-center justify-between gap-2"
         >
             <!-- Left Area: Branding & Logo -->
             <div
@@ -97,7 +97,7 @@ onUnmounted(() => {
                     >
                         <img
                             :src="logoSaspColor"
-                            class="w-full h-full object-contain rounded"
+                            class="w-full h-full object-contain rounded-sm"
                             alt="SASP Badge"
                         />
                     </div>
@@ -158,7 +158,7 @@ onUnmounted(() => {
                         title="Clip Studio"
                     >
                         <span>Clip Studio</span>
-                        <span class="px-1.5 py-0.2 text-[9px] font-mono font-extrabold rounded bg-emerald-950 text-emerald-400 border border-emerald-800/80 shrink-0">BETA</span>
+                        <span class="px-1.5 py-0.2 text-[9px] font-mono font-extrabold rounded-sm bg-emerald-950 text-emerald-400 border border-emerald-800/80 shrink-0">BETA</span>
                     </Link>
 
                     <Link
