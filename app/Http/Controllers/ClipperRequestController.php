@@ -55,7 +55,7 @@ class ClipperRequestController extends Controller
         }
 
         $validated = $request->validate([
-            'request_type' => 'required|string|in:officer,creator,vip,general',
+            'request_type' => 'required|string|in:creator,vip,general',
             'channel_url' => 'nullable|string|max:255',
             'reason' => 'nullable|string|max:1000',
         ]);

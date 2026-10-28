@@ -631,10 +631,10 @@
                             </Link>
 
                             <button
-                                @click="openClaimModal('officer')"
+                                @click="showOfficerClaimModal = true"
                                 class="w-full py-2 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-blue-400 font-bold text-xs transition block text-center border border-slate-800 font-sans"
                             >
-                                Ajukan Akses Officer
+                                Klaim Profil Officer →
                             </button>
                         </div>
                     </div>
@@ -1046,6 +1046,12 @@
             @close="claimModalVisible = false"
             @submitted="claimModalVisible = false"
         />
+
+        <!-- Officer Bio Claim Modal (PRD D4) -->
+        <OfficerClaimModal
+            :show="showOfficerClaimModal"
+            @close="showOfficerClaimModal = false"
+        />
     </TacticalLayout>
 </template>
 
@@ -1053,9 +1059,11 @@
 import { ref } from "vue";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
+import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import { Head, Link } from "@inertiajs/vue3";
 
 const claimModalVisible = ref(false);
+const showOfficerClaimModal = ref(false);
 const selectedPlanType = ref("general");
 
 const openClaimModal = (planType = "general") => {
