@@ -219,6 +219,25 @@ onUnmounted(() => {
                             </div>
                         </Link>
 
+                        <!-- Self-Service Officer Profile (PRD v3 T-18) -->
+                        <Link
+                            v-if="$page.props.auth.user.is_officer || isAdmin"
+                            href="/dashboard/officer-profile"
+                            @click="isOpen = false"
+                            class="flex items-center px-4 py-2.5 text-blue-300 hover:bg-slate-800 hover:text-blue-200 transition gap-2.5 font-semibold group"
+                        >
+                            <span class="text-base shrink-0">🎖️</span>
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Profil Dinas Saya</span>
+                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded bg-blue-950 text-blue-300 border border-blue-500/40 font-mono">PERWIRA</span>
+                                </div>
+                                <span class="text-[10px] text-slate-400 font-normal">
+                                    Identitas, Callsign & Mutasi Pangkat
+                                </span>
+                            </div>
+                        </Link>
+
                         <!-- Claim Officer Profile (For Members) -->
                         <button
                             v-else
