@@ -33,6 +33,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Avatar Image Host Allowlist
+    |--------------------------------------------------------------------------
+    | Only trusted YouTube/Google image CDN hosts are allowed for officer avatars.
+    */
+    'avatar_hosts' => [
+        'yt3.ggpht.com',
+        'yt3.googleusercontent.com',
+        'i.ytimg.com',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Reserved Public Bio-Link Slugs
     |--------------------------------------------------------------------------
     | Public bio-link slugs matching these values cannot be registered.
