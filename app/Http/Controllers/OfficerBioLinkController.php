@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -97,6 +98,12 @@ class OfficerBioLinkController extends Controller
             ], 422);
         }
 
+        if ($request->link_type === 'donation') {
+            if ($err = $this->checkDonationPasswordConfirmation($request)) {
+                return $err;
+            }
+        }
+
         $validated = $this->validateLinkData($request, $officer);
 
         $maxOrder = $profile->links()->max('sort_order') ?? 0;
@@ -137,6 +144,12 @@ class OfficerBioLinkController extends Controller
             ], 423);
         }
 
+        if ($request->link_type === 'donation' || $link->link_type === 'donation') {
+            if ($err = $this->checkDonationPasswordConfirmation($request)) {
+                return $err;
+            }
+        }
+
         $officer = $profile->officer;
         $validated = $this->validateLinkData($request, $officer, $link->id);
 
@@ -150,13 +163,13 @@ class OfficerBioLinkController extends Controller
 
         $link->update($validated);
 
-        if ($link->link_type === 'donation') {
+        if ($link->link_type === 'donation' || $beforeState['link_type'] === 'donation') {
             AuditLogger::log(
                 'bio_link.donation_changed',
                 'officer_bio_link',
                 $link->id,
                 $beforeState,
-                ['title' => $link->title, 'url' => $link->url],
+                ['title' => $link->title, 'url' => $link->url, 'link_type' => $link->link_type],
                 "Updated donation link details"
             );
         }
@@ -427,8 +440,15 @@ class OfficerBioLinkController extends Controller
                 }
             }
 
-            // Denylist check (for custom links or all)
-            if (LinkDomainDenylist::where('host', $cleanHost)->exists()) {
+            // Denylist check: check exact host and parent domains (B-06)
+            $hostParts = explode('.', $cleanHost);
+            $candidateHosts = [];
+            while (count($hostParts) >= 2) {
+                $candidateHosts[] = implode('.', $hostParts);
+                array_shift($hostParts);
+            }
+
+            if (LinkDomainDenylist::whereIn('host', $candidateHosts)->exists()) {
                 throw ValidationException::withMessages([
                     'url' => "Domain '{$cleanHost}' telah diblokir secara permanen oleh Admin Kepolisian.",
                 ]);
@@ -446,5 +466,35 @@ class OfficerBioLinkController extends Controller
             'badge_label' => $request->badge_label,
             'is_highlighted' => $request->boolean('is_highlighted', false),
         ];
+    }
+
+    /**
+     * Verify password confirmation when modifying financial donation links (T-03).
+     */
+    protected function checkDonationPasswordConfirmation(Request $request): ?JsonResponse
+    {
+        $confirmedAt = $request->session()->get('auth.password_confirmed_at', 0);
+        $timeout = config('auth.password_timeout', 900);
+
+        if (time() - $confirmedAt <= $timeout) {
+            return null;
+        }
+
+        if ($request->filled('password_confirmation_inline')) {
+            if (Hash::check($request->password_confirmation_inline, $request->user()->password)) {
+                $request->session()->put('auth.password_confirmed_at', time());
+                return null;
+            }
+
+            return response()->json([
+                'message' => 'Password konfirmasi salah.',
+                'error' => 'password_mismatch',
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'Konfirmasi password diperlukan untuk mengamankan perubahan tautan donasi finansial.',
+            'error' => 'password_confirmation_required',
+        ], 423);
     }
 }

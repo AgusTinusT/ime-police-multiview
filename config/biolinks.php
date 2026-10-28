@@ -94,7 +94,6 @@ return [
         'dispatch',
         'trooper',
         'sheriff',
-        'chief',
         'captain',
         'lieutenant',
         'sergeant',

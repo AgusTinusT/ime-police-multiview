@@ -13,7 +13,7 @@ class ChatMessageController extends Controller
      */
     public function index(Request $request)
     {
-        $userRelations = ['user:id,name,email,role', 'user.officer.bioProfile'];
+        $userRelations = ['user:id,name,role', 'user.officer.bioProfile'];
 
         $query = ChatMessage::with($userRelations);
 
@@ -65,7 +65,7 @@ class ChatMessageController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Pesan terkirim.',
-            'data' => $chat->load(['user:id,name,email,role', 'user.officer.bioProfile']),
+            'data' => $chat->load(['user:id,name,role', 'user.officer.bioProfile']),
         ], 201);
     }
 
@@ -103,7 +103,7 @@ class ChatMessageController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => $chat->is_pinned ? 'Pesan disematkan.' : 'Sematan dilepas.',
-            'data' => $chat->load(['user:id,name,email,role']),
+            'data' => $chat->load(['user:id,name,role']),
         ]);
     }
 }

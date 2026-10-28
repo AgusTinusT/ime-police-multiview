@@ -40,23 +40,19 @@ class PublicBioLinkController extends Controller
             'links.recommendedOfficer.rankRelation',
         ])->where('slug', $slug)->first();
 
-        // 3. Fallback: check if slug matches an officer handle without '@'
+        // 3. Fallback: check if slug matches an officer handle -> 301 Permanent Redirect to official slug
         if (!$profile) {
             $officer = Officer::where('is_active', true)
                 ->where(function ($q) use ($slug) {
                     $q->where('handle', '@' . $slug)
                         ->orWhere('handle', $slug);
-                })->first();
+                })
+                ->whereHas('bioProfile')
+                ->with('bioProfile')
+                ->first();
 
-            if ($officer) {
-                // Ensure bio profile is auto-provisioned
-                $profile = BioProfileService::ensureBioProfile($officer);
-                $profile->load([
-                    'officer.agency',
-                    'officer.rankRelation',
-                    'officer.activeStream',
-                    'links.recommendedOfficer.activeStream',
-                ]);
+            if ($officer && $officer->bioProfile) {
+                return redirect()->to('/@' . $officer->bioProfile->slug, 301);
             }
         }
 
@@ -109,7 +105,7 @@ class PublicBioLinkController extends Controller
         $this->recordPageView($profile);
 
         // Filter links: only active & approved
-        $links = $isUnclaimed ? [] : $profile->links
+        $links = $isUnclaimed ? collect([]) : $profile->links
             ->filter(fn($l) => $l->is_active && $l->moderation_status === 'approved')
             ->values();
 

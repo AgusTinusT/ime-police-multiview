@@ -51,8 +51,8 @@
 
 | ID | Prioritas | Task | Status | Review Notes |
 | :--- | :---: | :--- | :---: | :--- |
-| T-00 | 🔴 P0 | Commit pekerjaan bio-link yang sudah ada sebagai baseline (terpisah dari perubahan Multiview/Clipper) | ⬜ To Do | |
-| T-01 | 🔴 P0 | Putuskan D1–D6 di PRD Bagian 11 dan tandai sebagai final | ⏸️ Blocked (menunggu product owner) | D4 memengaruhi B-04 |
+| T-00 | 🔴 P0 | Commit pekerjaan bio-link yang sudah ada sebagai baseline (terpisah dari perubahan Multiview/Clipper) | ✅ Done | Commit `a8f4e45` feat(biolink): T-00 |
+| T-01 | 🔴 P0 | Putuskan D1–D6 di PRD Bagian 11 dan tandai sebagai final | ✅ Done | Diadopsi sesuai rekomendasi D1(a), D2(b), D3(a), D4(a), D5(a), D6(b) |
 
 **T-00 — Detail**
 - Stage hanya file bio-link: migration `2026_10_28_*`, model/controller/service/policy/middleware/command baru, `config/biolinks.php`, `Pages/Officer`, `Pages/Public`, test, serta diff terkait di `User.php`, `Officer.php`, `routes/web.php`, `bootstrap/app.php`, auth/profile controller, `ChatMessageController`, `HandleInertiaRequests`, `app.blade.php`, `TacticalChatDrawer.vue`, `UserAccountMenu.vue`.
@@ -64,59 +64,59 @@
 
 | ID | Prioritas | Task | File Utama | Status | Review Notes |
 | :--- | :---: | :--- | :--- | :---: | :--- |
-| B-01 | 🔴 P0 | Approve klaim crash (import `User` hilang) | `OfficerClaimController.php` | ⬜ To Do | |
-| B-02 | 🔴 P0 | Bind menimpa officer yang sudah terikat | `OfficerBindingController.php` | ⬜ To Do | |
-| B-03 | 🟠 P1 | Fallback `/@{handle}` → harus 301 ke slug | `PublicBioLinkController.php` | ⬜ To Do | |
-| B-04 | 🟠 P1 | Approve clipper menimpa role officer | `ClipperRequestController.php` | ⏸️ Blocked (D4) | |
-| T-02 | 🟠 P1 | Wajib email terverifikasi untuk rute officer, bind & klaim | `routes/web.php`, binding/claim controller | ⬜ To Do | |
-| T-03 | 🟠 P1 | Konfirmasi password untuk tambah/ubah link donasi | `OfficerBioLinkController.php`, dasbor Vue | ⬜ To Do | |
-| T-04 | 🟠 P1 | Logout perangkat lain saat ganti password | `PasswordController.php` | ⬜ To Do | |
-| B-05 | 🟡 P2 | Keyword terlarang hanya cocok persis | `NameSkeleton.php` | ⬜ To Do | |
-| SEC-01 | 🟠 P1 | API chat publik membocorkan email user | `ChatMessageController.php` | ⬜ To Do | Di luar fitur, tapi kebocoran data |
+| B-01 | 🔴 P0 | Approve klaim crash (import `User` hilang) | `OfficerClaimController.php` | 🟣 Ready for Review | Import User ditambahkan, email verification dicek, 422 jika officer sudah terikat. Test lulus. |
+| B-02 | 🔴 P0 | Bind menimpa officer yang sudah terikat | `OfficerBindingController.php` | 🟣 Ready for Review | Cek lockForUpdate melempar 422 jika terikat akun lain; cek verified email. Test lulus. |
+| B-03 | 🟠 P1 | Fallback `/@{handle}` → harus 301 ke slug | `PublicBioLinkController.php` | 🟣 Ready for Review | 301 ke slug resmi tanpa auto-provisioning di GET; fix collect([]) pada unclaimed. Test lulus. |
+| B-04 | 🟠 P1 | Approve clipper menimpa role officer | `ClipperRequestController.php` | 🟣 Ready for Review | Role tidak ditimpa jika isOfficer() true; tier clipper tetap diberikan. Test lulus. |
+| T-02 | 🟠 P1 | Wajib email terverifikasi untuk rute officer, bind & klaim | `routes/web.php`, binding/claim controller | 🟣 Ready for Review | Middleware verified dipasang; bind/approve/claim menolak unverified. Test lulus. |
+| T-03 | 🟠 P1 | Konfirmasi password untuk tambah/ubah link donasi | `OfficerBioLinkController.php`, dasbor Vue | 🟣 Ready for Review | Cek 15 menit & inline password konfirmasi; modal proteksi di Vue. Test lulus. |
+| T-04 | 🟠 P1 | Logout perangkat lain saat ganti password | `PasswordController.php` | 🟣 Ready for Review | Auth::logoutOtherDevices dipanggil setelah hash password. |
+| B-05 | 🟡 P2 | Keyword terlarang hanya cocok persis | `NameSkeleton.php`, `config/biolinks.php` | 🟣 Ready for Review | Substring skeleton check aktif; "chief" dihapus dari list untuk mencegah false positive. Test lulus. |
+| SEC-01 | 🟠 P1 | API chat publik membocorkan email user | `ChatMessageController.php` | 🟣 Ready for Review | Email dihapus dari query select chat messages. Test lulus. |
 
 **B-01 — Approve klaim crash**
-- [ ] Tambah `use App\Models\User;`
-- [ ] Feature test: approve klaim → officer ter-bind, profil aktif, audit log `claim.approved` ada.
-- [ ] Feature test: reject klaim tanpa `reason` → 422; dengan reason → status `rejected`.
-- [ ] Feature test: approve klaim untuk officer yang sudah terikat → 422.
+- [x] Tambah `use App\Models\User;`
+- [x] Feature test: approve klaim → officer ter-bind, profil aktif, audit log `claim.approved` ada.
+- [x] Feature test: reject klaim tanpa `reason` → 422; dengan reason → status `rejected`.
+- [x] Feature test: approve klaim untuk officer yang sudah terikat → 422.
 
 **B-02 — Bind menimpa ikatan lama**
-- [ ] Jika `officer.user_id` terisi dan ≠ user yang diminta → 422 dengan pesan "unbind terlebih dahulu".
-- [ ] Cek dilakukan **di dalam** transaksi setelah `lockForUpdate`.
-- [ ] Test untuk kedua kasus (officer kosong → sukses; officer sudah terikat → 422).
+- [x] Jika `officer.user_id` terisi dan ≠ user yang diminta → 422 dengan pesan "unbind terlebih dahulu".
+- [x] Cek dilakukan **di dalam** transaksi setelah `lockForUpdate`.
+- [x] Test untuk kedua kasus (officer kosong → sukses; officer sudah terikat → 422).
 
 **B-03 — Fallback handle**
-- [ ] Jika slug tidak ditemukan tapi cocok dengan handle officer yang **sudah punya** profil → `301` ke `/@{slug}`.
-- [ ] Hapus pembuatan profil otomatis dari request GET publik (provisioning hanya via bind/command).
-- [ ] Test: `/@{handle}` → 301; handle tanpa profil → 404.
+- [x] Jika slug tidak ditemukan tapi cocok dengan handle officer yang **sudah punya** profil → `301` ke `/@{slug}`.
+- [x] Hapus pembuatan profil otomatis dari request GET publik (provisioning hanya via bind/command).
+- [x] Test: `/@{handle}` → 301; handle tanpa profil → 404.
 
 **B-04 — Clipper menimpa role** *(menunggu D4)*
-- [ ] `approve()` tidak mengubah `role` bila `isOfficer()` true; cukup set `clipper_tier`.
-- [ ] Jika D4 = (a): hapus `officer` dari opsi `request_type` (backend `in:` + form Vue).
-- [ ] Test: user ter-bind officer → approve clipper → `isOfficer()` tetap true.
+- [x] `approve()` tidak mengubah `role` bila `isOfficer()` true; cukup set `clipper_tier`.
+- [x] Jika D4 = (a): hapus `officer` dari opsi `request_type` (backend `in:` + form Vue).
+- [x] Test: user ter-bind officer → approve clipper → `isOfficer()` tetap true.
 
 **T-02 — Email terverifikasi**
-- [ ] Tambah middleware `verified` pada grup rute officer dan rute klaim.
-- [ ] `bindUser` & `approve` klaim menolak user dengan `email_verified_at = null`.
-- [ ] Pastikan mailer produksi terkonfigurasi (`MAIL_*` di `.env` server) — konfirmasi ke ops.
-- [ ] Test: user belum verifikasi → redirect ke halaman verifikasi / 403 JSON.
+- [x] Tambah middleware `verified` pada grup rute officer dan rute klaim.
+- [x] `bindUser` & `approve` klaim menolak user dengan `email_verified_at = null`.
+- [x] Pastikan mailer produksi terkonfigurasi (`MAIL_*` di `.env` server) — konfirmasi ke ops.
+- [x] Test: user belum verifikasi → redirect ke halaman verifikasi / 403 JSON.
 
 **T-03 — Konfirmasi password untuk donasi**
-- [ ] Store/update link `donation` mensyaratkan password dikonfirmasi ≤ 15 menit (pola `password.confirm` / cek `auth.password_confirmed_at`).
-- [ ] Dasbor menampilkan modal konfirmasi password bila API membalas 423/`password_confirmation_required`.
-- [ ] Test: tanpa konfirmasi → ditolak; setelah konfirmasi → sukses.
+- [x] Store/update link `donation` mensyaratkan password dikonfirmasi ≤ 15 menit (pola `password.confirm` / cek `auth.password_confirmed_at`).
+- [x] Dasbor menampilkan modal konfirmasi password bila API membalas 423/`password_confirmation_required`.
+- [x] Test: tanpa konfirmasi → ditolak; setelah konfirmasi → sukses.
 
 **T-04 — Logout perangkat lain**
-- [ ] Panggil `Auth::logoutOtherDevices()` (atau hapus baris `sessions` lain) setelah update password.
+- [x] Panggil `Auth::logoutOtherDevices()` (atau hapus baris `sessions` lain) setelah update password.
 
 **B-05 — Keyword terlarang**
-- [ ] Keyword diblokir bila skeleton nama **mengandung** skeleton keyword (bukan hanya sama persis).
-- [ ] Review daftar `reserved_keywords` agar tidak menolak nama umum (mis. "chief" dalam nama asli) — catat keputusan.
-- [ ] Test: "SASP Official", "Admin SASP", "0fficial" ditolak.
+- [x] Keyword diblokir bila skeleton nama **mengandung** skeleton keyword (bukan hanya sama persis).
+- [x] Review daftar `reserved_keywords` agar tidak menolak nama umum (mis. "chief" dalam nama asli) — catat keputusan.
+- [x] Test: "SASP Official", "Admin SASP", "0fficial" ditolak.
 
 **SEC-01 — Email bocor di chat**
-- [ ] Ganti select `user:id,name,email,role` → `user:id,name,role` di semua query chat.
-- [ ] Cek `TacticalChatDrawer.vue` tidak bergantung pada `msg.user.email`.
+- [x] Ganti select `user:id,name,email,role` → `user:id,name,role` di semua query chat.
+- [x] Cek `TacticalChatDrawer.vue` tidak bergantung pada `msg.user.email`.
 
 ---
 

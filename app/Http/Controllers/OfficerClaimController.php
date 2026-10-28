@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Officer;
 use App\Models\OfficerClaim;
+use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\BioProfileService;
 use Illuminate\Http\JsonResponse;
@@ -29,6 +30,10 @@ class OfficerClaimController extends Controller
 
         if ($user->isBanned()) {
             return response()->json(['message' => 'Akun Anda berstatus banned.'], 403);
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Anda wajib memverifikasi email sebelum mengajukan klaim perwira.'], 403);
         }
 
         // Check if user is already bound to an officer
@@ -151,7 +156,11 @@ class OfficerClaimController extends Controller
             $user = User::findOrFail($claim->user_id);
 
             if ($officer->user_id) {
-                return response()->json(['message' => 'Perwira ini telah terikat ke akun lain sebelumnya.'], 422);
+                return response()->json(['message' => 'Perwira ini telah terikat ke akun lain sebelumnya. Lakukan unbind terlebih dahulu.'], 422);
+            }
+
+            if (!$user->hasVerifiedEmail()) {
+                return response()->json(['message' => 'User belum memverifikasi alamat email.'], 422);
             }
 
             // Bind officer

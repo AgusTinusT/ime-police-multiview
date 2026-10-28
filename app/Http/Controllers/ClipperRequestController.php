@@ -179,13 +179,13 @@ class ClipperRequestController extends Controller
             'approved_by' => $request->user()->id,
         ]);
 
-        // Promote user role to 'clipper' and assign corresponding tier
+        // Promote user role to 'clipper' (only if not admin and not officer) and assign corresponding tier
         $user = User::findOrFail($clipperReq->user_id);
-        if ($user->role !== 'admin') {
+        if ($user->role !== 'admin' && !$user->isOfficer()) {
             $user->role = 'clipper';
-            $user->clipper_tier = ($clipperReq->request_type === 'creator') ? 'creator' : 'ultimate';
-            $user->save();
         }
+        $user->clipper_tier = ($clipperReq->request_type === 'creator') ? 'creator' : 'ultimate';
+        $user->save();
 
         return response()->json([
             'message' => "Pengajuan dari {$user->name} berhasil disetujui ({$user->getClipperTierName()}).",

@@ -157,8 +157,11 @@ class AdminBioModerationController extends Controller
             ]
         );
 
-        // Deactivate all existing links using this host
-        $deactivatedCount = OfficerBioLink::where('url_host', $host)->update([
+        // Deactivate all existing links using this host or subdomains (B-06)
+        $deactivatedCount = OfficerBioLink::where(function ($q) use ($host) {
+            $q->where('url_host', $host)
+              ->orWhere('url_host', 'like', '%.' . $host);
+        })->update([
             'moderation_status' => 'banned',
             'moderation_reason' => "Domain global ban: {$request->reason}",
             'is_active' => false,

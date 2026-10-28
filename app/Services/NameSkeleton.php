@@ -109,7 +109,7 @@ class NameSkeleton
 
         foreach ($reserved as $keyword) {
             $keywordSkeleton = self::make($keyword);
-            if ($skeleton === $keywordSkeleton) {
+            if (!empty($keywordSkeleton) && str_contains($skeleton, $keywordSkeleton)) {
                 return [
                     'blocked' => true,
                     'reason' => 'Nama mengandung kata kunci otoritas kepolisian atau reserved role yang dilarang.',

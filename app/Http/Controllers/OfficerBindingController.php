@@ -34,6 +34,12 @@ class OfficerBindingController extends Controller
             ]);
         }
 
+        if (!$user->hasVerifiedEmail()) {
+            throw ValidationException::withMessages([
+                'user_id' => 'User wajib memiliki alamat email yang telah diverifikasi sebelum dihubungkan ke perwira.',
+            ]);
+        }
+
         // Check if user is already bound to another officer
         $alreadyBound = Officer::where('user_id', $user->id)
             ->where('id', '!=', $officer->id)
@@ -48,6 +54,13 @@ class OfficerBindingController extends Controller
         return DB::transaction(function () use ($officer, $user, $request) {
             // Lock officer row to prevent concurrent race condition
             $lockedOfficer = Officer::where('id', $officer->id)->lockForUpdate()->firstOrFail();
+
+            // Check if officer is already bound to another user (B-02)
+            if ($lockedOfficer->user_id !== null && $lockedOfficer->user_id !== $user->id) {
+                throw ValidationException::withMessages([
+                    'officer' => 'Perwira ini sudah terikat ke akun lain. Lakukan unbind terlebih dahulu sebelum mengikatkan akun baru.',
+                ]);
+            }
 
             $beforeState = [
                 'user_id' => $lockedOfficer->user_id,

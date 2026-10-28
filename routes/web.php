@@ -231,7 +231,7 @@ use App\Http\Controllers\AdminBioModerationController;
 use App\Http\Controllers\PublicBioLinkController;
 
 // 1. Authenticated Officer Dashboard & API
-Route::middleware(['auth', 'officer', 'not_banned'])->group(function () {
+Route::middleware(['auth', 'verified', 'officer', 'not_banned'])->group(function () {
     Route::get('/dashboard/bio-links', [OfficerBioLinkController::class, 'dashboard'])->name('officer.bio-links');
     
     Route::prefix('api/v1/officer')->group(function () {
@@ -246,7 +246,7 @@ Route::middleware(['auth', 'officer', 'not_banned'])->group(function () {
 });
 
 // 2. Member Officer Claim Requests
-Route::middleware(['auth', 'not_banned'])->prefix('api/v1/officer-claims')->group(function () {
+Route::middleware(['auth', 'verified', 'not_banned'])->prefix('api/v1/officer-claims')->group(function () {
     Route::post('/', [OfficerClaimController::class, 'store'])->middleware('throttle:5,60');
     Route::delete('/{claim}', [OfficerClaimController::class, 'destroy']);
 });

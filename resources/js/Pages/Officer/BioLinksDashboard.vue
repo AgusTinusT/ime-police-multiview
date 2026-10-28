@@ -117,9 +117,16 @@ const openEditModal = (link) => {
     isModalOpen.value = true;
 };
 
+// Password Confirmation State for Donation Links (T-03)
+const isPasswordConfirmModalOpen = ref(false);
+const confirmPasswordInput = ref("");
+const passwordConfirmError = ref("");
+const isSubmittingPassword = ref(false);
+
 // Save link (create or update)
 const saveLink = async () => {
     isSavingLink.value = true;
+    passwordConfirmError.value = "";
     try {
         if (editingLinkId.value) {
             const res = await axios.put(`/api/v1/officer/bio-links/${editingLinkId.value}`, linkForm.value);
@@ -134,11 +141,33 @@ const saveLink = async () => {
             flash(res.data.message);
         }
         isModalOpen.value = false;
+        isPasswordConfirmModalOpen.value = false;
+        confirmPasswordInput.value = "";
+        delete linkForm.value.password_confirmation_inline;
     } catch (err) {
-        flash(err.response?.data?.message || "Gagal menyimpan tautan.", true);
+        if (err.response?.status === 423 || err.response?.data?.error === "password_confirmation_required") {
+            isPasswordConfirmModalOpen.value = true;
+            passwordConfirmError.value = "Konfirmasi password diperlukan untuk mengamankan link donasi.";
+        } else if (err.response?.data?.error === "password_mismatch") {
+            passwordConfirmError.value = "Password salah. Silakan coba lagi.";
+            isPasswordConfirmModalOpen.value = true;
+        } else {
+            flash(err.response?.data?.message || "Gagal menyimpan tautan.", true);
+        }
     } finally {
         isSavingLink.value = false;
+        isSubmittingPassword.value = false;
     }
+};
+
+const submitPasswordConfirmation = async () => {
+    if (!confirmPasswordInput.value) {
+        passwordConfirmError.value = "Masukkan password akun Anda.";
+        return;
+    }
+    isSubmittingPassword.value = true;
+    linkForm.value.password_confirmation_inline = confirmPasswordInput.value;
+    await saveLink();
 };
 
 // Toggle active
@@ -837,6 +866,49 @@ const domainHint = computed(() => {
                         class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-black font-mono font-bold text-xs uppercase tracking-wider transition shadow-md"
                     >
                         {{ isSavingLink ? "Menyimpan..." : "Simpan Tautan" }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASSWORD CONFIRMATION MODAL (T-03) -->
+        <div
+            v-if="isPasswordConfirmModalOpen"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+            <div class="w-full max-w-sm bg-slate-900 border border-amber-500/30 rounded-2xl p-5 shadow-2xl text-left space-y-4">
+                <div class="flex items-center gap-2 text-amber-400 font-mono text-sm font-bold border-b border-white/10 pb-2">
+                    <span>🛡️ KONFIRMASI KEAMANAN AKUN</span>
+                </div>
+                <p class="text-xs text-slate-300 font-sans leading-relaxed">
+                    Untuk melindungi akun Anda dari pembajakan tautan donasi finansial, silakan masukkan password akun Anda untuk melanjutkan:
+                </p>
+                <div class="space-y-1">
+                    <input
+                        v-model="confirmPasswordInput"
+                        type="password"
+                        @keyup.enter="submitPasswordConfirmation"
+                        placeholder="Masukkan password akun Anda..."
+                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-amber-400 outline-none"
+                        autofocus
+                    />
+                    <p v-if="passwordConfirmError" class="text-[11px] font-mono text-rose-400 pt-1">
+                        {{ passwordConfirmError }}
+                    </p>
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button
+                        @click="isPasswordConfirmModalOpen = false; confirmPasswordInput = '';"
+                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        @click="submitPasswordConfirmation"
+                        :disabled="isSubmittingPassword"
+                        class="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-mono font-bold text-xs uppercase tracking-wider transition shadow-md"
+                    >
+                        {{ isSubmittingPassword ? "Memverifikasi..." : "Konfirmasi & Simpan" }}
                     </button>
                 </div>
             </div>
