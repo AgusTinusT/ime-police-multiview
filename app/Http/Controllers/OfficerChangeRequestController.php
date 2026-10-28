@@ -22,7 +22,7 @@ class OfficerChangeRequestController extends Controller
     public function myRequests(): JsonResponse
     {
         $user = Auth::user();
-        $officer = $user->officer;
+        $officer = $user->officer()->first() ?? $user->officer;
 
         if (!$officer) {
             return response()->json(['message' => 'Anda belum terikat ke profil perwira.'], 403);
@@ -43,7 +43,7 @@ class OfficerChangeRequestController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = Auth::user();
-        $officer = $user->officer;
+        $officer = $user->officer()->first() ?? $user->officer;
 
         if (!$officer) {
             return response()->json(['message' => 'Anda belum terikat ke profil perwira.'], 403);
