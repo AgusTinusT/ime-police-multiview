@@ -32,39 +32,36 @@ class FlushBioViews extends Command
         $totalViews = 0;
 
         foreach ($dates as $statDate) {
-            $pendingKey = "bio_views_pending:{$statDate}";
-            $profileIds = Cache::get($pendingKey, []);
+            \App\Models\OfficerBioProfile::select('id')->chunk(200, function ($profiles) use ($statDate, &$totalFlushedCount, &$totalViews) {
+                foreach ($profiles as $profile) {
+                    $cacheKey = "bio_views:{$profile->id}:{$statDate}";
+                    $views = (int) Cache::get($cacheKey, 0);
 
-            if (empty($profileIds)) {
-                continue;
-            }
+                    if ($views > 0) {
+                        Cache::decrement($cacheKey, $views);
 
-            foreach ($profileIds as $profileId) {
-                $cacheKey = "bio_views:{$profileId}:{$statDate}";
-                $views = (int) Cache::pull($cacheKey, 0);
+                        $stat = BioDailyStat::firstOrCreate(
+                            [
+                                'officer_bio_profile_id' => $profile->id,
+                                'officer_bio_link_id' => null,
+                                'stat_date' => $statDate,
+                            ],
+                            [
+                                'clicks' => 0,
+                                'views' => 0,
+                                'unique_visitors' => 0,
+                            ]
+                        );
 
-                if ($views > 0) {
-                    $stat = BioDailyStat::firstOrCreate(
-                        [
-                            'officer_bio_profile_id' => $profileId,
-                            'officer_bio_link_id' => null,
-                            'stat_date' => $statDate,
-                        ],
-                        [
-                            'clicks' => 0,
-                            'views' => 0,
-                            'unique_visitors' => 0,
-                        ]
-                    );
-
-                    $stat->increment('views', $views);
-                    $totalFlushedCount++;
-                    $totalViews += $views;
+                        $stat->increment('views', $views);
+                        $totalFlushedCount++;
+                        $totalViews += $views;
+                    }
                 }
-            }
+            });
 
-            // Reset pending list for this date
-            Cache::forget($pendingKey);
+            // Also clean up any legacy pending array if present
+            Cache::forget("bio_views_pending:{$statDate}");
         }
 
         $this->info("Successfully flushed {$totalViews} page views across {$totalFlushedCount} profile-dates to database.");
