@@ -166,7 +166,9 @@
     "remove_from_multiview": "Keluarkan dari multiview",
     "watching_title": "{count} menonton · {title}",
     "scroll_left": "Geser ke kiri",
-    "scroll_right": "Geser ke kanan"
+    "scroll_right": "Geser ke kanan",
+    "patrol_by_dept": "Patroli per departemen",
+    "no_live_units": "Belum ada unit {dept} yang live"
   },
   "officer_detail": {
     "watch": "Tonton",

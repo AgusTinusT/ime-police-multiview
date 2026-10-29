@@ -181,7 +181,9 @@
     "remove_from_multiview": "Remove from multiview",
     "watching_title": "{count} watching · {title}",
     "scroll_left": "Scroll left",
-    "scroll_right": "Scroll right"
+    "scroll_right": "Scroll right",
+    "patrol_by_dept": "Patrol by department",
+    "no_live_units": "No {dept} units live right now"
   },
   "officer_detail": {
     "watch": "Watch",

@@ -87,11 +87,45 @@ const mvUrl = (ids) => `/multiview?v=${ids.filter(Boolean).join(",")}`;
 const liveByViewers = computed(() =>
     [...streams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0)),
 );
-const deptRows = computed(() =>
-    ["LSPD", "BCSO", "SASP", "SAPR"]
-        .map((d) => ({ dept: d, items: liveByViewers.value.filter((s) => deptOf(s) === d) }))
-        .filter((r) => r.items.length),
+const DEPARTMENTS = ["LSPD", "BCSO", "SASP", "SAPR"];
+const deptStats = computed(() => {
+    return DEPARTMENTS.map((dept) => {
+        const items = liveByViewers.value.filter((s) => deptOf(s) === dept);
+        return {
+            dept,
+            items,
+            count: items.length,
+        };
+    });
+});
+const totalDeptLive = computed(() =>
+    deptStats.value.reduce((acc, curr) => acc + curr.count, 0),
 );
+const selectedDept = ref(null);
+const activeDept = computed({
+    get() {
+        if (selectedDept.value && DEPARTMENTS.includes(selectedDept.value)) {
+            return selectedDept.value;
+        }
+        // Default: dept with most live streams (tiebreak: LSPD -> BCSO -> SASP -> SAPR)
+        let maxCount = -1;
+        let chosen = DEPARTMENTS[0];
+        for (const stat of deptStats.value) {
+            if (stat.count > maxCount) {
+                maxCount = stat.count;
+                chosen = stat.dept;
+            }
+        }
+        return chosen;
+    },
+    set(val) {
+        selectedDept.value = val;
+    },
+});
+const activeDeptStreams = computed(() => {
+    const found = deptStats.value.find((s) => s.dept === activeDept.value);
+    return found ? found.items : [];
+});
 const tacRows = computed(() => {
     const byId = Object.fromEntries(streams.value.map((s) => [s.video_id, s]));
     return (tacChannels.value || [])
@@ -401,18 +435,45 @@ onMounted(() => {
                     </a>
                 </CatalogRow>
 
-                <CatalogRow v-for="r in deptRows" :key="`dept-${r.dept}`" :title="$t('catalog.dept_patrol', { dept: r.dept })">
-                    <CatalogCard
-                        v-for="s in r.items"
-                        :key="`dept-${r.dept}-${s.video_id}`"
-                        :stream="s"
-                        :href="mvUrl([s.video_id])"
-                        kind="live"
-                        size="sm"
-                        :in-tray="inTray(s.video_id)"
-                        @toggle-tray="toggleTray"
-                        @detail="detail = $event"
-                    />
+                <CatalogRow
+                    v-if="totalDeptLive > 0"
+                    :title="$t('catalog.patrol_by_dept')"
+                >
+                    <template #action>
+                        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                            <Button
+                                v-for="stat in deptStats"
+                                :key="`dept-chip-${stat.dept}`"
+                                size="xs"
+                                :variant="activeDept === stat.dept ? 'default' : 'secondary'"
+                                class="shrink-0 font-mono text-xs cursor-pointer"
+                                @click="activeDept = stat.dept"
+                            >
+                                <span>{{ stat.dept }}</span>
+                                <span class="opacity-80">({{ stat.count }})</span>
+                            </Button>
+                        </div>
+                    </template>
+
+                    <template v-if="activeDeptStreams.length">
+                        <CatalogCard
+                            v-for="s in activeDeptStreams"
+                            :key="`dept-${activeDept}-${s.video_id}`"
+                            :stream="s"
+                            :href="mvUrl([s.video_id])"
+                            kind="live"
+                            size="sm"
+                            :in-tray="inTray(s.video_id)"
+                            @toggle-tray="toggleTray"
+                            @detail="detail = $event"
+                        />
+                    </template>
+                    <div
+                        v-else
+                        class="flex w-72 shrink-0 snap-start items-center justify-center rounded-md border border-dashed border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground"
+                    >
+                        {{ $t('catalog.no_live_units', { dept: activeDept }) }}
+                    </div>
                 </CatalogRow>
 
                 <CatalogRow
