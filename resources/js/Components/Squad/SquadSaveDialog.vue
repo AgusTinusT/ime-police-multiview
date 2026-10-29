@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
-import { GitFork, Loader2, Save, Trash2, X } from "@lucide/vue";
+import { GitFork, Loader2, Save, X } from "@lucide/vue";
 import {
     Dialog,
     DialogContent,
@@ -349,3 +349,4 @@ const handleForkAndEdit = async () => {
         </DialogContent>
     </Dialog>
 </template>
+

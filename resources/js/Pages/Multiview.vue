@@ -283,7 +283,8 @@ const currentPovOfficers = computed(() => {
     return list;
 });
 
-const loadSquad = async (slug) => {
+// fromUrl: opened via ?squad= on page load, so no sound (browsers block unmuted autoplay without a click).
+const loadSquad = async (slug, { fromUrl = false } = {}) => {
     if (!slug) return;
     try {
         const res = await fetch(`/api/v1/squads/${slug}`, {
@@ -312,7 +313,7 @@ const loadSquad = async (slug) => {
             sonnerToast("Semua anggota squad sedang offline.");
         } else {
             if (layoutMode.value === "solo") {
-                switchSolo(liveSquadStreams[0]?.video_id);
+                switchSolo(liveSquadStreams[0]?.video_id, { withAudio: !fromUrl });
             } else {
                 selectedIds.value = liveSquadStreams
                     .map((s) => s.video_id)
@@ -684,7 +685,7 @@ onMounted(() => {
     const params = new URLSearchParams(window.location.search);
     const squadSlug = params.get("squad");
     if (squadSlug) {
-        loadSquad(squadSlug);
+        loadSquad(squadSlug, { fromUrl: true });
     } else {
         selectedIds.value = readInitialSelection().slice(0, maxTiles.value);
         focusId.value = selectedIds.value[0] || null;

@@ -1,98 +1,117 @@
 <script setup>
-import { computed } from "vue";
 import { Link } from "@inertiajs/vue3";
 import { GitFork, Users } from "@lucide/vue";
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
+import { computed } from "vue";
+
 import { LiveBadge, OfficerAvatar } from "@/Components/tactical";
+import { Button } from "@/Components/ui/button";
+import { cn } from "@/lib/utils";
 
 const props = defineProps({
-    squad: {
-        type: Object,
-        required: true,
-    },
+    squad: { type: Object, required: true },
+    // Current live streams, used to show what the squad's members are broadcasting right now.
+    liveStreams: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(["fork"]);
 
-const displayedOfficers = computed(() => {
-    return (props.squad.officers || []).slice(0, 5);
+const officers = computed(() => props.squad.officers || []);
+
+const liveThumbs = computed(() => {
+    const byOfficer = new Map(props.liveStreams.map((s) => [Number(s.officer?.id), s]));
+    return officers.value
+        .map((o) => byOfficer.get(Number(o.id)))
+        .filter(Boolean)
+        .slice(0, 4)
+        .map((s) => s.thumbnail || `https://i.ytimg.com/vi/${s.video_id}/mqdefault.jpg`);
 });
 
-const overflowCount = computed(() => {
-    const total = props.squad.officers?.length || 0;
-    return total > 5 ? total - 5 : 0;
-});
+const avatarOfficers = computed(() => officers.value.slice(0, 5));
+const overflowCount = computed(() => Math.max(0, officers.value.length - 5));
 </script>
 
 <template>
-    <div class="w-64 sm:w-72 shrink-0 snap-start rounded-md border border-border bg-card p-4 hover:border-primary/50 transition-colors flex flex-col justify-between">
-        <Link :href="`/multiview?squad=${squad.slug}`" class="block space-y-3 flex-1 focus-visible:outline-hidden">
-            <!-- Header & Badges -->
-            <div class="flex items-start justify-between gap-2">
-                <div class="min-w-0 flex-1">
-                    <h3 class="font-bold text-foreground text-sm sm:text-base truncate group-hover:text-primary transition-colors">
-                        {{ squad.name }}
-                    </h3>
-                    <p class="text-xs text-muted-foreground font-mono truncate">
-                        by {{ squad.owner_name }}
-                    </p>
-                </div>
-                <div class="flex items-center gap-1.5 shrink-0">
-                    <LiveBadge
-                        v-if="squad.live_count > 0"
-                        :label="`${squad.live_count} LIVE`"
-                    />
-                    <Badge variant="secondary" class="gap-1 font-mono text-xs px-1.5">
-                        <GitFork class="size-3" />
-                        <span>{{ squad.forks_count || 0 }}</span>
-                    </Badge>
-                </div>
+    <Link
+        :href="`/multiview?squad=${squad.slug}`"
+        class="squad-card group relative block w-64 shrink-0 snap-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:w-72"
+    >
+        <div class="relative aspect-video overflow-hidden rounded-md bg-muted">
+            <!-- What the squad is broadcasting right now -->
+            <div
+                v-if="liveThumbs.length"
+                :class="cn('grid size-full gap-0.5', liveThumbs.length > 1 && 'grid-cols-2', liveThumbs.length > 2 && 'grid-rows-2')"
+            >
+                <img
+                    v-for="(src, i) in liveThumbs"
+                    :key="src"
+                    :src="src"
+                    alt=""
+                    loading="lazy"
+                    :class="cn('size-full min-h-0 object-cover', liveThumbs.length === 3 && i === 0 && 'row-span-2')"
+                />
+            </div>
+            <!-- Nobody live: show who is in the squad -->
+            <div v-else class="flex size-full items-center justify-center -space-x-2">
+                <OfficerAvatar
+                    v-for="o in avatarOfficers"
+                    :key="o.id"
+                    :src="o.avatar_url"
+                    :name="o.officer_name"
+                    size="md"
+                    class="ring-2 ring-muted"
+                />
             </div>
 
-            <!-- Description (if any) -->
-            <p v-if="squad.description" class="text-xs text-muted-foreground line-clamp-2">
-                {{ squad.description }}
-            </p>
+            <div class="absolute inset-0 bg-linear-to-t from-background/90 via-background/10 to-transparent" />
 
-            <!-- Officer Avatars Stack -->
-            <div class="pt-1">
-                <div class="flex items-center -space-x-2 overflow-hidden py-1">
-                    <OfficerAvatar
-                        v-for="officer in displayedOfficers"
-                        :key="officer.id"
-                        :src="officer.avatar_url"
-                        :name="officer.officer_name"
-                        :callsign="officer.callsign"
-                        :department="officer.department"
-                        size="sm"
-                        class="ring-2 ring-card shrink-0"
-                    />
-                    <div
-                        v-if="overflowCount > 0"
-                        class="size-8 rounded-full bg-muted flex items-center justify-center font-mono text-xs font-bold ring-2 ring-card text-muted-foreground shrink-0"
-                    >
-                        +{{ overflowCount }}
-                    </div>
-                </div>
-                <div class="flex items-center gap-1 text-xs text-muted-foreground font-mono mt-1">
-                    <Users class="size-3" />
-                    <span>{{ squad.officers?.length || 0 }} perwira</span>
-                </div>
+            <div class="absolute left-2 top-2">
+                <LiveBadge v-if="squad.live_count > 0" :label="`${squad.live_count} LIVE`" />
             </div>
-        </Link>
-
-        <!-- Bottom Fork Action -->
-        <div class="pt-3 border-t border-border mt-3">
             <Button
-                variant="outline"
-                size="sm"
-                class="gap-1.5 w-full font-mono text-xs"
+                size="icon-sm"
+                variant="secondary"
+                class="absolute right-2 top-2 rounded-full bg-background/70 hover:bg-primary hover:text-primary-foreground"
+                :aria-label="$t('squad.fork_button')"
+                :title="$t('squad.fork_button')"
                 @click.prevent.stop="emit('fork', squad)"
             >
-                <GitFork class="size-3.5" />
-                <span>{{ $t('squad.fork_button') }}</span>
+                <GitFork />
             </Button>
+
+            <div class="absolute inset-x-2 bottom-2 flex items-end justify-between gap-2">
+                <p class="truncate text-base font-bold tracking-tight text-foreground">{{ squad.name }}</p>
+                <div v-if="liveThumbs.length" class="flex shrink-0 -space-x-1.5">
+                    <OfficerAvatar
+                        v-for="o in avatarOfficers.slice(0, 3)"
+                        :key="o.id"
+                        :src="o.avatar_url"
+                        :name="o.officer_name"
+                        size="sm"
+                        class="ring-2 ring-background"
+                    />
+                </div>
+            </div>
         </div>
-    </div>
+
+        <div class="px-1 pt-2">
+            <p class="truncate text-xs text-muted-foreground">
+                <span class="inline-flex items-center gap-1"><Users class="size-3" /> {{ officers.length }}</span>
+                <span v-if="overflowCount"> (+{{ overflowCount }})</span>
+                · {{ squad.owner_name }}
+                <span v-if="squad.forks_count"> · <GitFork class="inline size-3" /> {{ squad.forks_count }}</span>
+            </p>
+        </div>
+    </Link>
 </template>
+
+<style scoped>
+.squad-card {
+    transition: transform 0.25s ease 0.15s;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .squad-card:hover {
+        z-index: 10;
+        transform: scale(1.06);
+    }
+}
+</style>

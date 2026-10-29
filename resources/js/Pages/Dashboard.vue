@@ -424,6 +424,7 @@ onMounted(() => {
                         v-for="sq in publicSquads"
                         :key="sq.id"
                         :squad="sq"
+                        :live-streams="streams"
                         @fork="handleForkSquad"
                     />
                 </CatalogRow>
