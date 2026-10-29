@@ -40,7 +40,7 @@ Tugas kecil lanjutan setelah katalog Dashboard (Claude, 31 Okt 2026). Satu brief
 
 | # | ID | Prioritas | Task | Bergantung | Status | Dev Notes | Review Notes |
 | :---: | :--- | :---: | :--- | :--- | :---: | :--- | :--- |
-| 19 | [UX-01](tasks/UX-01.md) | 🟡 P2 | i18n katalog Dashboard, modal detail, bar tile Multiview | — | 🟣 Ready for Review | Grup i18n catalog, officer_detail, dan multiview_tile ditambahkan ke id.json & en.json dengan parameter dinamis; teks hardcode di Dashboard, CatalogCard, CatalogRow, OfficerDetailModal, dan Multiview diganti $t(). Visual 390px/1280px bebas horizontal scroll, lint:ui 0 error, build sukses. | |
+| 19 | [UX-01](tasks/UX-01.md) | 🟡 P2 | i18n katalog Dashboard, modal detail, bar tile Multiview | — | ✅ Done | Grup i18n catalog, officer_detail, dan multiview_tile ditambahkan ke id.json & en.json dengan parameter dinamis; teks hardcode di Dashboard, CatalogCard, CatalogRow, OfficerDetailModal, dan Multiview diganti $t(). Visual 390px/1280px bebas horizontal scroll, lint:ui 0 error, build sukses. | ✔ **Review (`5ab8fb7`):** 3 grup kunci (`catalog` 18, `officer_detail` 6, `multiview_tile` 8) lengkap & sama di id/en; tidak ada teks hardcode tersisa di cakupan brief; `lint:ui` 0 di 5 file. Catatan minor: `en.json` juga menambah kunci `footer`/`nav` di luar cakupan (diterima, melengkapi EN). `TAC` sengaja tidak diterjemahkan. |
 | 20 | [UX-02](tasks/UX-02.md) | 🟡 P2 | Baris katalog "Momen aksi komunitas" (TacClips) | — | ⚪ Todo | | |
 | 21 | [UX-03](tasks/UX-03.md) | 🟢 P3 | Bersihkan peringatan ESLint header & footer | — | ⚪ Todo | | |
 | 22 | [UX-04](tasks/UX-04.md) | 🟡 P2 | Tombol chat tidak menutupi kontrol Multiview & tray di HP | — | ⚪ Todo | | |
