@@ -123,16 +123,6 @@
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --font-heading: "Rajdhani", sans-serif;
   --font-tactical: "Rajdhani", sans-serif;
-
-  /* Tactical colors untuk kompatibilitas tampilan lama sebelum MIG-10 */
-  --color-tactical-base: #020617;
-  --color-tactical-panel: #0f172a;
-  --color-tactical-surface: #1e293b;
-  --color-tactical-border: #1e293b;
-  --color-tactical-border-light: #334155;
-  --color-tactical-text: #f8fafc;
-  --color-tactical-muted: #94a3b8;
-  --color-tactical-accent: #2563eb;
 }
 
 @layer base {
@@ -222,37 +212,6 @@
       linear-gradient(to top, var(--hud-line) 2px, transparent 2px);
     background-position: bottom left, bottom left, bottom right, bottom right;
   }
-}
-
-@utility tactical-card {
-  /* Base Tactical Card */
-  @apply bg-tactical-panel border border-tactical-border rounded-xl p-5 shadow-xs transition-all;
-}
-
-@utility tactical-card-hover {
-  @apply tactical-card hover:border-tactical-border-light hover:bg-tactical-surface/50;
-}
-
-@utility tactical-badge {
-  /* Base Tactical Badge */
-  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-950 border border-tactical-border text-xs font-mono text-slate-300;
-}
-
-@utility tactical-badge-blue {
-  @apply tactical-badge border-blue-500/30 text-blue-400 bg-blue-500/10;
-}
-
-@utility tactical-badge-amber {
-  @apply tactical-badge border-amber-500/30 text-amber-400 bg-amber-500/10;
-}
-
-@utility btn-tactical-primary {
-  /* Base Tactical Button */
-  @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95;
-}
-
-@utility btn-tactical-secondary {
-  @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-tactical-panel hover:bg-tactical-surface border border-tactical-border text-slate-300 font-mono text-xs font-semibold uppercase tracking-wider transition-all active:scale-95;
 }
 
 @utility scrollbar-none {

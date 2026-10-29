@@ -4,6 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
+        "check": "npm run lint:ui -- --all && npm run build",
         "dev": "vite",
         "lint": "eslint resources/js/**/*.{js,vue}",
         "lint:fix": "eslint resources/js/**/*.{js,vue} --fix",
