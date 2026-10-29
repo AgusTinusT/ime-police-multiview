@@ -1,6 +1,6 @@
 <script setup>
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
-import { Head, usePage } from "@inertiajs/vue3";
+import { Head, Link, usePage } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { toast } from "vue-sonner";
@@ -9,6 +9,7 @@ import {
     Search,
     Star,
     Target,
+    Trophy,
     Users,
     Zap,
     UserPlus,
@@ -20,6 +21,10 @@ import {
     X,
 } from "@lucide/vue";
 
+import logoBcso from "@/Components/Icons/Logo_LSCSD.svg";
+import logoLspd from "@/Components/Icons/LSPD_HD.svg";
+import logoSapr from "@/Components/Icons/ranger_logo.svg";
+import logoSasp from "@/Components/Icons/SASP_HD.svg";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Card } from "@/Components/ui/card";
@@ -86,7 +91,38 @@ const isAdmin = computed(() => {
 // State Management
 const officers = ref(props.initialOfficers);
 const searchQuery = ref("");
-const selectedDept = ref("ALL"); // 'ALL', 'LIVE_ONLY', 'LSPD', 'BCSO', 'SASP', 'SAPR'
+// The directory is read one department at a time, like a chain of command.
+const DEPARTMENTS = [
+    { code: "LSPD", name: "Los Santos Police Department", logo: logoLspd },
+    { code: "BCSO", name: "Blaine County Sheriff's Office", logo: logoBcso },
+    { code: "SASP", name: "San Andreas State Police", logo: logoSasp },
+    { code: "SAPR", name: "San Andreas Park Rangers", logo: logoSapr },
+];
+// Ranks at or above this level form the department's command staff.
+const COMMAND_LEVEL = 8;
+
+const deptOfOfficer = (o) => (o.department === "PARK RANGER" ? "SAPR" : o.department);
+const deptCounts = computed(() =>
+    Object.fromEntries(
+        DEPARTMENTS.map((d) => [d.code, props.initialOfficers.filter((o) => deptOfOfficer(o) === d.code).length]),
+    ),
+);
+
+const getInitialDept = () => {
+    const fromUrl = new URLSearchParams(window.location.search).get("dept")?.toUpperCase();
+    if (DEPARTMENTS.some((d) => d.code === fromUrl)) return fromUrl;
+    return [...DEPARTMENTS].sort((a, b) => deptCounts.value[b.code] - deptCounts.value[a.code])[0].code;
+};
+const selectedDept = ref(getInitialDept());
+const activeDept = computed(() => DEPARTMENTS.find((d) => d.code === selectedDept.value));
+
+const selectDept = (code) => {
+    selectedDept.value = code;
+    const url = new URL(window.location.href);
+    url.searchParams.set("dept", code);
+    url.searchParams.delete("sort");
+    window.history.replaceState(window.history.state, "", url);
+};
 const statusFilter = ref("all"); // 'all', 'online', 'offline'
 
 // Read URL query parameters (e.g. /officers?sort=subs_asc)
@@ -96,7 +132,7 @@ const getInitialSort = () => {
         const sortParam = params.get("sort");
         if (
             sortParam &&
-            ["rank", "subs_desc", "subs_asc", "name"].includes(sortParam)
+            ["rank", "name"].includes(sortParam)
         ) {
             return sortParam;
         }
@@ -105,7 +141,7 @@ const getInitialSort = () => {
     return "rank";
 };
 
-const sortBy = ref(getInitialSort()); // 'rank', 'subs_desc', 'subs_asc', 'name'
+const sortBy = ref(getInitialSort()); // 'rank' | 'name'
 const viewMode = ref("grid"); // 'grid' | 'table'
 
 // Drawer State
@@ -344,19 +380,8 @@ const filteredOfficers = computed(() => {
         list = list.filter((o) => !o.is_online);
     }
 
-    // Department Filter
-    if (selectedDept.value === "LIVE_ONLY") {
-        list = list.filter((o) => o.is_online);
-    } else if (selectedDept.value !== "ALL") {
-        if (selectedDept.value === "SAPR") {
-            list = list.filter(
-                (o) =>
-                    o.department === "SAPR" || o.department === "PARK RANGER",
-            );
-        } else {
-            list = list.filter((o) => o.department === selectedDept.value);
-        }
-    }
+    // Department Filter (one department at a time)
+    list = list.filter((o) => deptOfOfficer(o) === selectedDept.value);
 
     // Search Query Filter
     if (searchQuery.value.trim()) {
@@ -383,19 +408,63 @@ const filteredOfficers = computed(() => {
                 (a.department || "").localeCompare(b.department || "") ||
                 (a.officer_name || "").localeCompare(b.officer_name || "")
             );
-        } else if (sortBy.value === "subs_desc") {
-            return (b.subscriber_count || 0) - (a.subscriber_count || 0);
-        } else if (sortBy.value === "subs_asc") {
-            const isTargetA = (a.subscriber_count || 0) < 1000 ? 0 : 1;
-            const isTargetB = (b.subscriber_count || 0) < 1000 ? 0 : 1;
-            if (isTargetA !== isTargetB) return isTargetA - isTargetB;
-            return (a.subscriber_count || 0) - (b.subscriber_count || 0);
         } else if (sortBy.value === "name") {
             return (a.officer_name || "").localeCompare(b.officer_name || "");
         }
         return 0;
     });
 });
+
+// Group the (rank-sorted) list into tiers: command staff first, then one group per rank.
+const rankGroups = computed(() => {
+    const groups = [];
+    const byKey = new Map();
+    for (const o of filteredOfficers.value) {
+        const level = o.rank_level || 0;
+        const key = level >= COMMAND_LEVEL ? "command" : level > 0 ? `rank-${level}-${o.rank}` : "unassigned";
+        if (!byKey.has(key)) {
+            const group = {
+                key,
+                command: key === "command",
+                title: key === "command" ? "Komando" : key === "unassigned" ? "Pangkat belum ditentukan" : o.rank,
+                officers: [],
+            };
+            byKey.set(key, group);
+            groups.push(group);
+        }
+        byKey.get(key).officers.push(o);
+    }
+    // "Belum ditentukan" always last.
+    return groups.sort((a, b) => (a.key === "unassigned") - (b.key === "unassigned"));
+});
+
+const commandRange = computed(() => {
+    const titles = rankGroups.value.find((g) => g.command)?.officers.map((o) => o.rank) || [];
+    const unique = [...new Set(titles)];
+    return unique.length > 1 ? `${unique[0]} — ${unique[unique.length - 1]}` : unique[0] || "";
+});
+
+// When a search has no hits here, point at departments that do have matches.
+const otherDeptMatches = computed(() => {
+    const q = searchQuery.value.toLowerCase().trim();
+    if (!q) return [];
+    return DEPARTMENTS.filter((d) => d.code !== selectedDept.value)
+        .map((d) => ({
+            ...d,
+            count: officers.value.filter(
+                (o) =>
+                    deptOfOfficer(o) === d.code &&
+                    [o.officer_name, o.callsign, o.streamer_name, o.handle, o.rank]
+                        .filter(Boolean)
+                        .some((v) => v.toLowerCase().includes(q)),
+            ).length,
+        }))
+        .filter((d) => d.count > 0);
+});
+
+const liveInDept = computed(() =>
+    props.initialOfficers.filter((o) => deptOfOfficer(o) === selectedDept.value && o.is_online).length,
+);
 </script>
 
 <template>
@@ -493,10 +562,10 @@ const filteredOfficers = computed(() => {
                     :icon="Ban"
                 />
 
-                <div
-                    @click="sortBy = 'subs_asc'"
-                    class="cursor-pointer transition hover:opacity-90"
-                    title="Klik untuk mengurutkan perwira berdasarkan Target 1K Milestone"
+                <Link
+                    href="/ranking?tab=road_to_1k"
+                    class="block cursor-pointer transition hover:opacity-90"
+                    title="Lihat peringkat Road to 1K"
                 >
                     <StatTile
                         label="Target <1K Subs"
@@ -509,7 +578,7 @@ const filteredOfficers = computed(() => {
                         :icon="Target"
                         accent="primary"
                     />
-                </div>
+                </Link>
             </section>
 
             <!-- Comprehensive Search, Filter, Sort & View Mode Switcher -->
@@ -563,24 +632,10 @@ const filteredOfficers = computed(() => {
                             </select>
                         </div>
 
-                        <!-- Sort Select -->
-                        <div class="relative">
-                            <select
-                                v-model="sortBy"
-                                class="h-10 appearance-none bg-background border border-input rounded-md pl-3 py-2 pr-7 text-xs text-foreground focus:outline-hidden focus:border-ring cursor-pointer"
-                            >
-                                <option value="rank">
-                                    Pangkat (tertinggi)
-                                </option>
-                                <option value="subs_desc">
-                                    Subscribers Terbanyak
-                                </option>
-                                <option value="subs_asc">
-                                    Target 1K Milestone (&lt; 1K Subs)
-                                </option>
-                                <option value="name">Nama (A - Z)</option>
-                            </select>
-                        </div>
+                        <!-- Achievement rankings (subscribers, duty hours) live on their own page -->
+                        <Button as-child variant="outline" size="sm" class="h-10 gap-1.5">
+                            <Link href="/ranking"><Trophy class="size-4" /> Lihat ranking</Link>
+                        </Button>
 
                         <!-- View Mode Switcher (Grid vs Table) -->
                         <div
@@ -616,120 +671,52 @@ const filteredOfficers = computed(() => {
                     </div>
                 </div>
 
-                <!-- Bottom Row: Department Division Pills -->
-                <div
-                    class="pt-3 border-t border-border flex flex-wrap items-center justify-between gap-3 text-xs font-mono"
-                >
-                    <div
-                        class="flex items-center space-x-1.5 overflow-x-auto scrollbar-none"
+                <!-- Department tabs (one department at a time) -->
+                <div class="flex items-center gap-5 overflow-x-auto border-t border-border pt-3 scrollbar-none" role="tablist">
+                    <button
+                        v-for="d in DEPARTMENTS"
+                        :key="d.code"
+                        type="button"
+                        role="tab"
+                        :aria-selected="selectedDept === d.code"
+                        :class="[
+                            'flex shrink-0 items-center gap-1.5 border-b-2 pb-1 text-sm font-semibold transition-colors',
+                            selectedDept === d.code
+                                ? 'border-foreground text-foreground'
+                                : 'border-transparent text-muted-foreground hover:text-foreground',
+                        ]"
+                        @click="selectDept(d.code)"
                     >
-                        <Button
-                            type="button"
-                            size="sm"
-                            :variant="
-                                selectedDept === 'ALL' ? 'default' : 'outline'
-                            "
-                            @click="selectedDept = 'ALL'"
-                            class="h-8 px-3 text-xs whitespace-nowrap"
-                        >
-                            Semua Kesatuan ({{ officers.length }})
-                        </Button>
-                        <Button
-                            type="button"
-                            size="sm"
-                            :variant="
-                                selectedDept === 'LIVE_ONLY'
-                                    ? 'default'
-                                    : 'outline'
-                            "
-                            @click="selectedDept = 'LIVE_ONLY'"
-                            :class="
-                                selectedDept === 'LIVE_ONLY'
-                                    ? ''
-                                    : 'text-success'
-                            "
-                            class="h-8 px-3 text-xs gap-1.5 whitespace-nowrap"
-                        >
-                            <span
-                                class="w-1.5 h-1.5 rounded-full bg-success"
-                            ></span>
-                            <span
-                                >10-8 Live ({{
-                                    deptStats.total_live || 0
-                                }})</span
-                            >
-                        </Button>
-                        <Button
-                            type="button"
-                            size="sm"
-                            :variant="
-                                selectedDept === 'LSPD' ? 'default' : 'outline'
-                            "
-                            @click="selectedDept = 'LSPD'"
-                            :class="
-                                selectedDept === 'LSPD' ? '' : 'text-dept-lspd'
-                            "
-                            class="h-8 px-3 text-xs whitespace-nowrap"
-                        >
-                            LSPD ({{ deptStats.lspd_total || 0 }})
-                        </Button>
-                        <Button
-                            type="button"
-                            size="sm"
-                            :variant="
-                                selectedDept === 'BCSO' ? 'default' : 'outline'
-                            "
-                            @click="selectedDept = 'BCSO'"
-                            :class="
-                                selectedDept === 'BCSO' ? '' : 'text-dept-bcso'
-                            "
-                            class="h-8 px-3 text-xs whitespace-nowrap"
-                        >
-                            BCSO ({{ deptStats.bcso_total || 0 }})
-                        </Button>
-                        <Button
-                            type="button"
-                            size="sm"
-                            :variant="
-                                selectedDept === 'SASP' ? 'default' : 'outline'
-                            "
-                            @click="selectedDept = 'SASP'"
-                            :class="
-                                selectedDept === 'SASP' ? '' : 'text-dept-sasp'
-                            "
-                            class="h-8 px-3 text-xs whitespace-nowrap"
-                        >
-                            SASP ({{ deptStats.sasp_total || 0 }})
-                        </Button>
-                        <Button
-                            type="button"
-                            size="sm"
-                            :variant="
-                                selectedDept === 'SAPR' ? 'default' : 'outline'
-                            "
-                            @click="selectedDept = 'SAPR'"
-                            :class="
-                                selectedDept === 'SAPR' ? '' : 'text-dept-sapr'
-                            "
-                            class="h-8 px-3 text-xs whitespace-nowrap"
-                        >
-                            SAPR ({{ deptStats.sapr_total || 0 }})
-                        </Button>
-                    </div>
-
-                    <div class="text-muted-foreground shrink-0">
-                        Menampilkan
-                        <strong class="text-foreground">{{
-                            filteredOfficers.length
-                        }}</strong>
-                        dari
-                        <strong class="text-foreground">{{
-                            officers.length
-                        }}</strong>
-                        pengguna
-                    </div>
+                        {{ d.code }}
+                        <span class="text-xs font-normal text-muted-foreground">{{ deptCounts[d.code] }}</span>
+                    </button>
                 </div>
             </Card>
+
+            <!-- Department header -->
+            <div class="flex items-center gap-3">
+                <img :src="activeDept.logo" :alt="activeDept.code" class="size-12 shrink-0 object-contain" />
+                <div class="min-w-0">
+                    <h2 class="truncate text-lg font-bold text-foreground">{{ activeDept.name }}</h2>
+                    <p class="text-xs text-muted-foreground">
+                        {{ deptCounts[selectedDept] }} perwira
+                        <template v-if="liveInDept"> · <span class="text-live">{{ liveInDept }} sedang live</span></template>
+                    </p>
+                </div>
+            </div>
+
+            <p v-if="otherDeptMatches.length" class="text-sm text-muted-foreground">
+                Juga ditemukan di:
+                <button
+                    v-for="d in otherDeptMatches"
+                    :key="d.code"
+                    type="button"
+                    class="ml-2 font-semibold text-primary hover:underline"
+                    @click="selectDept(d.code)"
+                >
+                    {{ d.code }} ({{ d.count }}) →
+                </button>
+            </p>
 
             <!-- Empty Search State -->
             <EmptyState
@@ -740,18 +727,24 @@ const filteredOfficers = computed(() => {
                 action-label="Reset Filter Pencarian"
                 @action="
                     searchQuery = '';
-                    selectedDept = 'ALL';
                     statusFilter = 'all';
                 "
             />
 
             <!-- VIEW MODE 1: GRID VIEW -->
-            <div
-                v-else-if="viewMode === 'grid'"
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-            >
+            <div v-else-if="viewMode === 'grid'" class="space-y-8">
+                <section v-for="group in rankGroups" :key="group.key">
+                    <h3 class="mb-3 flex items-baseline gap-2 text-sm font-semibold text-foreground">
+                        {{ group.title }}
+                        <span class="text-xs font-normal text-muted-foreground">
+                            <template v-if="group.command && commandRange">{{ commandRange }} · </template>{{ group.officers.length }}
+                        </span>
+                    </h3>
+
+                    <!-- Command staff: full cards -->
+                    <div v-if="group.command" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card
-                    v-for="officer in filteredOfficers"
+                    v-for="officer in group.officers"
                     :key="officer.id"
                     @click="openDrawer(officer)"
                     class="hover:border-primary/40 hover:-translate-y-1 hover:shadow-lg p-4 flex flex-col justify-between transition-all duration-300 cursor-pointer group"
@@ -1010,6 +1003,31 @@ const filteredOfficers = computed(() => {
                         </div>
                     </div>
                 </Card>
+                    </div>
+
+                    <!-- Other ranks: compact cards -->
+                    <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+                        <button
+                            v-for="officer in group.officers"
+                            :key="officer.id"
+                            type="button"
+                            class="group flex flex-col items-center gap-2 rounded-lg border border-border bg-card p-3 text-center transition-colors hover:border-primary/40 hover:bg-accent/40"
+                            @click="openDrawer(officer)"
+                        >
+                            <OfficerAvatar
+                                :src="officer.avatar_url"
+                                :name="officer.officer_name"
+                                :live="officer.is_online"
+                                size="md"
+                            />
+                            <span class="w-full min-w-0">
+                                <span class="block truncate text-sm font-semibold text-foreground group-hover:text-primary">{{ officer.officer_name }}</span>
+                                <span class="block truncate font-mono text-xs text-muted-foreground">{{ officer.callsign }}</span>
+                            </span>
+                            <LiveBadge v-if="officer.is_online" />
+                        </button>
+                    </div>
+                </section>
             </div>
 
             <!-- VIEW MODE 2: TABLE VIEW -->
