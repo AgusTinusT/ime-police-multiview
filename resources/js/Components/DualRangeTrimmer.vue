@@ -5,23 +5,25 @@
             <div
                 class="flex items-center justify-between text-xs flex-wrap gap-1"
             >
-                <span class="text-xs font-mono font-semibold text-slate-300"
+                <span class="text-xs font-mono font-semibold text-muted-foreground"
                     >Set Durasi:</span
                 >
             </div>
             <div
                 class="grid grid-cols-5 gap-1.5 font-mono text-xs font-semibold"
             >
-                <button
+                <Button
                     v-for="preset in [15, 30, 60, 180, 300]"
                     :key="preset"
                     @click="applyPreset(preset)"
                     type="button"
-                    class="py-2 px-1 min-h-[36px] rounded-lg bg-[#0a1224] hover:bg-[#121e36] text-slate-200 border border-[#192742] transition font-bold cursor-pointer active:scale-95 text-center flex items-center justify-center shadow-xs"
+                    variant="outline"
+                    size="sm"
+                    class="py-2 px-1 min-h-9 rounded-lg bg-muted hover:bg-muted/80 text-foreground border-border font-bold cursor-pointer active:scale-95 text-center flex items-center justify-center"
                     :title="`Atur Waktu Selesai otomatis +${preset >= 60 ? preset / 60 + ' menit' : preset + ' detik'} dari Waktu Mulai`"
                 >
                     +{{ preset >= 60 ? preset / 60 + "m" : preset + "s" }}
-                </button>
+                </Button>
             </div>
         </div>
 
@@ -29,79 +31,95 @@
         <div class="flex flex-col gap-2 text-xs font-mono pt-1">
             <!-- IN Marker Nudge Steppers -->
             <div
-                class="bg-[#09101f] border border-[#16233d] rounded-xl px-3 py-2.5 flex items-center justify-between flex-wrap gap-2"
+                class="bg-muted/50 border border-border rounded-xl px-3 py-2.5 flex items-center justify-between flex-wrap gap-2"
             >
-                <span class="text-xs font-mono font-semibold text-slate-300"
+                <span class="text-xs font-mono font-semibold text-muted-foreground"
                     >Waktu Mulai (IN):</span
                 >
                 <div class="grid grid-cols-4 gap-1.5 flex-1 max-w-xs">
-                    <button
+                    <Button
                         @click="nudgeStart(-5)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
+                        variant="outline"
+                        size="sm"
+                        class="py-2 px-1 min-h-9 bg-card border-border rounded-lg text-foreground font-bold hover:bg-muted active:scale-95 transition text-center cursor-pointer"
                     >
                         -5s
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         @click="nudgeStart(-1)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
+                        variant="outline"
+                        size="sm"
+                        class="py-2 px-1 min-h-9 bg-card border-border rounded-lg text-foreground font-bold hover:bg-muted active:scale-95 transition text-center cursor-pointer"
                     >
                         -1s
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         @click="nudgeStart(1)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
+                        variant="outline"
+                        size="sm"
+                        class="py-2 px-1 min-h-9 bg-card border-border rounded-lg text-foreground font-bold hover:bg-muted active:scale-95 transition text-center cursor-pointer"
                     >
                         +1s
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         @click="nudgeStart(5)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
+                        variant="outline"
+                        size="sm"
+                        class="py-2 px-1 min-h-9 bg-card border-border rounded-lg text-foreground font-bold hover:bg-muted active:scale-95 transition text-center cursor-pointer"
                     >
                         +5s
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             <!-- OUT Marker Nudge Steppers -->
             <div
-                class="bg-[#09101f] border border-[#16233d] rounded-xl px-3 py-2.5 flex items-center justify-between flex-wrap gap-2"
+                class="bg-muted/50 border border-border rounded-xl px-3 py-2.5 flex items-center justify-between flex-wrap gap-2"
             >
-                <span class="text-xs font-mono font-semibold text-[#38bdf8]"
+                <span class="text-xs font-mono font-semibold text-primary"
                     >Waktu Selesai (OUT):</span
                 >
                 <div class="grid grid-cols-4 gap-1.5 flex-1 max-w-xs">
-                    <button
+                    <Button
                         @click="nudgeEnd(-5)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
+                        variant="outline"
+                        size="sm"
+                        class="py-2 px-1 min-h-9 bg-card border-border rounded-lg text-foreground font-bold hover:bg-muted active:scale-95 transition text-center cursor-pointer"
                     >
                         -5s
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         @click="nudgeEnd(-1)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
+                        variant="outline"
+                        size="sm"
+                        class="py-2 px-1 min-h-9 bg-card border-border rounded-lg text-foreground font-bold hover:bg-muted active:scale-95 transition text-center cursor-pointer"
                     >
                         -1s
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         @click="nudgeEnd(1)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
+                        variant="outline"
+                        size="sm"
+                        class="py-2 px-1 min-h-9 bg-card border-border rounded-lg text-foreground font-bold hover:bg-muted active:scale-95 transition text-center cursor-pointer"
                     >
                         +1s
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         @click="nudgeEnd(5)"
                         type="button"
-                        class="py-2 px-1 min-h-[36px] bg-[#0d1629] border border-[#1c2c4b] rounded-lg text-slate-200 font-bold hover:bg-[#162442] active:scale-95 transition text-center cursor-pointer shadow-xs"
+                        variant="outline"
+                        size="sm"
+                        class="py-2 px-1 min-h-9 bg-card border-border rounded-lg text-foreground font-bold hover:bg-muted active:scale-95 transition text-center cursor-pointer"
                     >
                         +5s
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -110,6 +128,7 @@
 
 <script setup>
 import { computed, ref, watch, onUnmounted } from "vue";
+import { Button } from "@/Components/ui/button";
 
 const props = defineProps({
     duration: {

@@ -2,19 +2,17 @@
     <TacticalLayout>
         <Head title="ClipStudio - Tactical Video Clipper & Media Hub" />
 
-        <div
-            class="relative z-10 max-w-(--breakpoint-2xl) mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-8 font-sans"
-        >
+        <PageContainer class="pt-6 pb-20 space-y-8 font-sans">
             <!-- HEADER / HERO & URL INPUT SECTION -->
             <section class="text-center max-w-4xl mx-auto space-y-3">
                 <h1
-                    class="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight uppercase font-tactical"
+                    class="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground tracking-tight leading-tight uppercase font-tactical"
                 >
                     ClipStudio —
-                    <span class="text-blue-400">Tactical Video Trimmer</span>
+                    <span class="text-primary">Tactical Video Trimmer</span>
                 </h1>
                 <p
-                    class="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto font-sans leading-relaxed"
+                    class="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto font-sans leading-relaxed"
                 >
                     Pemotongan video YouTube presisi tinggi untuk siaran
                     langsung dan tayangan perwira.
@@ -23,220 +21,117 @@
                 <!-- URL Loader Bar -->
                 <div class="pt-2 max-w-2xl mx-auto">
                     <div
-                        class="relative flex items-center bg-tactical-base border border-tactical-border rounded-xl p-1.5 focus-within:border-blue-500 transition duration-200"
+                        class="relative flex items-center bg-card border border-border rounded-xl p-1.5 focus-within:border-primary transition duration-200"
                     >
-                        <div class="pl-3.5 text-red-500 shrink-0">
-                            <svg
-                                class="w-5 h-5 fill-current"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-                                />
-                            </svg>
+                        <div class="pl-3.5 text-destructive shrink-0">
+                            <Video class="w-5 h-5" />
                         </div>
                         <input
                             v-model="form.youtube_url"
                             type="url"
                             @keyup.enter="loadVideoFromInput"
                             placeholder="Tempel tautan YouTube di sini (contoh: https://www.youtube.com/watch?v=...)"
-                            class="w-full bg-transparent border-0 focus:border-0 focus:ring-0 focus:outline-hidden px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 font-mono shadow-none outline-hidden"
+                            class="w-full bg-transparent border-0 focus:border-0 focus:ring-0 focus:outline-hidden px-3.5 py-2.5 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground font-mono shadow-none outline-hidden"
                         />
-                        <button
+                        <Button
                             @click="loadVideoFromInput"
                             :disabled="isCheckingUrl"
-                            class="btn-tactical-primary shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="shrink-0"
                         >
-                            <svg
+                            <Loader2
                                 v-if="isCheckingUrl"
-                                class="w-4 h-4 animate-spin text-white"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    class="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    stroke-width="4"
-                                ></circle>
-                                <path
-                                    class="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                ></path>
-                            </svg>
-                            <svg
-                                v-else
-                                class="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                                />
-                            </svg>
+                                class="w-4 h-4 animate-spin"
+                            />
+                            <Zap v-else class="w-4 h-4" />
                             <span>{{
                                 isCheckingUrl ? "Memuat..." : "Muat Stream"
                             }}</span>
-                        </button>
+                        </Button>
                     </div>
 
                     <!-- Quick Sample Videos -->
                     <div
-                        class="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-400"
+                        class="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground"
                     >
-                        <span class="text-slate-500">Contoh Stream:</span>
-                        <button
+                        <span>Contoh Stream:</span>
+                        <Button
                             v-for="(sample, idx) in sampleVideos"
                             :key="idx"
+                            variant="outline"
+                            size="sm"
                             @click="setSampleVideo(idx)"
-                            class="tactical-badge cursor-pointer"
+                            class="h-7 text-xs cursor-pointer"
                         >
                             {{ sample.shortLabel }}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </section>
 
             <!-- NOTIFICATION BANNERS -->
-            <transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0 -translate-y-2"
-                enter-to-class="opacity-100 translate-y-0"
+            <Alert
+                v-if="formError"
+                variant="destructive"
+                class="p-4 flex items-center justify-between gap-3"
             >
-                <div
-                    v-if="formError"
-                    class="p-4 rounded-md bg-slate-950 border border-red-900/50 text-red-400 text-sm flex items-center justify-between gap-3"
-                >
-                    <div class="flex items-center gap-2.5">
-                        <svg
-                            class="w-5 h-5 shrink-0 text-red-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
-                        <span>{{ formError }}</span>
-                    </div>
-                    <button
-                        @click="formError = ''"
-                        class="text-red-400 hover:text-white transition p-1"
-                    >
-                        <svg
-                            class="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
+                <div class="flex items-center gap-2.5">
+                    <AlertCircle class="w-5 h-5 shrink-0" />
+                    <AlertDescription>{{ formError }}</AlertDescription>
                 </div>
-            </transition>
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Tutup pesan error"
+                    @click="formError = ''"
+                >
+                    <X class="w-4 h-4" />
+                </Button>
+            </Alert>
 
-            <transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0 -translate-y-2"
-                enter-to-class="opacity-100 translate-y-0"
+            <Alert
+                v-if="successMessage"
+                class="p-4 border-success/40 bg-success/10 text-success flex items-center justify-between gap-3"
             >
-                <div
-                    v-if="successMessage"
-                    class="p-4 rounded-md bg-slate-950 border border-emerald-900/50 text-emerald-400 text-sm flex items-center justify-between gap-3"
-                >
-                    <div class="flex items-center gap-2.5">
-                        <svg
-                            class="w-5 h-5 shrink-0 text-emerald-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M5 13l4 4L19 7"
-                            />
-                        </svg>
-                        <span>{{ successMessage }}</span>
-                    </div>
-                    <button
-                        @click="successMessage = ''"
-                        class="text-emerald-400 hover:text-white transition p-1"
-                    >
-                        <svg
-                            class="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
+                <div class="flex items-center gap-2.5">
+                    <Check class="w-5 h-5 shrink-0" />
+                    <AlertDescription>{{ successMessage }}</AlertDescription>
                 </div>
-            </transition>
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Tutup pesan sukses"
+                    @click="successMessage = ''"
+                >
+                    <X class="w-4 h-4" />
+                </Button>
+            </Alert>
 
             <!-- INTERACTIVE TRIMMER WORKSPACE -->
             <section class="space-y-6 font-sans">
                 <!-- Invalid URL Warning Banner -->
-                <div
+                <Alert
                     v-if="urlCheckResult && !urlCheckResult.valid"
-                    class="p-3 rounded-xl bg-amber-950/40 border border-amber-800/60 text-amber-300 flex items-center gap-2.5 text-xs"
+                    class="p-3 rounded-xl bg-warning/10 border-warning/40 text-warning flex items-center gap-2.5 text-xs"
                 >
-                    <svg
-                        class="w-4 h-4 text-amber-400 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                        />
-                    </svg>
-                    <span>{{ urlCheckResult.message }}</span>
-                </div>
+                    <AlertTriangle class="w-4 h-4 shrink-0" />
+                    <AlertDescription>{{ urlCheckResult.message }}</AlertDescription>
+                </Alert>
 
                 <!-- Post-Live / Processing Warning Banner -->
-                <div
+                <Alert
                     v-if="urlCheckResult && urlCheckResult.is_post_live"
-                    class="p-3.5 rounded-xl bg-amber-950/50 border border-amber-600/70 text-amber-200 flex items-start gap-3 text-xs sm:text-sm shadow-md"
+                    class="p-3.5 rounded-xl bg-warning/15 border-warning/50 text-warning flex items-start gap-3 text-xs sm:text-sm"
                 >
-                    <svg class="w-5 h-5 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
+                    <AlertTriangle class="w-5 h-5 shrink-0 mt-0.5" />
                     <div class="space-y-1">
-                        <div class="font-bold text-amber-300 uppercase tracking-wide font-mono flex items-center gap-1.5">
+                        <div class="font-bold uppercase tracking-wide font-mono flex items-center gap-1.5">
                             <span>Status: Siaran Baru Berakhir (Processing VOD)</span>
                         </div>
-                        <p class="leading-relaxed text-amber-200/90 text-xs font-sans">
+                        <p class="leading-relaxed text-xs font-sans">
                             {{ urlCheckResult.message }}
                         </p>
                     </div>
-                </div>
+                </Alert>
 
                 <!-- Main Video Preview & Controls Grid (8:4 Balanced Layout) -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -244,7 +139,7 @@
                     <div class="lg:col-span-8 space-y-4">
                         <!-- Video Player Box -->
                         <div
-                            class="w-full aspect-video rounded-xl overflow-hidden bg-black relative border border-[#17233c] shadow-xl"
+                            class="w-full aspect-video rounded-xl overflow-hidden bg-background relative border border-border shadow-xl"
                         >
                             <CustomVideoPlayer
                                 ref="mainPlayerRef"
@@ -257,90 +152,49 @@
                         </div>
 
                         <!-- TIMELINE TRIMMER CARD -->
-                        <div
-                            class="lg:bg-[#0b1324] lg:border lg:border-[#17243e] lg:rounded-2xl lg:p-4 space-y-3.5 lg:shadow-xl"
+                        <Card
+                            class="lg:bg-card lg:border lg:border-border lg:rounded-2xl lg:p-4 space-y-3.5 border-0 bg-transparent p-0 shadow-none lg:shadow-xl"
                         >
                             <!-- Card Header -->
                             <div class="flex items-center justify-between">
                                 <div
-                                    class="flex items-center gap-2 text-[#38bdf8] font-bold text-xs uppercase tracking-wider"
+                                    class="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider"
                                 >
-                                    <svg
-                                        class="w-4 h-4 text-[#38bdf8] shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <circle cx="6" cy="6" r="3"></circle>
-                                        <circle cx="6" cy="18" r="3"></circle>
-                                        <line
-                                            x1="20"
-                                            y1="4"
-                                            x2="8.12"
-                                            y2="15.88"
-                                        ></line>
-                                        <line
-                                            x1="14.47"
-                                            y1="14.47"
-                                            x2="20"
-                                            y2="20"
-                                        ></line>
-                                        <line
-                                            x1="8.12"
-                                            y1="8.12"
-                                            x2="12"
-                                            y2="12"
-                                        ></line>
-                                    </svg>
+                                    <Scissors class="w-4 h-4 text-primary shrink-0" />
                                     <span>Timeline Trimmer</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span
-                                        class="text-xs font-mono px-3 py-1.5 rounded-lg border font-bold shrink-0 inline-flex items-center justify-center shadow-xs"
-                                        :class="
-                                            isDurationValid
-                                                ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-400'
-                                                : 'bg-red-950/60 border-red-500/50 text-red-400'
-                                        "
+                                    <Badge
+                                        :variant="isDurationValid ? 'success' : 'destructive'"
+                                        class="text-xs font-mono px-3 py-1 font-bold shrink-0"
                                     >
                                         {{
                                             isDurationValid
                                                 ? `${formatSeconds(maxClipDurationSec)}`
                                                 : "Melebihi Batas"
                                         }}
-                                    </span>
-                                    <button
+                                    </Badge>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
                                         @click="openMobileClipperMenu"
-                                        class="lg:hidden px-3 py-1.5 rounded-lg bg-sky-950/90 hover:bg-sky-900 border border-sky-700/80 text-sky-300 hover:text-white text-xs font-bold font-mono flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0 shadow-xs"
+                                        class="lg:hidden font-mono text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
                                         title="Buka Menu Opsi & Format Ekspor"
                                     >
-                                        <svg
-                                            class="w-4 h-4 text-sky-400"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-                                            />
-                                        </svg>
+                                        <SlidersHorizontal class="w-4 h-4 text-primary" />
                                         <span>Menu</span>
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
 
                             <!-- Waktu Pemutar Header Indicator -->
                             <div class="flex items-center gap-2.5">
                                 <span
-                                    class="text-xs font-semibold text-slate-400"
+                                    class="text-xs font-semibold text-muted-foreground"
                                     >Waktu Pemutar:</span
                                 >
                                 <div
-                                    class="bg-[#0b1426] border border-[#192640] rounded-lg px-2.5 py-1 font-mono font-bold text-xs text-slate-100 shadow-inner tracking-wider"
+                                    class="bg-muted border border-border rounded-lg px-2.5 py-1 font-mono font-bold text-xs text-foreground tracking-wider"
                                 >
                                     {{
                                         formatSecondsToTimestamp(
@@ -357,27 +211,29 @@
                                         class="flex items-center justify-between mb-1"
                                     >
                                         <label
-                                            class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300"
+                                            class="block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                                         >
                                             Mulai
                                         </label>
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="secondary"
+                                            size="sm"
                                             @click="captureStartTime"
-                                            class="text-[11px] text-blue-400 hover:text-blue-300 font-mono font-bold flex items-center gap-1 cursor-pointer bg-blue-950/70 hover:bg-blue-900/90 px-2.5 py-1 rounded-md border border-blue-800/60 transition shadow-xs active:scale-95"
+                                            class="h-6 px-2.5 text-xs font-mono font-bold cursor-pointer"
                                             title="Set waktu mulai dari posisi pemutar video saat ini"
                                         >
                                             <span>Pilih Waktu</span>
-                                        </button>
+                                        </Button>
                                     </div>
-                                    <input
+                                    <Input
                                         v-model="form.start_time"
                                         type="text"
                                         placeholder="00:00:00"
-                                        class="w-full bg-[#0a1222] border border-[#1b2a48] rounded-xl px-2.5 py-2 text-xs font-mono text-white text-center focus:border-blue-500 font-bold"
+                                        class="text-xs font-mono text-center font-bold"
                                     />
                                     <span
-                                        class="text-[10px] text-slate-500 block mt-0.5"
+                                        class="text-xs text-muted-foreground block mt-0.5"
                                         >Format: HH:MM:SS</span
                                     >
                                 </div>
@@ -387,27 +243,29 @@
                                         class="flex items-center justify-between mb-1"
                                     >
                                         <label
-                                            class="block text-[11px] font-semibold uppercase tracking-wider text-slate-300"
+                                            class="block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                                         >
                                             Selesai
                                         </label>
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="secondary"
+                                            size="sm"
                                             @click="captureEndTime"
-                                            class="text-[11px] text-blue-400 hover:text-blue-300 font-mono font-bold flex items-center gap-1 cursor-pointer bg-blue-950/70 hover:bg-blue-900/90 px-2.5 py-1 rounded-md border border-blue-800/60 transition shadow-xs active:scale-95"
+                                            class="h-6 px-2.5 text-xs font-mono font-bold cursor-pointer"
                                             title="Set waktu selesai dari posisi pemutar video saat ini"
                                         >
                                             <span>Pilih Waktu</span>
-                                        </button>
+                                        </Button>
                                     </div>
-                                    <input
+                                    <Input
                                         v-model="form.end_time"
                                         type="text"
                                         placeholder="00:05:00"
-                                        class="w-full bg-[#0a1222] border border-[#1b2a48] rounded-xl px-2.5 py-2 text-xs font-mono text-white text-center focus:border-blue-500 font-bold"
+                                        class="text-xs font-mono text-center font-bold"
                                     />
                                     <span
-                                        class="text-[10px] text-slate-500 block mt-0.5"
+                                        class="text-xs text-muted-foreground block mt-0.5"
                                         >Format: HH:MM:SS</span
                                     >
                                 </div>
@@ -424,41 +282,29 @@
                                 @update:end-time="onTrimmerEndUpdate"
                                 @seek="onTrimmerSeek"
                             />
-                        </div>
+                        </Card>
                     </div>
 
-                    <!-- RIGHT COLUMN: EXPORT PARAMETERS & SIDEBAR (4 cols - Desktop panel design from video_trimmer_export_panel.html) -->
+                    <!-- RIGHT COLUMN: EXPORT PARAMETERS & SIDEBAR (4 cols) -->
                     <div class="lg:col-span-4 space-y-4">
-                        <!-- Header Section (video_trimmer_export_panel style) -->
+                        <!-- Header Section -->
                         <div
-                            class="flex items-center justify-between pb-3.5 border-b border-[#17243e]"
+                            class="flex items-center justify-between pb-3.5 border-b border-border"
                         >
                             <div class="flex items-center gap-2.5">
                                 <div
-                                    class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0"
+                                    class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shrink-0"
                                 >
-                                    <svg
-                                        class="w-4 h-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                        />
-                                    </svg>
+                                    <Download class="w-4 h-4" />
                                 </div>
                                 <div>
                                     <h2
-                                        class="text-sm font-semibold tracking-wide uppercase text-slate-100 font-sans"
+                                        class="text-sm font-semibold tracking-wide uppercase text-foreground font-sans"
                                     >
                                         Opsi Ekspor & Format
                                     </h2>
                                     <p
-                                        class="text-xs text-slate-400 font-sans hidden lg:block"
+                                        class="text-xs text-muted-foreground font-sans hidden lg:block"
                                     >
                                         Pilih kualitas output video Anda
                                     </p>
@@ -467,18 +313,18 @@
 
                             <!-- Duration Cap Indicator Pill -->
                             <div
-                                class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#050b17] border border-[#182640] text-xs font-medium text-slate-300 font-mono"
+                                class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted border border-border text-xs font-medium text-foreground font-mono"
                             >
-                                <span class="text-slate-400 font-sans"
+                                <span class="text-muted-foreground font-sans"
                                     >Batas:</span
                                 >
-                                <span class="text-sky-400 font-bold">{{
+                                <span class="text-primary font-bold">{{
                                     formatSeconds(maxClipDurationSec)
                                 }}</span>
                             </div>
                         </div>
 
-                        <!-- Format Selection Options (Radio style from video_trimmer_export_panel.html) -->
+                        <!-- Format Selection Options -->
                         <section
                             class="space-y-2.5"
                             aria-label="Pilihan Kualitas Video"
@@ -487,11 +333,11 @@
                                 class="flex items-center justify-between px-0.5"
                             >
                                 <span
-                                    class="text-xs font-semibold uppercase tracking-wider text-slate-300 font-sans"
+                                    class="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-sans"
                                     >Format & Kualitas</span
                                 >
                                 <span
-                                    class="text-[11px] text-slate-400 font-sans hidden lg:inline"
+                                    class="text-xs text-muted-foreground font-sans hidden lg:inline"
                                     >Durasi Terpilih:
                                     {{ formatSeconds(calculatedSeconds) }}</span
                                 >
@@ -508,12 +354,12 @@
                                     class="relative flex items-center justify-between p-3 rounded-xl border transition-all duration-200 cursor-pointer select-none text-left min-w-0"
                                     :class="[
                                         form.format === fmt.value
-                                            ? 'border-sky-500/70 bg-sky-950/30 shadow-md ring-1 ring-sky-500/40'
-                                            : 'border-[#182640] bg-[#050b17]/80 hover:bg-[#0d172a] hover:border-slate-700',
+                                            ? 'border-primary/70 bg-primary/10 shadow-md ring-1 ring-primary/40'
+                                            : 'border-border bg-card hover:bg-muted/50',
                                         fmt.value === 'MP4 1080p' &&
                                         !canUse1080p &&
                                         !isGuest
-                                            ? 'opacity-60 bg-slate-950/40 border-dashed border-amber-900/40'
+                                            ? 'opacity-60 bg-muted/40 border-dashed border-warning/40'
                                             : '',
                                         isGuest ? 'opacity-80' : '',
                                     ]"
@@ -526,15 +372,15 @@
                                             class="w-4 h-4 rounded-full border mt-0.5 flex items-center justify-center shrink-0 transition-colors"
                                             :class="
                                                 form.format === fmt.value
-                                                    ? 'border-sky-400'
-                                                    : 'border-slate-600'
+                                                    ? 'border-primary'
+                                                    : 'border-muted-foreground'
                                             "
                                         >
                                             <div
                                                 class="w-2 h-2 rounded-full transition-all"
                                                 :class="
                                                     form.format === fmt.value
-                                                        ? 'bg-sky-400'
+                                                        ? 'bg-primary'
                                                         : 'bg-transparent'
                                                 "
                                             ></div>
@@ -545,39 +391,29 @@
                                                 class="flex items-center gap-2 flex-wrap"
                                             >
                                                 <span
-                                                    class="text-sm font-semibold text-slate-100 font-sans truncate"
+                                                    class="text-sm font-semibold text-foreground font-sans truncate"
                                                     >{{ fmt.name }}</span
                                                 >
                                                 <span
-                                                    class="text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1"
+                                                    class="text-xs font-medium px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1"
                                                     :class="
                                                         fmt.value ===
                                                             'MP4 1080p' &&
                                                         !canUse1080p &&
                                                         !isGuest
-                                                            ? 'bg-amber-950 text-amber-300 border border-amber-800/60'
+                                                            ? 'bg-warning/15 text-warning border border-warning/40'
                                                             : fmt.tagClass
                                                     "
                                                 >
-                                                    <svg
+                                                    <Lock
                                                         v-if="
                                                             fmt.value ===
                                                                 'MP4 1080p' &&
                                                             !canUse1080p &&
                                                             !isGuest
                                                         "
-                                                        class="w-3 h-3 text-amber-400 shrink-0"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                                                        />
-                                                    </svg>
+                                                        class="w-3 h-3 text-warning shrink-0"
+                                                    />
                                                     <span>{{
                                                         fmt.value ===
                                                             "MP4 1080p" &&
@@ -590,7 +426,7 @@
                                             </div>
                                             <!-- Desktop Use Case Subtitle -->
                                             <p
-                                                class="hidden lg:block text-xs text-slate-400 leading-normal font-sans"
+                                                class="hidden lg:block text-xs text-muted-foreground leading-normal font-sans"
                                             >
                                                 {{ fmt.useCase }}
                                             </p>
@@ -601,46 +437,34 @@
                                     <div
                                         class="hidden lg:block pl-3 shrink-0 text-right"
                                     >
-                                        <span
-                                            class="text-xs font-mono font-medium text-slate-200 bg-[#070e1b] px-2.5 py-1 rounded-md border border-[#17253e]"
-                                        >
+                                        <Badge variant="outline" class="font-mono text-xs">
                                             {{ fmt.desc }}
-                                        </span>
+                                        </Badge>
                                     </div>
                                 </button>
                             </div>
                         </section>
 
-                        <!-- SUMMARY METADATA CARD (Ringkasan Ekspor from video_trimmer_export_panel.html) -->
-                        <section
-                            class="bg-[#050b17]/90 rounded-xl border border-[#17253e] p-3.5 space-y-2.5 font-sans"
+                        <!-- SUMMARY METADATA CARD -->
+                        <Card
+                            class="bg-card rounded-xl border-border p-3.5 space-y-2.5 font-sans"
                         >
                             <div
-                                class="flex items-center justify-between pb-2 border-b border-[#142036]"
+                                class="flex items-center justify-between pb-2 border-b border-border"
                             >
                                 <span
-                                    class="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5"
+                                    class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
                                 >
-                                    <svg
-                                        class="w-3.5 h-3.5 text-sky-400"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                    >
-                                        <path
-                                            d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"
-                                        />
-                                    </svg>
+                                    <BarChart3 class="w-3.5 h-3.5 text-primary" />
                                     Ringkasan Ekspor
                                 </span>
-                                <span
-                                    class="text-[11px] font-mono font-medium text-sky-400 bg-sky-950/60 px-2 py-0.5 rounded-sm border border-sky-800/50"
-                                >
+                                <Badge variant="secondary" class="font-mono text-xs">
                                     {{
                                         formatOptions.find(
                                             (f) => f.value === form.format,
                                         )?.name || form.format.toUpperCase()
                                     }}
-                                </span>
+                                </Badge>
                             </div>
 
                             <div
@@ -648,36 +472,18 @@
                             >
                                 <!-- Durasi Klip -->
                                 <div
-                                    class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]"
+                                    class="bg-muted/50 p-2.5 rounded-lg border border-border"
                                 >
                                     <div
-                                        class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans"
+                                        class="text-xs text-muted-foreground flex items-center gap-1 mb-1 font-sans"
                                     >
-                                        <svg
-                                            class="w-3 h-3 text-slate-500"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <circle
-                                                cx="12"
-                                                cy="12"
-                                                r="10"
-                                                stroke-width="2"
-                                            />
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M12 6v6l4 2"
-                                            />
-                                        </svg>
+                                        <Clock class="w-3 h-3 text-muted-foreground" />
                                         Durasi Klip
                                     </div>
-                                    <div class="font-medium text-slate-100">
+                                    <div class="font-medium text-foreground">
                                         {{ formatSeconds(calculatedSeconds) }}
                                         <span
-                                            class="text-[11px] text-slate-500 font-sans"
+                                            class="text-xs text-muted-foreground font-sans"
                                             >({{ calculatedSeconds }}s)</span
                                         >
                                     </div>
@@ -685,55 +491,43 @@
 
                                 <!-- Masa Simpan Cloud -->
                                 <div
-                                    class="bg-[#0b1324] p-2.5 rounded-lg border border-[#17243e]"
+                                    class="bg-muted/50 p-2.5 rounded-lg border border-border"
                                 >
                                     <div
-                                        class="text-[11px] text-slate-400 flex items-center gap-1 mb-1 font-sans"
+                                        class="text-xs text-muted-foreground flex items-center gap-1 mb-1 font-sans"
                                     >
-                                        <svg
-                                            class="w-3 h-3 text-slate-500"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                                            />
-                                        </svg>
+                                        <ShieldCheck class="w-3 h-3 text-muted-foreground" />
                                         Masa Simpan Cloud
                                     </div>
                                     <div
-                                        class="font-medium text-slate-200 font-sans text-[11px]"
+                                        class="font-medium text-foreground font-sans text-xs"
                                     >
                                         1 Jam
-                                        <span class="text-slate-500 text-[10px]"
+                                        <span class="text-muted-foreground text-xs"
                                             >(Auto-clean)</span
                                         >
                                     </div>
                                 </div>
                             </div>
-                        </section>
+                        </Card>
 
                         <!-- QUOTA & AUTHENTICATION BANNER -->
-                        <div
-                            class="rounded-xl p-3 bg-[#050b17]/90 border border-[#17243e] font-sans text-xs"
+                        <Card
+                            class="rounded-xl p-3 bg-card border-border font-sans text-xs space-y-2"
                         >
                             <div
-                                class="flex items-center justify-between mb-1.5"
+                                class="flex items-center justify-between"
                             >
                                 <span
-                                    class="text-slate-400 flex items-center gap-1.5"
+                                    class="text-muted-foreground flex items-center gap-1.5"
                                 >
                                     <span
-                                        class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"
+                                        class="w-2 h-2 rounded-full bg-warning motion-safe:animate-pulse"
                                     ></span>
                                     Sisa Kuota {{ quotaPeriodLabel }}:
                                 </span>
                                 <span
-                                    class="font-mono font-bold text-slate-200"
+                                    class="font-mono font-bold text-foreground"
                                 >
                                     {{
                                         isUnlimitedQuota
@@ -744,71 +538,48 @@
                             </div>
 
                             <!-- Quota progress visual -->
-                            <div
+                            <Progress
                                 v-if="!isUnlimitedQuota"
-                                class="w-full bg-[#0e192e] h-1.5 rounded-full overflow-hidden mb-2"
-                            >
-                                <div
-                                    class="h-full transition-all duration-300 rounded-full"
-                                    :class="
-                                        userDailyRemaining <= 0
-                                            ? 'bg-amber-500'
-                                            : 'bg-sky-500'
-                                    "
-                                    :style="{
-                                        width: `${Math.min(100, (dailyClipsCount / dailyClipsLimit) * 100)}%`,
-                                    }"
-                                ></div>
-                            </div>
+                                :model-value="Math.min(100, (dailyClipsCount / dailyClipsLimit) * 100)"
+                                class="h-1.5"
+                            />
 
                             <div
-                                class="flex items-center justify-between text-[11px] text-slate-400 pt-0.5"
+                                class="flex items-center justify-between text-xs text-muted-foreground pt-0.5"
                             >
                                 <template v-if="isGuest">
                                     <span>Guest: 3 klip gratis / minggu</span>
                                     <a
                                         href="/login"
-                                        class="text-sky-400 hover:text-sky-300 font-medium underline underline-offset-2 transition-colors"
+                                        class="text-primary hover:underline font-medium underline-offset-2 transition-colors"
                                     >
                                         Masuk Sekarang
                                     </a>
                                 </template>
                                 <template v-else-if="isUnlimitedQuota">
-                                    <span class="text-slate-400"
+                                    <span class="text-muted-foreground"
                                         >PRO Ultimate / Officer Active
                                         (Unlimited)</span
                                     >
                                 </template>
                                 <template v-else-if="userDailyRemaining <= 0">
-                                    <span class="text-amber-400 font-semibold"
+                                    <span class="text-warning font-semibold"
                                         >Kuota
                                         {{ quotaPeriodLabel.toLowerCase() }}
                                         habis</span
                                     >
                                     <button
                                         @click="showRequestClipperModal = true"
-                                        class="text-sky-400 hover:text-sky-300 font-bold underline text-[10px] inline-flex items-center gap-1 cursor-pointer"
+                                        class="text-primary hover:underline font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
                                     >
                                         <span>Pengajuan Akses</span>
-                                        <svg
-                                            class="w-3 h-3 shrink-0"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M14 5l7 7m0 0l-7 7m7-7H3"
-                                            />
-                                        </svg>
+                                        <ArrowRight class="w-3 h-3 shrink-0" />
                                     </button>
                                 </template>
                                 <template v-else>
                                     <span
                                         >Tersisa
-                                        <strong class="text-slate-200 font-mono"
+                                        <strong class="text-foreground font-mono"
                                             >{{
                                                 userDailyRemaining
                                             }}
@@ -820,46 +591,24 @@
                                     >
                                 </template>
                             </div>
-                        </div>
+                        </Card>
 
-                        <!-- PRIMARY CTA BUTTON (video_trimmer_export_panel gradient style) -->
+                        <!-- PRIMARY CTA BUTTON -->
                         <div class="mt-1 flex flex-col gap-2">
-                            <button
+                            <Button
                                 @click="submitTrim"
                                 :disabled="
                                     isSubmitting ||
                                     (!isGuest && !isDurationValid) ||
                                     submitCooldownSec > 0
                                 "
-                                class="w-full py-3.5 lg:py-4 px-4 rounded-xl text-white font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed font-sans"
-                                :class="
-                                    isGuest
-                                        ? 'bg-linear-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-sky-500/25'
-                                        : isDurationValid
-                                          ? 'bg-linear-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 shadow-sky-500/25'
-                                          : 'bg-slate-800 text-slate-400 border border-slate-700'
-                                "
+                                size="lg"
+                                class="w-full py-3.5 lg:py-4 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer font-sans"
                             >
-                                <svg
+                                <Loader2
                                     v-if="isSubmitting"
-                                    class="animate-spin h-5 w-5 text-white shrink-0"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <circle
-                                        class="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        stroke-width="4"
-                                    ></circle>
-                                    <path
-                                        class="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
+                                    class="animate-spin h-5 w-5 shrink-0"
+                                />
                                 <span
                                     v-else-if="submitCooldownSec > 0"
                                     class="font-mono"
@@ -868,19 +617,7 @@
                                     }}s)...</span
                                 >
                                 <template v-else-if="isGuest">
-                                    <svg
-                                        class="w-4 h-4 text-white shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        stroke-width="2"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                                        />
-                                    </svg>
+                                    <LogIn class="w-4 h-4 shrink-0" />
                                     <span>Masuk untuk Memotong Video</span>
                                 </template>
                                 <template
@@ -889,19 +626,7 @@
                                         userDailyRemaining <= 0
                                     "
                                 >
-                                    <svg
-                                        class="w-4 h-4 text-slate-400 shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        stroke-width="2"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                                        />
-                                    </svg>
+                                    <Lock class="w-4 h-4 shrink-0" />
                                     <span
                                         >Kuota {{ quotaPeriodLabel }} Habis ({{
                                             dailyClipsCount
@@ -909,154 +634,87 @@
                                     >
                                 </template>
                                 <template v-else>
-                                    <svg
-                                        class="w-4 h-4 text-white shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <circle cx="6" cy="6" r="3"></circle>
-                                        <circle cx="6" cy="18" r="3"></circle>
-                                        <line
-                                            x1="20"
-                                            y1="4"
-                                            x2="8.12"
-                                            y2="15.88"
-                                        ></line>
-                                        <line
-                                            x1="14.47"
-                                            y1="14.47"
-                                            x2="20"
-                                            y2="20"
-                                        ></line>
-                                        <line
-                                            x1="8.12"
-                                            y1="8.12"
-                                            x2="12"
-                                            y2="12"
-                                        ></line>
-                                    </svg>
+                                    <Scissors class="w-4 h-4 shrink-0" />
                                     <span>{{
                                         urlCheckResult && urlCheckResult.is_live
                                             ? "POTONG KLIP LIVE (HLS DVR)"
                                             : `POTONG & SIMPAN KLIP (${form.format.toUpperCase()})`
                                     }}</span>
                                 </template>
-                            </button>
+                            </Button>
 
                             <!-- Dynamic Live Progress Status Bar Container -->
                             <div
                                 v-if="isSubmitting"
-                                class="bg-[#0a1222] p-2.5 rounded-xl border border-[#182640] flex flex-col gap-1.5 font-mono text-xs"
+                                class="bg-muted p-2.5 rounded-xl border border-border flex flex-col gap-1.5 font-mono text-xs"
                             >
                                 <div
-                                    class="flex justify-between items-center text-[10px]"
+                                    class="flex justify-between items-center text-xs"
                                 >
                                     <span
-                                        class="text-cyan-400 flex items-center gap-1.5 font-semibold animate-pulse"
+                                        class="text-info flex items-center gap-1.5 font-semibold motion-safe:animate-pulse"
                                     >
-                                        <svg
-                                            class="w-3 h-3 animate-spin text-cyan-400"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <circle
-                                                class="opacity-25"
-                                                cx="12"
-                                                cy="12"
-                                                r="10"
-                                                stroke="currentColor"
-                                                stroke-width="4"
-                                            ></circle>
-                                            <path
-                                                class="opacity-75"
-                                                fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                            ></path>
-                                        </svg>
+                                        <Loader2 class="w-3 h-3 animate-spin text-info" />
                                         Merender klip video di server FFmpeg...
                                     </span>
-                                    <span class="text-slate-200 font-bold"
+                                    <span class="text-foreground font-bold"
                                         >Memproses</span
                                     >
                                 </div>
-                                <div
-                                    class="w-full h-1.5 bg-[#142036] rounded-full overflow-hidden"
-                                >
-                                    <div
-                                        class="h-full bg-linear-to-r from-blue-500 to-cyan-400 animate-pulse w-full"
-                                    ></div>
-                                </div>
+                                <Progress :model-value="100" class="h-1.5 motion-safe:animate-pulse" />
                             </div>
                         </div>
 
                         <!-- LOGGED-IN ACCOUNT CONTROL CARD OR GUEST PLAN COMPARISON TEASER -->
-                        <div
-                            class="bg-[#091120] border border-[#162238] rounded-2xl p-4 shadow-xl flex flex-col gap-3 font-sans mt-3"
+                        <Card
+                            class="bg-card border-border rounded-2xl p-4 shadow-xl flex flex-col gap-3 font-sans mt-3"
                         >
-                            <!-- VIEW A: FOR LOGGED IN USERS (Dynamic Account Status & Quick Actions) -->
+                            <!-- VIEW A: FOR LOGGED IN USERS -->
                             <template v-if="!isGuest">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <div
-                                            class="w-7 h-7 rounded-lg bg-[#0f1d38] border border-[#1b2f56] flex items-center justify-center text-cyan-400 shrink-0"
+                                            class="w-7 h-7 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shrink-0"
                                         >
-                                            <svg
-                                                class="w-4 h-4 text-cyan-400"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                                                />
-                                            </svg>
+                                            <ShieldCheck class="w-4 h-4 text-primary" />
                                         </div>
                                         <div>
                                             <h4
-                                                class="text-xs font-bold text-white uppercase tracking-wider"
+                                                class="text-xs font-bold text-foreground uppercase tracking-wider"
                                             >
                                                 Status Akun & Tier Aktif
                                             </h4>
                                             <p
-                                                class="text-[10px] text-slate-400 font-mono truncate max-w-[150px]"
+                                                class="text-xs text-muted-foreground font-mono truncate max-w-[150px]"
                                             >
                                                 {{ user?.name || user?.email }}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <span
-                                        class="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase shrink-0"
-                                        :class="
-                                            isUnlimitedQuota
-                                                ? 'bg-amber-950 text-amber-300 border border-amber-800'
-                                                : 'bg-sky-950 text-sky-300 border border-sky-800'
-                                        "
+                                    <Badge
+                                        :variant="isUnlimitedQuota ? 'warning' : 'secondary'"
+                                        class="font-mono text-xs font-bold uppercase shrink-0"
                                     >
                                         {{
                                             user?.clipper_tier_name ||
                                             "Free Tier"
                                         }}
-                                    </span>
+                                    </Badge>
                                 </div>
 
                                 <!-- Dynamic Capabilities Badge & Controls -->
                                 <div
-                                    class="bg-[#050b17] border border-[#15233c] rounded-xl p-3 space-y-2 text-xs font-mono"
+                                    class="bg-muted/50 border border-border rounded-xl p-3 space-y-2 text-xs font-mono"
                                 >
                                     <div
-                                        class="flex items-center justify-between text-[11px]"
+                                        class="flex items-center justify-between text-xs"
                                     >
-                                        <span class="text-slate-400"
+                                        <span class="text-muted-foreground"
                                             >Durasi Maks:</span
                                         >
                                         <span
-                                            class="text-slate-200 font-bold"
+                                            class="text-foreground font-bold"
                                             >{{
                                                 formatSeconds(
                                                     maxClipDurationSec,
@@ -1065,13 +723,13 @@
                                         >
                                     </div>
                                     <div
-                                        class="flex items-center justify-between text-[11px]"
+                                        class="flex items-center justify-between text-xs"
                                     >
-                                        <span class="text-slate-400"
+                                        <span class="text-muted-foreground"
                                             >Kualitas Maks:</span
                                         >
                                         <span
-                                            class="text-emerald-400 font-bold"
+                                            class="text-success font-bold"
                                             >{{
                                                 canUse1080p
                                                     ? "1080p Lossless"
@@ -1080,16 +738,16 @@
                                         >
                                     </div>
                                     <div
-                                        class="flex items-center justify-between text-[11px]"
+                                        class="flex items-center justify-between text-xs"
                                     >
-                                        <span class="text-slate-400"
+                                        <span class="text-muted-foreground"
                                             >Potong Live DVR:</span
                                         >
                                         <span
                                             :class="
                                                 isUnlimitedQuota
-                                                    ? 'text-emerald-400 font-bold'
-                                                    : 'text-slate-500'
+                                                    ? 'text-success font-bold'
+                                                    : 'text-muted-foreground'
                                             "
                                             >{{
                                                 isUnlimitedQuota
@@ -1102,29 +760,28 @@
 
                                 <!-- Action Buttons depending on user role -->
                                 <div class="flex flex-col gap-2 pt-1">
-
-
-                                    <button
+                                    <Button
                                         v-if="
                                             !isUnlimitedQuota &&
                                             clipperRequestStatus !== 'pending'
                                         "
+                                        variant="outline"
                                         @click="showRequestClipperModal = true"
-                                        class="w-full py-2.5 px-3.5 rounded-xl bg-[#091326] hover:bg-[#0f1d3a] border border-[#1b2f56] text-slate-300 hover:text-white text-xs font-mono transition flex items-center justify-between cursor-pointer"
+                                        class="w-full py-2.5 px-3.5 rounded-xl text-xs font-mono flex items-center justify-between cursor-pointer"
                                     >
                                         <span
-                                            class="flex items-center gap-1.5 text-slate-300"
+                                            class="flex items-center gap-1.5 text-foreground"
                                         >
                                             <span
-                                                class="w-1.5 h-1.5 rounded-full bg-emerald-400"
+                                                class="w-1.5 h-1.5 rounded-full bg-success"
                                             ></span>
                                             <span>Akses Clipper Beta</span>
                                         </span>
                                         <span
-                                            class="text-blue-400 font-bold hover:underline"
+                                            class="text-primary font-bold hover:underline"
                                             >Daftar (Gratis) →</span
                                         >
-                                    </button>
+                                    </Button>
                                 </div>
                             </template>
 
@@ -1133,30 +790,18 @@
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <div
-                                            class="w-7 h-7 rounded-lg bg-[#0f1d38] border border-[#1b2f56] flex items-center justify-center text-cyan-400 shrink-0"
+                                            class="w-7 h-7 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shrink-0"
                                         >
-                                            <svg
-                                                class="w-4 h-4 text-cyan-400"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                                                />
-                                            </svg>
+                                            <Sparkles class="w-4 h-4 text-primary" />
                                         </div>
                                         <div>
                                             <h4
-                                                class="text-xs font-bold text-white uppercase tracking-wider"
+                                                class="text-xs font-bold text-foreground uppercase tracking-wider"
                                             >
                                                 Perbedaan Paket & Akses Spesial
                                             </h4>
                                             <p
-                                                class="text-[10px] text-slate-400"
+                                                class="text-xs text-muted-foreground"
                                             >
                                                 Pilih akses sesuai kebutuhan
                                                 Anda
@@ -1167,86 +812,63 @@
 
                                 <!-- Direct Comparison Chips (Free vs PRO / Officer) -->
                                 <div
-                                    class="grid grid-cols-2 gap-2 text-[11px] font-mono"
+                                    class="grid grid-cols-2 gap-2 text-xs font-mono"
                                 >
                                     <div
-                                        class="bg-[#050b17] border border-[#15233c] rounded-xl p-2.5 flex flex-col gap-0.5"
+                                        class="bg-muted/50 border border-border rounded-xl p-2.5 flex flex-col gap-0.5"
                                     >
                                         <span
-                                            class="text-slate-400 text-[10px] font-bold uppercase"
+                                            class="text-muted-foreground text-xs font-bold uppercase"
                                             >FREE MEMBER:</span
                                         >
                                         <span
-                                            class="text-slate-200 font-semibold text-xs"
+                                            class="text-foreground font-semibold text-xs"
                                             >3 Klip / Minggu</span
                                         >
-                                        <span class="text-slate-400 text-[9px]"
+                                        <span class="text-muted-foreground text-xs"
                                             >Maks 1 Menit / Klip</span
                                         >
                                     </div>
 
                                     <div
-                                        class="bg-[#0d1b33] border border-[#1d3561] rounded-xl p-2.5 flex flex-col gap-0.5"
+                                        class="bg-primary/10 border border-primary/30 rounded-xl p-2.5 flex flex-col gap-0.5"
                                     >
                                         <span
-                                            class="text-cyan-400 text-[10px] font-bold uppercase"
+                                            class="text-primary text-xs font-bold uppercase"
                                             >OFFICER & PRO:</span
                                         >
                                         <span
-                                            class="text-white font-semibold text-xs"
+                                            class="text-foreground font-semibold text-xs"
                                             >Unlimited Potong</span
                                         >
-                                        <span class="text-cyan-300 text-[9px]"
+                                        <span class="text-primary text-xs"
                                             >Hak 2 Slot & Lossless</span
                                         >
                                     </div>
                                 </div>
 
                                 <!-- Button to Open Access Request Modal -->
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
                                     @click="showRequestClipperModal = true"
-                                    class="w-full py-2.5 lg:py-4 lg:min-h-[48px] px-3.5 rounded-xl bg-[#0a1426] hover:bg-[#101e38] border border-[#1a2d50] text-xs lg:text-sm font-bold text-slate-200 flex items-center justify-between transition group cursor-pointer shadow-xs active:scale-[0.99]"
+                                    class="w-full py-2.5 lg:py-4 lg:min-h-12 px-3.5 rounded-xl text-xs lg:text-sm font-bold flex items-center justify-between group cursor-pointer"
                                 >
                                     <div
                                         class="flex items-center gap-2.5 font-mono"
                                     >
-                                        <svg
-                                            class="w-3.5 h-3.5 lg:w-4 lg:h-4 text-cyan-400 shrink-0"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
+                                        <Sparkles class="w-4 h-4 text-primary shrink-0" />
                                         <span>Daftar Akses Clipper Beta</span>
                                     </div>
                                     <div
-                                        class="flex items-center gap-1 text-cyan-400 group-hover:translate-x-1 transition-transform font-mono text-[11px] lg:text-xs shrink-0"
+                                        class="flex items-center gap-1 text-primary group-hover:translate-x-1 transition-transform font-mono text-xs shrink-0"
                                     >
                                         <span>Daftar Gratis</span>
-                                        <svg
-                                            class="w-3.5 h-3.5 shrink-0"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M14 5l7 7m0 0l-7 7m7-7H3"
-                                            />
-                                        </svg>
+                                        <ArrowRight class="w-3.5 h-3.5 shrink-0" />
                                     </div>
-                                </button>
+                                </Button>
                             </template>
-                        </div>
+                        </Card>
                     </div>
                 </div>
             </section>
@@ -1255,73 +877,54 @@
             <section id="library-section" class="space-y-6 pt-2">
                 <!-- Section Header -->
                 <div
-                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4"
+                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4"
                 >
                     <div>
                         <div class="flex items-center gap-2">
                             <h2
-                                class="text-2xl font-bold text-white tracking-tight uppercase font-tactical"
+                                class="text-2xl font-bold text-foreground tracking-tight uppercase font-tactical"
                             >
                                 Koleksi Klip Video Saya
                             </h2>
-                            <span
+                            <Badge
                                 v-if="clipsList.length"
-                                class="px-2.5 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-blue-400 font-mono text-xs font-bold"
+                                variant="secondary"
+                                class="font-mono text-xs font-bold"
                             >
                                 {{ clipsList.length }} Klip
-                            </span>
+                            </Badge>
                         </div>
-                        <p class="text-xs text-slate-400 mt-1">
+                        <p class="text-xs text-muted-foreground mt-1">
                             Klip video yang telah Anda proses dan siap diunduh.
                             File otomatis dihapus sistem 1 jam setelah dibuat.
                         </p>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button
+                        <Button
+                            variant="outline"
+                            size="sm"
                             @click="fetchClips"
-                            class="px-3.5 py-2 rounded-md bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center gap-1.5 font-mono"
+                            class="text-xs font-semibold flex items-center gap-1.5 font-mono"
                         >
-                            <svg
+                            <RefreshCw
                                 class="w-3.5 h-3.5"
                                 :class="
                                     isLoadingClips
-                                        ? 'animate-spin text-blue-400'
+                                        ? 'animate-spin text-primary'
                                         : ''
                                 "
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                />
-                            </svg>
+                            />
                             <span>Refresh List</span>
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
                 <!-- Info Notice -->
-                <div
-                    class="p-3 rounded-md bg-slate-900 border border-amber-900/50 text-xs text-amber-300 flex items-center gap-2.5"
+                <Alert
+                    class="p-3 rounded-md bg-card border-warning/40 text-xs text-warning flex items-center gap-2.5"
                 >
-                    <svg
-                        class="w-4 h-4 text-amber-400 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                    </svg>
+                    <Clock class="w-4 h-4 text-warning shrink-0" />
                     <span
                         ><strong>Info Storage Server:</strong> Berkas video
                         hasil pemotongan akan
@@ -1331,111 +934,100 @@
                         >
                         untuk menghemat ruang server.</span
                     >
-                </div>
+                </Alert>
 
                 <!-- Loading State -->
                 <div
                     v-if="isLoadingClips && clipsList.length === 0"
-                    class="py-12 text-center text-slate-400 text-xs font-mono"
+                    class="py-12 text-center text-muted-foreground text-xs font-mono"
                 >
-                    <svg
-                        class="animate-spin h-6 w-6 text-blue-500 mx-auto mb-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                    >
-                        <circle
-                            class="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            stroke-width="4"
-                        ></circle>
-                        <path
-                            class="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                    </svg>
+                    <Loader2
+                        class="animate-spin h-6 w-6 text-primary mx-auto mb-2"
+                    />
                     Memuat daftar klip video server...
                 </div>
 
                 <!-- Empty State -->
-                <div
+                <Card
                     v-else-if="clipsList.length === 0"
-                    class="py-12 text-center text-slate-400 text-xs bg-slate-900 rounded-xl border border-slate-800 space-y-2"
+                    class="py-12 text-center text-muted-foreground text-xs bg-card rounded-xl border-border space-y-2"
                 >
                     <p
-                        class="font-bold text-white uppercase font-tactical text-sm"
+                        class="font-bold text-foreground uppercase font-tactical text-sm"
                     >
                         Belum ada klip video yang disimpan.
                     </p>
-                    <p class="text-slate-400 font-sans">
+                    <p class="text-muted-foreground font-sans">
                         Gunakan form di atas untuk mulai memotong klip video
                         dari YouTube.
                     </p>
-                </div>
+                </Card>
 
                 <!-- Clips Grid List -->
                 <div
                     v-else
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
                 >
-                    <div
+                    <Card
                         v-for="clip in clipsList"
                         :key="clip.id"
-                        class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-3 hover:border-slate-700 transition group"
+                        class="p-4 rounded-xl bg-card border-border flex flex-col justify-between space-y-3 hover:border-primary/40 transition group"
                     >
                         <div class="space-y-2">
                             <div class="flex items-start justify-between gap-2">
                                 <h3
-                                    class="font-bold text-sm text-white line-clamp-1 group-hover:text-blue-400 transition font-sans"
+                                    class="font-bold text-sm text-foreground line-clamp-1 group-hover:text-primary transition font-sans"
                                 >
                                     {{ clip.title }}
                                 </h3>
 
                                 <!-- Status Badges -->
-                                <span
+                                <Badge
                                     v-if="clip.status === 'completed'"
-                                    class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-emerald-400 border border-emerald-900/50 font-mono"
+                                    variant="success"
+                                    class="shrink-0 font-mono text-xs"
                                 >
                                     Selesai
-                                </span>
-                                <span
+                                </Badge>
+                                <Badge
                                     v-else-if="clip.status === 'processing'"
-                                    class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-amber-400 border border-amber-900/50 font-mono"
+                                    variant="info"
+                                    class="shrink-0 font-mono text-xs"
                                 >
                                     Memproses...
-                                </span>
-                                <span
+                                </Badge>
+                                <Badge
                                     v-else-if="clip.status === 'pending'"
-                                    class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-blue-400 border border-blue-900/50 font-mono"
+                                    variant="secondary"
+                                    class="shrink-0 font-mono text-xs"
                                 >
                                     Antrean
-                                </span>
-                                <span
+                                </Badge>
+                                <Badge
                                     v-else-if="clip.status === 'expired'"
-                                    class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-slate-400 border border-slate-800 font-mono"
+                                    variant="outline"
+                                    class="shrink-0 font-mono text-xs text-muted-foreground"
                                     title="File fisik video telah dibersihkan sistem setelah 1 jam"
                                 >
                                     Kadaluarsa (File Dihapus)
-                                </span>
-                                <span
+                                </Badge>
+                                <Badge
                                     v-else
-                                    class="shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-950 text-red-400 border border-red-900/50 font-mono"
+                                    variant="destructive"
+                                    class="shrink-0 font-mono text-xs"
                                 >
                                     Gagal
-                                </span>
+                                </Badge>
                             </div>
 
                             <p
-                                class="text-xs text-slate-400 font-mono truncate"
+                                class="text-xs text-muted-foreground font-mono truncate"
                             >
                                 {{ clip.youtube_url }}
                             </p>
 
                             <div
-                                class="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1"
+                                class="flex items-center justify-between text-xs text-muted-foreground font-mono pt-1"
                             >
                                 <div
                                     class="flex items-center gap-1.5 flex-wrap"
@@ -1447,34 +1039,22 @@
                                         }}</span
                                     >
                                     <span>•</span>
-                                    <span
-                                        class="text-blue-400 font-semibold px-1.5 py-0.5 rounded-sm bg-slate-950 border border-slate-800 text-[10px]"
-                                        >{{ clip.format || "MP4 1080p" }}</span
-                                    >
+                                    <Badge variant="outline" class="font-mono text-xs text-primary">
+                                        {{ clip.format || "MP4 1080p" }}
+                                    </Badge>
                                 </div>
-                                <span
+                                <Badge
                                     v-if="clip.status === 'completed'"
-                                    class="text-[10px] text-amber-400 font-sans flex items-center gap-1 bg-slate-950 px-1.5 py-0.5 rounded-md border border-amber-900/50"
+                                    variant="warning"
+                                    class="text-xs font-sans flex items-center gap-1"
                                     title="File ini akan dihapus otomatis 1 jam setelah dibuat"
                                 >
-                                    <svg
-                                        class="w-3 h-3 text-amber-400 shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                        />
-                                    </svg>
+                                    <Clock class="w-3 h-3 shrink-0" />
                                     <span>1 Jam</span>
-                                </span>
+                                </Badge>
                                 <span
                                     v-else-if="clip.status === 'expired'"
-                                    class="text-[10px] text-slate-500 font-sans italic"
+                                    class="text-xs text-muted-foreground font-sans italic"
                                 >
                                     File Dibersihkan
                                 </span>
@@ -1486,531 +1066,369 @@
                             v-if="
                                 clip.status === 'failed' && clip.error_message
                             "
-                            class="text-[10px] p-2 rounded-md bg-slate-950 border border-red-900/50 text-red-400 font-mono wrap-break-word"
+                            class="text-xs p-2 rounded-md bg-destructive/10 border border-destructive/30 text-destructive font-mono wrap-break-word"
                         >
                             {{ clip.error_message }}
                         </div>
 
                         <!-- Card Footer Controls -->
                         <div
-                            class="flex items-center justify-between pt-2 border-t border-slate-800"
+                            class="flex items-center justify-between pt-2 border-t border-border"
                         >
-                            <button
-                                @click="deleteClip(clip.id)"
-                                class="p-1.5 rounded-md text-slate-400 hover:text-red-400 hover:bg-slate-950 transition text-xs flex items-center gap-1.5 font-mono"
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                @click="promptDeleteClip(clip.id)"
+                                class="text-muted-foreground hover:text-destructive text-xs flex items-center gap-1.5 font-mono"
                                 title="Hapus Klip"
                             >
-                                <img
-                                    :src="iconDelete"
-                                    class="w-3.5 h-3.5 invert opacity-70 hover:opacity-100"
-                                    alt=""
-                                />
+                                <Trash2 class="w-3.5 h-3.5" />
                                 <span>Hapus</span>
-                            </button>
+                            </Button>
 
-                            <a
+                            <Button
                                 v-if="
                                     clip.status === 'completed' &&
                                     clip.download_url
                                 "
-                                :href="clip.download_url"
-                                download
-                                class="py-1.5 px-3 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition flex items-center gap-1.5"
+                                as-child
+                                size="sm"
                             >
-                                <svg
-                                    class="w-3.5 h-3.5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
+                                <a
+                                    :href="clip.download_url"
+                                    download
+                                    class="text-xs font-semibold flex items-center gap-1.5"
                                 >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 16v1a3 3m0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                    />
-                                </svg>
-                                <span>{{
-                                    clip.format === "MP3 Audio"
-                                        ? "Unduh MP3"
-                                        : "Unduh Video"
-                                }}</span>
-                            </a>
+                                    <Download class="w-3.5 h-3.5" />
+                                    <span>{{
+                                        clip.format === "MP3 Audio"
+                                            ? "Unduh MP3"
+                                            : "Unduh Video"
+                                    }}</span>
+                                </a>
+                            </Button>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </section>
-        </div>
+        </PageContainer>
 
         <!-- GUEST AUTHENTICATION REQUIRED MODAL OVERLAY -->
-        <transition
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 scale-95"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-150"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-95"
-        >
-            <div
-                v-if="showGuestAuthModal"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90"
-            >
+        <Dialog :open="showGuestAuthModal" @update:open="(val) => (showGuestAuthModal = val)">
+            <DialogContent class="sm:max-w-md bg-card border-border text-center space-y-4">
                 <div
-                    class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl relative text-center"
+                    class="w-16 h-16 rounded-full bg-primary/15 border border-primary/30 text-primary flex items-center justify-center mx-auto"
                 >
-                    <button
-                        @click="showGuestAuthModal = false"
-                        class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 transition"
-                    >
-                        <svg
-                            class="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
+                    <Lock class="w-8 h-8 text-primary" />
+                </div>
 
+                <DialogHeader class="space-y-2 text-center sm:text-center">
+                    <DialogTitle
+                        class="text-xl font-bold text-foreground uppercase font-tactical tracking-tight"
+                    >
+                        Pendaftaran Akun Gratis Diperlukan
+                    </DialogTitle>
+                    <DialogDescription
+                        class="text-xs text-muted-foreground leading-relaxed font-sans"
+                    >
+                        Untuk mulai memproses & mengunduh potongan video
+                        YouTube ini, silakan masuk atau daftar akun gratis.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div
+                    class="p-3 rounded-xl bg-muted/50 border border-border text-left text-xs font-mono space-y-1 text-foreground"
+                >
                     <div
-                        class="w-16 h-16 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center mx-auto shadow-inner"
+                        class="flex items-center gap-2 text-success font-bold"
                     >
-                        <svg
-                            class="w-8 h-8 text-blue-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                            />
-                        </svg>
+                        <Check class="w-4 h-4" />
+                        <span>Dapatkan 3 Klip Gratis per Minggu</span>
                     </div>
-
-                    <div class="space-y-2">
-                        <h3
-                            class="text-xl font-black text-white uppercase font-tactical tracking-tight"
-                        >
-                            Pendaftaran Akun Gratis Diperlukan
-                        </h3>
-                        <p
-                            class="text-xs text-slate-300 leading-relaxed font-sans"
-                        >
-                            Untuk mulai memproses & mengunduh potongan video
-                            YouTube ini, silakan masuk atau daftar akun gratis.
-                        </p>
-                    </div>
-
                     <div
-                        class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-left text-xs font-mono space-y-1 text-slate-300"
+                        class="flex items-center gap-2 text-success font-bold"
                     >
-                        <div
-                            class="flex items-center gap-2 text-emerald-400 font-bold"
-                        >
-                            <svg
-                                class="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M5 13l4 4L19 7"
-                                />
-                            </svg>
-                            <span>Dapatkan 3 Klip Gratis per Minggu</span>
-                        </div>
-                        <div
-                            class="flex items-center gap-2 text-emerald-400 font-bold"
-                        >
-                            <svg
-                                class="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M5 13l4 4L19 7"
-                                />
-                            </svg>
-                            <span>Pemrosesan Lossless MP4 / MP3 / GIF</span>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 pt-2">
-                        <a
-                            href="/register"
-                            class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer block font-tactical"
-                        >
-                            <svg
-                                class="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                                />
-                            </svg>
-                            <span>Daftar Akun Gratis Sekarang</span>
-                        </a>
-
-                        <a
-                            href="/login"
-                            class="w-full py-2.5 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white font-bold text-xs transition block text-center cursor-pointer font-sans"
-                        >
-                            Sudah punya akun? Masuk (Sign In)
-                        </a>
+                        <Check class="w-4 h-4" />
+                        <span>Pemrosesan Lossless MP4 / MP3 / GIF</span>
                     </div>
                 </div>
-            </div>
-        </transition>
+
+                <div class="space-y-2 pt-2">
+                    <Button as-child class="w-full font-bold text-xs uppercase tracking-wider font-tactical">
+                        <a href="/register" class="flex items-center justify-center gap-2">
+                            <UserPlus class="w-4 h-4" />
+                            <span>Daftar Akun Gratis Sekarang</span>
+                        </a>
+                    </Button>
+
+                    <Button as-child variant="outline" class="w-full font-bold text-xs">
+                        <a href="/login">
+                            Sudah punya akun? Masuk (Sign In)
+                        </a>
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
 
         <!-- UNIFIED CLAIM & VERIFICATION MODAL (CLIPPER & OFFICER REQUEST) -->
         <ClipperClaimModal
             :show="showRequestClipperModal"
             initial-plan="general"
             @close="showRequestClipperModal = false"
-            @submitted="fetchClipperStatus"
+            @submitted="fetchClipperRequestStatus"
         />
 
         <!-- DELEGATION CLIPPER MODAL (FOR OFFICERS/ADMINS - 2 SLOTS) -->
-        <transition
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 scale-95"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-150"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-95"
-        >
-            <div
-                v-if="showDelegationModal"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90"
-            >
-                <div
-                    class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 sm:p-7 shadow-2xl space-y-5 font-sans relative text-left"
-                >
-                    <button
-                        @click="showDelegationModal = false"
-                        class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 transition"
+        <Dialog :open="showDelegationModal" @update:open="(val) => (showDelegationModal = val)">
+            <DialogContent class="sm:max-w-xl bg-card border-border space-y-4 font-sans text-left">
+                <DialogHeader class="space-y-1 text-left">
+                    <div class="flex items-center gap-2">
+                        <Badge variant="warning" class="font-mono text-xs font-bold uppercase">
+                            Hak Otonomi Officer
+                        </Badge>
+                        <Badge variant="secondary" class="font-mono text-xs font-bold uppercase">
+                            2 Slot Penunjukan
+                        </Badge>
+                    </div>
+                    <DialogTitle
+                        class="text-xl font-bold text-foreground uppercase tracking-tight font-tactical"
                     >
-                        <svg
-                            class="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
+                        Penunjukan Slot Police Duty Clipper (2 Slot)
+                    </DialogTitle>
+                    <DialogDescription
+                        class="text-xs sm:text-sm text-muted-foreground leading-relaxed"
+                    >
+                        Sebagai Officer, Anda berhak menunjuk hingga
+                        <strong>2 akun Clipper (Dokumentasi/Editor)</strong>
+                        untuk memotong video Police Duty (10 Klip/Hari, Max
+                        5 Menit). Akun yang ditunjuk
+                        <strong>HANYA mendapatkan hak Clipper</strong> dan
+                        <strong>TIDAK mendapatkan hak penunjukan ulang</strong>.
+                    </DialogDescription>
+                </DialogHeader>
 
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <span
-                                class="px-2.5 py-0.5 rounded-sm bg-amber-950 text-amber-400 border border-amber-800/80 font-mono text-[10px] font-bold uppercase"
-                                >Hak Otonomi Officer</span
-                            >
-                            <span
-                                class="px-2.5 py-0.5 rounded-sm bg-blue-950 text-blue-400 border border-blue-800/80 font-mono text-[10px] font-bold uppercase"
-                                >2 Slot Penunjukan</span
-                            >
-                        </div>
-                        <h3
-                            class="text-xl font-black text-white uppercase tracking-tight font-tactical"
+                <!-- Alert Banners inside Modal -->
+                <Alert
+                    v-if="delegationErrMsg"
+                    variant="destructive"
+                    class="p-3 text-xs flex items-center justify-between gap-2 font-mono"
+                >
+                    <AlertDescription>{{ delegationErrMsg }}</AlertDescription>
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Tutup error delegasi"
+                        @click="delegationErrMsg = ''"
+                    >
+                        <X class="w-3.5 h-3.5" />
+                    </Button>
+                </Alert>
+
+                <Alert
+                    v-if="delegationSuccessMsg"
+                    class="p-3 border-success/40 bg-success/10 text-success text-xs flex items-center justify-between gap-2 font-mono"
+                >
+                    <AlertDescription>{{ delegationSuccessMsg }}</AlertDescription>
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Tutup pesan sukses delegasi"
+                        @click="delegationSuccessMsg = ''"
+                    >
+                        <X class="w-3.5 h-3.5" />
+                    </Button>
+                </Alert>
+
+                <!-- Slots Overview Box -->
+                <div
+                    class="p-3.5 rounded-xl bg-muted/50 border border-border space-y-3"
+                >
+                    <div class="flex items-center justify-between text-xs">
+                        <span
+                            class="text-muted-foreground font-semibold uppercase tracking-wider"
+                            >Status Kuota Slot Penunjukan:</span
                         >
-                            Penunjukan Slot Police Duty Clipper (2 Slot)
-                        </h3>
-                        <p
-                            class="text-xs sm:text-sm text-slate-300 leading-relaxed"
+                        <span
+                            class="font-mono font-bold text-sm"
+                            :class="
+                                delegationData.used_slots >= 2
+                                    ? 'text-warning'
+                                    : 'text-success'
+                            "
                         >
-                            Sebagai Officer, Anda berhak menunjuk hingga
-                            <strong>2 akun Clipper (Dokumentasi/Editor)</strong>
-                            untuk memotong video Police Duty (10 Klip/Hari, Max
-                            5 Menit). Akun yang ditunjuk
-                            <strong>HANYA mendapatkan hak Clipper</strong> dan
-                            <strong
-                                >TIDAK mendapatkan hak penunjukan ulang</strong
-                            >.
+                            {{ delegationData.used_slots }}/2 Slot Terpakai
+                        </span>
+                    </div>
+
+                    <Progress
+                        :model-value="(delegationData.used_slots / 2) * 100"
+                        class="h-2"
+                    />
+                </div>
+
+                <!-- List of Current Delegations -->
+                <div class="space-y-3">
+                    <h4
+                        class="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+                    >
+                        Akun Yang Telah Anda Tunjuk ({{
+                            delegationData.delegations
+                                ? delegationData.delegations.length
+                                : 0
+                        }}/2)
+                    </h4>
+
+                    <div
+                        v-if="isLoadingDelegation"
+                        class="p-4 text-center text-xs text-muted-foreground font-mono"
+                    >
+                        Memuat data slot...
+                    </div>
+
+                    <div
+                        v-else-if="
+                            !delegationData.delegations ||
+                            delegationData.delegations.length === 0
+                        "
+                        class="p-4 rounded-xl bg-muted/30 border border-dashed border-border text-center space-y-1"
+                    >
+                        <p class="text-xs text-muted-foreground">
+                            Belum ada akun member yang Anda tunjuk.
+                        </p>
+                        <p class="text-xs text-muted-foreground font-mono">
+                            Gunakan formulir di bawah untuk menunjuk akun
+                            via alamat email.
                         </p>
                     </div>
 
-                    <!-- Alert Banners inside Modal -->
-                    <div
-                        v-if="delegationErrMsg"
-                        class="p-3 rounded-xl bg-slate-950 border border-red-900/50 text-red-400 text-xs flex items-center justify-between gap-2 font-mono"
-                    >
-                        <span>{{ delegationErrMsg }}</span>
-                        <button
-                            @click="delegationErrMsg = ''"
-                            class="text-red-400 hover:text-white"
-                        >
-                            ✕
-                        </button>
-                    </div>
-
-                    <div
-                        v-if="delegationSuccessMsg"
-                        class="p-3 rounded-xl bg-slate-950 border border-emerald-900/50 text-emerald-400 text-xs flex items-center justify-between gap-2 font-mono"
-                    >
-                        <span>{{ delegationSuccessMsg }}</span>
-                        <button
-                            @click="delegationSuccessMsg = ''"
-                            class="text-emerald-400 hover:text-white"
-                        >
-                            ✕
-                        </button>
-                    </div>
-
-                    <!-- Slots Overview Box -->
-                    <div
-                        class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-3"
-                    >
-                        <div class="flex items-center justify-between text-xs">
-                            <span
-                                class="text-slate-300 font-semibold uppercase tracking-wider"
-                                >Status Kuota Slot Penunjukan:</span
-                            >
-                            <span
-                                class="font-mono font-bold text-sm"
-                                :class="
-                                    delegationData.used_slots >= 2
-                                        ? 'text-amber-400'
-                                        : 'text-emerald-400'
-                                "
-                            >
-                                {{ delegationData.used_slots }}/2 Slot Terpakai
-                            </span>
-                        </div>
-
-                        <!-- Progress Bar -->
+                    <div v-else class="space-y-2">
                         <div
-                            class="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800"
+                            v-for="del in delegationData.delegations"
+                            :key="del.id"
+                            class="p-3 rounded-xl bg-muted/40 border border-border flex items-center justify-between gap-3 text-xs"
                         >
-                            <div
-                                class="h-full bg-linear-to-r from-emerald-500 to-blue-500 transition-all duration-300"
-                                :style="{
-                                    width: `${(delegationData.used_slots / 2) * 100}%`,
-                                }"
-                            ></div>
-                        </div>
-                    </div>
-
-                    <!-- List of Current Delegations -->
-                    <div class="space-y-3">
-                        <h4
-                            class="text-xs font-semibold text-slate-300 uppercase tracking-wider"
-                        >
-                            Akun Yang Telah Anda Tunjuk ({{
-                                delegationData.delegations
-                                    ? delegationData.delegations.length
-                                    : 0
-                            }}/2)
-                        </h4>
-
-                        <div
-                            v-if="isLoadingDelegation"
-                            class="p-4 text-center text-xs text-slate-400 font-mono"
-                        >
-                            Memuat data slot...
-                        </div>
-
-                        <div
-                            v-else-if="
-                                !delegationData.delegations ||
-                                delegationData.delegations.length === 0
-                            "
-                            class="p-4 rounded-xl bg-slate-950/60 border border-dashed border-slate-800 text-center space-y-1"
-                        >
-                            <p class="text-xs text-slate-400">
-                                Belum ada akun member yang Anda tunjuk.
-                            </p>
-                            <p class="text-[11px] text-slate-500 font-mono">
-                                Gunakan formulir di bawah untuk menunjuk akun
-                                via alamat email.
-                            </p>
-                        </div>
-
-                        <div v-else class="space-y-2">
-                            <div
-                                v-for="del in delegationData.delegations"
-                                :key="del.id"
-                                class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 text-xs"
-                            >
-                                <div class="space-y-0.5 truncate">
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            class="font-bold text-white truncate"
-                                            >{{
-                                                del.assigned_user?.name ||
-                                                "Member"
-                                            }}</span
-                                        >
-                                        <span
-                                            class="px-1.5 py-0.5 text-[9px] font-bold rounded-sm bg-slate-900 text-emerald-400 border border-slate-800 font-mono uppercase"
-                                        >
-                                            {{
-                                                del.tier === "ultimate"
-                                                    ? "Ultimate Tier"
-                                                    : "Creator Tier (10 Klip/hr)"
-                                            }}
-                                        </span>
-                                    </div>
-                                    <p
-                                        class="text-[11px] text-slate-400 font-mono truncate"
-                                    >
-                                        {{ del.assigned_user?.email }}
-                                    </p>
-                                </div>
-                                <button
-                                    @click="
-                                        revokeDelegation(
-                                            del.id,
+                            <div class="space-y-0.5 truncate">
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="font-bold text-foreground truncate"
+                                        >{{
                                             del.assigned_user?.name ||
-                                                del.assigned_user?.email,
-                                        )
-                                    "
-                                    class="py-1.5 px-3 rounded-lg bg-red-950/80 hover:bg-red-900 border border-red-800 text-red-300 hover:text-white font-semibold text-xs transition flex items-center gap-1 shrink-0 font-mono cursor-pointer"
-                                    title="Cabut penunjukan & kembalikan pengguna ke member biasa"
+                                            "Member"
+                                        }}</span
+                                    >
+                                    <Badge variant="success" class="font-mono text-xs uppercase">
+                                        {{
+                                            del.tier === "ultimate"
+                                                ? "Ultimate Tier"
+                                                : "Creator Tier (10 Klip/hr)"
+                                        }}
+                                    </Badge>
+                                </div>
+                                <p
+                                    class="text-xs text-muted-foreground font-mono truncate"
                                 >
-                                    <img
-                                        :src="iconDelete"
-                                        class="w-3.5 h-3.5 invert opacity-90"
-                                        alt=""
-                                    />
-                                    <span>Cabut</span>
-                                </button>
+                                    {{ del.assigned_user?.email }}
+                                </p>
                             </div>
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                @click="
+                                    promptRevokeDelegation(
+                                        del.id,
+                                        del.assigned_user?.name ||
+                                            del.assigned_user?.email,
+                                    )
+                                "
+                                class="text-xs flex items-center gap-1 shrink-0 font-mono cursor-pointer"
+                                title="Cabut penunjukan & kembalikan pengguna ke member biasa"
+                            >
+                                <Trash2 class="w-3.5 h-3.5" />
+                                <span>Cabut</span>
+                            </Button>
                         </div>
-                    </div>
-
-                    <!-- Form to Assign New Member (If slots available) -->
-                    <div
-                        v-if="delegationData.used_slots < 2"
-                        class="p-4 rounded-xl bg-slate-950/80 border border-blue-900/50 space-y-3"
-                    >
-                        <h4
-                            class="text-xs font-semibold text-blue-300 uppercase tracking-wider flex items-center gap-1.5"
-                        >
-                            <svg
-                                class="w-4 h-4 text-blue-400 shrink-0"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                                />
-                            </svg>
-                            <span
-                                >Tunjuk Akun Member Baru (Sisa Slot:
-                                {{ 2 - delegationData.used_slots }})</span
-                            >
-                        </h4>
-
-                        <div class="space-y-2">
-                            <div>
-                                <label
-                                    class="block text-[11px] text-slate-400 mb-1"
-                                    >Email Akun Member:</label
-                                >
-                                <input
-                                    v-model="assignEmailInput"
-                                    type="email"
-                                    placeholder="contoh: user@gmail.com"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:ring-0 outline-hidden transition font-mono"
-                                />
-                            </div>
-
-                            <div>
-                                <label
-                                    class="block text-[11px] text-slate-400 mb-1"
-                                    >Pilih Kategori Hak Clipper:</label
-                                >
-                                <select
-                                    v-model="assignTierInput"
-                                    class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-500 focus:ring-0 outline-hidden transition font-sans"
-                                >
-                                    <option value="creator">
-                                        Police Duty Clipper (10 Klip/hari,
-                                        Durasi Maks 5 Menit)
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <button
-                            @click="assignDelegation"
-                            :disabled="isAssigningDelegation"
-                            class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer font-tactical"
-                        >
-                            <svg
-                                v-if="isAssigningDelegation"
-                                class="animate-spin h-4 w-4 text-white"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    class="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    stroke-width="4"
-                                ></circle>
-                                <path
-                                    class="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                ></path>
-                            </svg>
-                            <span v-else>Tunjuk Sebagai Clipper</span>
-                        </button>
-                    </div>
-
-                    <div
-                        v-else
-                        class="p-3 rounded-xl bg-amber-950/40 border border-amber-800/60 text-amber-300 text-xs text-center font-mono"
-                    >
-                        Kuota penunjukan Anda telah penuh (2/2 Slot Terpakai).
-                        Cabut salah satu penunjukan di atas jika ingin mengganti
-                        akun target.
-                    </div>
-
-                    <div class="flex items-center justify-end pt-2">
-                        <button
-                            @click="showDelegationModal = false"
-                            class="py-2 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white font-bold text-xs transition cursor-pointer"
-                        >
-                            Tutup
-                        </button>
                     </div>
                 </div>
-            </div>
-        </transition>
+
+                <!-- Form to Assign New Member (If slots available) -->
+                <div
+                    v-if="delegationData.used_slots < 2"
+                    class="p-4 rounded-xl bg-muted/40 border border-primary/30 space-y-3"
+                >
+                    <h4
+                        class="text-xs font-semibold text-primary uppercase tracking-wider flex items-center gap-1.5"
+                    >
+                        <UserPlus class="w-4 h-4 text-primary shrink-0" />
+                        <span
+                            >Tunjuk Akun Member Baru (Sisa Slot:
+                            {{ 2 - delegationData.used_slots }})</span
+                        >
+                    </h4>
+
+                    <div class="space-y-2">
+                        <div>
+                            <label
+                                class="block text-xs text-muted-foreground mb-1"
+                                >Email Akun Member:</label
+                            >
+                            <Input
+                                v-model="assignEmailInput"
+                                type="email"
+                                placeholder="contoh: user@gmail.com"
+                                class="text-xs font-mono"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-xs text-muted-foreground mb-1"
+                                >Pilih Kategori Hak Clipper:</label
+                            >
+                            <select
+                                v-model="assignTierInput"
+                                class="w-full bg-background border border-input rounded-lg px-3 py-2 text-xs text-foreground focus:border-primary focus:ring-0 outline-hidden transition font-sans"
+                            >
+                                <option value="creator">
+                                    Police Duty Clipper (10 Klip/hari,
+                                    Durasi Maks 5 Menit)
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <Button
+                        @click="assignDelegation"
+                        :disabled="isAssigningDelegation"
+                        class="w-full font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer font-tactical"
+                    >
+                        <Loader2
+                            v-if="isAssigningDelegation"
+                            class="animate-spin h-4 w-4"
+                        />
+                        <span v-else>Tunjuk Sebagai Clipper</span>
+                    </Button>
+                </div>
+
+                <div
+                    v-else
+                    class="p-3 rounded-xl bg-warning/15 border border-warning/40 text-warning text-xs text-center font-mono"
+                >
+                    Kuota penunjukan Anda telah penuh (2/2 Slot Terpakai).
+                    Cabut salah satu penunjukan di atas jika ingin mengganti
+                    akun target.
+                </div>
+
+                <DialogFooter>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        @click="showDelegationModal = false"
+                    >
+                        Tutup
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
         <!-- MOBILE CLIPPER MENU BOTTOM SHEET DRAWER -->
         <Teleport to="body">
@@ -2022,13 +1440,13 @@
             >
                 <!-- Backdrop -->
                 <div
-                    class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity"
+                    class="fixed inset-0 bg-background/80 backdrop-blur-xs transition-opacity"
                     @click="closeMobileClipperMenu"
                 ></div>
 
                 <!-- Sheet Panel -->
                 <div
-                    class="relative z-10 w-full max-w-lg mx-auto bg-[#070e1b] border-t border-[#182640] rounded-t-3xl shadow-2xl overflow-hidden max-h-[88vh] flex flex-col animate-in slide-in-from-bottom duration-300"
+                    class="relative z-10 w-full max-w-lg mx-auto bg-card border-t border-border rounded-t-3xl shadow-2xl overflow-hidden max-h-[88vh] flex flex-col animate-in slide-in-from-bottom duration-300"
                 >
                     <!-- Drag handle & Header -->
                     <div
@@ -2036,61 +1454,39 @@
                         @click="closeMobileClipperMenu"
                     >
                         <div
-                            class="w-12 h-1.5 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors"
+                            class="w-12 h-1.5 rounded-full bg-muted hover:bg-muted-foreground/40 transition-colors"
                         ></div>
                     </div>
 
                     <div
-                        class="px-5 py-3 border-b border-[#16243d] flex items-center justify-between"
+                        class="px-5 py-3 border-b border-border flex items-center justify-between"
                     >
                         <div class="flex items-center gap-2.5">
                             <div
-                                class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0"
+                                class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shrink-0"
                             >
-                                <svg
-                                    class="w-4 h-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-                                    />
-                                </svg>
+                                <SlidersHorizontal class="w-4 h-4" />
                             </div>
                             <div>
                                 <h3
-                                    class="font-bold text-slate-100 text-sm uppercase tracking-wide font-mono"
+                                    class="font-bold text-foreground text-sm uppercase tracking-wide font-mono"
                                 >
                                     Menu Opsi & Ekspor ClipStudio
                                 </h3>
-                                <p class="text-[11px] text-slate-400">
+                                <p class="text-xs text-muted-foreground">
                                     Pengaturan format, kuota & ekspor klip video
                                 </p>
                             </div>
                         </div>
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label="Tutup menu opsi"
                             @click="closeMobileClipperMenu"
-                            class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#121f36] transition cursor-pointer"
                         >
-                            <svg
-                                class="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        </button>
+                            <X class="w-5 h-5" />
+                        </Button>
                     </div>
 
                     <!-- Drawer Scrollable Content -->
@@ -2101,11 +1497,11 @@
                                 class="flex items-center justify-between px-0.5"
                             >
                                 <span
-                                    class="text-xs font-semibold uppercase tracking-wider text-slate-300"
+                                    class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                                     >Format & Kualitas Output</span
                                 >
                                 <span
-                                    class="text-[11px] text-sky-400 font-mono font-bold"
+                                    class="text-xs text-primary font-mono font-bold"
                                     >{{
                                         formatSeconds(calculatedSeconds)
                                     }}</span
@@ -2121,12 +1517,12 @@
                                     class="relative flex items-center justify-between p-3 rounded-xl border transition-all duration-200 cursor-pointer text-left"
                                     :class="[
                                         form.format === fmt.value
-                                            ? 'border-sky-500/70 bg-sky-950/40 shadow-md ring-1 ring-sky-500/40'
-                                            : 'border-[#182640] bg-[#050b17]/80 hover:bg-[#0d172a]',
+                                            ? 'border-primary/70 bg-primary/10 shadow-md ring-1 ring-primary/40'
+                                            : 'border-border bg-muted/40 hover:bg-muted',
                                         fmt.value === 'MP4 1080p' &&
                                         !canUse1080p &&
                                         !isGuest
-                                            ? 'opacity-60 bg-slate-950/40 border-dashed border-amber-900/40'
+                                            ? 'opacity-60 bg-muted/30 border-dashed border-warning/40'
                                             : '',
                                     ]"
                                 >
@@ -2135,15 +1531,15 @@
                                             class="w-4 h-4 rounded-full border flex items-center justify-center shrink-0"
                                             :class="
                                                 form.format === fmt.value
-                                                    ? 'border-sky-400'
-                                                    : 'border-slate-600'
+                                                    ? 'border-primary'
+                                                    : 'border-muted-foreground'
                                             "
                                         >
                                             <div
                                                 class="w-2 h-2 rounded-full"
                                                 :class="
                                                     form.format === fmt.value
-                                                        ? 'bg-sky-400'
+                                                        ? 'bg-primary'
                                                         : 'bg-transparent'
                                                 "
                                             ></div>
@@ -2153,17 +1549,17 @@
                                                 class="flex items-center gap-2"
                                             >
                                                 <span
-                                                    class="text-xs font-bold text-slate-100"
+                                                    class="text-xs font-bold text-foreground"
                                                     >{{ fmt.name }}</span
                                                 >
                                                 <span
-                                                    class="text-[9px] font-medium px-1.5 py-0.5 rounded-full"
+                                                    class="text-xs font-medium px-1.5 py-0.5 rounded-full"
                                                     :class="
                                                         fmt.value ===
                                                             'MP4 1080p' &&
                                                         !canUse1080p &&
                                                         !isGuest
-                                                            ? 'bg-amber-950 text-amber-300'
+                                                            ? 'bg-warning/15 text-warning'
                                                             : fmt.tagClass
                                                     "
                                                 >
@@ -2178,33 +1574,31 @@
                                                 </span>
                                             </div>
                                             <p
-                                                class="text-[10px] text-slate-400 mt-0.5"
+                                                class="text-xs text-muted-foreground mt-0.5"
                                             >
                                                 {{ fmt.useCase }}
                                             </p>
                                         </div>
                                     </div>
-                                    <span
-                                        class="text-[10px] font-mono text-slate-300 bg-[#070e1b] px-2 py-1 rounded-sm border border-[#17253e] shrink-0"
-                                    >
+                                    <Badge variant="outline" class="font-mono text-xs shrink-0">
                                         {{ fmt.desc }}
-                                    </span>
+                                    </Badge>
                                 </button>
                             </div>
                         </section>
 
                         <!-- 2. Export Summary & Quota -->
                         <section
-                            class="bg-[#050b17]/90 rounded-xl border border-[#17253e] p-3 space-y-2"
+                            class="bg-muted/40 rounded-xl border border-border p-3 space-y-2"
                         >
                             <div
-                                class="flex items-center justify-between text-xs pb-1.5 border-b border-[#142036]"
+                                class="flex items-center justify-between text-xs pb-1.5 border-b border-border"
                             >
                                 <span
-                                    class="text-slate-400 font-semibold uppercase"
+                                    class="text-muted-foreground font-semibold uppercase"
                                     >Durasi Klip Terpilih</span
                                 >
-                                <span class="text-slate-100 font-mono font-bold"
+                                <span class="text-foreground font-mono font-bold"
                                     >{{ formatSeconds(calculatedSeconds) }} ({{
                                         calculatedSeconds
                                     }}s)</span
@@ -2213,10 +1607,10 @@
                             <div
                                 class="flex items-center justify-between text-xs"
                             >
-                                <span class="text-slate-400"
+                                <span class="text-muted-foreground"
                                     >Sisa Kuota {{ quotaPeriodLabel }}:</span
                                 >
-                                <span class="text-sky-400 font-mono font-bold">
+                                <span class="text-primary font-mono font-bold">
                                     {{
                                         isUnlimitedQuota
                                             ? "Unlimited"
@@ -2227,7 +1621,7 @@
                         </section>
 
                         <!-- 3. Primary Submit CTA Button inside Mobile Drawer -->
-                        <button
+                        <Button
                             @click="
                                 submitTrim();
                                 closeMobileClipperMenu();
@@ -2237,45 +1631,78 @@
                                 (!isGuest && !isDurationValid) ||
                                 submitCooldownSec > 0
                             "
-                            class="w-full py-3.5 px-4 rounded-xl text-white font-semibold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] disabled:opacity-50 font-sans bg-linear-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500"
+                            size="lg"
+                            class="w-full py-3.5 px-4 rounded-xl font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer font-sans"
                         >
-                            <img
-                                :src="iconCut"
-                                class="w-4 h-4 invert opacity-90 shrink-0"
-                                alt=""
-                            />
+                            <Scissors class="w-4 h-4 shrink-0" />
                             <span>{{
                                 urlCheckResult?.is_live
                                     ? "POTONG KLIP LIVE (HLS DVR)"
                                     : `POTONG & SIMPAN KLIP (${form.format.toUpperCase()})`
                             }}</span>
-                        </button>
+                        </Button>
 
                         <!-- 4. Quick Account / Request Buttons -->
                         <div class="pt-1">
-
-                            <button
+                            <Button
                                 v-if="
                                     !isGuest &&
                                     !isUnlimitedQuota &&
                                     clipperRequestStatus !== 'pending'
                                 "
+                                variant="outline"
                                 @click="
                                     closeMobileClipperMenu();
                                     showRequestClipperModal = true;
                                 "
-                                class="w-full py-2.5 px-3.5 rounded-xl bg-[#091326] hover:bg-[#0f1d3a] border border-[#1b2f56] text-slate-300 text-xs font-mono transition flex items-center justify-between cursor-pointer"
+                                class="w-full py-2.5 px-3.5 rounded-xl text-xs font-mono flex items-center justify-between cursor-pointer"
                             >
                                 <span>Akses Clipper Beta (Gratis)</span>
-                                <span class="text-blue-400 font-bold"
+                                <span class="text-primary font-bold"
                                     >Daftar →</span
                                 >
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
             </div>
         </Teleport>
+
+        <!-- ALERT DIALOG: DELETE CLIP -->
+        <AlertDialog :open="clipToDeleteId !== null" @update:open="(val) => { if (!val) clipToDeleteId = null; }">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Hapus Klip Video?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Apakah Anda yakin ingin menghapus klip video ini dari server?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="clipToDeleteId = null">Batal</AlertDialogCancel>
+                    <AlertDialogAction class="bg-destructive text-destructive-foreground hover:bg-destructive/90" @click="confirmDeleteClip">
+                        Hapus Klip
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <!-- ALERT DIALOG: REVOKE DELEGATION -->
+        <AlertDialog :open="delegationToRevoke !== null" @update:open="(val) => { if (!val) delegationToRevoke = null; }">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Cabut Penunjukan Clipper?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Apakah Anda yakin ingin mencabut penunjukan Clipper untuk {{ delegationToRevoke?.targetName }}? Slot penunjukan Anda akan kembali bertambah.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="delegationToRevoke = null">Batal</AlertDialogCancel>
+                    <AlertDialogAction class="bg-destructive text-destructive-foreground hover:bg-destructive/90" @click="confirmRevokeDelegation">
+                        Cabut Penunjukan
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </TacticalLayout>
 </template>
 
@@ -2284,12 +1711,57 @@ import DualRangeTrimmer from "@/Components/DualRangeTrimmer.vue";
 import CustomVideoPlayer from "@/Components/CustomVideoPlayer.vue";
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
+import { PageContainer } from "@/Components/tactical";
+import { Alert, AlertDescription } from "@/Components/ui/alert";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/Components/ui/dialog";
+import { Input } from "@/Components/ui/input";
+import { Progress } from "@/Components/ui/progress";
+import {
+    AlertCircle,
+    AlertTriangle,
+    ArrowRight,
+    BarChart3,
+    Check,
+    Clock,
+    Download,
+    Loader2,
+    Lock,
+    LogIn,
+    RefreshCw,
+    Scissors,
+    ShieldCheck,
+    SlidersHorizontal,
+    Sparkles,
+    Trash2,
+    UserPlus,
+    Video,
+    X,
+    Zap,
+} from "@lucide/vue";
 import { Head, usePage } from "@inertiajs/vue3";
 import axios from "axios";
+import { toast } from "vue-sonner";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-
-import iconDelete from "@/Components/Icons/delete-2-svgrepo-com.svg";
-import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
 
 const props = defineProps({
     initialUrl: String,
@@ -2351,6 +1823,8 @@ const assignTierInput = ref("creator");
 const delegationErrMsg = ref("");
 const delegationSuccessMsg = ref("");
 const showTierMatrix = ref(false);
+const clipToDeleteId = ref(null);
+const delegationToRevoke = ref(null);
 
 // Mobile Menu Drawer State
 const isMobileClipperMenuOpen = ref(false);
@@ -2399,9 +1873,9 @@ const formatOptions = [
         name: "1080p Full HD",
         desc: "Full HD 1080p",
         badge: "FHD",
-        badgeClass: "bg-[#0f1d38] text-cyan-400 border border-[#1b2f56]",
+        badgeClass: "bg-primary/15 text-primary border border-primary/30",
         tag: "Rekomendasi Utama",
-        tagClass: "bg-[#0b172e] text-cyan-300 border border-cyan-500/30",
+        tagClass: "bg-primary/15 text-primary border border-primary/30",
         useCase: "Kualitas presisi tinggi untuk editing YouTube & TikTok",
     },
     {
@@ -2409,9 +1883,9 @@ const formatOptions = [
         name: "720p HD",
         desc: "HD 720p",
         badge: "HD",
-        badgeClass: "bg-[#0a1324] text-slate-400 border border-[#162540]",
+        badgeClass: "bg-muted text-muted-foreground border border-border",
         tag: "Cepat & Ringan",
-        tagClass: "bg-[#070e1c] text-slate-400 border border-[#14223a]",
+        tagClass: "bg-muted text-muted-foreground border border-border",
         useCase: "Pemrosesan cepat, cocok untuk tinjauan & preview",
     },
     {
@@ -2419,9 +1893,9 @@ const formatOptions = [
         name: "480p Standard",
         desc: "SD 480p",
         badge: "SD",
-        badgeClass: "bg-[#0a1324] text-slate-400 border border-[#162540]",
+        badgeClass: "bg-muted text-muted-foreground border border-border",
         tag: "Hemat Kuota",
-        tagClass: "bg-[#070e1c] text-slate-400 border border-[#14223a]",
+        tagClass: "bg-muted text-muted-foreground border border-border",
         useCase: "Resolusi standar untuk koneksi hemat",
     },
     {
@@ -2429,9 +1903,9 @@ const formatOptions = [
         name: "MP3 Audio",
         desc: "320 kbps",
         badge: "AUDIO",
-        badgeClass: "bg-[#0a1324] text-slate-400 border border-[#162540]",
+        badgeClass: "bg-muted text-muted-foreground border border-border",
         tag: "Audio Saja",
-        tagClass: "bg-[#070e1c] text-slate-400 border border-[#14223a]",
+        tagClass: "bg-muted text-muted-foreground border border-border",
         useCase: "Ekstrak musik, percakapan & rekaman suara",
     },
 ];
@@ -2475,7 +1949,6 @@ async function checkYoutubeUrl(urlToTest) {
         const response = await axios.post("/api/v1/clips/check-url", {
             url: targetUrl,
         });
-        // Guard against out-of-order asynchronous responses
         if (
             requestId !== currentCheckRequestId ||
             targetUrl !== form.value.youtube_url?.trim()
@@ -2551,7 +2024,6 @@ const videoSrc = ref(
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
 );
 
-// Parse YouTube Video ID (supports watch, live, shorts, embed, youtu.be)
 const activeVideoId = computed(() => {
     const url = (form.value.youtube_url || "").trim();
     if (!url) return "";
@@ -2561,7 +2033,6 @@ const activeVideoId = computed(() => {
     return match && match[1] ? match[1] : "";
 });
 
-// YouTube Embed Iframe Listener & Polling
 function initYTMessageListener() {
     window.addEventListener("message", (event) => {
         if (!event.data) return;
@@ -2700,7 +2171,6 @@ const estimatedFileSize = computed(() => {
         : `~${totalMB} MB (VOD)`;
 });
 
-// Fetch user's Clipper request status
 async function fetchClipperRequestStatus() {
     if (!user.value || isClipperOrAdmin.value) return;
     try {
@@ -2711,7 +2181,6 @@ async function fetchClipperRequestStatus() {
     } catch (err) {}
 }
 
-// Submit a new Clipper Role request
 async function submitClipperRequest() {
     isSubmittingRequest.value = true;
     requestSuccessMsg.value = "";
@@ -2736,7 +2205,6 @@ async function submitClipperRequest() {
     }
 }
 
-// Clipper Delegation API Calls
 async function fetchDelegations() {
     if (!user.value?.can_delegate_clipper) return;
     isLoadingDelegation.value = true;
@@ -2778,13 +2246,14 @@ async function assignDelegation() {
     }
 }
 
-async function revokeDelegation(id, targetName) {
-    if (
-        !confirm(
-            `Apakah Anda yakin ingin mencabut penunjukan Clipper untuk ${targetName}? Slot penunjukan Anda akan kembali bertambah.`,
-        )
-    )
-        return;
+function promptRevokeDelegation(id, targetName) {
+    delegationToRevoke.value = { id, targetName };
+}
+
+async function confirmRevokeDelegation() {
+    if (!delegationToRevoke.value) return;
+    const { id } = delegationToRevoke.value;
+    delegationToRevoke.value = null;
     delegationErrMsg.value = "";
     delegationSuccessMsg.value = "";
     try {
@@ -2859,7 +2328,6 @@ function autoClampDuration() {
     form.value.end_time = formatSecondsToTimestamp(finalEnd);
 }
 
-// Player controls
 function seekPlayer(secondsDelta) {
     if (mainPlayerRef.value) {
         mainPlayerRef.value.seekRelative(secondsDelta);
@@ -2949,7 +2417,6 @@ function selectFormat(fmtValue, e) {
     form.value.format = fmtValue;
 }
 
-// Submit Trim Job to Laravel API
 async function submitTrim() {
     if (isGuest.value) {
         handleGuestAuth();
@@ -2969,7 +2436,6 @@ async function submitTrim() {
         return;
     }
 
-    // Anti-Spam: Check if an identical clip is already being processed in queue
     const startSecs = parseTimeToSeconds(form.value.start_time);
     const endSecs = parseTimeToSeconds(form.value.end_time);
 
@@ -3006,14 +2472,12 @@ async function submitTrim() {
             "Proses pemotongan video telah dimasukkan ke dalam antrean server!";
         startSubmitCooldown(5);
 
-        // Reactively increment user's daily clips count for instant UI update
         if (user.value && typeof user.value.daily_clips_count === "number") {
             user.value.daily_clips_count++;
         }
 
         await fetchClips();
 
-        // Smooth scroll to clips library section so user sees the progress indicator
         const libraryEl = document.getElementById("library-section");
         if (libraryEl) {
             libraryEl.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -3036,7 +2500,6 @@ async function submitTrim() {
     }
 }
 
-// Fetch Clips List from Laravel API
 async function fetchClips() {
     if (isGuest.value) return;
     isLoadingClips.value = true;
@@ -3050,18 +2513,20 @@ async function fetchClips() {
     }
 }
 
-async function deleteClip(id) {
-    if (
-        !confirm(
-            "Apakah Anda yakin ingin menghapus klip video ini dari server?",
-        )
-    )
-        return;
+function promptDeleteClip(id) {
+    clipToDeleteId.value = id;
+}
+
+async function confirmDeleteClip() {
+    const id = clipToDeleteId.value;
+    if (!id) return;
+    clipToDeleteId.value = null;
     try {
         await axios.delete(`/api/v1/clips/${id}`);
         clipsList.value = clipsList.value.filter((c) => c.id !== id);
+        toast.success("Klip video berhasil dihapus dari server.");
     } catch (err) {
-        alert("Gagal menghapus klip video.");
+        toast.error("Gagal menghapus klip video.");
     }
 }
 
@@ -3142,7 +2607,15 @@ onMounted(() => {
 onUnmounted(() => {
     stopPolling();
     stopYTTimePolling();
-    window.removeEventListener("keydown", handleKeyDown);
-    closeMobileClipperMenu();
+    if (cooldownTimer) {
+        clearInterval(cooldownTimer);
+        cooldownTimer = null;
+    }
+    if (typeof window !== "undefined") {
+        window.removeEventListener("keydown", handleKeyDown);
+    }
+    if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+    }
 });
 </script>

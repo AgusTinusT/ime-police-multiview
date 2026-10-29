@@ -1,168 +1,150 @@
 <template>
-    <div v-if="show" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 transition-all">
-        <div class="relative w-full max-w-3xl rounded-2xl border border-red-500/30 bg-slate-950/95 shadow-2xl shadow-red-950/40 text-slate-100 overflow-hidden flex flex-col max-h-[90vh]">
-            
+    <Dialog :open="show" @update:open="(val) => { if (!val) closeModal(); }">
+        <DialogContent class="sm:max-w-3xl p-0 bg-card border-border text-foreground overflow-hidden flex flex-col max-h-[90vh]">
             <!-- Modal Header -->
-            <div class="flex items-center justify-between border-b border-red-900/40 bg-red-950/30 px-6 py-4">
-                <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 shadow-inner">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L5 5m4.121 4.121L5 19" />
-                        </svg>
+            <DialogHeader class="flex flex-row items-center justify-between border-b border-border bg-muted/40 px-6 py-4 space-y-0">
+                <div class="flex items-center gap-3 text-left">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/15 text-destructive border border-destructive/30">
+                        <Scissors class="h-5 w-5" />
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold tracking-wide text-white flex items-center gap-2">
+                        <DialogTitle class="text-lg font-bold tracking-wide text-foreground flex items-center gap-2">
                             Tactical Stream Trimmer
-                        </h3>
-                        <p class="text-xs text-slate-400">Potong segmen video YouTube (Maksimal 10 Menit)</p>
+                        </DialogTitle>
+                        <DialogDescription class="text-xs text-muted-foreground">
+                            Potong segmen video YouTube (Maksimal 10 Menit)
+                        </DialogDescription>
                     </div>
                 </div>
-                <button @click="closeModal" class="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
+            </DialogHeader>
 
             <!-- Tab Buttons -->
-            <div class="flex border-b border-slate-800 bg-slate-900/50 px-6">
-                <button 
-                    @click="activeTab = 'create'" 
-                    class="py-3 px-4 font-medium text-sm border-b-2 transition flex items-center gap-2"
-                    :class="activeTab === 'create' ? 'border-red-500 text-red-400' : 'border-transparent text-slate-400 hover:text-slate-200'"
+            <div class="flex border-b border-border bg-muted/20 px-6">
+                <button
+                    @click="activeTab = 'create'"
+                    class="py-3 px-4 font-medium text-sm border-b-2 transition flex items-center gap-2 cursor-pointer"
+                    :class="activeTab === 'create' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'"
                 >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
+                    <Plus class="w-4 h-4" />
                     Potong Video Baru
                 </button>
-                <button 
-                    @click="activeTab = 'history'; fetchClips();" 
-                    class="py-3 px-4 font-medium text-sm border-b-2 transition flex items-center gap-2"
-                    :class="activeTab === 'history' ? 'border-red-500 text-red-400' : 'border-transparent text-slate-400 hover:text-slate-200'"
+                <button
+                    @click="activeTab = 'history'; fetchClips();"
+                    class="py-3 px-4 font-medium text-sm border-b-2 transition flex items-center gap-2 cursor-pointer"
+                    :class="activeTab === 'history' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'"
                 >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
+                    <Layers class="w-4 h-4" />
                     Daftar Klip Saya
-                    <span v-if="clipsList.length" class="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-slate-800 text-slate-300 font-mono">
+                    <Badge v-if="clipsList.length" variant="secondary" class="ml-1 font-mono text-xs">
                         {{ clipsList.length }}
-                    </span>
+                    </Badge>
                 </button>
             </div>
 
             <!-- Modal Content -->
             <div class="p-6 overflow-y-auto flex-1 space-y-5">
-                
                 <!-- TAB 1: FORM POTONG VIDEO -->
                 <div v-if="activeTab === 'create'" class="space-y-4">
                     <!-- Notification Banner -->
-                    <div v-if="formError" class="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{{ formError }}</span>
-                    </div>
+                    <Alert v-if="formError" variant="destructive" class="p-3.5 text-xs flex items-center gap-2">
+                        <AlertCircle class="w-4 h-4 shrink-0" />
+                        <AlertDescription>{{ formError }}</AlertDescription>
+                    </Alert>
 
-                    <div v-if="successMessage" class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-                        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>{{ successMessage }}</span>
-                    </div>
+                    <Alert v-if="successMessage" class="p-3.5 border-success/40 bg-success/10 text-success text-xs flex items-center gap-2">
+                        <Check class="w-4 h-4 shrink-0" />
+                        <AlertDescription>{{ successMessage }}</AlertDescription>
+                    </Alert>
 
                     <!-- YouTube URL Input -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                            URL Video / Live Stream YouTube <span class="text-red-400">*</span>
-                        </label>
-                        <div class="relative">
-                            <input 
-                                v-model="form.youtube_url"
-                                type="text"
-                                placeholder="https://www.youtube.com/watch?v=..."
-                                class="w-full rounded-xl bg-slate-900 border border-slate-700/80 px-4 py-2.5 text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition placeholder:text-slate-500 font-mono"
-                            />
-                        </div>
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            URL Video / Live Stream YouTube <span class="text-destructive">*</span>
+                        </Label>
+                        <Input
+                            v-model="form.youtube_url"
+                            type="text"
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            class="font-mono"
+                        />
                     </div>
 
                     <!-- Judul Klip (Optional) -->
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Judul Catatan Klip (Opsional)
-                        </label>
-                        <input 
+                        </Label>
+                        <Input
                             v-model="form.title"
                             type="text"
                             placeholder="Contoh: Kejadian Kamera 1 Menit 10"
-                            class="w-full rounded-xl bg-slate-900 border border-slate-700/80 px-4 py-2.5 text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition placeholder:text-slate-500"
                         />
                     </div>
 
                     <!-- Timestamp Inputs (Start & End) -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                                Waktu Mulai (Start Time) <span class="text-red-400">*</span>
-                            </label>
-                            <input 
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Waktu Mulai (Start Time) <span class="text-destructive">*</span>
+                            </Label>
+                            <Input
                                 v-model="form.start_time"
                                 type="text"
                                 placeholder="00:01:30 atau 90"
-                                class="w-full rounded-xl bg-slate-900 border border-slate-700/80 px-4 py-2.5 text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition font-mono placeholder:text-slate-500"
+                                class="font-mono"
                             />
-                            <p class="text-[11px] text-slate-500 mt-1">Format: Jam:Menit:Detik atau Menit:Detik</p>
+                            <p class="text-xs text-muted-foreground">Format: Jam:Menit:Detik atau Menit:Detik</p>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                                Waktu Selesai (End Time) <span class="text-red-400">*</span>
-                            </label>
-                            <input 
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Waktu Selesai (End Time) <span class="text-destructive">*</span>
+                            </Label>
+                            <Input
                                 v-model="form.end_time"
                                 type="text"
                                 placeholder="00:06:30 atau 390"
-                                class="w-full rounded-xl bg-slate-900 border border-slate-700/80 px-4 py-2.5 text-sm text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition font-mono placeholder:text-slate-500"
+                                class="font-mono"
                             />
-                            <p class="text-[11px] text-slate-500 mt-1">Format: Jam:Menit:Detik atau Menit:Detik</p>
+                            <p class="text-xs text-muted-foreground">Format: Jam:Menit:Detik atau Menit:Detik</p>
                         </div>
                     </div>
 
                     <!-- Format & Quality Selector -->
                     <div class="space-y-1.5">
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                        <Label class="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Format & Kualitas Output
-                        </label>
+                        </Label>
                         <div class="grid grid-cols-2 gap-2 text-xs">
                             <label
                                 v-for="fmt in formatOptions"
                                 :key="fmt.value"
-                                class="flex items-center space-x-2 p-2.5 rounded-xl bg-slate-900 border border-slate-700/80 cursor-pointer hover:border-red-500/50 transition"
-                                :class="form.format === fmt.value ? 'border-red-500 bg-red-950/20' : ''"
+                                class="flex items-center space-x-2 p-2.5 rounded-xl bg-muted/40 border border-border cursor-pointer hover:border-primary/50 transition"
+                                :class="form.format === fmt.value ? 'border-primary bg-primary/10' : ''"
                             >
                                 <input
                                     type="radio"
                                     name="modalFormatOption"
                                     :value="fmt.value"
                                     v-model="form.format"
-                                    class="text-red-500 focus:ring-0 bg-slate-950 border-slate-700"
+                                    class="text-primary focus:ring-0 bg-background border-border"
                                 />
-                                <span class="font-medium text-white text-xs">{{ fmt.label }}</span>
+                                <span class="font-medium text-foreground text-xs">{{ fmt.label }}</span>
                             </label>
                         </div>
                     </div>
 
                     <!-- Duration Badge Counter -->
-                    <div class="rounded-xl border p-4 flex items-center justify-between"
-                         :class="isDurationValid ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300' : 'bg-red-950/20 border-red-500/30 text-red-300'">
+                    <div
+                        class="rounded-xl border p-4 flex items-center justify-between"
+                        :class="isDurationValid ? 'bg-success/10 border-success/30 text-success' : 'bg-destructive/10 border-destructive/30 text-destructive'"
+                    >
                         <div class="flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                            <Clock class="w-5 h-5" />
                             <span class="text-xs font-medium">Estimasi Durasi Potongan:</span>
                         </div>
-                        <div class="text-sm font-bold font-mono">
+                        <div class="text-sm font-bold font-mono text-right">
                             {{ formattedDuration }}
-                            <span v-if="calculatedSeconds > 600" class="text-xs block text-red-400 font-normal">
+                            <span v-if="calculatedSeconds > 600" class="text-xs block text-destructive font-normal">
                                 (Melebihi batas max 10 menit!)
                             </span>
                         </div>
@@ -170,125 +152,168 @@
 
                     <!-- Submit Button -->
                     <div class="pt-2">
-                        <button 
+                        <Button
                             @click="submitTrim"
                             :disabled="isSubmitting || !isDurationValid"
-                            class="w-full py-3 px-6 rounded-xl font-bold text-sm tracking-wide bg-linear-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg shadow-red-900/30 border border-red-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+                            class="w-full py-3 font-bold text-sm tracking-wide flex items-center justify-center gap-2"
                         >
-                            <svg v-if="isSubmitting" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
+                            <Loader2 v-if="isSubmitting" class="animate-spin h-4 w-4" />
                             <span>{{ isSubmitting ? 'Memproses Antrean Klip...' : 'Potong & Simpan Klip Video' }}</span>
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
                 <!-- TAB 2: DAFTAR KLIP SAYA -->
                 <div v-else-if="activeTab === 'history'" class="space-y-4">
-                    <div v-if="isLoadingClips" class="py-12 text-center text-slate-400 text-xs">
-                        <svg class="animate-spin h-6 w-6 text-red-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                    <div v-if="isLoadingClips" class="py-12 text-center text-muted-foreground text-xs">
+                        <Loader2 class="animate-spin h-6 w-6 text-primary mx-auto mb-2" />
                         Memuat daftar klip video...
                     </div>
 
-                    <div v-else-if="clipsList.length === 0" class="py-12 text-center text-slate-400 text-xs bg-slate-900/40 rounded-xl border border-slate-800">
+                    <div v-else-if="clipsList.length === 0" class="py-12 text-center text-muted-foreground text-xs bg-muted/30 rounded-xl border border-border">
                         Belum ada klip video yang dipotong.
                     </div>
 
                     <div v-else class="space-y-3">
-                        <div 
-                            v-for="clip in clipsList" 
+                        <Card
+                            v-for="clip in clipsList"
                             :key="clip.id"
-                            class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col gap-3 hover:border-slate-700 transition"
+                            class="p-4 bg-muted/30 border-border flex flex-col gap-3"
                         >
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <h4 class="font-bold text-sm text-white">{{ clip.title }}</h4>
-                                    <p class="text-xs text-slate-400 font-mono truncate max-w-md mt-0.5">{{ clip.youtube_url }}</p>
-                                    <div class="flex items-center gap-3 text-[11px] text-slate-400 mt-2 font-mono">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <h4 class="font-bold text-sm text-foreground truncate">{{ clip.title }}</h4>
+                                    <p class="text-xs text-muted-foreground font-mono truncate max-w-md mt-0.5">{{ clip.youtube_url }}</p>
+                                    <div class="flex items-center gap-3 text-xs text-muted-foreground mt-2 font-mono">
                                         <span>Durasi: {{ formatSeconds(clip.duration_seconds) }}</span>
                                         <span>•</span>
                                         <span>{{ new Date(clip.created_at).toLocaleString('id-ID') }}</span>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 shrink-0">
                                     <!-- Status Badge -->
-                                    <span v-if="clip.status === 'completed'" class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                    <Badge v-if="clip.status === 'completed'" variant="success">
                                         Selesai
-                                    </span>
-                                    <span v-else-if="clip.status === 'processing'" class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
+                                    </Badge>
+                                    <Badge v-else-if="clip.status === 'processing'" variant="info" class="motion-safe:animate-pulse">
                                         Memproses...
-                                    </span>
-                                    <span v-else-if="clip.status === 'pending'" class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                                    </Badge>
+                                    <Badge v-else-if="clip.status === 'pending'" variant="secondary">
                                         Antrean
-                                    </span>
-                                    <span v-else class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                                    </Badge>
+                                    <Badge v-else variant="destructive">
                                         Gagal
-                                    </span>
+                                    </Badge>
 
                                     <!-- Delete Button -->
-                                    <button @click="deleteClip(clip.id)" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon-sm"
+                                        aria-label="Hapus klip video"
+                                        @click="promptDeleteClip(clip.id)"
+                                        class="text-muted-foreground hover:text-destructive"
+                                    >
+                                        <Trash2 class="w-4 h-4" />
+                                    </Button>
                                 </div>
                             </div>
 
                             <!-- Error display -->
-                            <div v-if="clip.status === 'failed' && clip.error_message" class="text-[11px] p-2.5 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400 font-mono">
+                            <div v-if="clip.status === 'failed' && clip.error_message" class="text-xs p-2.5 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive font-mono">
                                 {{ clip.error_message }}
                             </div>
-                            <div v-else-if="clip.status === 'completed' && !clip.download_url" class="text-[11px] p-2.5 rounded-lg bg-amber-950/40 border border-amber-900/50 text-amber-400 font-mono">
+                            <div v-else-if="clip.status === 'completed' && !clip.download_url" class="text-xs p-2.5 rounded-lg bg-warning/10 border border-warning/30 text-warning font-mono">
                                 File video tidak ditemukan di server. Silakan hapus klip ini dan buat klip baru.
                             </div>
 
                             <!-- Video Preview & Download -->
                             <div v-if="clip.status === 'completed' && clip.download_url" class="space-y-2 mt-1">
-                                <video controls class="w-full max-h-56 rounded-lg bg-black border border-slate-800">
+                                <video controls class="w-full max-h-56 rounded-lg bg-background border border-border">
                                     <source :src="clip.download_url" type="video/mp4">
                                     Browser Anda tidak mendukung HTML5 Video.
                                 </video>
                                 <div class="flex items-center justify-between pt-1">
-                                    <span class="text-[10px] text-amber-400 font-mono flex items-center gap-1">
-                                        <svg class="w-3 h-3 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                                    <span class="text-xs text-warning font-mono flex items-center gap-1">
+                                        <Clock class="w-3.5 h-3.5 text-warning shrink-0" />
                                         <span>Otomatis dihapus dlm 1 jam</span>
                                     </span>
-                                    <a 
-                                        :href="clip.download_url" 
-                                        download 
-                                        class="py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3m0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                        Unduh File Video (.mp4)
-                                    </a>
+                                    <Button as-child size="sm" variant="default">
+                                        <a :href="clip.download_url" download class="flex items-center gap-1.5">
+                                            <Download class="w-4 h-4" />
+                                            Unduh File Video (.mp4)
+                                        </a>
+                                    </Button>
                                 </div>
                             </div>
-                        </div>
+                        </Card>
                     </div>
                 </div>
-
             </div>
 
             <!-- Modal Footer -->
-            <div class="border-t border-slate-800 bg-slate-900/70 px-6 py-3 flex items-center justify-between text-xs text-slate-400">
+            <div class="border-t border-border bg-muted/40 px-6 py-3 flex items-center justify-between text-xs text-muted-foreground">
                 <span class="font-sans font-medium">Tactical Stream Trimmer</span>
                 <span>Batas Maksimal: 10 Menit</span>
             </div>
-        </div>
-    </div>
+        </DialogContent>
+    </Dialog>
+
+    <AlertDialog :open="clipToDeleteId !== null" @update:open="(val) => { if (!val) clipToDeleteId = null; }">
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Hapus Klip Video?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Apakah Anda yakin ingin menghapus klip video ini? Tindakan ini tidak dapat dibatalkan.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel @click="clipToDeleteId = null">Batal</AlertDialogCancel>
+                <AlertDialogAction class="bg-destructive text-destructive-foreground hover:bg-destructive/90" @click="confirmDeleteClip">
+                    Hapus
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
 </template>
 
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue';
 import axios from 'axios';
+import { toast } from 'vue-sonner';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/Components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from '@/Components/ui/alert-dialog';
+import { Alert, AlertDescription } from '@/Components/ui/alert';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Card } from '@/Components/ui/card';
+import {
+    Scissors,
+    Plus,
+    Layers,
+    AlertCircle,
+    Check,
+    Clock,
+    Loader2,
+    Trash2,
+    Download,
+} from '@lucide/vue';
 
 const props = defineProps({
     show: Boolean,
@@ -303,6 +328,7 @@ const isLoadingClips = ref(false);
 const formError = ref('');
 const successMessage = ref('');
 const clipsList = ref([]);
+const clipToDeleteId = ref(null);
 let pollTimer = null;
 
 const formatOptions = [
@@ -416,13 +442,20 @@ async function fetchClips() {
     }
 }
 
-async function deleteClip(id) {
-    if (!confirm('Apakah Anda yakin ingin menghapus klip video ini?')) return;
+function promptDeleteClip(id) {
+    clipToDeleteId.value = id;
+}
+
+async function confirmDeleteClip() {
+    const id = clipToDeleteId.value;
+    if (!id) return;
+    clipToDeleteId.value = null;
     try {
         await axios.delete(`/api/v1/clips/${id}`);
         clipsList.value = clipsList.value.filter(c => c.id !== id);
+        toast.success('Klip video berhasil dihapus.');
     } catch (err) {
-        alert('Gagal menghapus klip video.');
+        toast.error('Gagal menghapus klip video.');
     }
 }
 
