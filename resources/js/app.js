@@ -1,4 +1,5 @@
 import "../css/app.css";
+import "augmented-ui/augmented-ui.min.css";
 import "./bootstrap";
 
 import { createInertiaApp, router } from "@inertiajs/vue3";
