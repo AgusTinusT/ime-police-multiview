@@ -154,6 +154,76 @@
 
 /* 🔴 TAMBAHKAN DESIGN PATTERN / REUSABLE STYLES DI SINI */
 
+@utility tactical-frame {
+  --tf-cut: 12px;
+  --tf-border: 1px;
+  --tf-shape: polygon(var(--tf-cut) 0, 100% 0, 100% calc(100% - var(--tf-cut)), calc(100% - var(--tf-cut)) 100%, 0 100%, 0 var(--tf-cut));
+  position: relative;
+  padding: var(--tf-border);
+  background: var(--tf-color, var(--color-primary));
+  @supports not (clip-path: polygon(0 0)) {
+    border-radius: var(--radius-lg);
+  }
+  @supports (clip-path: polygon(0 0)) {
+    clip-path: var(--tf-shape);
+  }
+  &[data-variant='hero'] {
+    --tf-cut: 24px;
+  }
+  &[data-variant='tag'] {
+    --tf-cut: 6px;
+    --tf-border: 0px;
+    background: color-mix(in oklab, var(--tf-color, var(--color-primary)) 15%, transparent);
+  }
+}
+
+@utility tactical-frame-inner {
+  height: 100%;
+  background: var(--color-card);
+  @supports (clip-path: polygon(0 0)) {
+    clip-path: var(--tf-shape);
+  }
+  [data-variant='tag'] > & {
+    background: transparent;
+  }
+}
+
+@utility hud-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--hud-line) 10%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--hud-line) 10%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@utility hud-corners {
+  position: relative;
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+  }
+  &::before {
+    background-image:
+      linear-gradient(to right, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to bottom, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to left, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to bottom, var(--hud-line) 2px, transparent 2px);
+    background-position: top left, top left, top right, top right;
+  }
+  &::after {
+    background-image:
+      linear-gradient(to right, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to top, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to left, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to top, var(--hud-line) 2px, transparent 2px);
+    background-position: bottom left, bottom left, bottom right, bottom right;
+  }
+}
+
 @utility tactical-card {
   /* Base Tactical Card */
   @apply bg-tactical-panel border border-tactical-border rounded-xl p-5 shadow-xs transition-all;
