@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
 import axios from "axios";
 import PublicLinkButton from "@/Components/BioLink/PublicLinkButton.vue";
+import SrtPursuitBackdrop from "@/Components/BioLink/Themes/SrtPursuitBackdrop.vue";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Card } from "@/Components/ui/card";
@@ -129,11 +130,24 @@ const customLinks = computed(() =>
     linksState.value.filter((l) => l.link_type === "custom"),
 );
 
+// Themes with their own visual layer. ?theme=<key> previews one on any profile
+// without saving it (visual only), so a look can be tried before it's assigned.
+const VISUAL_THEMES = { srt_pursuit: { accent: "#c026d3" } };
+const previewTheme = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("theme") : null;
+const activeTheme = computed(() => (VISUAL_THEMES[previewTheme] ? previewTheme : props.profile?.theme_preset));
+const isSrt = computed(() => activeTheme.value === "srt_pursuit");
+
 // Dynamic accent styling via CSS variable --primary
-const accentColor = computed(() => props.profile?.accent_color || "hsl(217 91% 60%)");
+const accentColor = computed(() =>
+    (VISUAL_THEMES[previewTheme] && VISUAL_THEMES[previewTheme].accent) || props.profile?.accent_color || "hsl(217 91% 60%)",
+);
 
 // Button style class mapper using semantic tokens
 const buttonStyleClass = computed(() => {
+    // SRT: hard left edge in the accent colour, like a pursuit livery stripe.
+    if (isSrt.value) {
+        return "rounded-l-none rounded-r-lg border-l-4 border-y-border border-r-border border-l-primary bg-background/70 backdrop-blur-sm hover:bg-primary/10";
+    }
     const s = props.profile?.button_style || "glass_tactical";
     switch (s) {
         case "rounded_edge":
@@ -161,9 +175,12 @@ const buttonStyleClass = computed(() => {
         class="min-h-screen bg-background text-foreground flex flex-col items-center px-4 py-8 relative overflow-x-hidden selection:bg-primary selection:text-primary-foreground font-sans"
         :style="{ '--primary': accentColor, '--accent-col': accentColor }"
     >
-        <!-- TACTICAL BACKGROUND GRID -->
-        <div class="fixed inset-0 pointer-events-none opacity-25 hud-grid z-0"></div>
-        <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-96 bg-linear-to-b from-primary/15 via-primary/5 to-transparent blur-3xl pointer-events-none z-0"></div>
+        <!-- BACKGROUND: theme layer or the default tactical grid -->
+        <SrtPursuitBackdrop v-if="isSrt" :live="!!officerState.is_live" />
+        <template v-else>
+            <div class="fixed inset-0 pointer-events-none opacity-25 hud-grid z-0"></div>
+            <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-96 bg-linear-to-b from-primary/15 via-primary/5 to-transparent blur-3xl pointer-events-none z-0"></div>
+        </template>
 
         <!-- MAIN CONTAINER (MOBILE FIRST 440px) -->
         <div class="w-full max-w-md relative z-10 flex flex-col items-center">
@@ -196,8 +213,13 @@ const buttonStyleClass = computed(() => {
 
             <!-- OFFICER PROFILE HERO -->
             <div class="w-full flex flex-col items-center text-center mb-6">
-                <!-- Avatar -->
+                <!-- Avatar (SRT: big unit wordmark behind it, like the stream thumbnails) -->
                 <div class="relative mb-3.5">
+                    <span
+                        v-if="isSrt"
+                        class="srt-wordmark pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 select-none font-heading text-9xl font-extrabold italic leading-none text-foreground/15"
+                        aria-hidden="true"
+                    >SRT</span>
                     <OfficerAvatar
                         :src="officer.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=officer'"
                         :name="officer.officer_name"
@@ -244,10 +266,14 @@ const buttonStyleClass = computed(() => {
                 </div>
 
                 <!-- Names -->
-                <h1 class="mb-0.5 text-2xl font-bold tracking-tight text-foreground">
+                <h1
+                    :class="isSrt
+                        ? 'mb-0.5 font-heading text-3xl font-extrabold uppercase italic leading-none tracking-tight text-foreground'
+                        : 'mb-0.5 text-2xl font-bold tracking-tight text-foreground'"
+                >
                     {{ officer.officer_name }}
                 </h1>
-                <p class="mb-2 text-sm font-medium text-primary">
+                <p :class="['mb-2 text-sm font-medium text-primary', isSrt && 'font-heading text-base italic tracking-wide']">
                     {{ officer.streamer_name }}
                 </p>
 

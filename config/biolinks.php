@@ -153,6 +153,14 @@ return [
             'accent' => '#06b6d4',
             'agency' => null,
         ],
+        // Pursuit look inspired by the SRT stream thumbnails: cobra emblem, red
+        // slash, police-blue siren glow and speed lines (BioLink.vue renders it).
+        'srt_pursuit' => [
+            'name' => 'SRT Pursuit',
+            'description' => 'Kobra hitam, coretan merah & biru sirene pengejaran',
+            'accent' => '#c026d3',
+            'agency' => null,
+        ],
     ],
 
     /*
