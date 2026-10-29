@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from "vue";
+import { Play, Pause, Volume2, VolumeX, Maximize } from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
 
 const props = defineProps({
     src: {
@@ -69,7 +71,6 @@ let controlsTimeout = null;
 let ytPollTimer = null;
 const iframeId = `yt-custom-player-${Math.random().toString(36).substring(2, 9)}`;
 
-// Extract YouTube ID if src is a YouTube URL (supports watch, live, shorts, embed, youtu.be)
 const computedYoutubeId = computed(() => {
     if (props.youtubeId) return props.youtubeId;
     if (!props.src) return "";
@@ -122,7 +123,6 @@ const handleScrubInput = (val) => {
     }
 };
 
-// Format seconds into HH:MM:SS or MM:SS
 const formatTime = (sec) => {
     if (isNaN(sec) || sec === null || sec < 0) return "00:00";
     const h = Math.floor(sec / 3600);
@@ -214,7 +214,9 @@ const toggleMute = () => {
     if (computedYoutubeId.value) {
         sendYTCommand(isMuted.value ? "mute" : "unMute");
         if (!isMuted.value) {
-            sendYTCommand("setVolume", [volume.value > 0 ? volume.value * 100 : 100]);
+            sendYTCommand("setVolume", [
+                volume.value > 0 ? volume.value * 100 : 100,
+            ]);
         }
     } else if (videoRef.value) {
         videoRef.value.muted = isMuted.value;
@@ -340,7 +342,7 @@ onMounted(() => {
 
 onUnmounted(() => {
     document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    window.removeEventListener("message", handleYTMessage);
+    window.addEventListener("message", handleYTMessage);
     clearInterval(ytPollTimer);
     clearTimeout(controlsTimeout);
 });
@@ -366,7 +368,7 @@ defineExpose({
 <template>
     <div
         ref="containerRef"
-        class="relative w-full h-full rounded-xl overflow-hidden bg-black border border-slate-800 group select-none flex items-center justify-center"
+        class="relative w-full h-full rounded-xl overflow-hidden bg-background border border-border group select-none flex items-center justify-center"
         @mousemove="handleMouseMove"
         @mouseleave="showControls = false"
     >
@@ -383,9 +385,9 @@ defineExpose({
                         'border-0 pointer-events-none select-none transition-all duration-300',
                         zoomMobile
                             ? 'w-[220%] h-[220%] max-w-none scale-150 origin-center sm:w-full sm:h-full sm:max-w-full sm:scale-100'
-                            : 'w-full h-full max-w-full scale-100'
+                            : 'w-full h-full max-w-full scale-100',
                     ]"
-                    style="pointer-events: none !important; touch-action: none;"
+                    style="pointer-events: none !important; touch-action: none"
                     allow="
                         accelerometer;
                         autoplay;
@@ -425,33 +427,32 @@ defineExpose({
         <div
             v-if="!isPlaying"
             @click="togglePlay"
-            class="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-opacity cursor-pointer z-15"
+            class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] transition-opacity cursor-pointer z-15"
         >
-            <button
-                class="w-16 h-16 rounded-full bg-blue-600/90 hover:bg-blue-500 text-white flex items-center justify-center shadow-2xl shadow-blue-500/50 transform transition hover:scale-110 active:scale-95 cursor-pointer border border-blue-400/40"
+            <Button
+                type="button"
+                size="icon"
+                aria-label="Putar Video"
+                class="w-16 h-16 rounded-full shadow-2xl transform transition hover:scale-110 active:scale-95"
             >
-                <svg class="w-8 h-8 fill-current ml-1" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                </svg>
-            </button>
+                <Play class="w-8 h-8 fill-current ml-0.5" />
+            </Button>
         </div>
 
         <!-- Floating Tap to Unmute Badge (Visible when video is playing muted) -->
         <div
             v-if="isMuted && isPlaying"
             @click.stop="toggleMute"
-            class="absolute top-3 right-3 z-30 bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-full text-xs font-mono shadow-xl flex items-center gap-2 cursor-pointer backdrop-blur-md transition transform active:scale-95"
+            class="absolute top-3 right-3 z-30 bg-card/90 hover:bg-muted border border-border text-destructive px-3 py-1.5 rounded-full text-xs font-mono shadow-xl flex items-center gap-2 cursor-pointer backdrop-blur-md transition transform active:scale-95"
             title="Klik untuk membuka suara"
         >
-            <svg class="w-3.5 h-3.5 fill-current animate-pulse" viewBox="0 0 24 24">
-                <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-            </svg>
-            <span>Buka Suara 🔇</span>
+            <VolumeX class="w-3.5 h-3.5 motion-safe:animate-pulse" />
+            <span>Buka Suara</span>
         </div>
 
         <!-- Custom Player Controls Bar -->
         <div
-            class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-slate-950 via-slate-950/90 to-transparent p-3 pt-6 space-y-2 transition-opacity duration-300 z-20"
+            class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-background via-background/90 to-transparent p-3 pt-6 space-y-2 transition-opacity duration-300 z-20"
             :class="
                 showControls || !isPlaying
                     ? 'opacity-100'
@@ -470,40 +471,32 @@ defineExpose({
                     step="0.1"
                     :value="displayCurrentTime"
                     @input="handleScrubInput($event.target.value)"
-                    class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer focus:outline-hidden accent-blue-500"
+                    class="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer focus:outline-hidden accent-primary"
                 />
             </div>
 
             <!-- Controls Row: Play/Pause, Time Display, Volume, Speed, Fullscreen -->
             <div
-                class="flex items-center justify-between text-xs font-mono text-slate-200 flex-wrap gap-2"
+                class="flex items-center justify-between text-xs font-mono text-foreground flex-wrap gap-2"
             >
                 <!-- Left Action Controls -->
                 <div class="flex items-center gap-2">
-                    <button
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon-sm"
                         @click="togglePlay"
-                        class="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 transition cursor-pointer"
+                        class="h-7 w-7"
+                        :aria-label="isPlaying ? 'Pause' : 'Play'"
                         :title="isPlaying ? 'Pause' : 'Play'"
                     >
-                        <svg
-                            v-if="isPlaying"
-                            class="w-4 h-4 fill-current"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                        </svg>
-                        <svg
-                            v-else
-                            class="w-4 h-4 fill-current ml-0.5"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M8 5v14l11-7z" />
-                        </svg>
-                    </button>
+                        <Pause v-if="isPlaying" class="w-3.5 h-3.5" />
+                        <Play v-else class="w-3.5 h-3.5 ml-0.5" />
+                    </Button>
 
                     <!-- Time Counter -->
-                    <span class="text-[11px] text-slate-400 font-mono ml-1">
-                        <span class="text-slate-100 font-bold">{{
+                    <span class="text-xs text-muted-foreground font-mono ml-1">
+                        <span class="text-foreground font-bold">{{
                             formatTime(displayCurrentTime)
                         }}</span>
                         <span> / </span>
@@ -515,30 +508,24 @@ defineExpose({
                 <div class="flex items-center gap-2">
                     <!-- Volume Controls -->
                     <div class="flex items-center gap-1.5 group/vol">
-                        <button
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon-sm"
                             @click="toggleMute"
-                            class="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition cursor-pointer"
+                            class="h-7 w-7"
+                            :aria-label="isMuted ? 'Unmute' : 'Mute'"
                             :title="isMuted ? 'Unmute' : 'Mute'"
                         >
-                            <svg
+                            <VolumeX
                                 v-if="isMuted || volume === 0"
-                                class="w-4 h-4 fill-current text-rose-400"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"
-                                />
-                            </svg>
-                            <svg
+                                class="w-3.5 h-3.5 text-destructive"
+                            />
+                            <Volume2
                                 v-else
-                                class="w-4 h-4 fill-current text-emerald-400"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"
-                                />
-                            </svg>
-                        </button>
+                                class="w-3.5 h-3.5 text-success"
+                            />
+                        </Button>
                         <input
                             type="range"
                             min="0"
@@ -546,7 +533,7 @@ defineExpose({
                             step="0.05"
                             :value="isMuted ? 0 : volume"
                             @input="setVolume($event.target.value)"
-                            class="w-16 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500 hidden sm:block"
+                            class="w-16 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary hidden sm:block"
                         />
                     </div>
 
@@ -556,7 +543,7 @@ defineExpose({
                         @change="
                             setPlaybackRate(parseFloat($event.target.value))
                         "
-                        class="bg-slate-900 text-slate-300 border border-slate-800 text-[11px] font-mono rounded-md px-1.5 py-1 focus:outline-hidden cursor-pointer"
+                        class="bg-card text-foreground border border-border text-xs font-mono rounded-md px-1.5 py-1 focus:outline-hidden cursor-pointer"
                         title="Kecepatan Putar (Playback Speed)"
                     >
                         <option :value="0.5">0.5x</option>
@@ -567,17 +554,17 @@ defineExpose({
                     </select>
 
                     <!-- Fullscreen Button -->
-                    <button
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon-sm"
                         @click="toggleFullscreen"
-                        class="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition cursor-pointer"
+                        class="h-7 w-7"
+                        aria-label="Layar Penuh (Fullscreen)"
                         title="Layar Penuh (Fullscreen)"
                     >
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                            <path
-                                d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"
-                            />
-                        </svg>
-                    </button>
+                        <Maximize class="w-3.5 h-3.5" />
+                    </Button>
                 </div>
             </div>
         </div>

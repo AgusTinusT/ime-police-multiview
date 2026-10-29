@@ -1,8 +1,20 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useI18n } from "vue-i18n";
+import {
+    Settings,
+    X,
+    Search,
+    Pin,
+    ChevronUp,
+    ChevronDown,
+    RotateCcw,
+} from "@lucide/vue";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
-import iconSearch from "@/Components/Icons/search-svgrepo-com.svg";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Input } from "@/Components/ui/input";
+import { DeptBadge, OfficerAvatar } from "@/Components/tactical";
 
 const { t } = useI18n();
 
@@ -43,20 +55,6 @@ const {
 const searchQuery = ref("");
 const selectedDeptFilter = ref("ALL");
 
-// Department Badge Color Helper
-const getDeptBadgeClass = (dept) => {
-    const d = (dept || "").toUpperCase();
-    if (d.includes("LSPD"))
-        return "bg-blue-950 text-blue-300 border-blue-800/80";
-    if (d.includes("BCSO") || d.includes("LSCSD"))
-        return "bg-amber-950 text-amber-300 border-amber-800/80";
-    if (d.includes("SASP"))
-        return "bg-teal-950 text-teal-300 border-teal-800/80";
-    if (d.includes("SAPR") || d.includes("RANGER"))
-        return "bg-emerald-950 text-emerald-300 border-emerald-800/80";
-    return "bg-slate-950 text-slate-400 border-slate-800";
-};
-
 const getOfficerRank = (rawItem) => {
     if (!rawItem || !props.customStreamOrder) return 0;
     const key = getOfficerKey(rawItem);
@@ -75,12 +73,10 @@ const getOfficerRank = (rawItem) => {
     return 0;
 };
 
-// Combine all unique officers (both Live 10-8 and Offline 10-7)
 const combinedOfficers = computed(() => {
     const list = [];
     const seenKeys = new Set();
 
-    // 1. Add Live Streams officers
     (props.allActiveStreams || []).forEach((stream) => {
         const key = getOfficerKey(stream);
         if (key && !seenKeys.has(key)) {
@@ -105,7 +101,6 @@ const combinedOfficers = computed(() => {
         }
     });
 
-    // 2. Add Offline Officers
     (props.offlineOfficers || []).forEach((officer) => {
         const key = getOfficerKey(officer);
         if (key && !seenKeys.has(key)) {
@@ -129,10 +124,8 @@ const combinedOfficers = computed(() => {
     return list;
 });
 
-// Filtered Officers List by Search & Department
 const filteredOfficersList = computed(() => {
     return combinedOfficers.value.filter((officer) => {
-        // Department Filter
         if (selectedDeptFilter.value !== "ALL") {
             const d = (officer.department || "").toUpperCase();
             if (selectedDeptFilter.value === "SAPR") {
@@ -142,7 +135,6 @@ const filteredOfficersList = computed(() => {
             }
         }
 
-        // Search Query Filter
         if (searchQuery.value.trim()) {
             const q = searchQuery.value.toLowerCase().trim();
             const nameMatch = officer.officer_name.toLowerCase().includes(q);
@@ -178,7 +170,7 @@ const activeCount = computed(
         >
             <div
                 v-if="isOpen"
-                class="fixed inset-0 z-50 bg-slate-950/90 transform-gpu flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4"
+                class="fixed inset-0 z-50 bg-background/90 backdrop-blur-xs transform-gpu flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4"
                 @click.self="emit('close')"
             >
                 <!-- Bottom Sheet Drawer Panel (Mobile Slide Up, Desktop Center Box) -->
@@ -192,59 +184,40 @@ const activeCount = computed(
                 >
                     <div
                         v-if="isOpen"
-                        class="w-full sm:max-w-xl bg-slate-900 border-t sm:border border-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col font-sans transform-gpu will-change-transform"
+                        class="w-full sm:max-w-xl bg-card border-t sm:border border-border rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col font-sans transform-gpu will-change-transform"
                     >
                         <!-- Mobile Drag Indicator Bar -->
                         <div
-                            class="pt-2 pb-1 bg-slate-900 shrink-0 sm:hidden flex justify-center cursor-pointer"
+                            class="pt-2 pb-1 bg-card shrink-0 sm:hidden flex justify-center cursor-pointer"
                             @click="emit('close')"
                         >
                             <div
-                                class="w-12 h-1.5 bg-slate-700 rounded-full"
+                                class="w-12 h-1.5 bg-muted-foreground/40 rounded-full"
                             ></div>
                         </div>
 
                         <!-- Panel Header -->
                         <div
-                            class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0"
+                            class="p-4 bg-background border-b border-border flex items-center justify-between gap-3 shrink-0"
                         >
                             <div class="flex items-center gap-2.5 min-w-0">
                                 <div
-                                    class="p-2 rounded-md bg-slate-900 border border-slate-800 text-blue-400 shrink-0"
+                                    class="p-2 rounded-md bg-card border border-border text-primary shrink-0"
                                 >
-                                    <svg
-                                        class="w-5 h-5"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                                        />
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                        />
-                                    </svg>
+                                    <Settings class="w-5 h-5" />
                                 </div>
                                 <div class="min-w-0">
                                     <h3
-                                        class="text-sm font-bold text-slate-100 tracking-tight uppercase flex items-center gap-2"
+                                        class="text-sm font-bold text-foreground tracking-tight uppercase flex items-center gap-2"
                                     >
                                         <span>{{
                                             $t("visibility_panel.title")
                                         }}</span>
                                     </h3>
                                     <p
-                                        class="text-[11px] font-mono text-slate-400 truncate flex items-center gap-1.5"
+                                        class="text-xs font-mono text-muted-foreground truncate flex items-center gap-1.5"
                                     >
-                                        <span
-                                            class="text-emerald-400 font-semibold"
+                                        <span class="text-success font-semibold"
                                             >{{ activeCount }}
                                             {{
                                                 $t("visibility_panel.shown")
@@ -252,15 +225,14 @@ const activeCount = computed(
                                         >
                                         <span>•</span>
                                         <span
-                                            class="text-rose-400 font-semibold"
+                                            class="text-destructive font-semibold"
                                             >{{ disabledCount }}
                                             {{
                                                 $t("visibility_panel.hidden")
                                             }}</span
                                         >
                                         <span>•</span>
-                                        <span
-                                            class="text-amber-400 font-semibold"
+                                        <span class="text-warning font-semibold"
                                             >{{
                                                 (customStreamOrder || []).length
                                             }}
@@ -272,35 +244,27 @@ const activeCount = computed(
                                 </div>
                             </div>
 
-                            <button
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon-sm"
                                 @click="emit('close')"
-                                class="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-100 border border-slate-800 transition-colors cursor-pointer shrink-0"
+                                class="h-8 w-8 shrink-0"
+                                aria-label="Tutup Panel"
                                 title="Tutup Panel"
                             >
-                                <svg
-                                    class="w-5 h-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
+                                <X class="w-4 h-4" />
+                            </Button>
                         </div>
 
                         <!-- Filter Controls Bar (Department Tabs & Search Input) -->
                         <div
-                            class="p-3 bg-slate-950/60 border-b border-slate-800 space-y-2.5 shrink-0"
+                            class="p-3 bg-background/60 border-b border-border space-y-2.5 shrink-0"
                         >
                             <!-- Search & Action Buttons -->
                             <div class="flex items-center gap-2">
                                 <div class="relative flex-1 items-center">
-                                    <input
+                                    <Input
                                         v-model="searchQuery"
                                         type="text"
                                         :placeholder="
@@ -308,39 +272,42 @@ const activeCount = computed(
                                                 'visibility_panel.search_placeholder',
                                             )
                                         "
-                                        class="w-full bg-slate-950 border border-slate-800 rounded-md pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-hidden focus:border-slate-700 font-mono"
+                                        class="w-full h-8 pl-8 pr-7 text-xs font-mono"
                                     />
-                                    <img
-                                        :src="iconSearch"
-                                        class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-50 invert pointer-events-none"
-                                        alt=""
+                                    <Search
+                                        class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none"
                                     />
                                     <button
                                         v-if="searchQuery"
+                                        type="button"
                                         @click="searchQuery = ''"
-                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold leading-none p-0.5 rounded-sm"
+                                        aria-label="Hapus pencarian"
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs font-bold leading-none p-0.5 rounded-sm cursor-pointer"
                                     >
-                                        ✕
+                                        <X class="w-3.5 h-3.5" />
                                     </button>
                                 </div>
 
-                                <button
+                                <Button
                                     v-if="disabledCount > 0"
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
                                     @click="resetAllFilters"
-                                    class="px-3 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-800 hover:border-slate-700 font-mono text-[11px] font-semibold transition-colors shrink-0 cursor-pointer flex items-center gap-1"
+                                    class="h-8 px-3 text-primary font-mono text-xs font-semibold shrink-0"
                                     title="Tampilkan Kembali Semua Perwira"
                                 >
                                     <span>{{
                                         $t("visibility_panel.reset")
                                     }}</span>
-                                </button>
+                                </Button>
                             </div>
 
                             <!-- Department Pills Selector -->
                             <div
                                 class="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap scrollbar-none py-0.5 font-mono text-xs"
                             >
-                                <button
+                                <Button
                                     v-for="dept in [
                                         'ALL',
                                         'LSPD',
@@ -349,30 +316,37 @@ const activeCount = computed(
                                         'SAPR',
                                     ]"
                                     :key="dept"
-                                    @click="selectedDeptFilter = dept"
-                                    :class="[
-                                        'px-2.5 py-1 rounded-md border transition-colors cursor-pointer font-medium text-[11px]',
+                                    type="button"
+                                    size="sm"
+                                    :variant="
                                         selectedDeptFilter === dept
-                                            ? 'bg-slate-800 text-blue-400 border-slate-700 font-bold'
-                                            : 'bg-slate-900 text-slate-400 hover:text-slate-200 border-slate-800',
-                                    ]"
+                                            ? 'secondary'
+                                            : 'outline'
+                                    "
+                                    @click="selectedDeptFilter = dept"
+                                    :class="
+                                        selectedDeptFilter === dept
+                                            ? 'text-primary font-bold'
+                                            : 'text-muted-foreground'
+                                    "
+                                    class="h-7 px-2.5 text-xs"
                                 >
                                     {{
                                         dept === "ALL"
                                             ? $t("visibility_panel.all_depts")
                                             : dept
                                     }}
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
                         <!-- Officer List (Scrollable Content) -->
                         <div
-                            class="p-3 overflow-y-auto space-y-2 flex-1 scrollbar-thin scrollbar-thumb-slate-800"
+                            class="p-3 overflow-y-auto space-y-2 flex-1 scrollbar-thin"
                         >
                             <div
                                 v-if="filteredOfficersList.length === 0"
-                                class="p-8 text-center text-slate-500 font-mono text-xs"
+                                class="p-8 text-center text-muted-foreground font-mono text-xs"
                             >
                                 {{ $t("visibility_panel.no_officers_found") }}
                             </div>
@@ -383,34 +357,37 @@ const activeCount = computed(
                                 class="p-2.5 rounded-lg border transition-colors flex items-center justify-between gap-2.5"
                                 :class="[
                                     isOfficerDisabled(officer.raw)
-                                        ? 'bg-slate-950/60 border-slate-900 opacity-50'
-                                        : 'bg-slate-950 border-slate-800 hover:border-slate-700',
+                                        ? 'bg-background/60 border-border/60 opacity-50'
+                                        : 'bg-background border-border hover:border-primary/40',
                                 ]"
                             >
                                 <!-- Left Info (Rank Badge, Avatar, Name, Dept, Callsign) -->
                                 <div
                                     class="flex items-center gap-2.5 min-w-0 flex-1"
                                 >
-                                    <span
+                                    <Badge
                                         v-if="getOfficerRank(officer.raw) > 0"
-                                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono font-bold bg-amber-950/80 text-amber-400 border border-amber-800/80 shrink-0"
+                                        variant="outline"
+                                        class="px-1.5 py-0 text-xs font-mono font-bold bg-warning/15 text-warning border-warning/40 shrink-0"
                                         title="Urutan Prioritas Penayangan Grid"
                                     >
                                         #{{ getOfficerRank(officer.raw) }}
-                                    </span>
+                                    </Badge>
 
                                     <div class="relative shrink-0">
-                                        <img
+                                        <OfficerAvatar
                                             :src="officer.avatar_url"
-                                            class="w-8 h-8 rounded-full object-cover border border-slate-700"
-                                            loading="lazy"
+                                            :name="officer.officer_name"
+                                            :callsign="officer.callsign"
+                                            :dept="officer.department"
+                                            size="sm"
                                         />
                                         <span
-                                            class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-950"
+                                            class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background"
                                             :class="
                                                 officer.is_live
-                                                    ? 'bg-red-500'
-                                                    : 'bg-slate-600'
+                                                    ? 'bg-live'
+                                                    : 'bg-muted-foreground'
                                             "
                                         ></span>
                                     </div>
@@ -420,23 +397,16 @@ const activeCount = computed(
                                             class="flex items-center gap-1.5 flex-wrap"
                                         >
                                             <span
-                                                class="text-xs font-bold text-slate-100 truncate"
+                                                class="text-xs font-bold text-foreground truncate"
                                             >
                                                 {{ officer.officer_name }}
                                             </span>
-                                            <span
-                                                class="px-1.5 py-0.2 rounded-sm text-[9px] font-mono font-bold border"
-                                                :class="
-                                                    getDeptBadgeClass(
-                                                        officer.department,
-                                                    )
-                                                "
-                                            >
-                                                {{ officer.department }}
-                                            </span>
+                                            <DeptBadge
+                                                :dept="officer.department"
+                                            />
                                         </div>
                                         <p
-                                            class="text-[10px] font-mono text-slate-400 truncate"
+                                            class="text-xs font-mono text-muted-foreground truncate"
                                         >
                                             {{
                                                 officer.callsign ||
@@ -444,12 +414,12 @@ const activeCount = computed(
                                             }}
                                             <span
                                                 v-if="officer.is_live"
-                                                class="text-red-400 font-semibold ml-1"
+                                                class="text-live font-semibold ml-1"
                                                 >LIVE</span
                                             >
                                             <span
                                                 v-else
-                                                class="text-slate-500 ml-1"
+                                                class="text-muted-foreground ml-1"
                                                 >Standby</span
                                             >
                                         </p>
@@ -462,35 +432,39 @@ const activeCount = computed(
                                         v-if="!isOfficerDisabled(officer.raw)"
                                         class="flex items-center gap-1"
                                     >
-                                        <button
+                                        <Button
+                                            type="button"
+                                            size="icon-sm"
+                                            :variant="
+                                                getOfficerRank(officer.raw) > 0
+                                                    ? 'secondary'
+                                                    : 'outline'
+                                            "
                                             @click="
                                                 emit(
                                                     'toggle-priority',
                                                     officer.raw,
                                                 )
                                             "
-                                            class="px-2 py-1 rounded-md text-xs font-mono font-bold border transition cursor-pointer flex items-center justify-center gap-1"
-                                            :class="[
+                                            :class="
                                                 getOfficerRank(officer.raw) > 0
-                                                    ? 'bg-slate-800 text-amber-400 border-slate-700'
-                                                    : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border-slate-800',
-                                            ]"
+                                                    ? 'text-warning'
+                                                    : 'text-muted-foreground hover:text-warning'
+                                            "
+                                            class="h-7 w-7"
+                                            :aria-label="
+                                                getOfficerRank(officer.raw) > 0
+                                                    ? 'Lepas dari Prioritas Utama'
+                                                    : 'Pin ke Prioritas Utama'
+                                            "
                                             :title="
                                                 getOfficerRank(officer.raw) > 0
                                                     ? 'Lepas dari Prioritas Utama'
                                                     : 'Pin ke Prioritas Utama (#1, #2, #3...)'
                                             "
                                         >
-                                            <svg
-                                                class="w-3.5 h-3.5"
-                                                fill="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    d="M16 12V4h1V2H7v2h1v8l-2 2v2h5v6l1 1 1-1v-6h5v-2l-2-2z"
-                                                />
-                                            </svg>
-                                        </button>
+                                            <Pin class="w-3.5 h-3.5" />
+                                        </Button>
 
                                         <div
                                             v-if="
@@ -499,67 +473,58 @@ const activeCount = computed(
                                             class="flex flex-col gap-0.5"
                                         >
                                             <button
+                                                type="button"
                                                 @click="
                                                     emit(
                                                         'move-priority-up',
                                                         officer.raw,
                                                     )
                                                 "
-                                                class="px-1 py-0.2 rounded-sm text-[9px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 leading-none cursor-pointer"
+                                                aria-label="Naikkan Urutan Prioritas"
+                                                class="px-1 py-0 rounded-sm text-xs bg-card hover:bg-muted text-foreground border border-border leading-none cursor-pointer"
                                                 title="Naikkan Urutan Prioritas"
                                             >
-                                                <svg
+                                                <ChevronUp
                                                     class="w-2.5 h-2.5"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M5 15l7-7 7 7"
-                                                    />
-                                                </svg>
+                                                />
                                             </button>
                                             <button
+                                                type="button"
                                                 @click="
                                                     emit(
                                                         'move-priority-down',
                                                         officer.raw,
                                                     )
                                                 "
-                                                class="px-1 py-0.2 rounded-sm text-[9px] bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 leading-none cursor-pointer"
+                                                aria-label="Turunkan Urutan Prioritas"
+                                                class="px-1 py-0 rounded-sm text-xs bg-card hover:bg-muted text-foreground border border-border leading-none cursor-pointer"
                                                 title="Turunkan Urutan Prioritas"
                                             >
-                                                <svg
+                                                <ChevronDown
                                                     class="w-2.5 h-2.5"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M19 9l-7 7-7-7"
-                                                    />
-                                                </svg>
+                                                />
                                             </button>
                                         </div>
                                     </div>
 
                                     <!-- Enable/Disable Switch Toggle -->
-                                    <button
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        :variant="
+                                            isOfficerDisabled(officer.raw)
+                                                ? 'outline'
+                                                : 'secondary'
+                                        "
                                         @click="
                                             toggleOfficerStatus(officer.raw)
                                         "
-                                        class="px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 border"
-                                        :class="[
+                                        :class="
                                             isOfficerDisabled(officer.raw)
-                                                ? 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
-                                                : 'bg-slate-800 text-emerald-400 border-slate-700 hover:bg-slate-700',
-                                        ]"
+                                                ? 'text-muted-foreground'
+                                                : 'text-success'
+                                        "
+                                        class="h-8 px-3 text-xs font-mono font-medium shrink-0"
                                         :title="
                                             isOfficerDisabled(officer.raw)
                                                 ? 'Klik untuk menampilkan perwira'
@@ -571,47 +536,40 @@ const activeCount = computed(
                                                 ? "Sembunyi"
                                                 : "Tampil"
                                         }}</span>
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Panel Bottom Footer -->
                         <div
-                            class="p-3 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0 text-xs font-mono"
+                            class="p-3 bg-background border-t border-border flex items-center justify-between gap-2 shrink-0 text-xs font-mono"
                         >
                             <div class="flex items-center gap-2">
-                                <span class="text-slate-400 text-[11px]">
+                                <span class="text-muted-foreground text-xs">
                                     Filter tersimpan otomatis di browser
                                 </span>
-                                <button
+                                <Button
                                     v-if="(customStreamOrder || []).length > 0"
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
                                     @click="emit('reset-priority')"
-                                    class="px-2 py-1 rounded-sm bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 hover:border-slate-700 text-[10px] transition-colors cursor-pointer flex items-center gap-1"
+                                    class="h-7 px-2 text-warning text-xs gap-1"
                                     title="Reset seluruh urutan prioritas ke standar"
                                 >
-                                    <svg
-                                        class="w-3 h-3"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                        />
-                                    </svg>
+                                    <RotateCcw class="w-3 h-3" />
                                     <span>Reset Prioritas</span>
-                                </button>
+                                </Button>
                             </div>
-                            <button
+                            <Button
+                                type="button"
+                                size="sm"
                                 @click="emit('close')"
-                                class="px-4 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold transition-colors cursor-pointer shadow-none"
+                                class="h-8 px-4 font-semibold"
                             >
                                 Selesai
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </Transition>

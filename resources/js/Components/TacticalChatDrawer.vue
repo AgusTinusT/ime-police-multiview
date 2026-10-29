@@ -2,17 +2,35 @@
 import { ref, onMounted, onUnmounted, nextTick, computed } from "vue";
 import { usePage, Link } from "@inertiajs/vue3";
 import axios from "axios";
-import iconChatLine from "@/Components/Icons/chat-line-svgrepo-com.svg";
+import {
+    MessageSquare,
+    X,
+    Pin,
+    ShieldCheck,
+    AlertTriangle,
+    ArrowRight,
+} from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Input } from "@/Components/ui/input";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
 
 const page = usePage();
 const currentUser = computed(() => page.props.auth?.user || null);
 
-// Drawer Open State
 const isOpen = ref(false);
 const unreadCount = ref(0);
 const drawerWrapperRef = ref(null);
 
-// Messages State
 const messages = ref([]);
 const pinnedMessage = ref(null);
 const newMessageText = ref("");
@@ -22,20 +40,17 @@ const errorMessage = ref("");
 const messagesContainer = ref(null);
 let pollInterval = null;
 
-// Format Timestamp
 const formatTime = (isoString) => {
     if (!isoString) return "";
     const date = new Date(isoString);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-// Avatar Generator
 const getAvatarUrl = (name) => {
     const seed = encodeURIComponent(name || "guest");
     return `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
 };
 
-// Scroll to Bottom
 const scrollToBottom = async () => {
     await nextTick();
     if (messagesContainer.value) {
@@ -44,7 +59,6 @@ const scrollToBottom = async () => {
     }
 };
 
-// Fetch Messages API
 const fetchMessages = async (isInitial = false) => {
     try {
         const lastId =
@@ -88,7 +102,6 @@ const fetchMessages = async (isInitial = false) => {
     }
 };
 
-// Send Message API
 const sendMessage = async () => {
     if (!newMessageText.value.trim() || isSending.value) return;
 
@@ -129,9 +142,16 @@ const sendMessage = async () => {
     }
 };
 
-// Admin Action: Delete Message
-const deleteMessage = async (id) => {
-    if (!confirm("Hapus pesan ini dari chat komunitas?")) return;
+const pendingDeleteId = ref(null);
+
+const deleteMessage = (id) => {
+    pendingDeleteId.value = id;
+};
+
+const confirmDeleteMessage = async () => {
+    const id = pendingDeleteId.value;
+    pendingDeleteId.value = null;
+    if (!id) return;
     try {
         const res = await axios.delete(`/api/v1/chat/messages/${id}`);
         if (res.status === 200 || res.status === 204) {
@@ -145,7 +165,6 @@ const deleteMessage = async (id) => {
     }
 };
 
-// Admin Action: Toggle Pin Message
 const togglePinMessage = async (id) => {
     try {
         const res = await axios.patch(`/api/v1/chat/messages/${id}/pin`);
@@ -158,7 +177,6 @@ const togglePinMessage = async (id) => {
     }
 };
 
-// Toggle Open Drawer
 const toggleDrawer = () => {
     isOpen.value = !isOpen.value;
     if (isOpen.value) {
@@ -167,7 +185,6 @@ const toggleDrawer = () => {
     }
 };
 
-// Auto Close on Outside Click or ESC Key
 const handleClickOutside = (event) => {
     if (!isOpen.value) return;
     if (
@@ -203,72 +220,70 @@ onUnmounted(() => {
 <template>
     <div
         ref="drawerWrapperRef"
-        class="hidden sm:block fixed bottom-4 right-4 z-50 font-sans selection:bg-blue-600 selection:text-white"
+        class="hidden sm:block fixed bottom-4 right-4 z-50 font-sans selection:bg-primary selection:text-primary-foreground"
     >
-        <!-- FLOATING TOGGLE BUTTON (MINIMALIST TACTICAL PILL) -->
-        <button
+        <!-- FLOATING TOGGLE BUTTON -->
+        <Button
+            type="button"
+            variant="outline"
+            size="sm"
             @click.stop="toggleDrawer"
-            class="relative px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white font-bold text-xs shadow-xl border border-slate-800 hover:border-blue-500/40 flex items-center space-x-2 transition cursor-pointer backdrop-blur-md"
+            class="relative h-9 px-3.5 rounded-xl bg-card/90 hover:bg-muted text-foreground font-bold text-xs shadow-xl border-border hover:border-primary/40 gap-2 backdrop-blur-md"
             title="Buka Chat Komunitas Member"
         >
-            <img
-                :src="iconChatLine"
-                class="w-3.5 h-3.5 invert opacity-80 shrink-0"
-                alt="Chat"
-            />
+            <MessageSquare class="w-3.5 h-3.5 shrink-0" />
             <span
                 class="font-mono text-xs font-semibold uppercase tracking-wider hidden sm:inline"
                 >Chat</span
             >
 
-            <!-- Unread Badge (Sleek static badge without bouncing) -->
-            <span
+            <Badge
                 v-if="unreadCount > 0"
-                class="px-1.5 py-0.2 rounded-full bg-red-600 text-white font-mono text-[9px] font-bold border border-slate-900 shadow-xs"
+                variant="destructive"
+                class="px-1.5 py-0 rounded-full font-mono text-xs font-bold"
             >
                 {{ unreadCount }}
-            </span>
-        </button>
+            </Badge>
+        </Button>
 
         <!-- CHAT DRAWER PANEL -->
         <div
             v-if="isOpen"
-            class="fixed bottom-20 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-96 max-h-[560px] bg-[#080d19]/95 border border-blue-500/30 rounded-3xl shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 font-sans z-50"
+            class="fixed bottom-20 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-96 max-h-[560px] bg-popover/95 border border-primary/30 rounded-2xl shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 font-sans z-50"
         >
             <!-- PANEL HEADER -->
             <div
-                class="px-4 py-3.5 bg-linear-to-r from-blue-950/80 via-slate-900 to-slate-950 border-b border-blue-900/40 flex items-center justify-between"
+                class="px-4 py-3.5 bg-card border-b border-border flex items-center justify-between"
             >
                 <div class="flex items-center space-x-2.5">
-                    <img
-                        :src="iconChatLine"
-                        class="w-4 h-4 invert opacity-90 shrink-0"
-                        alt="Chat"
-                    />
+                    <MessageSquare class="w-4 h-4 text-primary shrink-0" />
                     <div>
                         <h3
-                            class="text-xs font-black tracking-wider text-white font-mono uppercase"
+                            class="text-xs font-extrabold tracking-wider text-foreground font-mono uppercase"
                         >
                             MEMBER COMMUNITY CHAT
                         </h3>
-                        <p class="text-[10px] text-slate-400 font-mono">
+                        <p class="text-xs text-muted-foreground font-mono">
                             Saluran Obrolan Bebas Antar Member
                         </p>
                     </div>
                 </div>
-                <button
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Tutup Chat"
                     @click="isOpen = false"
-                    class="w-7 h-7 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-xs transition"
+                    class="h-7 w-7 text-muted-foreground hover:text-foreground"
                 >
-                    ✕
-                </button>
+                    <X class="w-3.5 h-3.5" />
+                </Button>
             </div>
 
             <!-- INFORMATIONAL NOTICE FOR MEMBERS -->
             <div
-                class="bg-blue-950/40 border-b border-blue-500/20 px-3.5 py-2.5 flex items-start space-x-2 text-[11px] text-blue-200/90 shrink-0"
+                class="bg-primary/10 border-b border-primary/20 px-3.5 py-2.5 flex items-start space-x-2 text-xs text-foreground shrink-0"
             >
-                <span class="text-xs shrink-0">💡</span>
                 <div class="flex-1 min-w-0 leading-snug">
                     <span
                         >Ruang chat terbuka untuk
@@ -278,7 +293,7 @@ onUnmounted(() => {
                     </span>
                     <Link
                         href="/feedback"
-                        class="text-blue-300 font-bold underline hover:text-white"
+                        class="text-primary font-bold underline hover:text-primary/80"
                         >Feedback & Reports</Link
                     >.
                 </div>
@@ -287,16 +302,16 @@ onUnmounted(() => {
             <!-- PINNED MESSAGE BANNER (IF ANY) -->
             <div
                 v-if="pinnedMessage"
-                class="bg-amber-950/40 border-b border-amber-500/40 px-3.5 py-2.5 flex items-start space-x-2 text-xs text-amber-200/90 shrink-0"
+                class="bg-warning/15 border-b border-warning/40 px-3.5 py-2.5 flex items-start space-x-2 text-xs text-foreground shrink-0"
             >
-                <span class="text-sm shrink-0">📌</span>
+                <Pin class="w-3.5 h-3.5 text-warning shrink-0 mt-0.5" />
                 <div class="flex-1 min-w-0">
                     <div
-                        class="font-bold text-[10px] text-amber-400 uppercase font-mono"
+                        class="font-bold text-xs text-warning uppercase font-mono"
                     >
                         Disematkan oleh Dispatch Admin:
                     </div>
-                    <div class="text-[11px] truncate text-slate-200">
+                    <div class="text-xs truncate text-foreground">
                         {{ pinnedMessage.message }}
                     </div>
                 </div>
@@ -310,7 +325,7 @@ onUnmounted(() => {
                 <!-- Empty State -->
                 <div
                     v-if="messages.length === 0"
-                    class="py-12 text-center text-slate-500 font-mono text-xs"
+                    class="py-12 text-center text-muted-foreground font-mono text-xs"
                 >
                     Belum ada pesan. Mulai obrolan komunitas member!
                 </div>
@@ -324,7 +339,7 @@ onUnmounted(() => {
                     <!-- User Avatar -->
                     <img
                         :src="getAvatarUrl(msg.user?.name)"
-                        class="w-7 h-7 rounded-xl bg-slate-800 border border-slate-700/60 object-cover shrink-0 mt-0.5"
+                        class="w-7 h-7 rounded-xl bg-muted border border-border object-cover shrink-0 mt-0.5"
                         alt=""
                     />
 
@@ -335,50 +350,70 @@ onUnmounted(() => {
                         >
                             <div class="flex items-center space-x-1.5 truncate">
                                 <span
-                                    class="text-xs font-bold text-slate-200 truncate"
+                                    class="text-xs font-bold text-foreground truncate"
                                     >{{ msg.user?.name || "Member" }}</span
                                 >
 
                                 <!-- Role Badges -->
                                 <a
                                     v-if="msg.user?.officer"
-                                    :href="msg.user?.officer?.bio_profile?.slug ? '/@' + msg.user.officer.bio_profile.slug : '#'"
+                                    :href="
+                                        msg.user?.officer?.bio_profile?.slug
+                                            ? '/@' +
+                                              msg.user.officer.bio_profile.slug
+                                            : '#'
+                                    "
                                     target="_blank"
-                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[9px] font-black font-mono uppercase bg-cyan-950/90 text-cyan-300 border border-cyan-500/50 hover:bg-cyan-900 transition shadow-xs"
-                                    :title="'Verified Officer: ' + msg.user.officer.officer_name + ' (' + msg.user.officer.callsign + ')'"
+                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-xs font-extrabold font-mono uppercase bg-info/15 text-info border border-info/40 hover:bg-info/25 transition shadow-xs"
+                                    :title="
+                                        'Verified Officer: ' +
+                                        msg.user.officer.officer_name +
+                                        ' (' +
+                                        msg.user.officer.callsign +
+                                        ')'
+                                    "
                                 >
-                                    <span>🛡️</span>
-                                    <span>{{ msg.user.officer.department || 'POLICE' }} #{{ msg.user.officer.callsign }}</span>
+                                    <ShieldCheck class="w-3 h-3" />
+                                    <span
+                                        >{{
+                                            msg.user.officer.department ||
+                                            "POLICE"
+                                        }}
+                                        #{{ msg.user.officer.callsign }}</span
+                                    >
                                 </a>
-                                <span
+                                <Badge
                                     v-else-if="msg.user?.role === 'admin'"
-                                    class="px-1.5 py-0.2 rounded-sm text-[9px] font-black font-mono uppercase bg-linear-to-r from-amber-500 to-orange-500 text-black shadow-xs"
+                                    variant="outline"
+                                    class="px-1.5 py-0 text-xs font-extrabold font-mono uppercase bg-warning/20 text-warning border-warning/40"
                                 >
                                     DISPATCH ADMIN
-                                </span>
-                                <span
+                                </Badge>
+                                <Badge
                                     v-else-if="msg.user?.role === 'officer'"
-                                    class="px-1.5 py-0.2 rounded-sm text-[9px] font-black font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/40"
+                                    variant="outline"
+                                    class="px-1.5 py-0 text-xs font-extrabold font-mono uppercase bg-info/15 text-info border-info/40"
                                 >
-                                    🛡️ OFFICER
-                                </span>
-                                <span
+                                    OFFICER
+                                </Badge>
+                                <Badge
                                     v-else
-                                    class="px-1.5 py-0.2 rounded-sm text-[9px] font-bold font-mono uppercase bg-blue-950 text-blue-300 border border-blue-500/30"
+                                    variant="outline"
+                                    class="px-1.5 py-0 text-xs font-bold font-mono uppercase bg-primary/15 text-primary border-primary/30"
                                 >
                                     MEMBER
-                                </span>
+                                </Badge>
                             </div>
 
                             <span
-                                class="text-[10px] text-slate-500 font-mono shrink-0"
+                                class="text-xs text-muted-foreground font-mono shrink-0"
                                 >{{ formatTime(msg.created_at) }}</span
                             >
                         </div>
 
                         <!-- Message Text -->
                         <div
-                            class="bg-slate-900/90 border border-slate-800/80 rounded-2xl rounded-tl-xs px-3 py-2 text-xs text-slate-200 leading-relaxed wrap-break-word relative shadow-xs"
+                            class="bg-card border border-border rounded-2xl rounded-tl-xs px-3 py-2 text-xs text-foreground leading-relaxed wrap-break-word relative shadow-xs"
                         >
                             {{ msg.message }}
                         </div>
@@ -386,18 +421,20 @@ onUnmounted(() => {
                         <!-- Admin Message Tools -->
                         <div
                             v-if="currentUser?.role === 'admin'"
-                            class="opacity-0 group-hover:opacity-100 transition flex items-center space-x-2 mt-1 text-[10px] font-mono text-slate-400"
+                            class="opacity-0 group-hover:opacity-100 transition flex items-center space-x-2 mt-1 text-xs font-mono text-muted-foreground"
                         >
                             <button
+                                type="button"
                                 @click="togglePinMessage(msg.id)"
-                                class="hover:text-amber-400"
+                                class="hover:text-warning cursor-pointer"
                             >
                                 {{ msg.is_pinned ? "Unpin" : "Pin" }}
                             </button>
                             <span>•</span>
                             <button
+                                type="button"
                                 @click="deleteMessage(msg.id)"
-                                class="hover:text-red-400"
+                                class="hover:text-destructive cursor-pointer"
                             >
                                 Hapus
                             </button>
@@ -408,13 +445,14 @@ onUnmounted(() => {
 
             <!-- INPUT BOX AREA -->
             <div
-                class="p-3 bg-[#060a14] border-t border-slate-800/80 space-y-2 shrink-0"
+                class="p-3 bg-background border-t border-border space-y-2 shrink-0"
             >
                 <div
                     v-if="errorMessage"
-                    class="text-[11px] text-red-400 font-mono px-1"
+                    class="text-xs text-destructive font-mono px-1 flex items-center gap-1"
                 >
-                    ⚠️ {{ errorMessage }}
+                    <AlertTriangle class="w-3.5 h-3.5 shrink-0" />
+                    <span>{{ errorMessage }}</span>
                 </div>
 
                 <!-- Input Form (Authenticated User) -->
@@ -423,33 +461,59 @@ onUnmounted(() => {
                     @submit.prevent="sendMessage"
                     class="flex items-center gap-2"
                 >
-                    <input
+                    <Input
                         v-model="newMessageText"
                         type="text"
                         placeholder="Tulis pesan obrolan..."
                         maxlength="500"
-                        class="flex-1 bg-slate-950/90 border border-slate-800 text-slate-100 placeholder-slate-500 rounded-xl px-3.5 py-2 text-xs focus:outline-hidden focus:border-blue-500 shadow-inner font-sans"
+                        class="flex-1 h-9 text-xs font-sans"
                     />
-                    <button
+                    <Button
                         type="submit"
+                        size="sm"
                         :disabled="isSending || !newMessageText.trim()"
-                        class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold text-xs shadow-md transition shrink-0"
+                        class="h-9 px-3.5 font-bold text-xs shrink-0"
                     >
                         {{ isSending ? "..." : "Kirim" }}
-                    </button>
+                    </Button>
                 </form>
 
                 <!-- Guest Notice -->
                 <div v-else class="text-center py-1">
                     <Link
                         href="/login"
-                        class="text-xs text-blue-400 font-bold hover:underline flex items-center justify-center space-x-1"
+                        class="text-xs text-primary font-bold hover:underline flex items-center justify-center space-x-1"
                     >
                         <span>Sign In untuk Ikut Obrolan Komunitas</span>
-                        <span>→</span>
+                        <ArrowRight class="w-3.5 h-3.5" />
                     </Link>
                 </div>
             </div>
         </div>
+
+        <AlertDialog
+            :open="!!pendingDeleteId"
+            @update:open="(val) => { if (!val) pendingDeleteId = null; }"
+        >
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Hapus Pesan Chat?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Hapus pesan ini dari chat komunitas? Tindakan ini tidak dapat dibatalkan.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="pendingDeleteId = null">
+                        Batal
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        @click="confirmDeleteMessage"
+                    >
+                        Hapus
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
 </template>

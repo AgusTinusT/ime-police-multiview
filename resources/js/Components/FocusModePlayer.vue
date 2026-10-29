@@ -2,19 +2,31 @@
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import axios from "axios";
+import { toast } from "vue-sonner";
+import {
+    X,
+    Scissors,
+    RectangleHorizontal,
+    Radio,
+    Volume2,
+    VolumeX,
+    Pause,
+    Play,
+    ExternalLink,
+    MessageSquare,
+    AlertTriangle,
+    Info,
+    Video,
+    Lock,
+    ArrowRight,
+    Clock,
+} from "@lucide/vue";
 
 import CommunityClipsTab from "@/Components/CommunityClipsTab.vue";
-
-import iconCloseBold from "@/Components/Icons/close-bold-svgrepo-com.svg";
-import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
-import iconTheater from "@/Components/Icons/rectangle-o-svgrepo-com.svg";
-import iconRadio from "@/Components/Icons/radio-tac-svgrepo-com.svg";
-import iconUnmute from "@/Components/Icons/audio-svgrepo-com.svg";
-import iconMute from "@/Components/Icons/audio-off-svgrepo-com.svg";
-import iconPause from "@/Components/Icons/controller-paus-svgrepo-com.svg";
-import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
-import iconChat from "@/Components/Icons/chat-svgrepo-com.svg";
-import iconPlayAll from "@/Components/Icons/play-full-svgrepo-com.svg";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Input } from "@/Components/ui/input";
+import { DeptBadge, OfficerAvatar } from "@/Components/tactical";
 
 const props = defineProps({
     stream: { type: Object, required: true },
@@ -39,11 +51,9 @@ const emit = defineEmits([
     "close-focus",
 ]);
 
-// Inertia Page User Permission & Auth State
 const page = usePage();
 const authUser = computed(() => page.props.auth?.user);
 
-// Active Tab in Focus Mode: 'chat' (Live Chat Mobile-First), 'description' (Deskripsi), 'clips' (Kumpulan Aksi), 'create-clip' (Form Input Klip Baru)
 const activeFocusTab = ref("chat");
 
 const computedChatEmbedDomain = computed(() => {
@@ -54,7 +64,6 @@ const computedChatEmbedDomain = computed(() => {
     return "localhost";
 });
 
-// Radio TAC Popover State & Methods
 const isTacPopoverOpen = ref(false);
 
 const selectTacChannel = (tacCode) => {
@@ -67,7 +76,6 @@ const removeTacChannel = () => {
     isTacPopoverOpen.value = false;
 };
 
-// Inline Clip Creation Form State
 const newClipTitle = ref("");
 const newClipStartTime = ref("00:00");
 const newClipEndTime = ref("01:00");
@@ -84,8 +92,6 @@ watch(
     { immediate: true },
 );
 
-// Clips list state for Focus Mode (Persisted in localStorage across page refreshes)
-// Clips list state for Focus Mode (Fetched from MySQL database via API)
 const customClipsList = ref([]);
 
 const fetchCommunityClips = async () => {
@@ -110,11 +116,9 @@ const handleDeleteClip = async (clipId) => {
     );
 };
 
-// Stream Availability State (Deleted / Private / Members-Only YouTube video handling)
 const isStreamUnavailable = ref(false);
 const streamErrorCode = ref(null);
 
-// Live Stream Playback Time Tracking via YouTube postMessage API
 const currentPlaybackTime = ref(0);
 
 const formatTimeHelper = (seconds) => {
@@ -162,7 +166,6 @@ const handleYTMessage = (event) => {
         }
     }
 
-    // YouTube Error Event Code Handling (100 = deleted/not found, 101/150 = members-only/private embed restricted)
     if (
         data &&
         (data.event === "onError" ||
@@ -239,7 +242,7 @@ const setEndFromCurrentTime = () => {
 
 const handleCreateClipSubmit = async () => {
     if (!newClipTitle.value.trim()) {
-        alert("Harap masukkan judul klip momen aksi!");
+        toast.warning("Harap masukkan judul klip momen aksi!");
         return;
     }
 
@@ -247,7 +250,7 @@ const handleCreateClipSubmit = async () => {
     const endSec = parseTimestamp(newClipEndTime.value);
 
     if (endSec <= startSec) {
-        alert("Waktu Selesai harus lebih besar dari Waktu Mulai.");
+        toast.warning("Waktu Selesai harus lebih besar dari Waktu Mulai.");
         return;
     }
 
@@ -276,20 +279,18 @@ const handleCreateClipSubmit = async () => {
             customClipsList.value.unshift(response.data.clip);
         }
     } catch (err) {
-        alert(
+        toast.error(
             err.response?.data?.message ||
                 "Gagal menyimpan klip momen aksi ke database.",
         );
         return;
     }
 
-    // Reset & switch to clips tab
     newClipTitle.value = "";
     newClipAuthor.value = authUser.value?.name || "";
     activeFocusTab.value = "clips";
 };
 
-// Inertia Page User Permission State
 const canTrimVideo = computed(() => {
     if (!authUser.value) return false;
     return (
@@ -300,15 +301,15 @@ const canTrimVideo = computed(() => {
 
 const openStudioClipper = () => {
     if (!authUser.value) {
-        alert(
-            "🔒 Akses Studio Clipper Terbatas!\n\nFitur Studio Clipper Pro khusus untuk Perwira dan Official Clipper IME Police. Silakan login terlebih dahulu untuk mengakses studio pemotong video.",
+        toast.warning(
+            "Akses Studio Clipper Terbatas! Silakan login terlebih dahulu untuk mengakses studio pemotong video.",
         );
         return;
     }
 
     if (!canTrimVideo.value) {
-        alert(
-            `🔒 Akses Studio Clipper Terbatas!\n\nAkun Anda (${authUser.value.name}) belum memiliki hak akses Studio Clipper Pro (Diperlukan Role: Clipper atau Admin).\n\nSilakan hubungi Administrator untuk meminta role Clipper.`,
+        toast.warning(
+            `Akun Anda (${authUser.value.name}) belum memiliki hak akses Studio Clipper Pro (Diperlukan Role: Clipper atau Admin).`,
         );
         return;
     }
@@ -328,21 +329,8 @@ const formatDescriptionWithLinks = (text) => {
     const urlPattern = /(https?:\/\/[^\s]+)/g;
     return escaped.replace(
         urlPattern,
-        '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline hover:text-blue-300">$1</a>',
+        '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:text-primary/80">$1</a>',
     );
-};
-
-const getDeptBadgeClass = (dept) => {
-    const d = (dept || "").toUpperCase();
-    if (d.includes("LSPD"))
-        return "bg-blue-600/30 text-blue-300 border-blue-500/50";
-    if (d.includes("BCSO") || d.includes("LSCSD"))
-        return "bg-amber-600/30 text-amber-300 border-amber-500/50";
-    if (d.includes("SASP"))
-        return "bg-teal-600/30 text-teal-300 border-teal-500/50";
-    if (d.includes("SAPR") || d.includes("RANGER"))
-        return "bg-green-600/30 text-green-300 border-green-500/50";
-    return "bg-slate-700/40 text-slate-300 border-slate-600";
 };
 
 const officerName = computed(() => {
@@ -370,90 +358,83 @@ const youtubeHandle = computed(() => {
     if (!h) return null;
     return h.startsWith("@") ? h : `@${h}`;
 });
-
-const handleAvatarError = (e) => {
-    e.target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(officerCallsign.value || officerName.value || "officer")}`;
-};
 </script>
 
 <template>
     <div
-        class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden font-sans shadow-xl"
+        class="bg-card rounded-xl border border-border overflow-hidden font-sans shadow-xl"
     >
-        <!-- 1. TOP HEADER BAR (Department Badge + Stream Title & Control Buttons: TAC, Audio, Pause, Grid) -->
+        <!-- 1. TOP HEADER BAR -->
         <div
-            class="bg-slate-950 px-3.5 py-2.5 border-b border-slate-800 flex items-center justify-between flex-wrap gap-2.5"
+            class="bg-background px-3.5 py-2.5 border-b border-border flex items-center justify-between flex-wrap gap-2.5"
         >
             <!-- LEFT SIDE: DEPARTMENT BADGE & STREAM TITLE -->
             <div class="flex items-center space-x-2.5 min-w-0 flex-1">
-                <!-- Department Badge at left of title -->
-                <span
-                    class="px-2 py-0.5 text-[10px] font-mono font-bold rounded-sm border tracking-wider shrink-0"
-                    :class="getDeptBadgeClass(officerDepartment)"
-                >
-                    {{ officerDepartment }}
-                </span>
+                <DeptBadge :dept="officerDepartment" class="shrink-0" />
 
                 <h1
-                    class="text-xs sm:text-sm font-medium text-slate-200 truncate max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl"
+                    class="text-xs sm:text-sm font-medium text-foreground truncate max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl"
                     :title="stream?.title || 'Siaran Patroli Taktis'"
                 >
                     {{ stream?.title || "Siaran Patroli Taktis" }}
                 </h1>
             </div>
 
-            <!-- RIGHT SIDE BUTTONS (FROM RIGHT TO LEFT: GRID, PAUSE, AUDIO, TAC) -->
+            <!-- RIGHT SIDE BUTTONS (GRID, PAUSE, AUDIO, TAC) -->
             <div class="flex items-center space-x-1.5 shrink-0">
                 <!-- TAC BUTTON WITH INTERACTIVE DROPDOWN POPOVER -->
                 <div class="relative">
-                    <button
+                    <Button
+                        type="button"
+                        size="sm"
+                        :variant="activeTacChannel ? 'secondary' : 'outline'"
                         @click="isTacPopoverOpen = !isTacPopoverOpen"
                         :class="
                             activeTacChannel
-                                ? 'bg-blue-950/90 text-blue-300 border-blue-700/80 font-bold'
-                                : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
+                                ? 'bg-primary/15 text-primary border-primary/50 font-bold'
+                                : 'text-muted-foreground hover:text-foreground'
                         "
-                        class="px-2.5 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 cursor-pointer text-xs font-mono"
+                        class="h-8 px-2.5 gap-1.5 text-xs font-mono"
                         title="Pilih / Kelola Saluran Radio TAC"
                     >
-                        <img
-                            :src="iconRadio"
-                            class="w-3.5 h-3.5 invert opacity-70"
-                            alt="TAC"
-                        />
+                        <Radio class="w-3.5 h-3.5" />
                         <span class="hidden sm:inline">{{
                             activeTacChannel
                                 ? activeTacChannel.replace("_", " ")
                                 : "Radio TAC"
                         }}</span>
-                    </button>
+                    </Button>
 
                     <!-- TAC CHANNEL SELECTION DROPDOWN POPOVER -->
                     <div
                         v-if="isTacPopoverOpen"
-                        class="absolute right-0 mt-2 w-72 sm:w-80 bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-2xl z-50 space-y-3 font-sans text-xs animate-in fade-in zoom-in-95 duration-150"
+                        class="absolute right-0 mt-2 w-72 sm:w-80 bg-popover border border-border rounded-xl p-3 shadow-2xl z-50 space-y-3 font-sans text-xs animate-in fade-in zoom-in-95 duration-150"
                     >
                         <div
-                            class="flex items-center justify-between border-b border-slate-800 pb-2"
+                            class="flex items-center justify-between border-b border-border pb-2"
                         >
                             <div class="flex items-center space-x-1.5">
                                 <span
-                                    class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
+                                    class="w-2 h-2 rounded-full bg-success motion-safe:animate-pulse"
                                 ></span>
                                 <span
-                                    class="font-semibold text-slate-200 font-mono text-[11px]"
+                                    class="font-semibold text-foreground font-mono text-xs"
                                     >Radio Taktis TAC</span
                                 >
                             </div>
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Tutup Popover TAC"
                                 @click="isTacPopoverOpen = false"
-                                class="text-slate-400 hover:text-slate-200 text-xs font-mono px-1.5 py-0.5 rounded-sm bg-slate-800 cursor-pointer"
+                                class="h-6 w-6 text-muted-foreground hover:text-foreground"
                             >
-                                ✕
-                            </button>
+                                <X class="w-3.5 h-3.5" />
+                            </Button>
                         </div>
 
-                        <p class="text-[11px] text-slate-400 leading-snug">
+                        <p class="text-xs text-muted-foreground leading-snug">
                             Pilih saluran radio TAC 1 - 10 untuk menghubungkan
                             stream perwira ini:
                         </p>
@@ -463,17 +444,18 @@ const handleAvatarError = (e) => {
                             <button
                                 v-for="i in 10"
                                 :key="`tac-opt-${i}`"
+                                type="button"
                                 @click="selectTacChannel(`TAC_${i}`)"
                                 :class="
                                     activeTacChannel === `TAC_${i}`
-                                        ? 'bg-blue-600 text-white border-blue-500 font-bold shadow-sm'
-                                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800 hover:text-white'
+                                        ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
+                                        : 'bg-background text-foreground border-border hover:bg-muted'
                                 "
                                 class="px-1 py-1.5 rounded-sm border transition-colors cursor-pointer flex flex-col items-center justify-center leading-none gap-0.5"
                                 :title="`Alokasikan ke Radio TAC ${i}`"
                             >
                                 <span
-                                    class="text-[9px] font-bold tracking-tight opacity-75"
+                                    class="text-xs font-bold tracking-tight opacity-75"
                                     >TAC</span
                                 >
                                 <span
@@ -486,84 +468,87 @@ const handleAvatarError = (e) => {
                         <!-- UNASSIGN / REMOVE TAC BUTTON -->
                         <div
                             v-if="activeTacChannel"
-                            class="pt-2 border-t border-slate-800"
+                            class="pt-2 border-t border-border"
                         >
-                            <button
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
                                 @click="removeTacChannel"
-                                class="w-full py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/80 rounded-md font-mono text-[11px] font-semibold transition-colors text-center cursor-pointer flex items-center justify-center gap-1.5"
+                                class="w-full h-8 font-mono text-xs font-semibold gap-1.5"
                             >
-                                <span>✕ Lepas dari Radio TAC</span>
-                            </button>
+                                <X class="w-3.5 h-3.5" />
+                                <span>Lepas dari Radio TAC</span>
+                            </Button>
                         </div>
                     </div>
                 </div>
 
                 <!-- AUDIO BUTTON (3rd from right) -->
-                <button
-                    @click="emit('toggle-audio')"
-                    :class="
+                <Button
+                    type="button"
+                    size="sm"
+                    :variant="
                         activeAudioVideoId === stream.video_id
-                            ? 'bg-slate-800 text-slate-100 border-slate-700'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
+                            ? 'secondary'
+                            : 'outline'
                     "
-                    class="px-2.5 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 cursor-pointer text-xs font-mono"
+                    @click="emit('toggle-audio')"
+                    class="h-8 px-2.5 gap-1.5 text-xs font-mono"
                     title="Toggle Audio"
                 >
-                    <img
-                        :src="
-                            activeAudioVideoId === stream.video_id
-                                ? iconUnmute
-                                : iconMute
-                        "
-                        class="w-3.5 h-3.5 invert opacity-70"
-                        alt="Audio"
+                    <Volume2
+                        v-if="activeAudioVideoId === stream.video_id"
+                        class="w-3.5 h-3.5 text-success"
                     />
+                    <VolumeX v-else class="w-3.5 h-3.5" />
                     <span class="hidden sm:inline">{{
                         activeAudioVideoId === stream.video_id
                             ? "Audio"
                             : "Mute"
                     }}</span>
-                </button>
+                </Button>
 
                 <!-- PAUSE / PLAY ICON BUTTON (2nd from right) -->
-                <button
+                <Button
+                    type="button"
+                    size="icon-sm"
+                    :variant="isStreamStopped ? 'secondary' : 'outline'"
                     @click="emit('toggle-stop-feed')"
-                    :class="
+                    :class="isStreamStopped ? 'text-warning' : ''"
+                    class="h-8 w-8 shrink-0"
+                    :aria-label="
                         isStreamStopped
-                            ? 'bg-slate-800 text-amber-400 border-slate-700'
-                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border-slate-800'
+                            ? 'Putar Video (Play)'
+                            : 'Pause Video (Stop Feed)'
                     "
-                    class="p-1.5 rounded-md border transition-colors flex items-center justify-center shrink-0 cursor-pointer"
                     :title="
                         isStreamStopped
                             ? 'Putar Video (Play)'
                             : 'Pause Video (Stop Feed)'
                     "
                 >
-                    <img
-                        :src="isStreamStopped ? iconPlayAll : iconPause"
-                        class="w-3.5 h-3.5 invert opacity-75 hover:opacity-100"
-                        :alt="isStreamStopped ? 'Play' : 'Pause'"
-                    />
-                </button>
+                    <Play v-if="isStreamStopped" class="w-3.5 h-3.5" />
+                    <Pause v-else class="w-3.5 h-3.5" />
+                </Button>
 
                 <!-- GRID BUTTON (1st / Rightmost) -->
-                <button
+                <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="outline"
                     @click="emit('close-focus')"
-                    class="p-1.5 rounded-md border transition-colors flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border-slate-800 shrink-0 cursor-pointer"
+                    class="h-8 w-8 shrink-0"
+                    aria-label="Kembali ke Mode Grid (Tutup Mode Fokus)"
                     title="Kembali ke Mode Grid (Tutup Mode Fokus)"
                 >
-                    <img
-                        :src="iconCloseBold"
-                        class="w-3.5 h-3.5 invert opacity-75 hover:opacity-100"
-                        alt="Kembali ke Grid"
-                    />
-                </button>
+                    <X class="w-3.5 h-3.5" />
+                </Button>
             </div>
         </div>
 
         <!-- 2. PEMUTAR VIDEO UTAMA -->
-        <div class="relative w-full aspect-video bg-slate-950 overflow-hidden">
+        <div class="relative w-full aspect-video bg-background overflow-hidden">
             <template v-if="!isStreamStopped && !isStreamUnavailable">
                 <iframe
                     :key="`primary-focus-player-${stream.video_id}`"
@@ -589,38 +574,26 @@ const handleAvatarError = (e) => {
                     class="w-full h-full object-cover opacity-20 blur-xs"
                 />
                 <div
-                    class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 z-10 space-y-3.5 text-center"
+                    class="absolute inset-0 bg-background/90 flex flex-col items-center justify-center p-6 z-10 space-y-3.5 text-center"
                 >
                     <div
-                        class="w-12 h-12 rounded-full bg-rose-950/80 border border-rose-800/80 flex items-center justify-center text-rose-400"
+                        class="w-12 h-12 rounded-full bg-destructive/15 border border-destructive/40 flex items-center justify-center text-destructive"
                     >
-                        <svg
-                            class="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                            />
-                        </svg>
+                        <AlertTriangle class="w-6 h-6" />
                     </div>
 
                     <div class="space-y-1 max-w-md">
                         <span
-                            class="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider"
+                            class="text-xs font-mono font-bold text-destructive uppercase tracking-wider"
                         >
                             {{
                                 streamErrorCode === 101 ||
                                 streamErrorCode === 150
-                                    ? "🔒 SIARAN MEMBERS-ONLY / PRIVAT"
-                                    : "🔴 SIARAN TIDAK TERSEDIA"
+                                    ? "SIARAN MEMBERS-ONLY / PRIVAT"
+                                    : "SIARAN TIDAK TERSEDIA"
                             }}
                         </span>
-                        <h3 class="text-sm font-bold text-slate-100 font-mono">
+                        <h3 class="text-sm font-bold text-foreground font-mono">
                             {{
                                 streamErrorCode === 101 ||
                                 streamErrorCode === 150
@@ -629,7 +602,7 @@ const handleAvatarError = (e) => {
                             }}
                         </h3>
                         <p
-                            class="text-xs text-slate-400 leading-relaxed font-sans"
+                            class="text-xs text-muted-foreground leading-relaxed font-sans"
                         >
                             {{
                                 streamErrorCode === 101 ||
@@ -643,29 +616,31 @@ const handleAvatarError = (e) => {
                     <div
                         class="flex items-center gap-2 pt-2 flex-wrap justify-center font-mono text-xs"
                     >
-                        <a
-                            :href="`https://www.youtube.com/watch?v=${stream.video_id}`"
-                            target="_blank"
-                            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-md transition-colors flex items-center gap-1.5 cursor-pointer"
-                        >
-                            <span>Buka Langsung di YouTube</span>
-                            <img
-                                :src="iconExternal"
-                                class="w-3.5 h-3.5 invert opacity-90"
-                            />
-                        </a>
-                        <button
+                        <Button as-child size="sm" class="gap-1.5">
+                            <a
+                                :href="`https://www.youtube.com/watch?v=${stream.video_id}`"
+                                target="_blank"
+                            >
+                                <span>Buka Langsung di YouTube</span>
+                                <ExternalLink class="w-3.5 h-3.5" />
+                            </a>
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
                             @click="isStreamUnavailable = false"
-                            class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md transition-colors cursor-pointer"
                         >
                             Muat Ulang
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
                             @click="emit('close-focus')"
-                            class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md transition-colors cursor-pointer"
                         >
                             Kembali ke Grid
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </template>
@@ -676,49 +651,43 @@ const handleAvatarError = (e) => {
                     class="w-full h-full object-cover opacity-50"
                 />
                 <div
-                    class="absolute inset-0 bg-slate-950/80 flex flex-col items-center justify-center p-4 z-10 space-y-3"
+                    class="absolute inset-0 bg-background/80 flex flex-col items-center justify-center p-4 z-10 space-y-3"
                 >
-                    <span
-                        class="text-xs font-mono text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-md"
-                    >
+                    <Badge variant="outline" class="font-mono text-xs px-3 py-1">
                         FEED DIHENTIKAN SEMENTARA
-                    </span>
-                    <button
+                    </Badge>
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
                         @click="emit('toggle-stop-feed')"
-                        class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-4 py-2 rounded-md text-xs font-medium transition-colors flex items-center gap-2"
+                        class="gap-2 text-xs"
                     >
-                        <img
-                            :src="iconPlayAll"
-                            class="w-3.5 h-3.5 invert opacity-70"
-                        />
+                        <Play class="w-3.5 h-3.5" />
                         <span>Putar Video Kembali</span>
-                    </button>
+                    </Button>
                 </div>
             </template>
         </div>
 
-        <!-- 3. UNIFIED OFFICER PROFILE & ACTION CONTROLS BAR (DI BAWAH VIDEO STREAMING) -->
+        <!-- 3. UNIFIED OFFICER PROFILE & ACTION CONTROLS BAR -->
         <div
-            class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between flex-wrap gap-3"
+            class="bg-background px-4 py-3 border-b border-border flex items-center justify-between flex-wrap gap-3"
         >
-            <!-- LEFT SIDE: PROFILE FOTO, NAMA OFFICER, YOUTUBE HANDLE & CALLSIGN ONLY -->
+            <!-- LEFT SIDE: PROFILE FOTO, NAMA OFFICER, YOUTUBE HANDLE & CALLSIGN -->
             <div class="flex items-center space-x-3 min-w-0 flex-1">
-                <!-- Foto Profile Avatar -->
-                <img
-                    :src="
-                        officerAvatar ||
-                        `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(officerCallsign || officerName || 'officer')}`
-                    "
-                    :alt="officerName"
-                    referrerpolicy="no-referrer"
-                    @error="handleAvatarError"
-                    class="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-slate-700 shrink-0"
+                <OfficerAvatar
+                    :src="officerAvatar"
+                    :name="officerName"
+                    :callsign="officerCallsign"
+                    :dept="officerDepartment"
+                    size="md"
+                    class="shrink-0"
                 />
 
-                <!-- Info Block: Nama Officer, Callsign & YouTube Handle -->
                 <div class="min-w-0 flex-1">
                     <h2
-                        class="text-sm sm:text-base font-bold text-slate-100 truncate tracking-tight leading-snug"
+                        class="text-sm sm:text-base font-bold text-foreground truncate tracking-tight leading-snug"
                         :title="officerName"
                     >
                         {{ officerName }}
@@ -727,17 +696,18 @@ const handleAvatarError = (e) => {
                     <div
                         class="flex items-center space-x-2 text-xs font-mono mt-0.5 truncate"
                     >
-                        <span
+                        <Badge
                             v-if="officerCallsign"
-                            class="px-1.5 py-0.5 text-[10px] font-mono font-bold text-slate-300 bg-slate-900 border border-slate-800 rounded-sm shrink-0"
+                            variant="outline"
+                            class="px-1.5 py-0 text-xs font-mono font-bold shrink-0"
                         >
                             {{ officerCallsign }}
-                        </span>
+                        </Badge>
                         <a
                             v-if="youtubeHandle"
                             :href="`https://www.youtube.com/${youtubeHandle}`"
                             target="_blank"
-                            class="text-blue-400 hover:text-blue-300 hover:underline truncate"
+                            class="text-primary hover:underline truncate"
                             :title="youtubeHandle"
                         >
                             {{ youtubeHandle }}
@@ -746,94 +716,83 @@ const handleAvatarError = (e) => {
                 </div>
             </div>
 
-            <!-- RIGHT SIDE: ACTION CONTROLS (Tandai Aksi [Desktop], Mode Bioskop, Live Chat, Buka di YouTube) -->
+            <!-- RIGHT SIDE: ACTION CONTROLS -->
             <div
                 class="flex items-center space-x-1.5 flex-wrap gap-y-1.5 shrink-0"
             >
                 <!-- Tandai Aksi / Clip Button (Desktop Only) -->
-                <button
+                <Button
+                    type="button"
+                    size="sm"
+                    :variant="
+                        activeFocusTab === 'create-clip'
+                            ? 'destructive'
+                            : 'outline'
+                    "
                     @click="
                         activeFocusTab =
                             activeFocusTab === 'create-clip'
                                 ? 'clips'
                                 : 'create-clip'
                     "
-                    :class="
-                        activeFocusTab === 'create-clip'
-                            ? 'bg-rose-950 text-rose-300 border-rose-800 font-semibold'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
-                    "
-                    class="hidden lg:inline-flex px-2.5 py-1.5 rounded-md border transition-colors items-center gap-1.5 cursor-pointer font-mono text-xs"
+                    class="hidden lg:inline-flex h-8 px-2.5 gap-1.5 font-mono text-xs"
                     title="Tandai Momen Aksi (Buka Form Input di Bawah Video)"
                 >
-                    <img
-                        :src="iconCut"
-                        class="w-3.5 h-3.5 invert opacity-70"
-                        alt="Clip"
-                    />
+                    <Scissors class="w-3.5 h-3.5" />
                     <span>Tandai Aksi</span>
-                </button>
+                </Button>
 
                 <!-- Mode Bioskop (Theater Mode) Button -->
-                <button
+                <Button
+                    type="button"
+                    size="sm"
+                    :variant="isTheaterMode ? 'secondary' : 'outline'"
                     @click="emit('toggle-theater-mode')"
-                    :class="
-                        isTheaterMode
-                            ? 'bg-slate-800 text-slate-100 border-slate-700 font-semibold'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
-                    "
-                    class="px-2.5 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 cursor-pointer font-mono text-xs"
+                    class="h-8 px-2.5 gap-1.5 font-mono text-xs"
                     title="Toggle Mode Bioskop / Theater"
                 >
-                    <img
-                        :src="iconTheater"
-                        class="w-3.5 h-3.5 invert opacity-70"
-                        alt="Mode Bioskop"
-                    />
+                    <RectangleHorizontal class="w-3.5 h-3.5" />
                     <span>Mode Bioskop</span>
-                </button>
+                </Button>
 
-                <!-- Live Chat Toggle Button (Di Kanan Mode Bioskop) -->
-                <button
+                <!-- Live Chat Toggle Button -->
+                <Button
+                    type="button"
+                    size="sm"
+                    :variant="isRightChatOpen ? 'secondary' : 'outline'"
                     @click="emit('toggle-right-chat')"
-                    :class="
-                        isRightChatOpen
-                            ? 'bg-slate-800 text-slate-100 border-slate-700 font-semibold'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
-                    "
-                    class="px-2.5 py-1.5 rounded-md border transition-colors flex items-center gap-1.5 cursor-pointer font-mono text-xs"
+                    class="h-8 px-2.5 gap-1.5 font-mono text-xs"
                     title="Toggle Live Chat"
                 >
-                    <img
-                        :src="iconChat"
-                        class="w-3.5 h-3.5 invert opacity-70"
-                        alt="Live Chat"
-                    />
+                    <MessageSquare class="w-3.5 h-3.5" />
                     <span>Live Chat</span>
-                </button>
+                </Button>
 
                 <!-- External YouTube Link -->
-                <a
-                    :href="`https://www.youtube.com/watch?v=${stream.video_id}`"
-                    target="_blank"
-                    class="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-md border border-slate-800 transition-colors flex items-center justify-center"
+                <Button
+                    as-child
+                    size="icon-sm"
+                    variant="outline"
+                    class="h-8 w-8"
                     title="Buka di YouTube"
+                    aria-label="Buka di YouTube"
                 >
-                    <img
-                        :src="iconExternal"
-                        class="w-3.5 h-3.5 invert opacity-70"
-                        alt="Buka di YouTube"
-                    />
-                </a>
+                    <a
+                        :href="`https://www.youtube.com/watch?v=${stream.video_id}`"
+                        target="_blank"
+                    >
+                        <ExternalLink class="w-3.5 h-3.5" />
+                    </a>
+                </Button>
             </div>
         </div>
 
-        <!-- 4. MOBILE-ONLY LIVE CHAT (DIRECTLY BELOW OFFICER PROFILE, EDGE-TO-EDGE, NO PADDING, NO HEADER) -->
+        <!-- 4. MOBILE-ONLY LIVE CHAT -->
         <div
             v-if="isRightChatOpen"
-            class="block lg:hidden bg-slate-950 border-t border-slate-800 w-full p-0 overflow-hidden"
+            class="block lg:hidden bg-background border-t border-border w-full p-0 overflow-hidden"
         >
-            <div class="w-full h-[480px] bg-slate-900 relative">
+            <div class="w-full h-[480px] bg-card relative">
                 <iframe
                     :key="`mobile-chat-${stream.video_id}`"
                     :src="`https://www.youtube.com/live_chat?v=${stream.video_id}&embed_domain=${computedChatEmbedDomain}&dark_theme=1`"
@@ -843,67 +802,41 @@ const handleAvatarError = (e) => {
             </div>
         </div>
 
-        <!-- 5. TAB SECTOR (ALWAYS VISIBLE ON DESKTOP `lg:block`, TOGGLEABLE ON MOBILE) -->
+        <!-- 5. TAB SECTOR -->
         <div
             :class="{ 'hidden lg:block': isRightChatOpen }"
-            class="bg-slate-900 p-4 space-y-4 border-t border-slate-800"
+            class="bg-card p-4 space-y-4 border-t border-border"
         >
-            <!-- TAB BAR NAVIGATION (2 TABS: DESKRIPSI STREAMER & KUMPULAN AKSI) -->
+            <!-- TAB BAR NAVIGATION -->
             <div
-                class="flex items-center space-x-2 border-b border-slate-800 pb-2 overflow-x-auto text-xs font-medium"
+                class="flex items-center space-x-2 border-b border-border pb-2 overflow-x-auto text-xs font-medium"
             >
-                <!-- TAB 1: DESKRIPSI STREAMER -->
-                <button
-                    @click="activeFocusTab = 'description'"
-                    :class="
+                <Button
+                    type="button"
+                    size="sm"
+                    :variant="
                         activeFocusTab === 'description' ||
                         activeFocusTab === 'chat'
-                            ? 'border-slate-700 text-slate-100 bg-slate-800 font-semibold'
-                            : 'border-slate-800 text-slate-400 hover:text-slate-200 bg-slate-950'
+                            ? 'secondary'
+                            : 'outline'
                     "
-                    class="px-3.5 py-1.5 rounded-md border transition-colors flex items-center gap-2 shrink-0 cursor-pointer"
+                    @click="activeFocusTab = 'description'"
+                    class="h-8 px-3.5 gap-2 shrink-0 text-xs"
                 >
-                    <svg
-                        class="w-3.5 h-3.5 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                    </svg>
+                    <Info class="w-3.5 h-3.5 text-muted-foreground" />
                     <span>Deskripsi Streamer</span>
-                </button>
+                </Button>
 
-                <!-- TAB 2: KUMPULAN AKSI & SHORTS -->
-                <button
+                <Button
+                    type="button"
+                    size="sm"
+                    :variant="activeFocusTab === 'clips' ? 'secondary' : 'outline'"
                     @click="activeFocusTab = 'clips'"
-                    :class="
-                        activeFocusTab === 'clips'
-                            ? 'border-slate-700 text-slate-100 bg-slate-800 font-semibold'
-                            : 'border-slate-800 text-slate-400 hover:text-slate-200 bg-slate-950'
-                    "
-                    class="px-3.5 py-1.5 rounded-md border transition-colors flex items-center gap-2 shrink-0 cursor-pointer"
+                    class="h-8 px-3.5 gap-2 shrink-0 text-xs"
                 >
-                    <svg
-                        class="w-3.5 h-3.5 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                        />
-                    </svg>
+                    <Video class="w-3.5 h-3.5 text-muted-foreground" />
                     <span>Kumpulan Klip Aksi</span>
-                </button>
+                </Button>
             </div>
 
             <!-- TAB CONTENT -->
@@ -914,12 +847,12 @@ const handleAvatarError = (e) => {
                         activeFocusTab === 'description' ||
                         activeFocusTab === 'chat'
                     "
-                    class="bg-slate-950 rounded-lg p-4 border border-slate-800 space-y-3 font-mono text-xs text-slate-300"
+                    class="bg-background rounded-lg p-4 border border-border space-y-3 font-mono text-xs text-foreground"
                 >
                     <div
-                        class="flex items-center justify-between pb-2 border-b border-slate-800 text-slate-400"
+                        class="flex items-center justify-between pb-2 border-b border-border text-muted-foreground"
                     >
-                        <span class="font-semibold text-slate-200"
+                        <span class="font-semibold text-foreground"
                             >Deskripsi Resmi YouTube</span
                         >
                         <span>Video ID: {{ stream.video_id }}</span>
@@ -927,14 +860,17 @@ const handleAvatarError = (e) => {
 
                     <div
                         v-if="stream.description || fetchedDescription"
-                        class="whitespace-pre-wrap leading-relaxed wrap-break-word max-h-96 overflow-y-auto pr-2 scrollbar-thin select-text text-slate-300"
+                        class="whitespace-pre-wrap leading-relaxed wrap-break-word max-h-96 overflow-y-auto pr-2 scrollbar-thin select-text text-foreground"
                         v-html="
                             formatDescriptionWithLinks(
                                 stream.description || fetchedDescription,
                             )
                         "
                     ></div>
-                    <div v-else class="italic text-slate-500 py-4 text-center">
+                    <div
+                        v-else
+                        class="italic text-muted-foreground py-4 text-center"
+                    >
                         Tidak ada deskripsi tambahan dari streamer untuk siaran
                         ini.
                     </div>
@@ -953,66 +889,65 @@ const handleAvatarError = (e) => {
                 <!-- TAB INLINE FORM: TANDAI AKSI BARU -->
                 <div
                     v-else-if="activeFocusTab === 'create-clip'"
-                    class="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-4 font-sans text-xs text-slate-300 animate-in fade-in duration-200"
+                    class="bg-background rounded-xl p-4 border border-border space-y-4 font-sans text-xs text-foreground animate-in fade-in duration-200"
                 >
-                    <!-- COMPACT HEADER -->
                     <div
-                        class="flex items-center justify-between pb-3 border-b border-slate-800"
+                        class="flex items-center justify-between pb-3 border-b border-border"
                     >
                         <div class="flex items-center space-x-2">
-                            <img
-                                :src="iconCut"
-                                class="w-4 h-4 invert opacity-80"
-                                alt=""
-                            />
-                            <span class="font-semibold text-slate-100 text-xs"
+                            <Scissors class="w-4 h-4 text-muted-foreground" />
+                            <span class="font-semibold text-foreground text-xs"
                                 >Penandaan Momen Aksi Taktis</span
                             >
                             <span
-                                class="text-[11px] font-mono text-slate-400 hidden sm:inline"
+                                class="text-xs font-mono text-muted-foreground hidden sm:inline"
                                 >— Catat stempel waktu tanpa menutup video</span
                             >
                         </div>
-                        <button
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
                             @click="activeFocusTab = 'clips'"
-                            class="text-slate-400 hover:text-slate-200 text-xs font-mono px-2.5 py-1 rounded-sm bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer"
+                            class="h-7 px-2.5 text-xs font-mono gap-1"
                         >
-                            ✕ Tutup Form
-                        </button>
+                            <X class="w-3 h-3" />
+                            <span>Tutup Form</span>
+                        </Button>
                     </div>
 
-                    <!-- 2-COLUMN GRID: LEFT SIDE = STUDIO CLIPPER PRO CARD, RIGHT SIDE = FORM INPUTS -->
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                         <!-- LEFT SIDE: STUDIO CLIPPER PRO INVITATION CARD -->
                         <div
-                            class="md:col-span-4 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-4"
+                            class="md:col-span-4 bg-card border border-border rounded-xl p-4 flex flex-col justify-between space-y-4"
                         >
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <span
-                                            class="w-2 h-2 rounded-full bg-blue-500"
+                                            class="w-2 h-2 rounded-full bg-primary"
                                         ></span>
                                         <span
-                                            class="text-xs font-mono font-semibold text-slate-300"
+                                            class="text-xs font-mono font-semibold text-foreground"
                                             >Studio Clipper Pro</span
                                         >
                                     </div>
-                                    <span
-                                        class="text-[10px] font-mono bg-slate-950 border border-slate-800 text-slate-400 px-2 py-0.5 rounded-sm"
+                                    <Badge
+                                        variant="outline"
+                                        class="text-xs font-mono px-2 py-0"
                                     >
                                         BETA
-                                    </span>
+                                    </Badge>
                                 </div>
 
                                 <div>
                                     <h4
-                                        class="text-xs font-bold text-slate-100 tracking-tight"
+                                        class="text-xs font-bold text-foreground tracking-tight"
                                     >
                                         Tertarik Jadi Clipper IME Police?
                                     </h4>
                                     <p
-                                        class="text-[11px] text-slate-400 mt-1 leading-relaxed"
+                                        class="text-xs text-muted-foreground mt-1 leading-relaxed"
                                     >
                                         Buka fitur pemotong video dengan pilihan
                                         resolusi hingga 1080p dan maksimal 10
@@ -1022,114 +957,86 @@ const handleAvatarError = (e) => {
                                 </div>
                             </div>
 
-                            <button
+                            <Button
+                                type="button"
+                                :variant="canTrimVideo ? 'default' : 'secondary'"
+                                size="sm"
                                 @click="openStudioClipper"
-                                :class="
-                                    canTrimVideo
-                                        ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white'
-                                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
-                                "
-                                class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer"
+                                class="w-full gap-2 text-xs font-semibold"
                                 :title="
                                     canTrimVideo
                                         ? 'Buka Studio Clipper Pro'
                                         : 'Akses Terbatas (Diperlukan Role Clipper / Admin)'
                                 "
                             >
-                                <span
+                                <Lock
                                     v-if="!canTrimVideo"
-                                    class="text-amber-400"
-                                    >🔒</span
-                                >
+                                    class="w-3.5 h-3.5 text-warning"
+                                />
                                 <span>Akses Studio Clipper</span>
-                                <svg
-                                    class="w-3.5 h-3.5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M14 5l7 7m0 0l-7 7m7-7H3"
-                                    />
-                                </svg>
-                            </button>
+                                <ArrowRight class="w-3.5 h-3.5" />
+                            </Button>
                         </div>
 
                         <!-- RIGHT SIDE: MAIN FORM INPUTS (8 COLS) -->
                         <div
-                            class="md:col-span-8 bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3"
+                            class="md:col-span-8 bg-card border border-border rounded-xl p-4 space-y-3"
                         >
-                            <!-- ROW 1: JUDUL MOMEN AKSI -->
                             <div>
                                 <div
                                     class="flex items-center justify-between mb-1"
                                 >
                                     <label
-                                        class="block text-slate-300 font-medium text-xs"
+                                        class="block text-foreground font-medium text-xs"
                                         >Judul Momen Aksi / Kejadian *</label
                                     >
                                     <span
-                                        class="text-[10px] font-mono text-slate-500"
+                                        class="text-xs font-mono text-muted-foreground"
                                         >{{ newClipTitle.length }}/100</span
                                     >
                                 </div>
-                                <input
+                                <Input
                                     v-model="newClipTitle"
                                     type="text"
                                     maxlength="100"
                                     placeholder="Contoh: High Speed Pursuit di Freeway & PIT Maneuver"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs transition-colors"
+                                    class="h-8 text-xs"
                                 />
                             </div>
 
-                            <!-- ROW 2: LIVE TIME QUICK SETTER & PRESET + STEMPEL WAKTU -->
                             <div class="space-y-2.5">
                                 <div
-                                    class="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-md p-2 flex-wrap gap-2"
+                                    class="flex items-center justify-between bg-background border border-border rounded-md p-2 flex-wrap gap-2"
                                 >
                                     <div class="flex items-center gap-2">
                                         <span
-                                            class="w-2 h-2 rounded-full bg-red-500 animate-pulse"
+                                            class="w-2 h-2 rounded-full bg-live motion-safe:animate-pulse"
                                         ></span>
                                         <span
-                                            class="text-xs font-mono text-slate-300"
+                                            class="text-xs font-mono text-foreground"
                                             >Waktu Live Stream:
                                             <strong
-                                                class="text-blue-400 font-bold font-mono"
+                                                class="text-primary font-bold font-mono"
                                                 >{{
                                                     formattedCurrentPlaybackTime
                                                 }}</strong
                                             ></span
                                         >
                                     </div>
-                                    <button
-                                        @click="setStartFromCurrentTime"
+                                    <Button
                                         type="button"
-                                        class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-md text-[11px] font-mono font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                                        size="sm"
+                                        @click="setStartFromCurrentTime"
+                                        class="h-7 px-2.5 text-xs font-mono font-semibold gap-1.5"
                                         title="Set Waktu Mulai ke posisi video saat ini"
                                     >
-                                        <svg
-                                            class="w-3.5 h-3.5"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
+                                        <Clock class="w-3.5 h-3.5" />
                                         <span
                                             >Ambil Waktu Live ({{
                                                 formattedCurrentPlaybackTime
                                             }})</span
                                         >
-                                    </button>
+                                    </Button>
                                 </div>
 
                                 <div
@@ -1137,45 +1044,51 @@ const handleAvatarError = (e) => {
                                 >
                                     <div class="sm:col-span-4">
                                         <label
-                                            class="block text-slate-400 text-[11px] font-mono mb-1"
+                                            class="block text-muted-foreground text-xs font-mono mb-1"
                                             >Durasi Cepat</label
                                         >
                                         <div class="flex items-center gap-1.5">
-                                            <button
-                                                @click="setClipPreset(60)"
-                                                :class="
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                :variant="
                                                     newClipDurationPreset === 60
-                                                        ? 'bg-blue-600 text-white border-blue-600 font-semibold'
-                                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                                                        ? 'default'
+                                                        : 'outline'
                                                 "
-                                                class="flex-1 py-1 rounded-md border text-xs font-mono transition-colors cursor-pointer text-center"
+                                                @click="setClipPreset(60)"
+                                                class="flex-1 h-8 text-xs font-mono"
                                             >
                                                 1 Min
-                                            </button>
-                                            <button
-                                                @click="setClipPreset(180)"
-                                                :class="
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                :variant="
                                                     newClipDurationPreset ===
                                                     180
-                                                        ? 'bg-blue-600 text-white border-blue-600 font-semibold'
-                                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                                                        ? 'default'
+                                                        : 'outline'
                                                 "
-                                                class="flex-1 py-1 rounded-md border text-xs font-mono transition-colors cursor-pointer text-center"
+                                                @click="setClipPreset(180)"
+                                                class="flex-1 h-8 text-xs font-mono"
                                             >
                                                 3 Min
-                                            </button>
-                                            <button
-                                                @click="setClipPreset(300)"
-                                                :class="
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                :variant="
                                                     newClipDurationPreset ===
                                                     300
-                                                        ? 'bg-blue-600 text-white border-blue-600 font-semibold'
-                                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                                                        ? 'default'
+                                                        : 'outline'
                                                 "
-                                                class="flex-1 py-1 rounded-md border text-xs font-mono transition-colors cursor-pointer text-center"
+                                                @click="setClipPreset(300)"
+                                                class="flex-1 h-8 text-xs font-mono"
                                             >
                                                 5 Min
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
 
@@ -1184,22 +1097,22 @@ const handleAvatarError = (e) => {
                                             class="flex items-center justify-between mb-1"
                                         >
                                             <label
-                                                class="text-slate-400 text-[11px] font-mono"
+                                                class="text-muted-foreground text-xs font-mono"
                                                 >Mulai (HH:MM:SS)</label
                                             >
                                             <button
                                                 @click="setStartFromCurrentTime"
                                                 type="button"
-                                                class="text-[10px] text-blue-400 hover:text-blue-300 font-mono underline cursor-pointer"
+                                                class="text-xs text-primary hover:underline font-mono cursor-pointer"
                                             >
                                                 Set Live
                                             </button>
                                         </div>
-                                        <input
+                                        <Input
                                             v-model="newClipStartTime"
                                             type="text"
                                             placeholder="00:00:00"
-                                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-2 py-1 text-slate-100 focus:border-blue-500 text-center font-mono font-semibold text-xs transition-colors"
+                                            class="h-8 text-center font-mono font-semibold text-xs"
                                         />
                                     </div>
 
@@ -1208,46 +1121,47 @@ const handleAvatarError = (e) => {
                                             class="flex items-center justify-between mb-1"
                                         >
                                             <label
-                                                class="text-slate-400 text-[11px] font-mono"
+                                                class="text-muted-foreground text-xs font-mono"
                                                 >Selesai (HH:MM:SS)</label
                                             >
                                             <button
                                                 @click="setEndFromCurrentTime"
                                                 type="button"
-                                                class="text-[10px] text-blue-400 hover:text-blue-300 font-mono underline cursor-pointer"
+                                                class="text-xs text-primary hover:underline font-mono cursor-pointer"
                                             >
                                                 Set Live
                                             </button>
                                         </div>
-                                        <input
+                                        <Input
                                             v-model="newClipEndTime"
                                             type="text"
                                             placeholder="00:01:00"
-                                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-2 py-1 text-slate-100 focus:border-blue-500 text-center font-mono font-semibold text-xs transition-colors"
+                                            class="h-8 text-center font-mono font-semibold text-xs"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- ROW 3: NAMA PEMBUAT & TOMBOL SIMPAN -->
                             <div
                                 class="flex items-center gap-2 pt-1 flex-wrap sm:flex-nowrap"
                             >
                                 <div class="w-full sm:flex-1">
-                                    <input
+                                    <Input
                                         v-model="newClipAuthor"
                                         type="text"
                                         maxlength="30"
                                         placeholder="Panggilan Anda (Opsional, Maks 30 Karakter)"
-                                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 text-xs focus:border-blue-500 outline-hidden transition-colors"
+                                        class="h-8 text-xs"
                                     />
                                 </div>
-                                <button
+                                <Button
+                                    type="button"
+                                    size="sm"
                                     @click="handleCreateClipSubmit"
-                                    class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold rounded-md text-xs transition-colors shrink-0 cursor-pointer"
+                                    class="w-full sm:w-auto h-8 px-4 font-semibold text-xs shrink-0"
                                 >
                                     Simpan Klip Momen
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
