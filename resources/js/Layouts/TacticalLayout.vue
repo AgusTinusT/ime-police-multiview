@@ -5,6 +5,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
+import { Toaster } from "@/Components/ui/sonner";
 defineProps({
     showFooter: {
         type: Boolean,
@@ -55,5 +56,7 @@ onUnmounted(() => {
 
         <!-- Floating Tactical Community Chat -->
         <TacticalChatDrawer />
+
+        <Toaster rich-colors position="top-right" />
     </div>
 </template>
