@@ -7,6 +7,7 @@ import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
 
 // Refactored Sub-Components
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
+import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import TacticalClipperBetaBanner from "@/Components/TacticalClipperBetaBanner.vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
@@ -19,6 +20,10 @@ import { parseRelativeTimeToSeconds } from "@/Utils/timeHelpers";
 import { defineProps } from "vue";
 
 const props = defineProps({
+    heroSlides: {
+        type: Array,
+        default: () => [],
+    },
     initialStreams: {
         type: Array,
         required: true,
@@ -196,8 +201,12 @@ const scrollToUnitsGrid = () => {
 
         <!-- Main Content Area -->
         <main class="flex-1 w-full">
+            <HeroCarousel
+                v-if="heroSlides && heroSlides.length > 0"
+                :slides="heroSlides"
+            />
             <!-- HERO SPOTLIGHT BANNER SECTION (Section 1: Darkest Slate Canvas - bg-slate-950, No Border) -->
-            <section class="relative w-full bg-slate-950 overflow-hidden group">
+            <section v-else class="relative w-full bg-slate-950 overflow-hidden group">
                 <!-- Full-Width Background Hero Backdrop Image with Minimal Overlay -->
                 <div
                     class="absolute inset-0 z-0 pointer-events-none opacity-30"
