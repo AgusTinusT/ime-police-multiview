@@ -1,30 +1,18 @@
 <script setup>
-/**
- * ==============================================================================
- * SPESIFIKASI DATA & CONTRACT INTEGRASI - ACTION CLIP CREATION MODAL
- * ==============================================================================
- * 
- * 1. PROPS DIBUTUHKAN:
- *    - isOpen: Boolean (Toggle modal terbuka/tertutup)
- *    - stream: Object (Data siaran aktif, memuat video_id & title)
- *    - currentTime: Number (Posisi detik playback terkini dari player)
- * 
- * 2. EMIT EVENTS & PAYLOAD (POST /api/clips):
- *    - @submit: {
- *        title: String (Judul Klip Aksi),
- *        startTime: String (Format MM:SS),
- *        endTime: String (Format MM:SS),
- *        authorName: String (Nama Penanda Klip)
- *      }
- * 
- * ==============================================================================
- * CATATAN INTEGRASI:
- * Jika modal ini sudah terhubung penuh dengan endpoint simpan klip backend,
- * HAPUS BLOK KOMENTAR INI.
- * ==============================================================================
- */
 import { ref, computed, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
+import { toast } from "vue-sonner";
+import { Scissors, ArrowRight } from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/Components/ui/dialog";
 
 const props = defineProps({
     isOpen: { type: Boolean, default: false },
@@ -49,7 +37,7 @@ watch(
             authorName.value = newName;
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 
 const durationPreset = ref(30);
@@ -78,8 +66,7 @@ const parseTimestamp = (str) => {
     }
     if (parts.length === 2) {
         return (
-            (parseInt(parts[0], 10) || 0) * 60 +
-            (parseInt(parts[1], 10) || 0)
+            (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0)
         );
     }
     return parseInt(str, 10) || 0;
@@ -102,7 +89,7 @@ const openStudioClipper = () => {
 
 const handleSubmit = () => {
     if (!title.value.trim()) {
-        alert("Harap masukkan judul klip momen aksi!");
+        toast.warning("Harap masukkan judul klip momen aksi!");
         return;
     }
 
@@ -110,7 +97,10 @@ const handleSubmit = () => {
         title: title.value,
         startTime: startTime.value,
         endTime: endTime.value,
-        authorName: authorName.value.trim() || authUser.value?.name || "Penonton Komunitas",
+        authorName:
+            authorName.value.trim() ||
+            authUser.value?.name ||
+            "Penonton Komunitas",
         user_id: authUser.value?.id || null,
     });
 
@@ -121,25 +111,30 @@ const handleSubmit = () => {
 </script>
 
 <template>
-    <div v-if="isOpen" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-5 space-y-4 shadow-2xl">
-            <!-- MODAL HEADER -->
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L4 4m5.121 5.121L4 14.121M14.121 9.121L19 4"/>
-                    </svg>
-                    <div>
-                        <h3 class="text-xs font-semibold text-slate-100 font-mono">Tandai Momen Aksi Baru</h3>
-                        <p class="text-[10px] text-slate-400 font-mono">Pratinjau Video & Bookmark Klip Siaran</p>
-                    </div>
-                </div>
-                <button @click="emit('close')" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded-sm bg-slate-800 cursor-pointer">✕</button>
-            </div>
+    <Dialog
+        :open="isOpen"
+        @update:open="
+            (val) => {
+                if (!val) emit('close');
+            }
+        "
+    >
+        <DialogContent class="sm:max-w-lg">
+            <DialogHeader>
+                <DialogTitle class="flex items-center gap-2 font-mono text-sm">
+                    <Scissors class="w-4 h-4 text-destructive" />
+                    <span>Tandai Momen Aksi Baru</span>
+                </DialogTitle>
+                <DialogDescription class="font-mono text-xs">
+                    Pratinjau Video &amp; Bookmark Klip Siaran
+                </DialogDescription>
+            </DialogHeader>
 
             <!-- EMBEDDED MINI PREVIEW PLAYER -->
             <div v-if="stream?.video_id" class="space-y-2">
-                <div class="relative w-full aspect-video bg-slate-950 rounded-lg overflow-hidden border border-slate-800">
+                <div
+                    class="relative w-full aspect-video bg-background rounded-lg overflow-hidden border border-border"
+                >
                     <iframe
                         :src="`https://www.youtube.com/embed/${stream.video_id}?autoplay=1&controls=1&rel=0`"
                         class="w-full h-full border-0"
@@ -147,102 +142,141 @@ const handleSubmit = () => {
                         allowfullscreen
                     ></iframe>
                 </div>
-                <p class="text-[10px] text-slate-400 font-mono italic text-center">
-                    Gunakan pemutar video di atas untuk melihat & memastikan stempel waktu klip secara langsung.
+                <p
+                    class="text-xs text-muted-foreground font-mono italic text-center"
+                >
+                    Gunakan pemutar video di atas untuk melihat &amp; memastikan
+                    stempel waktu klip secara langsung.
                 </p>
             </div>
 
             <!-- FORM BODY -->
             <div class="space-y-3.5 font-mono text-xs">
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Judul Momen Aksi / Klip *</label>
-                    <input
+                    <label class="block text-foreground font-medium mb-1"
+                        >Judul Momen Aksi / Klip *</label
+                    >
+                    <Input
                         v-model="title"
                         type="text"
                         placeholder="Misal: PIT Maneuver di Highway 68..."
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs"
+                        class="h-9 text-xs"
                     />
                 </div>
 
                 <!-- PRESET DURATION BUTTONS -->
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Durasi Klip Cepat</label>
+                    <label class="block text-foreground font-medium mb-1"
+                        >Durasi Klip Cepat</label
+                    >
                     <div class="flex items-center gap-2">
-                        <button
+                        <Button
+                            type="button"
+                            size="sm"
+                            :variant="
+                                durationPreset === 30 ? 'secondary' : 'outline'
+                            "
                             @click="setDurationPreset(30)"
-                            :class="durationPreset === 30 ? 'bg-slate-800 text-slate-100 border-slate-700 font-bold' : 'bg-slate-950 text-slate-400 border-slate-800'"
-                            class="px-2.5 py-1 rounded-sm border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
+                            class="h-7 px-2.5 text-xs font-mono"
                         >
                             30 Detik
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            type="button"
+                            size="sm"
+                            :variant="
+                                durationPreset === 60 ? 'secondary' : 'outline'
+                            "
                             @click="setDurationPreset(60)"
-                            :class="durationPreset === 60 ? 'bg-slate-800 text-slate-100 border-slate-700 font-bold' : 'bg-slate-950 text-slate-400 border-slate-800'"
-                            class="px-2.5 py-1 rounded-sm border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
+                            class="h-7 px-2.5 text-xs font-mono"
                         >
                             60 Detik
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            type="button"
+                            size="sm"
+                            :variant="
+                                durationPreset === 90 ? 'secondary' : 'outline'
+                            "
                             @click="setDurationPreset(90)"
-                            :class="durationPreset === 90 ? 'bg-slate-800 text-slate-100 border-slate-700 font-bold' : 'bg-slate-950 text-slate-400 border-slate-800'"
-                            class="px-2.5 py-1 rounded-sm border text-[11px] font-mono hover:text-slate-200 cursor-pointer"
+                            class="h-7 px-2.5 text-xs font-mono"
                         >
                             90 Detik
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-slate-300 font-medium mb-1">Waktu Mulai (HH:MM:SS)</label>
-                        <input
+                        <label class="block text-foreground font-medium mb-1"
+                            >Waktu Mulai (HH:MM:SS)</label
+                        >
+                        <Input
                             v-model="startTime"
                             type="text"
                             placeholder="00:00:00"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs text-center font-semibold"
+                            class="h-9 text-xs text-center font-semibold"
                         />
                     </div>
                     <div>
-                        <label class="block text-slate-300 font-medium mb-1">Waktu Selesai (HH:MM:SS)</label>
-                        <input
+                        <label class="block text-foreground font-medium mb-1"
+                            >Waktu Selesai (HH:MM:SS)</label
+                        >
+                        <Input
                             v-model="endTime"
                             type="text"
                             placeholder="00:00:30"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs text-center font-semibold"
+                            class="h-9 text-xs text-center font-semibold"
                         />
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Nama Pembuat Klip (Opsional)</label>
-                    <input
+                    <label class="block text-foreground font-medium mb-1"
+                        >Nama Pembuat Klip (Opsional)</label
+                    >
+                    <Input
                         v-model="authorName"
                         type="text"
                         placeholder="Panggilan Anda"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs"
+                        class="h-9 text-xs"
                     />
                 </div>
             </div>
 
             <!-- ALTERNATIVE METHOD: STUDIO CLIPPER LINK -->
-            <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+            <div class="pt-2 border-t border-border flex items-center justify-between">
                 <button
+                    type="button"
                     @click="openStudioClipper"
-                    class="text-[11px] font-mono text-blue-400 hover:text-blue-300 underline flex items-center gap-1 cursor-pointer"
+                    class="text-xs font-mono text-primary hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                    <span>Buka Pembuat Klip Pro (Studio Clipper) &rarr;</span>
+                    <span>Buka Pembuat Klip Pro (Studio Clipper)</span>
+                    <ArrowRight class="w-3.5 h-3.5" />
                 </button>
             </div>
 
             <!-- MODAL FOOTER -->
-            <div class="pt-2 border-t border-slate-800 flex items-center justify-end space-x-2">
-                <button @click="emit('close')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono font-medium rounded-md transition-colors cursor-pointer">
+            <DialogFooter class="pt-2 border-t border-border">
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    @click="emit('close')"
+                    class="text-xs font-mono"
+                >
                     Batal
-                </button>
-                <button @click="handleSubmit" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-mono font-semibold rounded-md transition-colors cursor-pointer">
+                </Button>
+                <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    @click="handleSubmit"
+                    class="text-xs font-mono font-semibold"
+                >
                     Simpan Klip
-                </button>
-            </div>
-        </div>
-    </div>
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>

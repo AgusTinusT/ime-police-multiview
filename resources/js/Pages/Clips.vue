@@ -1,10 +1,41 @@
 <script setup>
 import CustomVideoPlayer from "@/Components/CustomVideoPlayer.vue";
-import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import axios from "axios";
-import { computed, defineProps, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { toast } from "vue-sonner";
+import {
+    Home,
+    ChevronUp,
+    ChevronDown,
+    Scissors,
+    ExternalLink,
+    Trash2,
+    Video,
+    Clock,
+} from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Input } from "@/Components/ui/input";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/Components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
+import { EmptyState } from "@/Components/tactical";
 
 const props = defineProps({
     officers: {
@@ -50,7 +81,6 @@ const openInClipper = (clip) => {
 // STORAGE & LOCAL STATE
 const STORAGE_KEY = "ime_focus_community_clips";
 const VIEW_MODE_KEY = "ime_clips_view_mode";
-const LIKED_CLIPS_KEY = "ime_liked_clips";
 
 const saveCustomClips = (clipsList) => {
     if (typeof window === "undefined") return;
@@ -94,11 +124,11 @@ const parseTimestampToSeconds = (input) => {
 
 const submitNewClip = async () => {
     if (!newClipForm.value.youtube_url.trim()) {
-        alert("Mohon masukkan URL video YouTube.");
+        toast.warning("Mohon masukkan URL video YouTube.");
         return;
     }
     if (!newClipForm.value.title.trim()) {
-        alert("Mohon masukkan judul momen aksi.");
+        toast.warning("Mohon masukkan judul momen aksi.");
         return;
     }
 
@@ -106,12 +136,12 @@ const submitNewClip = async () => {
     const endSec = parseTimestampToSeconds(newClipForm.value.end_time);
 
     if (endSec <= startSec) {
-        alert("Waktu Selesai harus lebih besar dari Waktu Mulai.");
+        toast.warning("Waktu Selesai harus lebih besar dari Waktu Mulai.");
         return;
     }
 
     if (endSec - startSec > 600) {
-        alert("Durasi klip maksimal 10 menit (600 detik).");
+        toast.warning("Durasi klip maksimal 10 menit (600 detik).");
         return;
     }
 
@@ -127,7 +157,9 @@ const submitNewClip = async () => {
             start_seconds: startSec,
             end_seconds: endSec,
             officer_id: selectedOfficer ? selectedOfficer.id : null,
-            officer_name: selectedOfficer ? selectedOfficer.officer_name : null,
+            officer_name: selectedOfficer
+                ? selectedOfficer.officer_name
+                : null,
             officer_handle: selectedOfficer ? selectedOfficer.handle : null,
             creator_name:
                 newClipForm.value.creator_name ||
@@ -145,7 +177,7 @@ const submitNewClip = async () => {
         }
     } catch (err) {
         const msg = err.response?.data?.message || "Gagal menyimpan TacClip.";
-        alert(msg);
+        toast.error(msg);
     } finally {
         isSubmittingClip.value = false;
     }
@@ -217,32 +249,36 @@ const canDeleteClip = (clip) => {
     return true; // Guests can also delete local items
 };
 
-const deleteClip = async (clipId) => {
+const pendingDeleteClipId = ref(null);
+
+const deleteClip = (clipId) => {
     const clipTarget = clips.value.find((c) => c.id === clipId);
     if (clipTarget && !canDeleteClip(clipTarget)) {
-        alert("Anda tidak memiliki izin untuk menghapus klip ini!");
+        toast.warning("Anda tidak memiliki izin untuk menghapus klip ini!");
         return;
     }
-    if (
-        confirm(
-            "Apakah Anda yakin ingin menghapus klip momen aksi ini secara permanen dari komunitas?",
-        )
-    ) {
-        try {
-            await axios.delete(`/api/v1/tac-clips/${clipId}`);
-        } catch (e) {
-            // Silently fallback if deletion fails
-        }
-        clips.value = clips.value.filter((c) => c.id !== clipId);
-        saveCustomClips(clips.value);
-        if (
-            activeShortIndex.value >= filteredClips.value.length &&
-            activeShortIndex.value > 0
-        ) {
-            activeShortIndex.value--;
-        }
-        showToast("Klip berhasil dihapus dari komunitas");
+    pendingDeleteClipId.value = clipId;
+};
+
+const confirmDeleteClip = async () => {
+    const clipId = pendingDeleteClipId.value;
+    pendingDeleteClipId.value = null;
+    if (!clipId) return;
+
+    try {
+        await axios.delete(`/api/v1/tac-clips/${clipId}`);
+    } catch (e) {
+        // Silently fallback if deletion fails
     }
+    clips.value = clips.value.filter((c) => c.id !== clipId);
+    saveCustomClips(clips.value);
+    if (
+        activeShortIndex.value >= filteredClips.value.length &&
+        activeShortIndex.value > 0
+    ) {
+        activeShortIndex.value--;
+    }
+    showToast("Klip berhasil dihapus dari komunitas");
 };
 
 // FILTERED & SORTED CLIPS COMPUTED
@@ -344,8 +380,6 @@ onUnmounted(() => {
     if (observer) observer.disconnect();
 });
 
-// TELEMETRY KPI COMPUTED
-
 // TOAST NOTIFICATION LOGIC
 const toastText = ref("");
 const toastVisible = ref(false);
@@ -393,7 +427,6 @@ const currentClipAvatar = computed(() => {
     const clip = currentShortClip.value;
     if (!clip) return "";
 
-    // 1. Priority 1: Use direct clip avatar_url from API payload if provided
     if (clip.avatar_url && !clip.avatar_url.includes("dicebear")) {
         return clip.avatar_url;
     }
@@ -407,7 +440,6 @@ const currentClipAvatar = computed(() => {
         clipNameLower === "patrol unit" ||
         clipHandleLower === "patrolunit";
 
-    // 2. Priority 2: Strict match by officer_id in props.officers array
     if (props.officers && props.officers.length > 0) {
         if (clip.officer_id) {
             const foundById = props.officers.find(
@@ -418,7 +450,6 @@ const currentClipAvatar = computed(() => {
             }
         }
 
-        // 3. Priority 3: Strict match by exact handle or exact officer name
         if (!isGenericPatrol) {
             const foundByExactMatch = props.officers.find((o) => {
                 const offHandle = (o.handle || "")
@@ -430,11 +461,19 @@ const currentClipAvatar = computed(() => {
                     .toLowerCase()
                     .trim();
 
-                if (clipHandleLower && offHandle && clipHandleLower === offHandle)
+                if (
+                    clipHandleLower &&
+                    offHandle &&
+                    clipHandleLower === offHandle
+                )
                     return true;
                 if (clipNameLower && offName && clipNameLower === offName)
                     return true;
-                if (clipNameLower && offStreamer && clipNameLower === offStreamer)
+                if (
+                    clipNameLower &&
+                    offStreamer &&
+                    clipNameLower === offStreamer
+                )
                     return true;
 
                 return false;
@@ -446,7 +485,6 @@ const currentClipAvatar = computed(() => {
         }
     }
 
-    // 2. If clip object itself contains a valid non-dicebear avatar URL
     if (clip.avatar_url && !clip.avatar_url.includes("dicebear")) {
         return clip.avatar_url;
     }
@@ -457,7 +495,6 @@ const currentClipAvatar = computed(() => {
         return clip.avatar;
     }
 
-    // 3. Neutral Default Fallback Avatar (DiceBear bottts SVG)
     const seed = !isGenericPatrol
         ? clip.officer_name || clip.officer_handle || "PatrolUnit"
         : "PatrolUnit";
@@ -512,7 +549,6 @@ const prevShort = () => {
     }
 };
 
-// KEYBOARD SHORTCUTS FOR 16:9 FEED (UP/DOWN ARROWS, PAGE UP/DOWN, K, R, M)
 const handleKeydown = (e) => {
     if (viewMode.value !== "shorts") return;
     if (
@@ -535,7 +571,6 @@ const handleKeydown = (e) => {
     }
 };
 
-// MOUSE WHEEL DEBOUNCED NAVIGATION
 let wheelCoolDown = false;
 const handleWheel = (e) => {
     if (viewMode.value !== "shorts" || wheelCoolDown) return;
@@ -552,7 +587,6 @@ const handleWheel = (e) => {
     }, 600);
 };
 
-// TOUCH SWIPE GESTURES FOR MOBILE (SWIPE UP / DOWN)
 let touchStartY = 0;
 let touchEndY = 0;
 
@@ -618,86 +652,53 @@ onUnmounted(() => {
         @touchstart="handleTouchStart"
         @touchmove.prevent="handleTouchMove"
         @touchend="handleTouchEnd"
-        class="relative w-screen h-screen h-dvh bg-slate-950 text-slate-100 font-sans overflow-hidden flex items-center justify-center p-0 m-0 select-none overscroll-none touch-none"
+        class="relative w-screen h-screen h-dvh bg-background text-foreground font-sans overflow-hidden flex items-center justify-center p-0 m-0 select-none overscroll-none touch-none"
         style="touch-action: none; overscroll-behavior: none"
     >
         <!-- FLOATING TOP-LEFT HOME ICON BUTTON -->
-        <Link
-            href="/"
-            class="fixed top-3 left-3 sm:top-4 sm:left-4 z-50 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition duration-200 shadow-lg cursor-pointer landscape:top-2 landscape:left-2"
+        <Button
+            as-child
+            variant="outline"
+            size="icon"
+            class="fixed top-3 left-3 sm:top-4 sm:left-4 z-50 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-card/90 shadow-lg landscape:top-2 landscape:left-2"
             title="Kembali ke Beranda"
+            aria-label="Kembali ke Beranda"
         >
-            <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                />
-            </svg>
-        </Link>
+            <Link href="/">
+                <Home class="w-4 h-4" />
+            </Link>
+        </Button>
 
         <!-- FLOATING MIDDLE-RIGHT SCROLL CONTROL BUTTONS (DESKTOP ONLY) -->
         <div
             v-if="filteredClips.length > 0"
             class="hidden sm:flex fixed right-4 top-1/2 -translate-y-1/2 z-50 flex-col gap-2.5 items-center"
         >
-            <button
+            <Button
+                type="button"
+                variant="outline"
+                size="icon"
                 @click="prevShort"
                 :disabled="activeShortIndex === 0"
-                :class="[
-                    'w-10 h-10 rounded-full border flex items-center justify-center transition shadow-lg',
-                    activeShortIndex === 0
-                        ? 'opacity-25 cursor-not-allowed bg-slate-900/40 border-slate-800/50 text-slate-600'
-                        : 'bg-slate-900/90 hover:bg-slate-800 border-slate-800 text-slate-300 hover:text-white cursor-pointer',
-                ]"
+                class="w-10 h-10 rounded-full bg-card/90 shadow-lg"
+                aria-label="Klip Sebelumnya"
                 title="Klip Sebelumnya (Panah Atas / Wheel Up)"
             >
-                <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M5 15l7-7 7 7"
-                    />
-                </svg>
-            </button>
+                <ChevronUp class="w-4 h-4" />
+            </Button>
 
-            <button
+            <Button
+                type="button"
+                variant="outline"
+                size="icon"
                 @click="nextShort"
                 :disabled="activeShortIndex === filteredClips.length - 1"
-                :class="[
-                    'w-10 h-10 rounded-full border flex items-center justify-center transition shadow-lg',
-                    activeShortIndex === filteredClips.length - 1
-                        ? 'opacity-25 cursor-not-allowed bg-slate-900/40 border-slate-800/50 text-slate-600'
-                        : 'bg-slate-900/90 hover:bg-slate-800 border-slate-800 text-slate-300 hover:text-white cursor-pointer',
-                ]"
+                class="w-10 h-10 rounded-full bg-card/90 shadow-lg"
+                aria-label="Klip Selanjutnya"
                 title="Klip Selanjutnya (Panah Bawah / Wheel Down)"
             >
-                <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 9l-7 7-7-7"
-                    />
-                </svg>
-            </button>
+                <ChevronDown class="w-4 h-4" />
+            </Button>
         </div>
 
         <!-- MAIN STAGE AREA (NO OVERLAYS ON VIDEO) -->
@@ -709,15 +710,14 @@ onUnmounted(() => {
             <div
                 class="flex items-center justify-center gap-3 sm:gap-5 w-full min-h-0 my-auto"
             >
-                <!-- VIDEO & DETAILS COLUMN (PERFECTLY ALIGNED WITH VIDEO FRAME EDGES) -->
+                <!-- VIDEO & DETAILS COLUMN -->
                 <div
                     class="flex-1 max-w-[1380px] w-full flex flex-col gap-1.5 sm:gap-2 min-w-0"
                 >
-                    <!-- TACTICAL VIDEO FRAME CONTAINER (PORTRAIT REEL ON MOBILE, 16:9 CINEMA ON DESKTOP) -->
+                    <!-- TACTICAL VIDEO FRAME CONTAINER -->
                     <div
-                        class="relative w-full aspect-3/3 sm:aspect-video max-h-[calc(100dvh-175px)] sm:max-h-[calc(100dvh-105px)] landscape:max-h-[calc(100dvh-60px)] rounded-xl border border-slate-800/80 shadow-2xl overflow-hidden bg-black flex items-center justify-center"
+                        class="relative w-full aspect-3/3 sm:aspect-video max-h-[calc(100dvh-175px)] sm:max-h-[calc(100dvh-105px)] landscape:max-h-[calc(100dvh-60px)] rounded-xl border border-border shadow-2xl overflow-hidden bg-background flex items-center justify-center"
                     >
-                        <!-- CUSTOM VIDEO PLAYER (MATCHING CLIPPER.VUE CUSTOM PLAYER UI) -->
                         <CustomVideoPlayer
                             v-if="currentShortClip"
                             :key="`${currentShortClip.id}-${shortKey}`"
@@ -733,15 +733,14 @@ onUnmounted(() => {
                         />
                     </div>
 
-                    <!-- BOTTOM DETAILS ROW (ALIGNED EXACTLY WITH VIDEO FRAME EDGES) -->
+                    <!-- BOTTOM DETAILS ROW -->
                     <div
                         v-if="currentShortClip"
                         class="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 px-0.5 text-left font-sans shrink-0"
                     >
                         <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                            <!-- Profile Photo Avatar (Matching OfficerDirectory.vue) -->
                             <div
-                                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-slate-800 overflow-hidden bg-slate-900 shrink-0 flex items-center justify-center"
+                                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-border overflow-hidden bg-card shrink-0 flex items-center justify-center"
                             >
                                 <img
                                     :src="currentClipAvatar"
@@ -761,7 +760,7 @@ onUnmounted(() => {
                                     class="flex items-center gap-1.5 sm:gap-2 flex-wrap"
                                 >
                                     <span
-                                        class="text-xs font-semibold text-slate-200 font-mono"
+                                        class="text-xs font-semibold text-foreground font-mono"
                                     >
                                         {{
                                             currentShortClip.officer_name ||
@@ -770,17 +769,17 @@ onUnmounted(() => {
                                         }}
                                     </span>
                                     <span
-                                        class="text-[10px] text-slate-500 font-mono truncate"
+                                        class="text-xs text-muted-foreground font-mono truncate"
                                     >
                                         • Ditandai oleh
-                                        <span class="text-slate-400">{{
+                                        <span class="text-foreground/80">{{
                                             currentShortClip.creator_name ||
                                             "Guest"
                                         }}</span>
                                     </span>
                                 </div>
                                 <h2
-                                    class="text-xs sm:text-sm font-medium text-slate-100 line-clamp-2 leading-snug"
+                                    class="text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-snug"
                                 >
                                     {{ currentShortClip.title }}
                                 </h2>
@@ -789,70 +788,58 @@ onUnmounted(() => {
 
                         <!-- MOBILE ACTIONS & TAGS / TIMESTAMP -->
                         <div
-                            class="flex items-center justify-between sm:justify-end gap-2 shrink-0 font-mono text-[10px]"
+                            class="flex items-center justify-between sm:justify-end gap-2 shrink-0 font-mono text-xs"
                         >
                             <!-- ACTION BUTTONS INLINE FOR MOBILE ONLY (< sm) -->
                             <div
-                                class="flex sm:hidden items-center gap-1.5 border-r border-slate-800 pr-2"
+                                class="flex sm:hidden items-center gap-1.5 border-r border-border pr-2"
                             >
-                                <button
+                                <Button
                                     v-if="canAccessClipper"
+                                    type="button"
+                                    variant="outline"
+                                    size="icon-sm"
                                     @click="openInClipper(currentShortClip)"
-                                    class="p-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 hover:text-white cursor-pointer"
+                                    class="w-7 h-7 rounded-full"
+                                    aria-label="ClipStudio"
                                     title="ClipStudio"
                                 >
-                                    <img
-                                        :src="iconCut"
-                                        class="w-3.5 h-3.5 invert opacity-75"
-                                        alt="Cut"
-                                    />
-                                </button>
+                                    <Scissors class="w-3.5 h-3.5" />
+                                </Button>
 
-                                <a
-                                    :href="`https://www.youtube.com/watch?v=${currentShortClip.video_id}&t=${currentShortClip.start_seconds}s`"
-                                    target="_blank"
-                                    class="p-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 hover:text-white cursor-pointer"
+                                <Button
+                                    as-child
+                                    variant="outline"
+                                    size="icon-sm"
+                                    class="w-7 h-7 rounded-full"
+                                    aria-label="YouTube"
                                     title="YouTube"
                                 >
-                                    <svg
-                                        class="w-3.5 h-3.5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                                    <a
+                                        :href="`https://www.youtube.com/watch?v=${currentShortClip.video_id}&t=${currentShortClip.start_seconds}s`"
+                                        target="_blank"
                                     >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                        />
-                                    </svg>
-                                </a>
+                                        <ExternalLink class="w-3.5 h-3.5" />
+                                    </a>
+                                </Button>
 
-                                <button
+                                <Button
                                     v-if="canDeleteClip(currentShortClip)"
+                                    type="button"
+                                    variant="outline"
+                                    size="icon-sm"
                                     @click="deleteClip(currentShortClip.id)"
-                                    class="p-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 cursor-pointer"
+                                    class="w-7 h-7 rounded-full text-muted-foreground hover:text-destructive"
+                                    aria-label="Hapus"
                                     title="Hapus"
                                 >
-                                    <svg
-                                        class="w-3.5 h-3.5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                        />
-                                    </svg>
-                                </button>
+                                    <Trash2 class="w-3.5 h-3.5" />
+                                </Button>
                             </div>
 
-                            <span
-                                class="px-2 py-0.5 rounded-sm bg-slate-900 border border-slate-800 text-slate-400"
+                            <Badge
+                                variant="outline"
+                                class="text-xs font-mono text-muted-foreground"
                             >
                                 #{{
                                     currentShortClip.officer_name
@@ -862,15 +849,16 @@ onUnmounted(() => {
                                           )
                                         : "PoliceRoleplay"
                                 }}
-                            </span>
-                            <span
-                                class="px-2 py-0.5 rounded-sm bg-slate-900 border border-slate-800 text-slate-400"
+                            </Badge>
+                            <Badge
+                                variant="outline"
+                                class="text-xs font-mono text-muted-foreground gap-1"
                             >
-                                ⏱️
+                                <Clock class="w-3 h-3" />
                                 {{ formatTime(currentShortClip.start_seconds) }}
                                 -
                                 {{ formatTime(currentShortClip.end_seconds) }}
-                            </span>
+                            </Badge>
                         </div>
                     </div>
                 </div>
@@ -880,50 +868,45 @@ onUnmounted(() => {
                     v-if="currentShortClip"
                     class="hidden sm:flex flex-col items-center gap-3 shrink-0 font-mono py-1 self-center"
                 >
-                    <!-- OPEN & CUT IN CLIPPER (FOR CLIPS ROLE OR ADMIN) -->
+                    <!-- OPEN & CUT IN CLIPPER -->
                     <div
                         v-if="canAccessClipper"
                         class="flex flex-col items-center space-y-1"
                     >
-                        <button
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
                             @click="openInClipper(currentShortClip)"
-                            class="w-10 h-10 rounded-full bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 flex items-center justify-center transition cursor-pointer shadow-md group"
+                            class="w-10 h-10 rounded-full bg-card/80 shadow-md"
+                            aria-label="Buka & Potong di ClipStudio"
                             title="Buka & Potong di ClipStudio (Halaman Baru)"
                         >
-                            <img
-                                :src="iconCut"
-                                class="w-4 h-4 invert opacity-75 group-hover:opacity-100 transition-opacity"
-                                alt="Cut"
-                            />
-                        </button>
-                        <span class="text-[10px] font-mono text-slate-400"
+                            <Scissors class="w-4 h-4" />
+                        </Button>
+                        <span class="text-xs font-mono text-muted-foreground"
                             >Clipper</span
                         >
                     </div>
 
                     <!-- OPEN ON YOUTUBE FULL -->
                     <div class="flex flex-col items-center space-y-1">
-                        <a
-                            :href="`https://www.youtube.com/watch?v=${currentShortClip.video_id}&t=${currentShortClip.start_seconds}s`"
-                            target="_blank"
-                            class="w-10 h-10 rounded-full bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 flex items-center justify-center transition cursor-pointer shadow-md"
+                        <Button
+                            as-child
+                            variant="outline"
+                            size="icon"
+                            class="w-10 h-10 rounded-full bg-card/80 shadow-md"
+                            aria-label="Buka video penuh di YouTube"
                             title="Buka video penuh di YouTube"
                         >
-                            <svg
-                                class="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                            <a
+                                :href="`https://www.youtube.com/watch?v=${currentShortClip.video_id}&t=${currentShortClip.start_seconds}s`"
+                                target="_blank"
                             >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                />
-                            </svg>
-                        </a>
-                        <span class="text-[10px] font-mono text-slate-400"
+                                <ExternalLink class="w-4 h-4" />
+                            </a>
+                        </Button>
+                        <span class="text-xs font-mono text-muted-foreground"
                             >Full</span
                         >
                     </div>
@@ -933,26 +916,18 @@ onUnmounted(() => {
                         v-if="canDeleteClip(currentShortClip)"
                         class="flex flex-col items-center space-y-1"
                     >
-                        <button
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
                             @click="deleteClip(currentShortClip.id)"
-                            class="w-10 h-10 rounded-full bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-red-400 flex items-center justify-center transition cursor-pointer shadow-md"
+                            class="w-10 h-10 rounded-full bg-card/80 text-muted-foreground hover:text-destructive shadow-md"
+                            aria-label="Hapus klip ini"
                             title="Hapus klip ini"
                         >
-                            <svg
-                                class="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
-                            </svg>
-                        </button>
-                        <span class="text-[10px] font-mono text-slate-500"
+                            <Trash2 class="w-4 h-4" />
+                        </Button>
+                        <span class="text-xs font-mono text-muted-foreground"
                             >Hapus</span
                         >
                     </div>
@@ -961,218 +936,202 @@ onUnmounted(() => {
         </div>
 
         <!-- EMPTY STATE FOR SHORTS FEED -->
-        <div
+        <EmptyState
             v-else
-            class="p-12 text-center bg-slate-950 rounded-xl border border-slate-800 flex flex-col items-center justify-center space-y-3"
-        >
-            <div
-                class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500"
-            >
-                <svg
-                    class="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.5"
-                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                </svg>
-            </div>
-            <div class="space-y-1">
-                <h3 class="text-sm font-semibold text-slate-300 font-mono">
-                    BELUM ADA KLIP DITEMUKAN
-                </h3>
-                <p class="text-xs text-slate-500 max-w-sm mx-auto">
-                    Belum ada klip momen aksi yang ditandai oleh komunitas.
-                </p>
-            </div>
-        </div>
+            :icon="Video"
+            title="BELUM ADA KLIP DITEMUKAN"
+            description="Belum ada klip momen aksi yang ditandai oleh komunitas."
+        />
     </div>
 
     <!-- MINIMALIST TOAST NOTIFICATION -->
     <div
         :class="[
-            'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 backdrop-blur-md border border-slate-800 text-slate-200 px-4 py-2 rounded-full text-xs font-mono shadow-xl transition-all duration-300 pointer-events-none flex items-center gap-2',
+            'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card/95 backdrop-blur-md border border-border text-foreground px-4 py-2 rounded-full text-xs font-mono shadow-xl transition-all duration-300 pointer-events-none flex items-center gap-2',
             toastVisible
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 translate-y-6',
         ]"
     >
-        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
         <span>{{ toastText }}</span>
     </div>
 
-    <!-- MODAL TAMBAH TACCLIP BARU (COMMUNITY MYSQL SUBMISSION) -->
-    <Teleport to="body">
-        <div
-            v-if="isAddModalOpen"
-            class="fixed inset-0 z-100 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 overflow-y-auto"
-        >
-            <div
-                class="relative w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-6 space-y-5 text-slate-100 font-sans"
-            >
-                <!-- Modal Header -->
-                <div
-                    class="flex items-center justify-between border-b border-slate-800 pb-3"
+    <!-- MODAL TAMBAH TACCLIP BARU -->
+    <Dialog v-model:open="isAddModalOpen">
+        <DialogContent class="sm:max-w-lg">
+            <DialogHeader>
+                <DialogTitle
+                    class="flex items-center gap-2 font-tactical uppercase tracking-wider"
                 >
-                    <div class="flex items-center gap-2">
+                    <span
+                        class="w-2.5 h-2.5 rounded-full bg-primary motion-safe:animate-pulse"
+                    ></span>
+                    <span>Tambah TacClip Momen Aksi Baru</span>
+                </DialogTitle>
+            </DialogHeader>
+
+            <div class="space-y-4 text-xs">
+                <div class="space-y-1">
+                    <label
+                        class="block font-mono font-semibold text-foreground uppercase"
+                    >
+                        URL Video YouTube
+                        <span class="text-destructive">*</span>
+                    </label>
+                    <Input
+                        v-model="newClipForm.youtube_url"
+                        type="url"
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        class="h-9 text-xs font-mono"
+                    />
+                </div>
+
+                <div class="space-y-1">
+                    <label
+                        class="block font-mono font-semibold text-foreground uppercase"
+                    >
+                        Judul Momen Aksi
+                        <span class="text-destructive">*</span>
+                    </label>
+                    <Input
+                        v-model="newClipForm.title"
+                        type="text"
+                        placeholder="Contoh: Pursuit 10-80 Sektor Downtown Los Santos"
+                        class="h-9 text-xs"
+                    />
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label
+                            class="block font-mono font-semibold text-foreground uppercase"
+                        >
+                            Waktu Mulai (IN)
+                            <span class="text-destructive">*</span>
+                        </label>
+                        <Input
+                            v-model="newClipForm.start_time"
+                            type="text"
+                            placeholder="00:00:10"
+                            class="h-9 text-xs font-mono text-center font-bold"
+                        />
                         <span
-                            class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"
-                        ></span>
-                        <h3
-                            class="text-base font-bold uppercase font-tactical tracking-wider text-slate-100"
+                            class="text-xs text-muted-foreground block font-mono"
+                            >Format: HH:MM:SS atau Detik</span
                         >
-                            Tambah TacClip Momen Aksi Baru
-                        </h3>
                     </div>
-                    <button
-                        @click="closeAddModal"
-                        class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition text-xs"
-                    >
-                        ✕
-                    </button>
-                </div>
-
-                <!-- Modal Body Form -->
-                <div class="space-y-4 text-xs">
-                    <!-- URL YouTube -->
                     <div class="space-y-1">
                         <label
-                            class="block font-mono font-semibold text-slate-300 uppercase"
+                            class="block font-mono font-semibold text-foreground uppercase"
                         >
-                            URL Video YouTube
-                            <span class="text-red-400">*</span>
+                            Waktu Selesai (OUT)
+                            <span class="text-destructive">*</span>
                         </label>
-                        <input
-                            v-model="newClipForm.youtube_url"
-                            type="url"
-                            placeholder="https://www.youtube.com/watch?v=..."
-                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 font-mono focus:border-blue-500 focus:outline-hidden"
-                        />
-                    </div>
-
-                    <!-- Judul Klip -->
-                    <div class="space-y-1">
-                        <label
-                            class="block font-mono font-semibold text-slate-300 uppercase"
-                        >
-                            Judul Momen Aksi <span class="text-red-400">*</span>
-                        </label>
-                        <input
-                            v-model="newClipForm.title"
+                        <Input
+                            v-model="newClipForm.end_time"
                             type="text"
-                            placeholder="Contoh: Pursuit 10-80 Sektor Downtown Los Santos"
-                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 focus:border-blue-500 focus:outline-hidden"
+                            placeholder="00:01:00"
+                            class="h-9 text-xs font-mono text-center font-bold"
                         />
-                    </div>
-
-                    <!-- Timestamps (Start & End) -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <label
-                                class="block font-mono font-semibold text-slate-300 uppercase"
-                            >
-                                Waktu Mulai (IN)
-                                <span class="text-red-400">*</span>
-                            </label>
-                            <input
-                                v-model="newClipForm.start_time"
-                                type="text"
-                                placeholder="00:00:10"
-                                class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 font-mono text-center focus:border-blue-500 focus:outline-hidden font-bold"
-                            />
-                            <span
-                                class="text-[10px] text-slate-500 block font-mono"
-                                >Format: HH:MM:SS atau Detik</span
-                            >
-                        </div>
-                        <div class="space-y-1">
-                            <label
-                                class="block font-mono font-semibold text-slate-300 uppercase"
-                            >
-                                Waktu Selesai (OUT)
-                                <span class="text-red-400">*</span>
-                            </label>
-                            <input
-                                v-model="newClipForm.end_time"
-                                type="text"
-                                placeholder="00:01:00"
-                                class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 font-mono text-center focus:border-blue-500 focus:outline-hidden font-bold"
-                            />
-                            <span
-                                class="text-[10px] text-slate-500 block font-mono"
-                                >Maksimal 10 menit (600s)</span
-                            >
-                        </div>
-                    </div>
-
-                    <!-- Officer Selection -->
-                    <div class="space-y-1">
-                        <label
-                            class="block font-mono font-semibold text-slate-300 uppercase"
+                        <span
+                            class="text-xs text-muted-foreground block font-mono"
+                            >Maksimal 10 menit (600s)</span
                         >
-                            Petugas / Officer Terkait (Opsional)
-                        </label>
-                        <select
-                            v-model="newClipForm.officer_id"
-                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:border-blue-500 focus:outline-hidden cursor-pointer"
-                        >
-                            <option value="">
-                                -- Pilih Petugas / Officer --
-                            </option>
-                            <option
-                                v-for="off in officers"
-                                :key="off.id"
-                                :value="off.id"
-                            >
-                                {{ off.department }} •
-                                {{ off.officer_name }} ({{ off.callsign }})
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Creator Name -->
-                    <div class="space-y-1">
-                        <label
-                            class="block font-mono font-semibold text-slate-300 uppercase"
-                        >
-                            Ditandai Oleh / Nama Pengirim (Opsional)
-                        </label>
-                        <input
-                            v-model="newClipForm.creator_name"
-                            type="text"
-                            placeholder="Nama panggilan Anda..."
-                            class="w-full rounded-md bg-slate-950 border border-slate-800 px-3 py-2 text-xs text-slate-100 focus:border-blue-500 focus:outline-hidden font-mono"
-                        />
                     </div>
                 </div>
 
-                <!-- Modal Actions -->
-                <div
-                    class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2.5 font-mono text-xs"
-                >
-                    <button
-                        @click="closeAddModal"
-                        class="px-4 py-2 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+                <div class="space-y-1">
+                    <label
+                        class="block font-mono font-semibold text-foreground uppercase"
                     >
-                        Batal
-                    </button>
-                    <button
-                        @click="submitNewClip"
-                        :disabled="isSubmittingClip"
-                        class="px-5 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                        Petugas / Officer Terkait (Opsional)
+                    </label>
+                    <select
+                        v-model="newClipForm.officer_id"
+                        class="w-full h-9 rounded-md bg-background border border-input px-3 py-1.5 text-xs text-foreground focus:border-ring focus:outline-hidden cursor-pointer"
                     >
-                        <span v-if="isSubmittingClip">MEMPROSES...</span>
-                        <span v-else>PUBLIKASIKAN TACCLIP</span>
-                    </button>
+                        <option value="">-- Pilih Petugas / Officer --</option>
+                        <option
+                            v-for="off in officers"
+                            :key="off.id"
+                            :value="off.id"
+                        >
+                            {{ off.department }} • {{ off.officer_name }} ({{
+                                off.callsign
+                            }})
+                        </option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label
+                        class="block font-mono font-semibold text-foreground uppercase"
+                    >
+                        Ditandai Oleh / Nama Pengirim (Opsional)
+                    </label>
+                    <Input
+                        v-model="newClipForm.creator_name"
+                        type="text"
+                        placeholder="Nama panggilan Anda..."
+                        class="h-9 text-xs font-mono"
+                    />
                 </div>
             </div>
-        </div>
-    </Teleport>
+
+            <DialogFooter class="pt-3 border-t border-border font-mono text-xs">
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    @click="closeAddModal"
+                >
+                    Batal
+                </Button>
+                <Button
+                    type="button"
+                    size="sm"
+                    @click="submitNewClip"
+                    :disabled="isSubmittingClip"
+                    class="font-bold"
+                >
+                    <span v-if="isSubmittingClip">MEMPROSES...</span>
+                    <span v-else>PUBLIKASIKAN TACCLIP</span>
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <!-- KONFIRMASI HAPUS KLIP -->
+    <AlertDialog
+        :open="pendingDeleteClipId !== null"
+        @update:open="
+            (val) => {
+                if (!val) pendingDeleteClipId = null;
+            }
+        "
+    >
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Hapus Klip Momen Aksi?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Apakah Anda yakin ingin menghapus klip momen aksi ini secara
+                    permanen dari komunitas?
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel @click="pendingDeleteClipId = null">
+                    Batal
+                </AlertDialogCancel>
+                <AlertDialogAction
+                    class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    @click="confirmDeleteClip"
+                >
+                    Hapus
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
 
     <!-- MOBILE BOTTOM NAVIGATION BAR & BOTTOM SHEET DRAWER -->
     <TacticalMobileBottomNav />
