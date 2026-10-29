@@ -15,6 +15,7 @@ import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
 import CatalogCard from "@/Components/CatalogCard.vue";
 import CatalogRow from "@/Components/CatalogRow.vue";
+import SupportCatalogCard from "@/Components/SupportCatalogCard.vue";
 import OfficerDetailModal from "@/Components/OfficerDetailModal.vue";
 import TacticalSubSupportGrid from "@/Components/TacticalSubSupportGrid.vue";
 import { Toaster } from "@/Components/ui/sonner";
@@ -101,6 +102,14 @@ const tacRows = computed(() => {
 const top10 = computed(() =>
     (props.monthlyLeaderboard?.all_top || []).filter((o) => Number(o.total_hours_num) > 0).slice(0, 10),
 );
+const roadTo1kOfficers = computed(() => {
+    if (!Array.isArray(props.supportOfficers) || !props.supportOfficers.length) {
+        return [];
+    }
+    return [...props.supportOfficers]
+        .sort((a, b) => (Number(b.subscriber_count) || 0) - (Number(a.subscriber_count) || 0))
+        .slice(0, 12);
+});
 
 // Multiview tray: pick POVs from any row, then open them together.
 const tray = ref([]);
@@ -367,6 +376,22 @@ const triggerManualSync = async () => {
                         :in-tray="inTray(s.video_id)"
                         @toggle-tray="toggleTray"
                         @detail="detail = $event"
+                    />
+                </CatalogRow>
+
+                <CatalogRow
+                    v-if="roadTo1kOfficers.length"
+                    title="Road to 1K: dukung mereka"
+                >
+                    <template #action>
+                        <Button as-child variant="link" size="sm" class="ml-auto shrink-0">
+                            <a href="#support-section">Lihat semua <ChevronRight /></a>
+                        </Button>
+                    </template>
+                    <SupportCatalogCard
+                        v-for="o in roadTo1kOfficers"
+                        :key="`road1k-${o.id}`"
+                        :officer="o"
                     />
                 </CatalogRow>
 
