@@ -6,6 +6,7 @@ import axios from "axios";
 import OfficerClaimsTab from "@/Components/Admin/OfficerClaimsTab.vue";
 import BioModerationTab from "@/Components/Admin/BioModerationTab.vue";
 import AdminChangeRequestsTab from "@/Components/Admin/AdminChangeRequestsTab.vue";
+import HeroSlidesTab from "@/Components/Admin/HeroSlidesTab.vue";
 import OfficerBindingModal from "@/Components/Admin/OfficerBindingModal.vue";
 
 const props = defineProps({
@@ -1517,6 +1518,18 @@ onMounted(() => {
                     </svg>
                     <span>Pengajuan Mutasi</span>
                 </button>
+
+                <button
+                    @click="activeTab = 'hero'"
+                    :class="[
+                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
+                        activeTab === 'hero'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background border border-border text-muted-foreground hover:text-foreground hover:bg-card',
+                    ]"
+                >
+                    <span>Hero Slides</span>
+                </button>
             </div>
 
             <!-- TAB 1: OFFICERS -->
@@ -2653,6 +2666,11 @@ onMounted(() => {
             <!-- TAB 8: PENGAJUAN MUTASI & PANGKAT (PRD v3) -->
             <div v-if="activeTab === 'requests'">
                 <AdminChangeRequestsTab @toast="showToast" />
+            </div>
+
+            <!-- TAB 9: HERO SLIDES (HS-02) -->
+            <div v-if="activeTab === 'hero'">
+                <HeroSlidesTab @toast="showToast" />
             </div>
         </div>
 
