@@ -483,7 +483,7 @@ const liveInDept = computed(() =>
     <TacticalLayout>
         <Head title="Direktori & Manajemen Pengguna — IME Police Terminal" />
 
-        <PageContainer class="space-y-6">
+        <PageContainer class="space-y-6 pb-16 pt-8 sm:pt-10">
             <!-- Header: title and tools in one row, department tabs right below -->
             <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div class="min-w-0">
