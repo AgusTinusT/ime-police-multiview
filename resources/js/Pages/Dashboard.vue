@@ -1,16 +1,12 @@
 <script setup>
-import { Head, Link } from "@inertiajs/vue3";
+import { Head } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 
 // Refactored Sub-Components
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
-import HeroFeatureSpotlight from "@/Components/Hero/HeroFeatureSpotlight.vue";
-import {
-    DeptBadge,
-    PageContainer,
-} from "@/Components/tactical";
+import { PageContainer } from "@/Components/tactical";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import TacticalClipperBetaBanner from "@/Components/TacticalClipperBetaBanner.vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
@@ -18,12 +14,10 @@ import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
 import TacticalStreamSlimles from "@/Components/TacticalStreamSlimles.vue";
 import TacticalSubSupportGrid from "@/Components/TacticalSubSupportGrid.vue";
-import { Badge } from "@/Components/ui/badge";
-import { Button } from "@/Components/ui/button";
 import { Toaster } from "@/Components/ui/sonner";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
 import { parseRelativeTimeToSeconds } from "@/Utils/timeHelpers";
-import { RefreshCw, Scissors, Users, Video } from "@lucide/vue";
+import { RefreshCw } from "@lucide/vue";
 
 const props = defineProps({
     heroSlides: {
@@ -93,20 +87,73 @@ const recentReplayStreams = computed(() => {
         return timeA - timeB;
     });
 });
-const lspdCatalogStreams = computed(() =>
-    streams.value.filter((s) => s.officer?.department === "LSPD"),
-);
-const saspCatalogStreams = computed(() =>
-    streams.value.filter((s) => s.officer?.department === "SASP"),
-);
-const bcsoCatalogStreams = computed(() =>
-    streams.value.filter((s) => s.officer?.department === "BCSO"),
-);
-const saprCatalogStreams = computed(() =>
-    streams.value.filter((s) =>
-        ["SAPR", "PARK RANGER"].includes(s.officer?.department),
-    ),
-);
+// Cinematic Default Hero Slides (Fallback when database hero_slides has 0 active slides)
+const defaultHeroSlides = computed(() => [
+    {
+        id: "slide-bodycam",
+        slide_type: "standard",
+        title: "IME POLICE BODYCAM STREAMING",
+        subtitle:
+            "Pusat pemantauan taktis & live streaming bodycam perwira LSPD, BCSO, SASP, dan SAPR secara bersamaan dalam mode multiview interaktif.",
+        image_desktop_url: "/images/hero-fallback.jpg",
+        image_alt: "IME Police Bodycam Streaming",
+        badge_label: "LIVE MULTIVIEW • SASP COMMAND",
+        accent: "primary",
+        cta_primary: {
+            label: "Buka Multi-Bodycam",
+            url: "/multiview",
+        },
+        cta_secondary: {
+            label: "Jelajahi Feed Patroli",
+            url: "#units-grid",
+        },
+    },
+    {
+        id: "slide-clips",
+        slide_type: "standard",
+        title: "TACTICAL CLIPS STUDIO V2",
+        subtitle:
+            "Potong momen aksi pengejaran dan situasi tembak-menembak berkecepatan tinggi langsung dari siaran perwira. Tandai multi-cut dan ekspor video 1080p tanpa watermark ke media sosial.",
+        image_desktop_url: "/images/hero-fallback.jpg",
+        image_alt: "Tactical Clips Studio V2",
+        badge_label: "FITUR BARU • AKSES BETA GRATIS",
+        accent: "info",
+        cta_primary: {
+            label: "Coba Clips Studio",
+            url: "/clips",
+        },
+        cta_secondary: {
+            label: "Panduan Fitur Clipper",
+            url: "/clipper-pricing",
+        },
+    },
+    {
+        id: "slide-biolink",
+        slide_type: "standard",
+        title: "OFFICER TACTICAL BIO-LINK HUB",
+        subtitle:
+            "Verifikasi kepemilikan channel YouTube dinas secara otomatis tanpa antre approval admin. Klaim profil resmi berformat /@callsign, tampilkan jadwal patroli, dan terima tactical donation.",
+        image_desktop_url: "/images/hero-fallback.jpg",
+        image_alt: "Officer Tactical Bio-Link Hub",
+        badge_label: "SASP VERIFIED ID • BIO-LINK",
+        accent: "warning",
+        cta_primary: {
+            label: "Direktori & Klaim Perwira",
+            url: "/officers",
+        },
+        cta_secondary: {
+            label: "Pelajari Fitur Bio-Link",
+            url: "/faq",
+        },
+    },
+]);
+
+const effectiveHeroSlides = computed(() => {
+    if (props.heroSlides && props.heroSlides.length > 0) {
+        return props.heroSlides;
+    }
+    return defaultHeroSlides.value;
+});
 const displayedGridStreams = computed(() => streams.value);
 const activeGridVideoIds = ref([]);
 const activeAudioVideoId = ref(null);
@@ -166,13 +213,6 @@ const triggerManualSync = async () => {
 };
 
 const playStreamInFocus = () => {};
-
-const scrollToUnitsGrid = () => {
-    const el = document.getElementById("units-grid");
-    if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-    }
-};
 </script>
 
 <template>
@@ -213,176 +253,8 @@ const scrollToUnitsGrid = () => {
 
         <!-- Main Content Area -->
         <main class="flex-1 w-full">
-            <HeroCarousel
-                v-if="heroSlides && heroSlides.length > 0"
-                :slides="heroSlides"
-            />
-            <!-- HERO SPOTLIGHT BANNER SECTION (Fallback) -->
-            <section
-                v-else
-                class="relative w-full bg-background overflow-hidden group"
-            >
-                <!-- Full-Width Background Hero Backdrop Image with Minimal Overlay -->
-                <div
-                    class="absolute inset-0 z-0 pointer-events-none opacity-30"
-                >
-                    <img
-                        src="/images/hero-fallback.jpg"
-                        loading="eager"
-                        fetchpriority="high"
-                        class="w-full h-full object-cover grayscale mix-blend-luminosity"
-                        alt="IME Police Duty Hero Backdrop"
-                    />
-                    <div class="absolute inset-0 bg-background/40"></div>
-                </div>
-
-                <!-- Inner Content Container -->
-                <PageContainer
-                    class="pt-8 sm:pt-10 lg:pt-14 pb-10 sm:pb-14 relative z-10"
-                >
-                    <div
-                        class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
-                    >
-                        <!-- Left Hero Content -->
-                        <div class="lg:col-span-7 space-y-5">
-                            <Badge
-                                variant="outline"
-                                class="hidden sm:inline-flex items-center gap-2 py-1 px-3 font-mono text-xs bg-card/80 border-primary/30"
-                            >
-                                <span
-                                    class="w-2 h-2 rounded-full bg-primary motion-safe:animate-pulse shrink-0"
-                                ></span>
-                                <span>
-                                    SERVER: IME ROLEPLAY // LIVE MULTIVIEW
-                                </span>
-                                <span class="text-border">|</span>
-                                <span class="text-info font-bold">
-                                    ✨ CLIPS STUDIO V2 BETA
-                                </span>
-                            </Badge>
-
-                            <h1
-                                class="text-3xl sm:text-5xl lg:text-6xl font-sans font-bold text-foreground tracking-tight leading-tight"
-                            >
-                                IME POLICE <br />
-                                <span class="text-primary">
-                                    BODYCAM STREAMING
-                                </span>
-                            </h1>
-
-                            <p
-                                class="text-muted-foreground text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl font-normal"
-                            >
-                                {{ $t("dashboard.hero_description") }}
-                            </p>
-
-                            <!-- Department Quick Status Badges -->
-                            <div class="flex flex-wrap items-center gap-2 pt-1">
-                                <Badge
-                                    variant="secondary"
-                                    class="gap-2 py-1 px-2.5 font-mono text-xs cursor-pointer hover:opacity-85 transition-opacity"
-                                    @click="scrollToUnitsGrid"
-                                >
-                                    <span
-                                        class="w-2 h-2 rounded-full bg-success shrink-0"
-                                    ></span>
-                                    <span>
-                                        ALL UNITS ({{ allActiveStreams.length }})
-                                    </span>
-                                </Badge>
-
-                                <button
-                                    type="button"
-                                    class="cursor-pointer hover:opacity-85 transition-opacity"
-                                    @click="scrollToUnitsGrid"
-                                >
-                                    <DeptBadge
-                                        dept="LSPD"
-                                        :label="`LSPD METRO (${lspdCatalogStreams.length})`"
-                                    />
-                                </button>
-                                <button
-                                    type="button"
-                                    class="cursor-pointer hover:opacity-85 transition-opacity"
-                                    @click="scrollToUnitsGrid"
-                                >
-                                    <DeptBadge
-                                        dept="BCSO"
-                                        :label="`BCSO SHERIFF (${bcsoCatalogStreams.length})`"
-                                    />
-                                </button>
-                                <button
-                                    type="button"
-                                    class="cursor-pointer hover:opacity-85 transition-opacity"
-                                    @click="scrollToUnitsGrid"
-                                >
-                                    <DeptBadge
-                                        dept="SASP"
-                                        :label="`SASP STATE (${saspCatalogStreams.length})`"
-                                    />
-                                </button>
-                                <button
-                                    type="button"
-                                    class="cursor-pointer hover:opacity-85 transition-opacity"
-                                    @click="scrollToUnitsGrid"
-                                >
-                                    <DeptBadge
-                                        dept="SAPR"
-                                        :label="`PARK RANGER (${saprCatalogStreams.length})`"
-                                    />
-                                </button>
-                            </div>
-
-                            <!-- Hero Action Links -->
-                            <div class="flex flex-wrap items-center gap-3 pt-2">
-                                <Button as-child size="default" class="font-mono font-bold">
-                                    <Link href="/multiview">
-                                        <Video class="size-4" />
-                                        <span>{{
-                                            $t(
-                                                "dashboard.btn_open_multi_bodycam",
-                                            )
-                                        }}</span>
-                                    </Link>
-                                </Button>
-
-                                <Button
-                                    as-child
-                                    variant="secondary"
-                                    size="default"
-                                    class="font-mono text-xs font-bold gap-2"
-                                >
-                                    <Link href="/clips">
-                                        <Scissors class="size-4 text-info" />
-                                        <span>Clips Studio Beta</span>
-                                    </Link>
-                                </Button>
-
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="default"
-                                    class="font-mono text-xs text-muted-foreground"
-                                    @click="scrollToUnitsGrid"
-                                >
-                                    <Users class="size-4" />
-                                    <span>{{
-                                        $t("dashboard.btn_explore_feeds")
-                                    }}</span>
-                                </Button>
-                            </div>
-                        </div>
-
-                        <!-- Right Hero: Tactical Feature Spotlight Suite -->
-                        <div class="lg:col-span-5">
-                            <HeroFeatureSpotlight
-                                @open-clipper-claim="showClipperClaimModal = true"
-                                @open-officer-claim="showOfficerClaimModal = true"
-                            />
-                        </div>
-                    </div>
-                </PageContainer>
-            </section>
+            <!-- CINEMATIC HERO SLIDER CAROUSEL (Netflix Style) -->
+            <HeroCarousel :slides="effectiveHeroSlides" />
 
             <!-- SECTION 2: Live Officers & Recent Patrol Replays Section -->
             <section

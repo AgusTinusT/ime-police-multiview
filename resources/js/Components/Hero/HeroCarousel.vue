@@ -305,10 +305,10 @@ onUnmounted(() => {
                             :aria-current="idx === currentIndex ? 'true' : undefined"
                             :class="
                                 cn(
-                                    'relative h-2 overflow-hidden rounded-full transition-all',
+                                    'relative h-2.5 overflow-hidden rounded-full transition-all cursor-pointer',
                                     idx === currentIndex
-                                        ? 'w-10 bg-muted'
-                                        : 'w-2.5 bg-muted hover:bg-muted-foreground/50',
+                                        ? 'w-10 bg-primary/25 border border-primary/50'
+                                        : 'w-2.5 bg-muted-foreground/30 hover:bg-muted-foreground/60',
                                 )
                             "
                             @click="goToSlide(idx)"
@@ -317,7 +317,7 @@ onUnmounted(() => {
                                 v-if="idx === currentIndex"
                                 :class="
                                     cn(
-                                        'block h-full w-full origin-left bg-primary',
+                                        'block h-full w-full origin-left bg-primary rounded-full',
                                         !isAutoplayPaused && 'motion-safe:animate-pulse',
                                     )
                                 "
@@ -364,3 +364,4 @@ onUnmounted(() => {
         </PageContainer>
     </section>
 </template>
+

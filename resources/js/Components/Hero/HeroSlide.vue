@@ -53,6 +53,7 @@ const badgeVariant = computed(() => {
 });
 
 const isInternalUrl = (url) => typeof url === "string" && url.startsWith("/") && !url.startsWith("//");
+const isHashUrl = (url) => typeof url === "string" && url.startsWith("#");
 </script>
 
 <template>
@@ -153,6 +154,13 @@ const isInternalUrl = (url) => typeof url === "string" && url.startsWith("/") &&
                                 <span>{{ slide.cta_primary.label }}</span>
                             </Link>
                             <a
+                                v-else-if="isHashUrl(slide.cta_primary.url)"
+                                :href="slide.cta_primary.url"
+                            >
+                                <MonitorPlay class="size-4" />
+                                <span>{{ slide.cta_primary.label }}</span>
+                            </a>
+                            <a
                                 v-else
                                 :href="slide.cta_primary.url"
                                 target="_blank"
@@ -178,6 +186,12 @@ const isInternalUrl = (url) => typeof url === "string" && url.startsWith("/") &&
                                 <span>{{ slide.cta_secondary.label }}</span>
                             </Link>
                             <a
+                                v-else-if="isHashUrl(slide.cta_secondary.url)"
+                                :href="slide.cta_secondary.url"
+                            >
+                                <span>{{ slide.cta_secondary.label }}</span>
+                            </a>
+                            <a
                                 v-else
                                 :href="slide.cta_secondary.url"
                                 target="_blank"
@@ -193,3 +207,4 @@ const isInternalUrl = (url) => typeof url === "string" && url.startsWith("/") &&
         </div>
     </TacticalFrame>
 </template>
+
