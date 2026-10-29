@@ -32,6 +32,12 @@
 ## Polish Dashboard & Multiview (UX)
 Tugas kecil lanjutan setelah katalog Dashboard (Claude, 31 Okt 2026). Satu brief = satu commit.
 
+**Aturan anti-konflik Gemini ↔ Claude**
+1. **Satu file, satu agen.** File yang disebut di brief berstatus 🟡 In Progress hanya boleh diubah oleh agen yang mengerjakan task itu.
+2. Gemini mengubah status task menjadi 🟡 In Progress saat mulai, dan 🟣 Ready for Review setelah commit. Gemini mengerjakan **satu task sekaligus** dan selalu mulai dari working tree bersih (`git status` kosong untuk file brief).
+3. Claude hanya memoles task berstatus 🟣, mengubah statusnya menjadi 🔵 Claude polishing selama bekerja, lalu commit terpisah `style(ui): <ID> poles …`. Selama 🔵, Gemini **tidak** menyentuh file task tersebut.
+4. Bagian yang ditandai "poles oleh Claude" di brief **tidak** dikerjakan Gemini.
+
 | # | ID | Prioritas | Task | Bergantung | Status | Dev Notes | Review Notes |
 | :---: | :--- | :---: | :--- | :--- | :---: | :--- | :--- |
 | 19 | [UX-01](tasks/UX-01.md) | 🟡 P2 | i18n katalog Dashboard, modal detail, bar tile Multiview | — | ⚪ Todo | | |
@@ -40,6 +46,7 @@ Tugas kecil lanjutan setelah katalog Dashboard (Claude, 31 Okt 2026). Satu brief
 | 22 | [UX-04](tasks/UX-04.md) | 🟡 P2 | Tombol chat tidak menutupi kontrol Multiview & tray di HP | — | ⚪ Todo | | |
 | 23 | [UX-05](tasks/UX-05.md) | 🟡 P2 | Baris katalog "Road to 1K" (pola dasar, poles oleh Claude) | — | ⚪ Todo | | |
 | 24 | [UX-06](tasks/UX-06.md) | 🟡 P2 | Top 10 fallback ke bulan lalu saat bulan ini kosong | — | ⚪ Todo | | |
+| 25 | [UX-07](tasks/UX-07.md) | 🟠 P1 | Panel Admin: layout sidebar (pola dasar, poles oleh Claude) | — | ⚪ Todo | | |
 
 **Cakupan:** 85 file `.vue` (≈6.000 kelas palet mentah, 630+ `text-[Npx]`) terbagi habis ke MIG-01…MIG-09; `Components/Base` dihapus di MIG-10.
 
