@@ -38,6 +38,8 @@ Tugas kecil lanjutan setelah katalog Dashboard (Claude, 31 Okt 2026). Satu brief
 | 20 | [UX-02](tasks/UX-02.md) | 🟡 P2 | Baris katalog "Momen aksi komunitas" (TacClips) | — | ⚪ Todo | | |
 | 21 | [UX-03](tasks/UX-03.md) | 🟢 P3 | Bersihkan peringatan ESLint header & footer | — | ⚪ Todo | | |
 | 22 | [UX-04](tasks/UX-04.md) | 🟡 P2 | Tombol chat tidak menutupi kontrol Multiview & tray di HP | — | ⚪ Todo | | |
+| 23 | [UX-05](tasks/UX-05.md) | 🟡 P2 | Baris katalog "Road to 1K" (pola dasar, poles oleh Claude) | — | ⚪ Todo | | |
+| 24 | [UX-06](tasks/UX-06.md) | 🟡 P2 | Top 10 fallback ke bulan lalu saat bulan ini kosong | — | ⚪ Todo | | |
 
 **Cakupan:** 85 file `.vue` (≈6.000 kelas palet mentah, 630+ `text-[Npx]`) terbagi habis ke MIG-01…MIG-09; `Components/Base` dihapus di MIG-10.
 
