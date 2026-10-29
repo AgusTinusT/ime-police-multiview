@@ -12,6 +12,7 @@ import {
 import { toast as sonnerToast } from "vue-sonner";
 
 import MultiviewStreamPicker from "@/Components/MultiviewStreamPicker.vue";
+import SquadMenu from "@/Components/Squad/SquadMenu.vue";
 import { DeptBadge, LiveBadge } from "@/Components/tactical";
 import MultiviewSoloStrip from "@/Components/MultiviewSoloStrip.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
@@ -260,6 +261,86 @@ watch(layoutMode, (mode) => {
         // Ignore storage failures.
     }
 });
+
+// ---------------------------------------------------------------------------
+// Squad management (SQ-02)
+// ---------------------------------------------------------------------------
+const activeSquad = ref(null);
+const activeSquadOfficerIds = computed(() =>
+    activeSquad.value ? (activeSquad.value.officers || []).map((o) => Number(o.id)) : null,
+);
+
+const currentPovOfficers = computed(() => {
+    const list = [];
+    const seen = new Set();
+    for (const id of selectedIds.value) {
+        const s = infoOf(id);
+        if (s?.officer && !seen.has(s.officer.id)) {
+            seen.add(s.officer.id);
+            list.push(s.officer);
+        }
+    }
+    return list;
+});
+
+const loadSquad = async (slug) => {
+    if (!slug) return;
+    try {
+        const res = await fetch(`/api/v1/squads/${slug}`, {
+            headers: { Accept: "application/json" },
+        });
+        if (!res.ok) {
+            sonnerToast.error("Squad tidak ditemukan atau bersifat privat.");
+            return;
+        }
+        const json = await res.json();
+        const squad = json.data;
+        if (!squad) return;
+
+        activeSquad.value = squad;
+
+        const squadOfficerIds = new Set((squad.officers || []).map((o) => Number(o.id)));
+        const liveSquadStreams = streams.value.filter((s) =>
+            squadOfficerIds.has(Number(s.officer?.id || s.officer_id)),
+        );
+        const offlineCount = (squad.officers || []).length - liveSquadStreams.length;
+
+        if (liveSquadStreams.length === 0) {
+            selectedIds.value = [];
+            focusId.value = null;
+            audioId.value = null;
+            sonnerToast("Semua anggota squad sedang offline.");
+        } else {
+            if (layoutMode.value === "solo") {
+                switchSolo(liveSquadStreams[0]?.video_id);
+            } else {
+                selectedIds.value = liveSquadStreams
+                    .map((s) => s.video_id)
+                    .slice(0, maxTiles.value);
+                focusId.value = selectedIds.value[0] || null;
+            }
+
+            if (offlineCount > 0) {
+                sonnerToast(`${offlineCount} anggota squad sedang offline.`);
+            }
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("squad", slug);
+        url.searchParams.delete("v");
+        window.history.replaceState(window.history.state, "", url);
+    } catch (err) {
+        sonnerToast.error("Gagal memuat squad: " + err.message);
+    }
+};
+
+const clearSquad = () => {
+    activeSquad.value = null;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("squad");
+    window.history.replaceState(window.history.state, "", url);
+    sonnerToast("Keluar dari squad.");
+};
 
 // ---------------------------------------------------------------------------
 // Player control (YouTube IFrame postMessage API)
@@ -600,10 +681,16 @@ onMounted(() => {
         layoutMode.value = isNarrow.value ? "focus" : "grid";
     }
 
-    selectedIds.value = readInitialSelection().slice(0, maxTiles.value);
-    focusId.value = selectedIds.value[0] || null;
-    // No sound on page load: browsers block unmuted autoplay without a click.
-    if (layoutMode.value === "solo") enterSolo({ withAudio: false });
+    const params = new URLSearchParams(window.location.search);
+    const squadSlug = params.get("squad");
+    if (squadSlug) {
+        loadSquad(squadSlug);
+    } else {
+        selectedIds.value = readInitialSelection().slice(0, maxTiles.value);
+        focusId.value = selectedIds.value[0] || null;
+        // No sound on page load: browsers block unmuted autoplay without a click.
+        if (layoutMode.value === "solo") enterSolo({ withAudio: false });
+    }
 
     resizeObserver = new ResizeObserver(([entry]) => {
         stageSize.w = entry.contentRect.width;
@@ -711,6 +798,13 @@ onUnmounted(() => {
                             <span class="hidden md:inline">Solo</span>
                         </Button>
                     </div>
+
+                    <SquadMenu
+                        :active-squad="activeSquad"
+                        :current-officers="currentPovOfficers"
+                        @select-squad="loadSquad($event.slug)"
+                        @clear-squad="clearSquad"
+                    />
 
                     <Button
                         type="button"
@@ -958,6 +1052,7 @@ onUnmounted(() => {
                         :streams="streams"
                         :current-id="selectedIds[0] || null"
                         :tac-channels="initialTacChannels"
+                        :allowed-officer-ids="activeSquadOfficerIds"
                         :class="
                             isCompactLandscape || isFullscreen
                                 ? '-mx-0.5 -mb-0.5 mt-0.5'
@@ -978,10 +1073,18 @@ onUnmounted(() => {
                             <LayoutGrid class="size-7 text-primary" />
                         </div>
                         <h2 class="font-heading text-2xl font-bold">
-                            Belum ada POV dipilih
+                            <template v-if="activeSquad">
+                                Squad {{ activeSquad.name }}
+                            </template>
+                            <template v-else>
+                                Belum ada POV dipilih
+                            </template>
                         </h2>
                         <p class="mt-1 max-w-sm text-sm text-muted-foreground">
-                            <template v-if="totalLive">
+                            <template v-if="activeSquad">
+                                Semua anggota squad ini sedang offline (10-7).
+                            </template>
+                            <template v-else-if="totalLive">
                                 Pilih hingga {{ maxTiles }} siaran live untuk
                                 ditonton bersamaan.
                             </template>

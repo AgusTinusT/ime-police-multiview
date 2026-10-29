@@ -1,12 +1,15 @@
 <script setup>
-import { Head, Link } from "@inertiajs/vue3";
+import { Head, Link, usePage } from "@inertiajs/vue3";
 import { ChevronRight, MonitorPlay } from "@lucide/vue";
 import { computed, ref, onMounted } from "vue";
 import axios from "axios";
+import { toast } from "vue-sonner";
 
 // Refactored Sub-Components
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
+import AuthModal from "@/Components/AuthModal.vue";
+import SquadCatalogCard from "@/Components/Squad/SquadCatalogCard.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
 import { LiveBadge } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
@@ -308,8 +311,42 @@ const fetchCommunityClips = async () => {
     }
 };
 
+const page = usePage();
+const publicSquads = ref([]);
+const showSquadAuthModal = ref(false);
+
+const fetchPublicSquads = async () => {
+    try {
+        const res = await axios.get("/api/v1/squads/public");
+        if (res.data?.status === "success" && Array.isArray(res.data.data)) {
+            publicSquads.value = res.data.data;
+        }
+    } catch {
+        // Gagal -> baris disembunyikan
+        publicSquads.value = [];
+    }
+};
+
+const handleForkSquad = async (squad) => {
+    if (!page.props.auth?.user) {
+        showSquadAuthModal.value = true;
+        return;
+    }
+    try {
+        const res = await axios.post(`/api/v1/squads/${squad.id}/fork`);
+        toast.success("Squad berhasil di-fork.");
+        const newSquad = res.data?.data;
+        if (newSquad?.slug) {
+            window.location.href = `/multiview?squad=${newSquad.slug}`;
+        }
+    } catch (err) {
+        toast.error(err.response?.data?.message || "Gagal melakukan fork squad.");
+    }
+};
+
 onMounted(() => {
     fetchCommunityClips();
+    fetchPublicSquads();
 });
 </script>
 
@@ -374,6 +411,20 @@ onMounted(() => {
                         :in-tray="inTray(s.video_id)"
                         @toggle-tray="toggleTray"
                         @detail="detail = $event"
+                    />
+                </CatalogRow>
+
+                <!-- Squad Komunitas (SQ-02) -->
+                <CatalogRow
+                    v-if="publicSquads.length"
+                    :title="$t('squad.community_squads')"
+                    :subtitle="$t('squad.community_subtitle')"
+                >
+                    <SquadCatalogCard
+                        v-for="sq in publicSquads"
+                        :key="sq.id"
+                        :squad="sq"
+                        @fork="handleForkSquad"
                     />
                 </CatalogRow>
 
@@ -558,6 +609,11 @@ onMounted(() => {
         </div>
 
         <Toaster rich-colors position="top-right" />
+
+        <AuthModal
+            :is-open="showSquadAuthModal"
+            @close="showSquadAuthModal = false"
+        />
     </div>
 </template>
 

@@ -11,6 +11,7 @@ const props = defineProps({
     streams: { type: Array, default: () => [] },
     currentId: { type: String, default: null },
     tacChannels: { type: Array, default: () => [] },
+    allowedOfficerIds: { type: Array, default: null },
 });
 
 const emit = defineEmits(["select"]);
@@ -22,8 +23,16 @@ const sameTacIds = computed(() => {
     return new Set((channel?.video_ids || []).map(String));
 });
 
+const filteredStreams = computed(() => {
+    if (!props.allowedOfficerIds || !props.allowedOfficerIds.length) {
+        return props.streams;
+    }
+    const allowed = new Set(props.allowedOfficerIds.map(Number));
+    return props.streams.filter((s) => allowed.has(Number(s.officer?.id || s.officer_id)));
+});
+
 const items = computed(() =>
-    [...props.streams].sort((a, b) => {
+    [...filteredStreams.value].sort((a, b) => {
         const tacA = sameTacIds.value.has(String(a.video_id)) ? 1 : 0;
         const tacB = sameTacIds.value.has(String(b.video_id)) ? 1 : 0;
         return tacB - tacA || (b.viewers_count || 0) - (a.viewers_count || 0);
