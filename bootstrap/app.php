@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/v1/sync',
             'api/v1/telemetry',
+            'api/v1/hero-slides/*/event',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

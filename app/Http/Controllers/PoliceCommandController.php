@@ -129,6 +129,7 @@ class PoliceCommandController extends Controller
         });
 
         return Inertia::render('Dashboard', [
+            'heroSlides' => \App\Services\HeroSlideService::forAudience($request->user()),
             'initialStreams' => $activeStreams->values(),
             'initialOfflineOfficers' => $offlineOfficers->values(),
             'initialTacChannels' => $tacChannels->values(),

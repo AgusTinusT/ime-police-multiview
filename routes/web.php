@@ -91,6 +91,7 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/officers')->group(function 
 
 // Admin-Protected Announcements API
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\HeroSlideController;
 Route::middleware(['auth', 'admin'])->prefix('api/v1/announcements')->group(function () {
     Route::get('/', [AnnouncementController::class, 'index']);
     Route::post('/', [AnnouncementController::class, 'store']);
@@ -100,6 +101,19 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/announcements')->group(func
 });
 
 Route::get('/api/v1/active-announcements', [AnnouncementController::class, 'getActive']);
+
+// Admin-Protected Hero Slides API & Public Telemetry (HS-01)
+Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/hero-slides')->group(function () {
+    Route::get('/', [HeroSlideController::class, 'index']);
+    Route::post('/', [HeroSlideController::class, 'store']);
+    Route::post('/reorder', [HeroSlideController::class, 'reorder']);
+    Route::match(['put', 'post'], '/{slide}', [HeroSlideController::class, 'update']);
+    Route::delete('/{slide}', [HeroSlideController::class, 'destroy']);
+    Route::patch('/{slide}/toggle', [HeroSlideController::class, 'toggle']);
+});
+
+Route::post('/api/v1/hero-slides/{slide}/event', [HeroSlideController::class, 'recordEvent'])
+    ->middleware('throttle:60,1');
 
 // Authenticated User Cloud Watchlist API
 use App\Http\Controllers\UserWatchlistController;
