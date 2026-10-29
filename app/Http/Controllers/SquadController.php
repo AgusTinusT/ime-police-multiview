@@ -23,7 +23,9 @@ class SquadController extends Controller
                 ->with(['user', 'officers.activeStream', 'officers.agency'])
                 ->get();
 
-            return $list->map(fn (Squad $squad) => $this->formatSquad($squad))
+            // Keep the owner id out of the cached payload's public fields; is_owner is
+            // per-viewer and must be computed after reading from the shared cache.
+            return $list->map(fn (Squad $squad) => [...$this->formatSquad($squad), '_owner_id' => $squad->user_id])
                 ->sort(function ($a, $b) {
                     if ($b['live_count'] === $a['live_count']) {
                         return $b['forks_count'] <=> $a['forks_count'];
@@ -34,6 +36,14 @@ class SquadController extends Controller
                 ->values()
                 ->all();
         });
+
+        $viewerId = Auth::id();
+        $squads = array_map(function (array $squad) use ($viewerId) {
+            $squad['is_owner'] = $viewerId !== null && $squad['_owner_id'] === $viewerId;
+            unset($squad['_owner_id']);
+
+            return $squad;
+        }, $squads);
 
         return response()->json([
             'status' => 'success',
@@ -378,3 +388,4 @@ class SquadController extends Controller
         return false;
     }
 }
+

@@ -446,4 +446,25 @@ class SquadTest extends TestCase
         $squad->refresh();
         $this->assertFalse($squad->is_hidden);
     }
+
+    public function test_public_list_is_owner_is_per_viewer_not_cached(): void
+    {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $officer = $this->createOfficer("Cache Viewer", "1-ADAM-90");
+
+        $this->actingAs($owner)->postJson("/api/v1/squads", [
+            "name" => "Squad Cache",
+            "visibility" => "public",
+            "officer_ids" => [$officer->id],
+        ])->assertCreated();
+
+        // Owner warms the shared cache first.
+        $this->actingAs($owner)->getJson("/api/v1/squads/public")
+            ->assertOk()->assertJsonPath("data.0.is_owner", true);
+
+        $this->actingAs($other)->getJson("/api/v1/squads/public")
+            ->assertOk()->assertJsonPath("data.0.is_owner", false)
+            ->assertJsonMissingPath("data.0._owner_id");
+    }
 }
