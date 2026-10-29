@@ -61,6 +61,8 @@
   --dept-sasp: #cbd5e1;
   --dept-sapr: #10b981;
   --hud-line: rgba(59, 130, 246, 0.4);
+  --rank-bronze: #ea580c;
+  --rank-bronze-foreground: #ffffff;
 }
 
 @theme inline {
@@ -113,6 +115,8 @@
   --color-dept-sasp: var(--dept-sasp);
   --color-dept-sapr: var(--dept-sapr);
   --color-hud: var(--hud-line);
+  --color-rank-bronze: var(--rank-bronze);
+  --color-rank-bronze-foreground: var(--rank-bronze-foreground);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

@@ -433,12 +433,12 @@ const openChannel = (url) => {
 
             <!-- Rank 3: Bronze Officer -->
             <Card
-                class="order-3 p-3.5 sm:p-5 relative hover:border-input transition-colors gap-0 pt-6 sm:pt-7"
+                class="order-3 p-3.5 sm:p-5 relative hover:border-rank-bronze/40 transition-colors gap-0 pt-6 sm:pt-7"
             >
                 <Badge
-                    class="absolute -top-3.5 left-4 sm:left-5 z-20 font-mono font-bold text-xs uppercase gap-1 px-3 py-1 bg-card border-2 border-warning/50 text-warning shadow-md"
+                    class="absolute -top-3.5 left-4 sm:left-5 z-20 font-mono font-bold text-xs uppercase gap-1 px-3 py-1 bg-card border-2 border-rank-bronze text-rank-bronze shadow-md"
                 >
-                    <Medal class="size-3.5 shrink-0" />
+                    <Medal class="size-3.5 shrink-0 text-rank-bronze" />
                     <span>RANK #3 BRONZE</span>
                 </Badge>
 
