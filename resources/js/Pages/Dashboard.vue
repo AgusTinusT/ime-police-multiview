@@ -537,44 +537,90 @@ const scrollToUnitsGrid = () => {
                 class="w-full bg-card/40 pt-10 sm:pt-14 pb-12 sm:pb-16 scroll-mt-6 relative z-10"
             >
                 <PageContainer class="space-y-8">
-                    <!-- Ringkasan Statistik Taktis (1 baris TacticalFrame variant="panel") -->
-                    <TacticalFrame
-                        variant="panel"
-                        accent="primary"
-                        inner-class="p-4 sm:p-5"
-                    >
-                        <div
-                            class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
-                        >
-                            <StatTile
-                                :label="$t('dashboard.on_duty_feeds')"
-                                :value="allActiveStreams.length"
-                                :sublabel="$t('dashboard.active')"
-                                :icon="Radio"
-                            />
-                            <StatTile
-                                label="Total Penonton Live"
-                                :value="totalLiveViewers"
-                                sublabel="Penonton Aktif"
-                                :icon="Eye"
-                            />
-                            <StatTile
-                                :label="$t('dashboard.total_officers')"
-                                :value="
-                                    allActiveStreams.length +
-                                    offlineOfficers.length
-                                "
-                                :sublabel="$t('dashboard.officers_unit')"
-                                :icon="Shield"
-                            />
-                            <StatTile
-                                :label="$t('dashboard.replay_archive')"
-                                :value="recentReplays.length"
-                                :sublabel="$t('dashboard.videos_unit')"
-                                :icon="Film"
-                            />
+                    <!-- Ringkasan Telemetri Taktis (Unified Clean Ribbon) -->
+                    <div class="rounded-xl border border-border/70 bg-card/60 backdrop-blur-md overflow-hidden shadow-xs">
+                        <div class="grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
+                            <!-- 1. On Duty Streams -->
+                            <div class="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
+                                <div class="space-y-1">
+                                    <span class="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground block">
+                                        {{ $t('dashboard.on_duty_feeds') }}
+                                    </span>
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="font-mono text-2xl font-bold text-info tabular-nums">
+                                            {{ allActiveStreams.length }}
+                                        </span>
+                                        <span class="text-xs font-mono text-muted-foreground">
+                                            {{ $t('dashboard.active') }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="size-10 rounded-lg bg-info/10 text-info border border-info/20 grid place-items-center shrink-0">
+                                    <Radio class="size-5" />
+                                </div>
+                            </div>
+
+                            <!-- 2. Live Viewers -->
+                            <div class="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
+                                <div class="space-y-1">
+                                    <span class="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground block">
+                                        Total Penonton Live
+                                    </span>
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="font-mono text-2xl font-bold text-live tabular-nums">
+                                            {{ totalLiveViewers }}
+                                        </span>
+                                        <span class="text-xs font-mono text-muted-foreground">
+                                            Penonton
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="size-10 rounded-lg bg-live/10 text-live border border-live/20 grid place-items-center shrink-0">
+                                    <Eye class="size-5" />
+                                </div>
+                            </div>
+
+                            <!-- 3. Total Officers -->
+                            <div class="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
+                                <div class="space-y-1">
+                                    <span class="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground block">
+                                        {{ $t('dashboard.total_officers') }}
+                                    </span>
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="font-mono text-2xl font-bold text-foreground tabular-nums">
+                                            {{ allActiveStreams.length + offlineOfficers.length }}
+                                        </span>
+                                        <span class="text-xs font-mono text-muted-foreground">
+                                            {{ $t('dashboard.officers_unit') }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="size-10 rounded-lg bg-muted text-muted-foreground border border-border grid place-items-center shrink-0">
+                                    <Shield class="size-5" />
+                                </div>
+                            </div>
+
+                            <!-- 4. Patrol Replays -->
+                            <div class="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
+                                <div class="space-y-1">
+                                    <span class="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground block">
+                                        {{ $t('dashboard.replay_archive') }}
+                                    </span>
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="font-mono text-2xl font-bold text-primary tabular-nums">
+                                            {{ recentReplays.length }}
+                                        </span>
+                                        <span class="text-xs font-mono text-muted-foreground">
+                                            {{ $t('dashboard.videos_unit') }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="size-10 rounded-lg bg-primary/10 text-primary border border-primary/20 grid place-items-center shrink-0">
+                                    <Film class="size-5" />
+                                </div>
+                            </div>
                         </div>
-                    </TacticalFrame>
+                    </div>
 
                     <TacticalStreamSlimles
                         :is-syncing-feeds="isSyncingFeeds"
