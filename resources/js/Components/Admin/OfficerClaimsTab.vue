@@ -1,6 +1,40 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import {
+    ShieldCheck,
+    RefreshCw,
+    Check,
+    X,
+    ChevronLeft,
+    ChevronRight,
+    Clock,
+} from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
+import { Label } from "@/Components/ui/label";
+import { Alert, AlertDescription } from "@/Components/ui/alert";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/Components/ui/table";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/Components/ui/dialog";
+import { EmptyState } from "@/Components/tactical";
+import { cn } from "@/lib/utils";
 
 const emit = defineEmits(["toast", "updated"]);
 
@@ -16,6 +50,20 @@ const activeClaim = ref(null);
 const actionReason = ref("");
 const isProcessing = ref(false);
 const formError = ref("");
+
+const statusOptions = [
+    { key: "pending", label: "Menunggu Review" },
+    { key: "approved", label: "Disetujui" },
+    { key: "rejected", label: "Ditolak" },
+    { key: "all", label: "Semua Status" },
+];
+
+const statusBadgeClass = (status) => {
+    if (status === "pending") return "bg-warning/15 text-warning border-warning/30";
+    if (status === "approved") return "bg-success/15 text-success border-success/30";
+    if (status === "rejected") return "bg-destructive/15 text-destructive border-destructive/30";
+    return "bg-muted text-muted-foreground border-border";
+};
 
 const fetchClaims = async (page = 1) => {
     isLoading.value = true;
@@ -115,269 +163,258 @@ defineExpose({
 </script>
 
 <template>
-    <div class="space-y-4 font-mono text-xs">
+    <div class="space-y-4 text-xs">
         <!-- HEADER & FILTER TOOLBAR -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div>
-                <h2 class="text-sm font-bold text-white uppercase flex items-center gap-2">
-                    <span>🛡️ Antrean Peninjauan Klaim Akun Perwira</span>
-                </h2>
-                <p class="text-slate-400 text-[11px] mt-0.5">
-                    Verifikasi identitas streamer & bind profil dinas 1-to-1 dengan pencegahan impersonasi.
-                </p>
-            </div>
+        <Card>
+            <CardContent class="p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-sm font-bold text-foreground uppercase flex items-center gap-2">
+                        <ShieldCheck class="size-4 text-primary" />
+                        <span>Antrean Peninjauan Klaim Akun Perwira</span>
+                    </h2>
+                    <p class="text-muted-foreground text-xs mt-0.5">
+                        Verifikasi identitas streamer &amp; bind profil dinas 1-to-1 dengan pencegahan impersonasi.
+                    </p>
+                </div>
 
-            <!-- Filters -->
-            <div class="flex items-center gap-1.5 flex-wrap">
-                <button
-                    v-for="st in [
-                        { key: 'pending', label: '⏳ Menunggu Review' },
-                        { key: 'approved', label: '✓ Disetujui' },
-                        { key: 'rejected', label: '✕ Ditolak' },
-                        { key: 'all', label: 'Semua Status' },
-                    ]"
-                    :key="st.key"
-                    @click="changeStatus(st.key)"
-                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition border"
-                    :class="
-                        statusFilter === st.key
-                            ? 'bg-cyan-600 text-black border-cyan-500 shadow-xs'
-                            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
-                    "
-                >
-                    {{ st.label }}
-                </button>
+                <!-- Filters -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <Button
+                        v-for="st in statusOptions"
+                        :key="st.key"
+                        size="sm"
+                        :variant="statusFilter === st.key ? 'default' : 'outline'"
+                        @click="changeStatus(st.key)"
+                    >
+                        {{ st.label }}
+                    </Button>
 
-                <button
-                    @click="fetchClaims(pagination.current_page)"
-                    class="px-2.5 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 text-cyan-400 border border-slate-800 transition"
-                    title="Muat Ulang"
-                >
-                    ↻
-                </button>
-            </div>
-        </div>
+                    <Button
+                        size="icon"
+                        variant="outline"
+                        aria-label="Muat ulang klaim"
+                        title="Muat Ulang"
+                        @click="fetchClaims(pagination.current_page)"
+                    >
+                        <RefreshCw :class="cn('size-4', isLoading && 'motion-safe:animate-spin')" />
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
 
         <!-- CLAIMS TABLE -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg">
-            <div v-if="isLoading" class="py-12 text-center text-slate-400">
+        <Card class="overflow-hidden">
+            <div v-if="isLoading" class="py-12 text-center text-muted-foreground">
                 Memuat antrean klaim...
             </div>
 
-            <div v-else-if="claims.length === 0" class="py-12 text-center text-slate-500 italic">
-                Tidak ada pengajuan klaim dalam kategori ini.
+            <div v-else-if="claims.length === 0" class="p-6">
+                <EmptyState
+                    :icon="Clock"
+                    title="Antrean Klaim Kosong"
+                    description="Tidak ada pengajuan klaim dalam kategori ini."
+                />
             </div>
 
             <div v-else class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-950 text-[11px] uppercase text-slate-400 border-b border-slate-800">
-                            <th class="py-3 px-4">Perwira Roster</th>
-                            <th class="py-3 px-4">User Pengaju</th>
-                            <th class="py-3 px-4">Discord Tag</th>
-                            <th class="py-3 px-4">Catatan Pengaju</th>
-                            <th class="py-3 px-4">Status & Waktu</th>
-                            <th class="py-3 px-4 text-right">Aksi Komando</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800/60">
-                        <tr
-                            v-for="claim in claims"
-                            :key="claim.id"
-                            class="hover:bg-slate-800/40 transition"
-                        >
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Perwira Roster</TableHead>
+                            <TableHead>User Pengaju</TableHead>
+                            <TableHead>Discord Tag</TableHead>
+                            <TableHead>Catatan Pengaju</TableHead>
+                            <TableHead>Status &amp; Waktu</TableHead>
+                            <TableHead class="text-right">Aksi Komando</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow v-for="claim in claims" :key="claim.id">
                             <!-- Officer Roster Info -->
-                            <td class="py-3.5 px-4">
-                                <div class="font-bold text-white text-sm">
+                            <TableCell>
+                                <div class="font-bold text-foreground text-sm">
                                     {{ claim.officer?.officer_name || "-" }}
                                 </div>
-                                <div class="text-slate-400 text-[11px]">
+                                <div class="text-muted-foreground text-xs font-mono">
                                     {{ claim.officer?.streamer_name }} • [{{ claim.officer?.department }} #{{ claim.officer?.callsign }}]
                                 </div>
-                            </td>
+                            </TableCell>
 
                             <!-- User Info -->
-                            <td class="py-3.5 px-4">
-                                <div class="font-bold text-cyan-300">
+                            <TableCell>
+                                <div class="font-bold text-primary">
                                     {{ claim.user?.name || "-" }}
                                 </div>
-                                <div class="text-slate-400 text-[11px]">
+                                <div class="text-muted-foreground text-xs">
                                     {{ claim.user?.email }}
                                 </div>
-                            </td>
+                            </TableCell>
 
                             <!-- Discord Tag -->
-                            <td class="py-3.5 px-4 font-bold text-amber-300">
+                            <TableCell class="font-mono font-bold text-warning">
                                 {{ claim.proof_discord_tag || "-" }}
-                            </td>
+                            </TableCell>
 
                             <!-- Notes -->
-                            <td class="py-3.5 px-4 text-slate-300 max-w-xs truncate font-sans text-xs">
+                            <TableCell class="text-foreground max-w-xs truncate text-xs">
                                 {{ claim.notes || "-" }}
-                            </td>
+                            </TableCell>
 
                             <!-- Status Badge -->
-                            <td class="py-3.5 px-4">
-                                <span
-                                    class="px-2 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-wider"
-                                    :class="{
-                                        'bg-amber-950 text-amber-300 border border-amber-500/40': claim.status === 'pending',
-                                        'bg-emerald-950 text-emerald-300 border border-emerald-500/40': claim.status === 'approved',
-                                        'bg-rose-950 text-rose-300 border border-rose-500/40': claim.status === 'rejected',
-                                        'bg-slate-950 text-slate-400 border border-slate-700': claim.status === 'cancelled',
-                                    }"
+                            <TableCell>
+                                <Badge
+                                    variant="outline"
+                                    :class="cn('uppercase tracking-wider font-bold', statusBadgeClass(claim.status))"
                                 >
                                     {{ claim.status }}
-                                </span>
-                                <div class="text-[10px] text-slate-500 mt-1">
+                                </Badge>
+                                <div class="text-xs text-muted-foreground mt-1 font-mono tabular-nums">
                                     {{ new Date(claim.created_at).toLocaleString() }}
                                 </div>
-                                <div v-if="claim.review_reason" class="text-[10px] text-slate-400 italic mt-0.5">
+                                <div v-if="claim.review_reason" class="text-xs text-muted-foreground italic mt-0.5">
                                     "{{ claim.review_reason }}"
                                 </div>
-                            </td>
+                            </TableCell>
 
                             <!-- Actions -->
-                            <td class="py-3.5 px-4 text-right">
+                            <TableCell class="text-right">
                                 <div v-if="claim.status === 'pending'" class="flex items-center justify-end gap-1.5">
-                                    <button
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        class="border-success/40 text-success hover:bg-success/15"
                                         @click="openApproveModal(claim)"
-                                        class="px-2.5 py-1 rounded-sm bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 transition font-bold"
                                     >
-                                        ✓ Setujui
-                                    </button>
-                                    <button
+                                        <Check class="size-3.5 mr-1" />
+                                        Setujui
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        class="border-destructive/40 text-destructive hover:bg-destructive/15"
                                         @click="openRejectModal(claim)"
-                                        class="px-2.5 py-1 rounded-sm bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 transition font-bold"
                                     >
-                                        ✕ Tolak
-                                    </button>
+                                        <X class="size-3.5 mr-1" />
+                                        Tolak
+                                    </Button>
                                 </div>
-                                <div v-else class="text-slate-500 text-[11px] italic">
+                                <div v-else class="text-muted-foreground text-xs italic">
                                     Oleh: {{ claim.reviewer?.name || "Admin" }}
                                 </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
             </div>
 
             <!-- Pagination -->
             <div
                 v-if="pagination.last_page > 1"
-                class="p-3 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400"
+                class="p-3 bg-muted/40 border-t border-border flex items-center justify-between text-xs text-muted-foreground"
             >
                 <span>Total {{ pagination.total }} pengajuan</span>
-                <div class="flex items-center gap-1">
-                    <button
-                        @click="fetchClaims(pagination.current_page - 1)"
+                <div class="flex items-center gap-1.5">
+                    <Button
+                        size="sm"
+                        variant="outline"
                         :disabled="pagination.current_page <= 1"
-                        class="px-2 py-1 rounded-sm bg-slate-900 hover:bg-slate-800 disabled:opacity-40"
+                        @click="fetchClaims(pagination.current_page - 1)"
                     >
+                        <ChevronLeft class="size-3.5 mr-1" />
                         Prev
-                    </button>
-                    <span class="px-2 font-bold text-white">{{ pagination.current_page }} / {{ pagination.last_page }}</span>
-                    <button
-                        @click="fetchClaims(pagination.current_page + 1)"
+                    </Button>
+                    <span class="px-2 font-bold text-foreground font-mono tabular-nums">
+                        {{ pagination.current_page }} / {{ pagination.last_page }}
+                    </span>
+                    <Button
+                        size="sm"
+                        variant="outline"
                         :disabled="pagination.current_page >= pagination.last_page"
-                        class="px-2 py-1 rounded-sm bg-slate-900 hover:bg-slate-800 disabled:opacity-40"
+                        @click="fetchClaims(pagination.current_page + 1)"
                     >
                         Next
-                    </button>
+                        <ChevronRight class="size-3.5 ml-1" />
+                    </Button>
                 </div>
             </div>
-        </div>
+        </Card>
 
         <!-- APPROVE MODAL -->
-        <div
-            v-if="showApproveModal"
-            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
-        >
-            <div class="w-full max-w-md bg-slate-900 border border-emerald-500/40 rounded-2xl p-5 shadow-2xl text-left space-y-4">
-                <div class="flex items-center gap-2 text-emerald-400 font-bold border-b border-white/10 pb-2">
-                    <span>✓ KONFIRMASI PERSETUJUAN KLAIM</span>
-                </div>
+        <Dialog :open="showApproveModal" @update:open="showApproveModal = $event">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2 text-success uppercase">
+                        <Check class="size-4" />
+                        Konfirmasi Persetujuan Klaim
+                    </DialogTitle>
+                    <DialogDescription>
+                        Anda akan menghubungkan akun user <strong class="text-foreground">{{ activeClaim?.user?.name }}</strong> dengan profil dinas perwira <strong class="text-primary">{{ activeClaim?.officer?.officer_name }} ({{ activeClaim?.officer?.callsign }})</strong>.
+                    </DialogDescription>
+                </DialogHeader>
 
-                <p class="text-xs text-slate-300 font-sans">
-                    Anda akan menghubungkan akun user <strong class="text-white">{{ activeClaim?.user?.name }}</strong> dengan profil dinas perwira <strong class="text-cyan-300">{{ activeClaim?.officer?.officer_name }} ({{ activeClaim?.officer?.callsign }})</strong>.
-                </p>
+                <Alert v-if="formError" variant="destructive">
+                    <AlertDescription>{{ formError }}</AlertDescription>
+                </Alert>
 
-                <div v-if="formError" class="p-2.5 rounded-sm bg-rose-950 border border-rose-500 text-rose-200 text-xs">
-                    {{ formError }}
-                </div>
-
-                <div class="space-y-1">
-                    <label class="block text-slate-300 text-xs uppercase">Catatan / Alasan Persetujuan (Opsional)</label>
-                    <input
+                <div class="space-y-1.5">
+                    <Label for="approve-claim-reason" class="text-xs uppercase">Catatan / Alasan Persetujuan (Opsional)</Label>
+                    <Input
+                        id="approve-claim-reason"
                         v-model="actionReason"
                         type="text"
                         placeholder="Contoh: Terverifikasi via voice channel kepolisian"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-emerald-500 outline-hidden"
                     />
                 </div>
 
-                <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
-                    <button
-                        @click="showApproveModal = false"
-                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300"
-                    >
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="showApproveModal = false">
                         Batal
-                    </button>
-                    <button
-                        @click="handleApprove"
-                        :disabled="isProcessing"
-                        class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold uppercase tracking-wider"
-                    >
+                    </Button>
+                    <Button :disabled="isProcessing" @click="handleApprove">
                         {{ isProcessing ? "Menyetujui..." : "Setujui & Bind Perwira" }}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
         <!-- REJECT MODAL -->
-        <div
-            v-if="showRejectModal"
-            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
-        >
-            <div class="w-full max-w-md bg-slate-900 border border-rose-500/40 rounded-2xl p-5 shadow-2xl text-left space-y-4">
-                <div class="flex items-center gap-2 text-rose-400 font-bold border-b border-white/10 pb-2">
-                    <span>✕ PENOLAKAN KLAIM PERWIRA</span>
-                </div>
+        <Dialog :open="showRejectModal" @update:open="showRejectModal = $event">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2 text-destructive uppercase">
+                        <X class="size-4" />
+                        Penolakan Klaim Perwira
+                    </DialogTitle>
+                    <DialogDescription>
+                        Pengajuan klaim dari <strong class="text-foreground">{{ activeClaim?.user?.name }}</strong> untuk <strong class="text-primary">{{ activeClaim?.officer?.officer_name }}</strong> akan ditolak.
+                    </DialogDescription>
+                </DialogHeader>
 
-                <p class="text-xs text-slate-300 font-sans">
-                    Pengajuan klaim dari <strong class="text-white">{{ activeClaim?.user?.name }}</strong> untuk <strong class="text-cyan-300">{{ activeClaim?.officer?.officer_name }}</strong> akan ditolak.
-                </p>
+                <Alert v-if="formError" variant="destructive">
+                    <AlertDescription>{{ formError }}</AlertDescription>
+                </Alert>
 
-                <div v-if="formError" class="p-2.5 rounded-sm bg-rose-950 border border-rose-500 text-rose-200 text-xs">
-                    {{ formError }}
-                </div>
-
-                <div class="space-y-1">
-                    <label class="block text-slate-300 text-xs uppercase">Alasan Penolakan <span class="text-rose-400">*</span></label>
-                    <textarea
+                <div class="space-y-1.5">
+                    <Label for="reject-claim-reason" class="text-xs uppercase">
+                        Alasan Penolakan <span class="text-destructive">*</span>
+                    </Label>
+                    <Textarea
+                        id="reject-claim-reason"
                         v-model="actionReason"
-                        rows="2"
+                        rows="3"
                         placeholder="Contoh: Tag Discord tidak merespon / Bukan pemilik kanal resmi"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-rose-500 outline-hidden"
-                    ></textarea>
+                    />
                 </div>
 
-                <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
-                    <button
-                        @click="showRejectModal = false"
-                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300"
-                    >
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="showRejectModal = false">
                         Batal
-                    </button>
-                    <button
-                        @click="handleReject"
-                        :disabled="isProcessing"
-                        class="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold uppercase tracking-wider"
-                    >
+                    </Button>
+                    <Button variant="destructive" :disabled="isProcessing" @click="handleReject">
                         {{ isProcessing ? "Menolak..." : "Tolak Pengajuan" }}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
 </template>

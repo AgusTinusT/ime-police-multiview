@@ -1,6 +1,20 @@
 <script setup>
 import { ref, computed } from "vue";
 import axios from "axios";
+import { Link2, Unlink, Tag, AlertTriangle } from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
+import { Label } from "@/Components/ui/label";
+import { Alert, AlertDescription } from "@/Components/ui/alert";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/Components/ui/dialog";
 
 const props = defineProps({
     show: {
@@ -120,69 +134,69 @@ const handleUpdateSlug = async () => {
 </script>
 
 <template>
-    <div
-        v-if="show && officer"
-        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
+    <Dialog
+        :open="Boolean(show && officer)"
+        @update:open="(!$event) && emit('close')"
     >
-        <div class="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl p-5 shadow-2xl text-left space-y-4 font-mono text-xs">
-            <!-- HEADER -->
-            <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
-                <div class="flex items-center gap-2">
-                    <span class="text-base">
-                        {{ mode === 'bind' ? '🔗' : mode === 'unbind' ? '⛓️‍💥' : '🏷️' }}
-                    </span>
-                    <h3 class="text-sm font-bold text-white uppercase">
+        <DialogContent v-if="officer" class="sm:max-w-md text-xs">
+            <DialogHeader>
+                <DialogTitle class="flex items-center gap-2 uppercase text-sm">
+                    <Link2 v-if="mode === 'bind'" class="size-4 text-primary" />
+                    <Unlink v-else-if="mode === 'unbind'" class="size-4 text-destructive" />
+                    <Tag v-else class="size-4 text-primary" />
+                    <span>
                         {{
-                            mode === 'bind'
-                                ? 'Bind Akun ke Perwira'
-                                : mode === 'unbind'
-                                ? 'Cabut Ikatan Akun (Unbind)'
-                                : 'Ubah Slug Publik Bio-Link'
+                            mode === "bind"
+                                ? "Bind Akun ke Perwira"
+                                : mode === "unbind"
+                                ? "Cabut Ikatan Akun (Unbind)"
+                                : "Ubah Slug Publik Bio-Link"
                         }}
-                    </h3>
-                </div>
-                <button
-                    @click="$emit('close')"
-                    class="text-slate-400 hover:text-white text-sm"
-                >
-                    ✕
-                </button>
-            </div>
+                    </span>
+                </DialogTitle>
+                <DialogDescription>
+                    Kelola ikatan akun user atau identitas tautan publik perwira.
+                </DialogDescription>
+            </DialogHeader>
 
             <!-- OFFICER DETAILS -->
-            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                <div class="font-bold text-white text-sm">
+            <div class="p-3 rounded-lg bg-muted/50 border border-border space-y-1">
+                <div class="font-bold text-foreground text-sm">
                     {{ officer.officer_name }}
                 </div>
-                <div class="text-slate-400 text-[11px]">
-                    Callsign: <span class="text-cyan-400">{{ officer.callsign }}</span> • Departemen: {{ officer.department }}
+                <div class="text-muted-foreground text-xs font-mono">
+                    Callsign: <span class="text-primary font-semibold">{{ officer.callsign }}</span> • Departemen: {{ officer.department }}
                 </div>
-                <div v-if="officer.user" class="text-emerald-400 text-[11px] pt-1 border-t border-white/5">
+                <div v-if="officer.user" class="text-success text-xs pt-1 border-t border-border">
                     User Saat Ini: {{ officer.user.name }} ({{ officer.user.email }})
                 </div>
-                <div v-if="officer.bio_profile" class="text-slate-400 text-[11px]">
-                    Slug Bio: <span class="text-cyan-300 font-mono">/@{{ officer.bio_profile.slug }}</span>
+                <div v-if="officer.bio_profile" class="text-muted-foreground text-xs">
+                    Slug Bio: <span class="text-primary font-mono">/@{{ officer.bio_profile.slug }}</span>
                 </div>
             </div>
 
             <!-- ERROR ALERT -->
-            <div v-if="formError" class="p-2.5 rounded-sm bg-rose-950 border border-rose-500 text-rose-200 text-xs">
-                {{ formError }}
-            </div>
+            <Alert v-if="formError" variant="destructive">
+                <AlertDescription>{{ formError }}</AlertDescription>
+            </Alert>
 
             <!-- MODE 1: BIND -->
             <div v-if="mode === 'bind'" class="space-y-3">
-                <div class="space-y-1">
-                    <label class="block text-slate-300 uppercase">Pilih Akun User Aktif & Terverifikasi <span class="text-cyan-400">*</span></label>
-                    <input
+                <div class="space-y-1.5">
+                    <Label for="bind-user-search" class="text-xs uppercase">
+                        Pilih Akun User Aktif &amp; Terverifikasi <span class="text-primary">*</span>
+                    </Label>
+                    <Input
+                        id="bind-user-search"
                         v-model="userSearch"
                         type="text"
                         placeholder="Filter nama / email user..."
-                        class="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-cyan-500 outline-hidden mb-1"
+                        class="mb-1.5"
                     />
                     <select
                         v-model="selectedUserId"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-hidden"
+                        aria-label="Pilih akun user"
+                        class="w-full h-9 px-3 rounded-md bg-background border border-input text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"
                     >
                         <option value="">-- Pilih User ({{ filteredUsers.length }} akun) --</option>
                         <option v-for="u in filteredUsers" :key="u.id" :value="u.id">
@@ -191,110 +205,101 @@ const handleUpdateSlug = async () => {
                     </select>
                 </div>
 
-                <div class="space-y-1">
-                    <label class="block text-slate-300 uppercase">Catatan / Alasan Binding (Opsional)</label>
-                    <input
+                <div class="space-y-1.5">
+                    <Label for="bind-reason" class="text-xs uppercase">Catatan / Alasan Binding (Opsional)</Label>
+                    <Input
+                        id="bind-reason"
                         v-model="reasonInput"
                         type="text"
                         placeholder="Contoh: Streamer resmi SASP"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-hidden"
                     />
                 </div>
 
-                <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
-                    <button
-                        @click="$emit('close')"
-                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300"
-                    >
+                <DialogFooter class="gap-2 pt-2">
+                    <Button variant="outline" @click="emit('close')">
                         Batal
-                    </button>
-                    <button
-                        @click="handleBind"
-                        :disabled="isSubmitting"
-                        class="px-4 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-black font-bold uppercase tracking-wider"
-                    >
+                    </Button>
+                    <Button :disabled="isSubmitting" @click="handleBind">
                         {{ isSubmitting ? "Menyimpan..." : "Simpan Binding" }}
-                    </button>
-                </div>
+                    </Button>
+                </DialogFooter>
             </div>
 
             <!-- MODE 2: UNBIND -->
             <div v-else-if="mode === 'unbind'" class="space-y-3">
-                <p class="text-xs text-rose-300 font-sans leading-relaxed">
-                    ⚠️ Memutus ikatan akan mencabut hak perwira dari akun <strong class="text-white">{{ officer.user?.name }}</strong>, menonaktifkan halaman bio-link publiknya, serta mencabut seluruh slot delegasi clipper.
-                </p>
+                <Alert variant="destructive">
+                    <AlertTriangle class="size-4" />
+                    <AlertDescription class="text-xs leading-relaxed">
+                        Memutus ikatan akan mencabut hak perwira dari akun <strong class="text-foreground">{{ officer.user?.name }}</strong>, menonaktifkan halaman bio-link publiknya, serta mencabut seluruh slot delegasi clipper.
+                    </AlertDescription>
+                </Alert>
 
-                <div class="space-y-1">
-                    <label class="block text-slate-300 uppercase">Alasan Pemutusan Ikatan (Wajib) <span class="text-rose-400">*</span></label>
-                    <textarea
+                <div class="space-y-1.5">
+                    <Label for="unbind-reason" class="text-xs uppercase">
+                        Alasan Pemutusan Ikatan (Wajib) <span class="text-destructive">*</span>
+                    </Label>
+                    <Textarea
+                        id="unbind-reason"
                         v-model="reasonInput"
-                        rows="2"
+                        rows="3"
                         placeholder="Contoh: Resign / Dishonorable discharge / Pergantian streamer"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-rose-500 outline-hidden"
-                    ></textarea>
+                    />
                 </div>
 
-                <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
-                    <button
-                        @click="$emit('close')"
-                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300"
-                    >
+                <DialogFooter class="gap-2 pt-2">
+                    <Button variant="outline" @click="emit('close')">
                         Batal
-                    </button>
-                    <button
-                        @click="handleUnbind"
-                        :disabled="isSubmitting"
-                        class="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold uppercase tracking-wider"
-                    >
+                    </Button>
+                    <Button variant="destructive" :disabled="isSubmitting" @click="handleUnbind">
                         {{ isSubmitting ? "Memutus..." : "Konfirmasi Unbind" }}
-                    </button>
-                </div>
+                    </Button>
+                </DialogFooter>
             </div>
 
             <!-- MODE 3: SLUG -->
             <div v-else-if="mode === 'slug'" class="space-y-3">
-                <div class="space-y-1">
-                    <label class="block text-slate-300 uppercase">Slug Publik Baru <span class="text-cyan-400">*</span></label>
+                <div class="space-y-1.5">
+                    <Label for="new-slug-input" class="text-xs uppercase">
+                        Slug Publik Baru <span class="text-primary">*</span>
+                    </Label>
                     <div class="flex items-center">
-                        <span class="px-3 py-2 rounded-l-xl bg-slate-800 text-slate-400 border border-r-0 border-slate-700">/@</span>
-                        <input
+                        <span class="px-3 h-9 inline-flex items-center rounded-l-md bg-muted text-muted-foreground border border-r-0 border-input font-mono text-xs">
+                            /@
+                        </span>
+                        <Input
+                            id="new-slug-input"
                             v-model="slugInput"
                             type="text"
                             placeholder="nama-slug-baru"
-                            class="w-full px-3 py-2 rounded-r-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-hidden"
+                            class="rounded-l-none font-mono"
                         />
                     </div>
-                    <p class="text-[10px] text-slate-400">
+                    <p class="text-xs text-muted-foreground">
                         Slug lama akan otomatis di-redirect 301 ke slug baru ini.
                     </p>
                 </div>
 
-                <div class="space-y-1">
-                    <label class="block text-slate-300 uppercase">Alasan Perubahan Slug <span class="text-cyan-400">*</span></label>
-                    <input
+                <div class="space-y-1.5">
+                    <Label for="slug-reason" class="text-xs uppercase">
+                        Alasan Perubahan Slug <span class="text-primary">*</span>
+                    </Label>
+                    <Input
+                        id="slug-reason"
                         v-model="reasonInput"
                         type="text"
                         placeholder="Contoh: Penyesuaian nama panggilan dinas"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:border-cyan-500 outline-hidden"
                     />
                 </div>
 
-                <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
-                    <button
-                        @click="$emit('close')"
-                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300"
-                    >
+                <DialogFooter class="gap-2 pt-2">
+                    <Button variant="outline" @click="emit('close')">
                         Batal
-                    </button>
-                    <button
-                        @click="handleUpdateSlug"
-                        :disabled="isSubmitting"
-                        class="px-4 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-black font-bold uppercase tracking-wider"
-                    >
+                    </Button>
+                    <Button :disabled="isSubmitting" @click="handleUpdateSlug">
                         {{ isSubmitting ? "Menyimpan..." : "Ubah Slug" }}
-                    </button>
-                </div>
+                    </Button>
+                </DialogFooter>
             </div>
-        </div>
-    </div>
+        </DialogContent>
+    </Dialog>
 </template>
