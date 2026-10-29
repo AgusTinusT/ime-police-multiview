@@ -917,7 +917,7 @@ onUnmounted(() => {
                     <!-- Floating controls when the toolbar is hidden (phone landscape / fullscreen) -->
                     <div
                         v-if="!showChrome"
-                        class="absolute bottom-2 right-2 z-20 flex gap-1.5 opacity-70 hover:opacity-100"
+                        class="absolute bottom-2 left-2 z-20 flex gap-1.5 opacity-70 hover:opacity-100"
                     >
                         <button
                             type="button"
