@@ -221,18 +221,17 @@ const openChannel = (url) => {
         >
             <!-- Rank 2: Silver Officer -->
             <Card
-                class="order-2 md:order-1 p-3.5 sm:p-5 relative hover:border-input transition-colors gap-0"
+                class="order-2 md:order-1 p-3.5 sm:p-5 relative hover:border-input transition-colors gap-0 pt-6 sm:pt-7"
             >
                 <Badge
-                    variant="secondary"
-                    class="absolute -top-3 left-4 sm:left-5 font-mono font-bold text-xs uppercase gap-1"
+                    class="absolute -top-3.5 left-4 sm:left-5 z-20 font-mono font-bold text-xs uppercase gap-1 px-3 py-1 bg-card border-2 border-border text-foreground shadow-md"
                 >
-                    <Medal class="size-3 shrink-0 text-warning" />
+                    <Medal class="size-3.5 shrink-0 text-muted-foreground" />
                     <span>RANK #2 SILVER</span>
                 </Badge>
 
                 <div
-                    class="flex items-center gap-3 sm:gap-3.5 mb-3 sm:mb-4 mt-1"
+                    class="flex items-center gap-3 sm:gap-3.5 mb-3 sm:mb-4 mt-2 sm:mt-3"
                 >
                     <OfficerAvatar
                         :src="topStreamers[1].avatar_url"
@@ -325,18 +324,17 @@ const openChannel = (url) => {
 
             <!-- Rank 1: Gold Champion Officer -->
             <Card
-                class="order-1 md:order-2 p-4 sm:p-5 border-warning/40 relative hover:border-warning transition-colors gap-0"
+                class="order-1 md:order-2 p-4 sm:p-5 border-warning/50 relative hover:border-warning transition-colors gap-0 pt-6 sm:pt-7"
             >
                 <Badge
-                    variant="warning"
-                    class="absolute -top-3 left-1/2 -translate-x-1/2 font-mono font-bold text-xs uppercase gap-1.5 whitespace-nowrap"
+                    class="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20 font-mono font-bold text-xs uppercase gap-1.5 whitespace-nowrap px-3.5 py-1 bg-card border-2 border-warning text-warning shadow-md"
                 >
-                    <Crown class="size-3.5 shrink-0" />
+                    <Crown class="size-3.5 shrink-0 text-warning" />
                     <span>#1 CHIEF OF ON-AIR</span>
                 </Badge>
 
                 <div
-                    class="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-0 mt-1 mb-3 sm:mb-4"
+                    class="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-0 mt-2 sm:mt-3 mb-3 sm:mb-4"
                 >
                     <div class="relative sm:mb-2 shrink-0">
                         <OfficerAvatar
@@ -435,18 +433,17 @@ const openChannel = (url) => {
 
             <!-- Rank 3: Bronze Officer -->
             <Card
-                class="order-3 p-3.5 sm:p-5 relative hover:border-input transition-colors gap-0"
+                class="order-3 p-3.5 sm:p-5 relative hover:border-input transition-colors gap-0 pt-6 sm:pt-7"
             >
                 <Badge
-                    variant="warning"
-                    class="absolute -top-3 left-4 sm:left-5 font-mono font-bold text-xs uppercase gap-1"
+                    class="absolute -top-3.5 left-4 sm:left-5 z-20 font-mono font-bold text-xs uppercase gap-1 px-3 py-1 bg-card border-2 border-warning/50 text-warning shadow-md"
                 >
-                    <Medal class="size-3 shrink-0" />
+                    <Medal class="size-3.5 shrink-0" />
                     <span>RANK #3 BRONZE</span>
                 </Badge>
 
                 <div
-                    class="flex items-center gap-3 sm:gap-3.5 mb-3 sm:mb-4 mt-1"
+                    class="flex items-center gap-3 sm:gap-3.5 mb-3 sm:mb-4 mt-2 sm:mt-3"
                 >
                     <OfficerAvatar
                         :src="topStreamers[2].avatar_url"
