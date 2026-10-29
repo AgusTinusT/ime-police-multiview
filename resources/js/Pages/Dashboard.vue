@@ -1,22 +1,25 @@
 <script setup>
-import { Head } from "@inertiajs/vue3";
+import { Head, Link } from "@inertiajs/vue3";
+import { ChevronRight, MonitorPlay } from "@lucide/vue";
 import { computed, ref } from "vue";
 
 // Refactored Sub-Components
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
-import { PageContainer } from "@/Components/tactical";
+import { LiveBadge, PageContainer } from "@/Components/tactical";
+import { Button } from "@/Components/ui/button";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
-import TacticalStreamSlimles from "@/Components/TacticalStreamSlimles.vue";
+import CatalogCard from "@/Components/CatalogCard.vue";
+import CatalogRow from "@/Components/CatalogRow.vue";
+import OfficerDetailModal from "@/Components/OfficerDetailModal.vue";
 import TacticalSubSupportGrid from "@/Components/TacticalSubSupportGrid.vue";
 import { Toaster } from "@/Components/ui/sonner";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
 import { parseRelativeTimeToSeconds } from "@/Utils/timeHelpers";
-import { RefreshCw } from "@lucide/vue";
 
 const props = defineProps({
     heroSlides: {
@@ -66,14 +69,47 @@ const showClipperClaimModal = ref(false);
 const showOfficerClaimModal = ref(false);
 
 // Computed All Active & Catalog Streams
-const allActiveStreams = computed(() => streams.value);
 const totalLiveViewers = computed(() =>
     streams.value.reduce(
         (sum, s) => sum + Number(s.viewers_count ?? s.viewer_count ?? 0),
         0,
     ),
 );
-const trendingStreams = computed(() => streams.value.slice(0, 8));
+
+// Netflix-style catalog rows
+const deptOf = (s) => {
+    const d = (s?.officer?.department || s?.department || "").toUpperCase();
+    return d === "PARK RANGER" ? "SAPR" : d;
+};
+const nameOf = (s) => s.officer?.officer_name || s.officer?.streamer_name || s.officer_name || "Officer";
+const mvUrl = (ids) => `/multiview?v=${ids.filter(Boolean).join(",")}`;
+const liveByViewers = computed(() =>
+    [...streams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0)),
+);
+const deptRows = computed(() =>
+    ["LSPD", "BCSO", "SASP", "SAPR"]
+        .map((d) => ({ dept: d, items: liveByViewers.value.filter((s) => deptOf(s) === d) }))
+        .filter((r) => r.items.length),
+);
+const tacRows = computed(() => {
+    const byId = Object.fromEntries(streams.value.map((s) => [s.video_id, s]));
+    return (tacChannels.value || [])
+        .map((ch) => ({ ...ch, units: (ch.video_ids || []).map(String).map((id) => byId[id]).filter(Boolean) }))
+        .filter((ch) => ch.units.length);
+});
+// Officers with no patrol hours yet this month would only show "0 Jam".
+const top10 = computed(() =>
+    (props.monthlyLeaderboard?.all_top || []).filter((o) => Number(o.total_hours_num) > 0).slice(0, 10),
+);
+
+// Multiview tray: pick POVs from any row, then open them together.
+const tray = ref([]);
+const inTray = (id) => tray.value.some((t) => t.video_id === id);
+const toggleTray = (s) => {
+    if (inTray(s.video_id)) tray.value = tray.value.filter((t) => t.video_id !== s.video_id);
+    else if (tray.value.length < 9) tray.value = [...tray.value, s];
+};
+const detail = ref(null);
 const recentReplayStreams = computed(() => {
     const list = [...(recentReplays.value || [])];
     return list.sort((a, b) => {
@@ -211,7 +247,6 @@ const triggerManualSync = async () => {
     }
 };
 
-const playStreamInFocus = () => {};
 </script>
 
 <template>
@@ -241,6 +276,7 @@ const playStreamInFocus = () => {};
 
         <!-- Refactored Tactical Header Bar Component -->
         <TacticalDashboardHeader
+            transparent-at-top
             :is-data-saver-enabled="isDataSaverEnabled"
             :is-syncing-feeds="isSyncingFeeds"
             :is-fullscreen="isFullscreen"
@@ -253,28 +289,97 @@ const playStreamInFocus = () => {};
         <!-- Main Content Area -->
         <main class="flex-1 w-full">
             <!-- CINEMATIC HERO SLIDER CAROUSEL (Netflix Style) -->
-            <HeroCarousel :slides="effectiveHeroSlides" />
+            <div class="-mt-[57px] sm:-mt-[65px]">
+                <HeroCarousel :slides="effectiveHeroSlides" />
+            </div>
 
-            <!-- SECTION 2: Live Officers & Recent Patrol Replays Section -->
-            <section
-                id="units-grid"
-                v-reveal
-                class="w-full bg-card/40 pt-8 sm:pt-12 pb-12 sm:pb-16 scroll-mt-6 relative z-10"
-            >
-                <PageContainer>
-                    <TacticalStreamSlimles
-                        :is-syncing-feeds="isSyncingFeeds"
-                        :all-active-streams="allActiveStreams"
-                        :trending-streams="trendingStreams"
-                        :recent-replay-streams="recentReplayStreams"
-                        :tac-channels="tacChannels"
-                        :total-live-viewers="totalLiveViewers"
-                        :total-officers="allActiveStreams.length + offlineOfficers.length"
-                        @play-stream-in-focus="playStreamInFocus"
-                        @trigger-manual-sync="triggerManualSync"
+            <!-- SECTION 2: Catalog rows (Netflix-style browsing) -->
+            <div id="units-grid" class="relative z-10 scroll-mt-6 space-y-8 py-8 sm:space-y-10 sm:py-12">
+                <CatalogRow v-if="liveByViewers.length" title="Sedang live" :subtitle="`${liveByViewers.length} unit · ${totalLiveViewers} menonton`">
+                    <template #action>
+                        <Button as-child variant="link" size="sm" class="ml-auto shrink-0">
+                            <Link :href="mvUrl(liveByViewers.slice(0, 9).map((s) => s.video_id))">Tonton semua <ChevronRight /></Link>
+                        </Button>
+                    </template>
+                    <CatalogCard
+                        v-for="s in liveByViewers"
+                        :key="`live-${s.video_id}`"
+                        :stream="s"
+                        :href="mvUrl([s.video_id])"
+                        kind="live"
+                        :in-tray="inTray(s.video_id)"
+                        @toggle-tray="toggleTray"
+                        @detail="detail = $event"
                     />
-                </PageContainer>
-            </section>
+                </CatalogRow>
+
+                <CatalogRow v-for="ch in tacRows" :key="`tac-${ch.code}`" :title="`Insiden aktif · ${ch.name}`" subtitle="Satu kejadian, setiap sudut">
+                    <template #action>
+                        <Button as-child variant="link" size="sm" class="ml-auto shrink-0">
+                            <Link :href="mvUrl(ch.units.map((u) => u.video_id))">Tonton {{ ch.units.length }} POV <ChevronRight /></Link>
+                        </Button>
+                    </template>
+                    <CatalogCard
+                        v-for="s in ch.units"
+                        :key="`tac-${ch.code}-${s.video_id}`"
+                        :stream="s"
+                        :href="mvUrl(ch.units.map((u) => u.video_id))"
+                        kind="tac"
+                        :in-tray="inTray(s.video_id)"
+                        @toggle-tray="toggleTray"
+                        @detail="detail = $event"
+                    />
+                </CatalogRow>
+
+                <CatalogRow v-if="top10.length" title="Top 10 patroli bulan ini" :subtitle="monthlyLeaderboard?.period_text || ''">
+                    <a
+                        v-for="o in top10"
+                        :key="`top-${o.id}`"
+                        :href="o.youtube_url || '#leaderboard-section'"
+                        :target="o.youtube_url ? '_blank' : null"
+                        rel="noopener"
+                        class="group relative flex h-40 w-44 shrink-0 snap-start items-end rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:h-48 sm:w-52"
+                    >
+                        <span class="rank-number -mr-6 select-none text-9xl font-extrabold leading-none" aria-hidden="true">{{ o.rank }}</span>
+                        <span class="relative aspect-2/3 w-28 overflow-hidden rounded-md bg-muted motion-safe:transition-transform motion-safe:duration-300 group-hover:scale-105 sm:w-32">
+                            <img :src="o.avatar_url" :alt="o.officer_name" loading="lazy" class="size-full object-cover" />
+                            <span class="absolute inset-x-0 bottom-0 bg-linear-to-t from-background/90 to-transparent p-2">
+                                <span class="block truncate text-xs font-semibold text-foreground">{{ o.officer_name }}</span>
+                                <span class="block text-xs text-muted-foreground">{{ o.total_hours }}</span>
+                            </span>
+                            <LiveBadge v-if="o.is_live" class="absolute left-1.5 top-1.5" />
+                        </span>
+                    </a>
+                </CatalogRow>
+
+                <CatalogRow v-for="r in deptRows" :key="`dept-${r.dept}`" :title="`Patroli ${r.dept}`">
+                    <CatalogCard
+                        v-for="s in r.items"
+                        :key="`dept-${r.dept}-${s.video_id}`"
+                        :stream="s"
+                        :href="mvUrl([s.video_id])"
+                        kind="live"
+                        size="sm"
+                        :in-tray="inTray(s.video_id)"
+                        @toggle-tray="toggleTray"
+                        @detail="detail = $event"
+                    />
+                </CatalogRow>
+
+                <CatalogRow v-if="recentReplayStreams.length" title="Rekaman terbaru">
+                    <CatalogCard
+                        v-for="s in recentReplayStreams.slice(0, 15)"
+                        :key="`rep-${s.video_id}`"
+                        :stream="s"
+                        :href="mvUrl([s.video_id])"
+                        kind="replay"
+                        size="sm"
+                        :in-tray="inTray(s.video_id)"
+                        @toggle-tray="toggleTray"
+                        @detail="detail = $event"
+                    />
+                </CatalogRow>
+            </div>
 
             <!-- SECTION 3: Monthly Patrol Streaming Leaderboard Section -->
             <section
@@ -318,7 +423,37 @@ const playStreamInFocus = () => {};
             :show="showOfficerClaimModal"
             @close="showOfficerClaimModal = false"
         />
+        <OfficerDetailModal
+            :stream="detail"
+            :streams="streams"
+            :tac-channels="tacChannels"
+            :in-tray="!!detail && inTray(detail.video_id)"
+            @close="detail = null"
+            @toggle-tray="toggleTray"
+        />
+        <div
+            v-if="tray.length"
+            class="fixed inset-x-3 bottom-36 z-40 sm:bottom-20 md:inset-x-auto md:bottom-5 md:left-1/2 md:w-140 md:-translate-x-1/2"
+        >
+            <div class="flex items-center gap-3 rounded-xl border border-border bg-popover p-2 pl-4 text-popover-foreground shadow-lg">
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold">{{ tray.length }} POV dipilih</p>
+                    <p class="truncate text-xs text-muted-foreground">{{ tray.map(nameOf).join(", ") }}</p>
+                </div>
+                <Button variant="ghost" size="sm" class="shrink-0" @click="tray = []">Kosongkan</Button>
+                <Button as-child size="sm" class="shrink-0">
+                    <Link :href="mvUrl(tray.map((t) => t.video_id))"><MonitorPlay /> Buka multiview</Link>
+                </Button>
+            </div>
+        </div>
 
         <Toaster rich-colors position="top-right" />
     </div>
 </template>
+
+<style scoped>
+.rank-number {
+    color: var(--color-background);
+    -webkit-text-stroke: 3px var(--color-muted-foreground);
+}
+</style>

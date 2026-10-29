@@ -220,7 +220,7 @@ onUnmounted(() => {
 <template>
     <div
         ref="drawerWrapperRef"
-        class="hidden sm:block fixed bottom-4 right-4 z-50 font-sans selection:bg-primary selection:text-primary-foreground"
+        class="block fixed bottom-20 sm:bottom-4 right-4 z-50 font-sans selection:bg-primary selection:text-primary-foreground"
     >
         <!-- FLOATING TOGGLE BUTTON -->
         <Button

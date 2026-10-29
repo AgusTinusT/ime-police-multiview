@@ -55,6 +55,8 @@ const LAYOUT_KEY = "ime_multiview_layout";
 const POLL_MS = 60_000;
 const GAP = 6;
 const RATIO = 16 / 9;
+const THUMB_W = 260;
+const TILE_BAR = 32;
 const VIDEO_ID_RE = /^[\w-]{11}$/;
 
 // ---------------------------------------------------------------------------
@@ -67,6 +69,9 @@ const streamCache = reactive({});
 const cacheStreams = (list) =>
     list.forEach((s) => (streamCache[s.video_id] = s));
 cacheStreams(streams.value);
+// Replays opened from the dashboard (?v=) keep their title and officer label.
+cacheStreams(props.initialReplays || []);
+const replayIds = new Set((props.initialReplays || []).map((r) => r.video_id));
 
 const liveIds = computed(() => new Set(streams.value.map((s) => s.video_id)));
 const infoOf = (id) => streamCache[id] || null;
@@ -222,16 +227,51 @@ const origin = ref("");
 const embedSrc = (id) =>
     `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&playsinline=1&enablejsapi=1&rel=0&modestbranding=1&origin=${encodeURIComponent(origin.value)}`;
 
+// A player's next status reports may still describe the state before our
+// command; ignore them briefly so they don't undo our own change.
+const SYNC_GRACE_MS = 1500;
+const lastCommandAt = {};
+
 const sendCommand = (id, func, args = []) => {
     const win = iframes[id]?.contentWindow;
     if (!win) return;
+    lastCommandAt[id] = Date.now();
     win.postMessage(JSON.stringify({ event: "command", func, args }), "*");
+};
+
+// Ask the player to stream its state back (infoDelivery messages).
+const subscribePlayer = (id) => {
+    iframes[id]?.contentWindow?.postMessage(
+        JSON.stringify({ event: "listening", id, channel: "widget" }),
+        "*",
+    );
+};
+
+// Keep the single-audio rule in sync when someone uses YouTube's own mute control.
+const onPlayerMessage = (e) => {
+    if (
+        !/^https:\/\/www\.youtube(-nocookie)?\.com$/.test(e.origin) ||
+        typeof e.data !== "string"
+    )
+        return;
+    let msg;
+    try {
+        msg = JSON.parse(e.data);
+    } catch {
+        return;
+    }
+    if (msg.event !== "infoDelivery" || typeof msg.info?.muted !== "boolean") return;
+
+    const id = Object.keys(iframes).find((k) => iframes[k]?.contentWindow === e.source);
+    if (!id || Date.now() - (lastCommandAt[id] || 0) < SYNC_GRACE_MS) return;
+
+    if (!msg.info.muted && audioId.value !== id) audioId.value = id;
+    else if (msg.info.muted && audioId.value === id) audioId.value = null;
 };
 
 const applyAudio = (id) => {
     if (id === audioId.value) {
         sendCommand(id, "unMute");
-        sendCommand(id, "setVolume", [100]);
         sendCommand(id, "playVideo");
     } else {
         sendCommand(id, "mute");
@@ -239,7 +279,10 @@ const applyAudio = (id) => {
 };
 
 const onIframeLoad = (id) => {
-    setTimeout(() => applyAudio(id), 800);
+    setTimeout(() => {
+        subscribePlayer(id);
+        applyAudio(id);
+    }, 800);
     setTimeout(() => applyAudio(id), 2500);
 };
 
@@ -259,7 +302,13 @@ const muteAll = () => {
 const stageBox = ref(null);
 const stageSize = reactive({ w: 0, h: 0 });
 
-const hOf = (w) => w / RATIO;
+// Tiles narrower than THUMB_W become tap-to-focus previews; wider tiles get a
+// TILE_BAR-tall control bar under the 16:9 video, so YouTube's own controls stay uncovered.
+const hOf = (w) => w / RATIO + (w >= THUMB_W ? TILE_BAR : 0);
+const wOf = (h) => {
+    const withBar = (h - TILE_BAR) * RATIO;
+    return withBar >= THUMB_W ? withBar : Math.min(h * RATIO, THUMB_W - 1);
+};
 
 const placeRow = (rects, indices, y, tw, th, W) => {
     const rowW = indices.length * tw + (indices.length - 1) * GAP;
@@ -318,7 +367,7 @@ const computeLayout = (n, W, H, mode, fi, narrow) => {
             Math.max(W * (sc === 1 ? 0.24 : 0.34), 180),
             480,
         );
-        const mainW = Math.min(W - sideW - GAP, H * RATIO);
+        const mainW = Math.min(W - sideW - GAP, wOf(H));
         const mainH = hOf(mainW);
 
         let tw = (sideW - GAP * (sc - 1)) / sc;
@@ -326,8 +375,8 @@ const computeLayout = (n, W, H, mode, fi, narrow) => {
         const rows = Math.ceil(others.length / sc);
         let colH = rows * th + (rows - 1) * GAP;
         if (colH > H) {
-            th = (H - (rows - 1) * GAP) / rows;
-            tw = th * RATIO;
+            tw = wOf((H - (rows - 1) * GAP) / rows);
+            th = hOf(tw);
             colH = H;
         }
         const sideRealW = sc * tw + (sc - 1) * GAP;
@@ -352,7 +401,7 @@ const computeLayout = (n, W, H, mode, fi, narrow) => {
         const rows = Math.ceil(n / cols);
         const w = Math.min(
             (W - GAP * (cols - 1)) / cols,
-            ((H - GAP * (rows - 1)) / rows) * RATIO,
+            wOf((H - GAP * (rows - 1)) / rows),
         );
         if (w > best.w) best = { cols, w };
     }
@@ -387,7 +436,7 @@ const tileStyle = (i) => {
 
 const isThumb = (i) => {
     const r = layout.value.rects[i];
-    return !!r && r.w < 260;
+    return !!r && r.w < THUMB_W;
 };
 
 let resizeObserver = null;
@@ -512,6 +561,7 @@ onMounted(() => {
 
     window.addEventListener("resize", updateViewport);
     window.addEventListener("keydown", onKeydown);
+    window.addEventListener("message", onPlayerMessage);
     document.addEventListener("fullscreenchange", onFullscreenChange);
     pollTimer = setInterval(refreshStreams, POLL_MS);
 
@@ -522,6 +572,7 @@ onUnmounted(() => {
     resizeObserver?.disconnect();
     window.removeEventListener("resize", updateViewport);
     window.removeEventListener("keydown", onKeydown);
+    window.removeEventListener("message", onPlayerMessage);
     document.removeEventListener("fullscreenchange", onFullscreenChange);
     clearInterval(pollTimer);
 });
@@ -725,125 +776,105 @@ onUnmounted(() => {
                             :style="tileStyle(i)"
                         >
                             <div
-                                class="relative w-full h-full rounded-md overflow-hidden bg-card ring-2 transition-colors"
-                                :class="
-                                    audioId === id
-                                        ? 'ring-primary'
-                                        : 'ring-transparent'
-                                "
+                                class="flex size-full flex-col overflow-hidden rounded-md bg-card ring-2 transition-colors"
+                                :class="audioId === id ? 'ring-primary' : 'ring-transparent'"
                             >
-                                <iframe
-                                    :ref="(el) => el && (iframes[id] = el)"
-                                    :src="embedSrc(id)"
-                                    :title="infoOf(id)?.title || 'YouTube POV'"
-                                    class="absolute inset-0 w-full h-full"
-                                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                                    allowfullscreen
-                                    @load="onIframeLoad(id)"
-                                />
+                                <!-- The video area belongs to YouTube: nothing of ours covers a full tile. -->
+                                <div class="relative min-h-0 flex-1 bg-background">
+                                    <iframe
+                                        :ref="(el) => el && (iframes[id] = el)"
+                                        :src="embedSrc(id)"
+                                        :title="infoOf(id)?.title || 'YouTube POV'"
+                                        class="absolute inset-0 size-full"
+                                        :class="isThumb(i) ? 'pointer-events-none' : ''"
+                                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                                        allowfullscreen
+                                        @load="onIframeLoad(id)"
+                                    />
 
-                                <!-- Label -->
-                                <div
-                                    class="tile-controls absolute top-0 inset-x-0 flex items-start gap-1 p-1 bg-linear-to-b from-background/80 to-transparent pointer-events-none"
-                                >
-                                    <span
-                                        class="shrink-0 w-5 h-5 rounded-sm bg-background/70 text-xs font-mono font-bold flex items-center justify-center text-foreground/80"
-                                    >
-                                        {{ i + 1 }}
-                                    </span>
-                                    <div
-                                        class="min-w-0 flex-1 leading-tight"
-                                        :class="isThumb(i) ? 'hidden' : ''"
-                                    >
-                                        <p
-                                            class="text-xs font-bold text-foreground truncate drop-shadow-sm"
+                                    <!-- Thumbnail: too small for YouTube's controls, so it is a preview you tap to promote. -->
+                                    <template v-if="isThumb(i)">
+                                        <button
+                                            type="button"
+                                            class="absolute inset-0 flex size-full items-end bg-linear-to-t from-background/80 via-transparent to-transparent p-1.5 text-left"
+                                            :aria-label="`Tonton ${infoOf(id)?.officer?.officer_name || 'POV'} sebagai utama`"
+                                            @click="setFocus(id)"
                                         >
-                                            {{
-                                                infoOf(id)?.officer
-                                                    ?.officer_name ||
-                                                infoOf(id)?.title ||
-                                                id
-                                            }}
-                                        </p>
-                                        <div
-                                            class="flex items-center gap-1 text-xs text-foreground/80 truncate mt-0.5"
-                                        >
-                                            <DeptBadge
-                                                v-if="deptOf(infoOf(id))"
-                                                :dept="deptOf(infoOf(id))"
-                                            />
-                                            <span class="font-mono">{{
-                                                infoOf(id)?.officer?.callsign
-                                            }}</span>
-                                            <Badge
-                                                v-if="!liveIds.has(id)"
-                                                variant="secondary"
-                                                class="px-1 py-0 text-xs font-bold"
+                                            <span class="flex min-w-0 items-center gap-1 text-xs font-bold text-foreground">
+                                                <span class="flex size-4 shrink-0 items-center justify-center rounded-sm bg-background/70 font-mono">{{ i + 1 }}</span>
+                                                <span class="truncate">{{ infoOf(id)?.officer?.officer_name || infoOf(id)?.title || id }}</span>
+                                            </span>
+                                        </button>
+                                        <div class="absolute right-1 top-1 flex gap-1">
+                                            <button
+                                                type="button"
+                                                class="tile-btn"
+                                                :class="audioId === id ? 'bg-primary!' : ''"
+                                                :aria-label="audioId === id ? 'Bisukan' : 'Dengarkan POV ini'"
+                                                @click="toggleAudio(id)"
                                             >
-                                                OFFLINE
-                                            </Badge>
+                                                <Volume2 v-if="audioId === id" class="size-3.5" />
+                                                <VolumeX v-else class="size-3.5" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="tile-btn hover:bg-destructive!"
+                                                aria-label="Tutup POV"
+                                                @click="removeStream(id)"
+                                            >
+                                                <X class="size-3.5" />
+                                            </button>
                                         </div>
+                                    </template>
+                                </div>
+
+                                <!-- Full tile: our controls live in their own bar below the video. -->
+                                <div
+                                    v-if="!isThumb(i)"
+                                    class="flex shrink-0 items-center gap-1.5 border-t border-border px-1.5"
+                                    :style="{ height: `${TILE_BAR}px` }"
+                                >
+                                    <span class="flex size-5 shrink-0 items-center justify-center rounded-sm bg-muted font-mono text-xs font-bold text-muted-foreground">{{ i + 1 }}</span>
+                                    <DeptBadge v-if="deptOf(infoOf(id))" :dept="deptOf(infoOf(id))" class="shrink-0" />
+                                    <span class="min-w-0 truncate text-xs font-semibold text-foreground">
+                                        {{ infoOf(id)?.officer?.officer_name || infoOf(id)?.title || id }}
+                                    </span>
+                                    <span class="hidden shrink-0 font-mono text-xs text-muted-foreground sm:inline">{{ infoOf(id)?.officer?.callsign }}</span>
+                                    <Badge v-if="!liveIds.has(id)" variant="secondary" class="shrink-0">
+                                        {{ replayIds.has(id) ? "REKAMAN" : "OFFLINE" }}
+                                    </Badge>
+
+                                    <div class="ml-auto flex shrink-0 items-center gap-0.5">
+                                        <Button
+                                            size="icon-xs"
+                                            :variant="audioId === id ? 'default' : 'ghost'"
+                                            :aria-label="audioId === id ? 'Bisukan' : 'Dengarkan POV ini'"
+                                            :aria-pressed="audioId === id"
+                                            @click="toggleAudio(id)"
+                                        >
+                                            <Volume2 v-if="audioId === id" />
+                                            <VolumeX v-else />
+                                        </Button>
+                                        <Button
+                                            v-if="layoutMode !== 'focus' || focusId !== id"
+                                            size="icon-xs"
+                                            variant="ghost"
+                                            aria-label="Jadikan utama"
+                                            @click="setFocus(id)"
+                                        >
+                                            <Maximize />
+                                        </Button>
+                                        <Button
+                                            size="icon-xs"
+                                            variant="ghost"
+                                            class="hover:bg-destructive hover:text-foreground"
+                                            aria-label="Tutup POV"
+                                            @click="removeStream(id)"
+                                        >
+                                            <X />
+                                        </Button>
                                     </div>
                                 </div>
-
-                                <!-- Actions -->
-                                <div
-                                    class="tile-controls absolute top-1 right-1 flex gap-1"
-                                >
-                                    <button
-                                        v-if="
-                                            layoutMode !== 'focus' ||
-                                            focusId !== id
-                                        "
-                                        type="button"
-                                        class="tile-btn"
-                                        aria-label="Jadikan utama"
-                                        title="Jadikan utama"
-                                        @click="setFocus(id)"
-                                    >
-                                        <Maximize class="size-3.5" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="tile-btn hover:bg-destructive!"
-                                        aria-label="Tutup POV"
-                                        title="Tutup POV"
-                                        @click="removeStream(id)"
-                                    >
-                                        <X class="size-3.5" />
-                                    </button>
-                                </div>
-
-                                <!-- Audio toggle -->
-                                <button
-                                    type="button"
-                                    class="absolute right-1.5 tile-btn w-8! h-8!"
-                                    :class="[
-                                        isThumb(i)
-                                            ? 'bottom-1.5'
-                                            : 'bottom-10',
-                                        audioId === id
-                                            ? 'bg-primary! opacity-100!'
-                                            : 'tile-controls',
-                                    ]"
-                                    :aria-label="
-                                        audioId === id
-                                            ? 'Bisukan'
-                                            : 'Dengarkan POV ini'
-                                    "
-                                    :title="
-                                        audioId === id
-                                            ? 'Bisukan'
-                                            : 'Dengarkan POV ini'
-                                    "
-                                    @click="toggleAudio(id)"
-                                >
-                                    <Volume2
-                                        v-if="audioId === id"
-                                        class="size-4"
-                                    />
-                                    <VolumeX v-else class="size-4" />
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -1145,16 +1176,6 @@ onUnmounted(() => {
 }
 .tile-btn:hover {
     background: var(--primary);
-}
-
-@media (hover: hover) {
-    .tile-controls {
-        opacity: 0;
-        transition: opacity 0.15s;
-    }
-    .group:hover .tile-controls {
-        opacity: 1;
-    }
 }
 
 .float-btn {

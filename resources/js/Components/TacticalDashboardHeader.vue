@@ -8,7 +8,12 @@ import { cn } from "@/lib/utils";
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 
-defineProps({
+const props = defineProps({
+    // Dashboard billboard: blend the header into the hero until the user scrolls.
+    transparentAtTop: {
+        type: Boolean,
+        default: false,
+    },
     isDataSaverEnabled: {
         type: Boolean,
         default: false,
@@ -61,14 +66,24 @@ const handleResize = () => {
     }
 };
 
+const isScrolled = ref(false);
+const handleScroll = () => {
+    isScrolled.value = window.scrollY > 40;
+};
+
 onMounted(() => {
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("resize", handleResize);
+    if (props.transparentAtTop) {
+        handleScroll();
+        window.addEventListener("scroll", handleScroll, { passive: true });
+    }
 });
 
 onUnmounted(() => {
     window.removeEventListener("keydown", handleKeyDown);
     window.removeEventListener("resize", handleResize);
+    window.removeEventListener("scroll", handleScroll);
     document.body.style.overflow = "";
 });
 </script>
@@ -76,7 +91,10 @@ onUnmounted(() => {
 <template>
     <!-- 1. TOP HEADER (DESKTOP FULL & MOBILE COMPACT) -->
     <header
-        class="bg-background/90 backdrop-blur-md border-b border-border px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 sticky top-0 z-40"
+        class="border-b px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 sticky top-0 z-40 transition-colors duration-300"
+        :class="transparentAtTop && !isScrolled
+            ? 'bg-gradient-to-b from-black/80 to-transparent border-transparent'
+            : 'bg-background/90 backdrop-blur-md border-border'"
     >
         <div
             class="max-w-(--breakpoint-2xl) mx-auto w-full flex items-center justify-between gap-2"
