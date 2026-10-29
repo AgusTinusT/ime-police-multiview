@@ -8,6 +8,7 @@ import OfficerClaimsTab from "@/Components/Admin/OfficerClaimsTab.vue";
 import BioModerationTab from "@/Components/Admin/BioModerationTab.vue";
 import AdminChangeRequestsTab from "@/Components/Admin/AdminChangeRequestsTab.vue";
 import HeroSlidesTab from "@/Components/Admin/HeroSlidesTab.vue";
+import SquadsTab from "@/Components/Admin/SquadsTab.vue";
 import OfficerBindingModal from "@/Components/Admin/OfficerBindingModal.vue";
 import OfficerDetailSheet from "@/Components/Admin/OfficerDetailSheet.vue";
 import {
@@ -503,6 +504,7 @@ const VALID_TABS = [
     "moderation",
     "requests",
     "hero",
+    "squads",
 ];
 
 const getTabFromUrl = () => {
@@ -2310,6 +2312,11 @@ onUnmounted(() => {
             <!-- TAB 9: HERO SLIDES (HS-02) -->
             <div v-if="activeTab === 'hero'">
                 <HeroSlidesTab @toast="showToast" />
+            </div>
+
+            <!-- TAB 10: SQUADS (SQ-03) -->
+            <div v-if="activeTab === 'squads'">
+                <SquadsTab @toast="showToast" />
             </div>
         </PageContainer>
 

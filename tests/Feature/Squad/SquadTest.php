@@ -467,4 +467,52 @@ class SquadTest extends TestCase
             ->assertOk()->assertJsonPath("data.0.is_owner", false)
             ->assertJsonMissingPath("data.0._owner_id");
     }
+
+    public function test_admin_can_list_squads_with_search_and_pagination_and_non_admin_forbidden(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $viewer = User::factory()->create(['role' => 'viewer']);
+        $officer = $this->createOfficer('Officer Squad', 'SQ-1');
+
+        $publicSquad1 = Squad::create([
+            'user_id' => $admin->id,
+            'name' => 'SWAT Public',
+            'slug' => 'swat-public-1',
+            'visibility' => 'public',
+        ]);
+        $publicSquad1->officers()->attach([$officer->id => ['position' => 0]]);
+
+        $publicSquad2 = Squad::create([
+            'user_id' => $admin->id,
+            'name' => 'Traffic Control',
+            'slug' => 'traffic-control-2',
+            'visibility' => 'public',
+            'is_hidden' => true,
+        ]);
+        $publicSquad2->officers()->attach([$officer->id => ['position' => 0]]);
+
+        $privateSquad = Squad::create([
+            'user_id' => $admin->id,
+            'name' => 'Private Secret',
+            'slug' => 'private-secret-3',
+            'visibility' => 'private',
+        ]);
+        $privateSquad->officers()->attach([$officer->id => ['position' => 0]]);
+
+        // Non-admin forbidden
+        $this->actingAs($viewer)->getJson('/api/v1/admin/squads')
+            ->assertForbidden();
+
+        // Admin success: lists public squads including hidden, but excludes private
+        $res = $this->actingAs($admin)->getJson('/api/v1/admin/squads');
+        $res->assertOk();
+        $res->assertJsonPath('status', 'success');
+        $this->assertCount(2, $res->json('data'));
+
+        // Search filtering
+        $searchRes = $this->actingAs($admin)->getJson('/api/v1/admin/squads?search=traffic');
+        $searchRes->assertOk();
+        $this->assertCount(1, $searchRes->json('data'));
+        $this->assertSame('Traffic Control', $searchRes->json('data.0.name'));
+    }
 }

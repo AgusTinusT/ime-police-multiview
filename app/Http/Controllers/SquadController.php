@@ -287,6 +287,49 @@ class SquadController extends Controller
     }
 
     /**
+     * Admin public squads listing (with search & pagination).
+     */
+    public function adminIndex(Request $request): JsonResponse
+    {
+        $query = Squad::where('visibility', 'public')
+            ->with(['user', 'officers']);
+
+        if ($request->filled('search')) {
+            $search = strtolower($request->search);
+            $query->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
+        }
+
+        $squads = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        $items = collect($squads->items())->map(function (Squad $squad) {
+            return [
+                'id' => $squad->id,
+                'name' => $squad->name,
+                'slug' => $squad->slug,
+                'description' => $squad->description,
+                'visibility' => $squad->visibility,
+                'owner_name' => $squad->user?->name ?? 'Anonim',
+                'forks_count' => $squad->forks_count,
+                'is_hidden' => $squad->is_hidden,
+                'officers_count' => $squad->officers->count(),
+                'created_at' => $squad->created_at?->toISOString(),
+                'updated_at' => $squad->updated_at?->toISOString(),
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $items,
+            'pagination' => [
+                'current_page' => $squads->currentPage(),
+                'last_page' => $squads->lastPage(),
+                'per_page' => $squads->perPage(),
+                'total' => $squads->total(),
+            ],
+        ]);
+    }
+
+    /**
      * Admin toggle hide for public squad.
      */
     public function toggleHide(Request $request, Squad $squad): JsonResponse

@@ -341,6 +341,7 @@ Route::prefix('api/v1/squads')->group(function () {
 });
 
 Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/squads')->group(function () {
+    Route::get('/', [SquadController::class, 'adminIndex'])->name('admin.squads.index');
     Route::patch('/{squad}/hide', [SquadController::class, 'toggleHide'])->name('admin.squads.hide');
 });
 
