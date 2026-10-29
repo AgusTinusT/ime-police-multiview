@@ -2,6 +2,52 @@
 import { ref, computed } from "vue";
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import axios from "axios";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/Components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from "@/Components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Switch } from "@/Components/ui/switch";
+import { Textarea } from "@/Components/ui/textarea";
+import {
+    OfficerAvatar,
+    StatTile,
+    EmptyState,
+} from "@/Components/tactical";
+import {
+    ArrowLeft,
+    ArrowUp,
+    ArrowDown,
+    Check,
+    Copy,
+    ExternalLink,
+    Pencil,
+    Plus,
+    RefreshCw,
+    ShieldAlert,
+    ShieldCheck,
+    Trash2,
+    AlertTriangle,
+} from "@lucide/vue";
 
 const props = defineProps({
     officer: {
@@ -75,6 +121,7 @@ const localLinks = ref([...(props.profile.links || [])]);
 // Link Modal Form State
 const isModalOpen = ref(false);
 const editingLinkId = ref(null);
+const linkToDelete = ref(null);
 const linkForm = ref({
     title: "",
     subtitle: "",
@@ -181,9 +228,15 @@ const toggleLink = async (link) => {
     }
 };
 
-// Delete link
-const deleteLink = async (link) => {
-    if (!confirm(`Hapus tautan '${link.title}' secara permanen?`)) return;
+// Delete link via AlertDialog
+const promptDeleteLink = (link) => {
+    linkToDelete.value = link;
+};
+
+const confirmDeleteLink = async () => {
+    const link = linkToDelete.value;
+    if (!link) return;
+    linkToDelete.value = null;
 
     try {
         const res = await axios.delete(`/api/v1/officer/bio-links/${link.id}`);
@@ -273,198 +326,213 @@ const domainHint = computed(() => {
 <template>
     <Head title="Kelola Tactical Bio-Link — Police Duty" />
 
-    <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-black">
-        
+    <div class="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground">
         <!-- TOP HEADER BAR -->
-        <header class="border-b border-white/10 bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 py-3 flex items-center justify-between">
+        <header class="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 py-3 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <Link
-                    href="/"
-                    class="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-mono font-bold text-xs uppercase"
-                >
-                    <span>← SASP Command</span>
-                </Link>
-                <span class="text-slate-600 font-mono">/</span>
-                <span class="text-xs font-mono font-black uppercase text-white tracking-wider">
+                <Button as-child variant="ghost" size="sm" class="font-mono font-bold text-xs uppercase text-primary">
+                    <Link href="/" class="flex items-center gap-1.5">
+                        <ArrowLeft class="w-4 h-4" />
+                        <span>SASP Command</span>
+                    </Link>
+                </Button>
+                <span class="text-muted-foreground font-mono">/</span>
+                <span class="text-xs font-mono font-bold uppercase text-foreground tracking-wider">
                     Tactical Bio-Link Hub
                 </span>
             </div>
 
             <!-- Officer Profile Seal -->
             <div class="flex items-center gap-3">
-                <div class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-800 border border-slate-700 font-mono text-xs">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span class="font-bold text-slate-200">{{ officer.officer_name }}</span>
-                    <span class="text-slate-400">#{{ officer.callsign }}</span>
+                <div class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-muted border border-border font-mono text-xs">
+                    <span class="w-2 h-2 rounded-full bg-success"></span>
+                    <span class="font-bold text-foreground">{{ officer.officer_name }}</span>
+                    <span class="text-muted-foreground">#{{ officer.callsign }}</span>
                 </div>
 
-                <a
-                    :href="`/@${profile.slug}`"
-                    target="_blank"
-                    class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-black font-mono font-black text-xs uppercase tracking-wider transition shadow-md flex items-center gap-1.5"
-                >
-                    <span>Buka Bio</span>
-                    <span>↗</span>
-                </a>
+                <Button as-child size="sm" class="font-mono font-bold text-xs uppercase tracking-wider">
+                    <a
+                        :href="`/@${profile.slug}`"
+                        target="_blank"
+                        class="flex items-center gap-1.5"
+                    >
+                        <span>Buka Bio</span>
+                        <ExternalLink class="w-3.5 h-3.5" />
+                    </a>
+                </Button>
             </div>
         </header>
 
         <!-- MAIN CONTENT WORKSPACE -->
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
             <!-- LEFT COLUMN: CONTROLS & TABS (7 cols) -->
             <div class="lg:col-span-7 flex flex-col gap-6">
-
                 <!-- STATUS NOTIFICATION BANNERS -->
-                <div v-if="statusMessage" class="p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 text-xs font-mono flex items-center gap-2 shadow-lg">
-                    <span>✓</span>
-                    <span>{{ statusMessage }}</span>
-                </div>
-                <div v-if="errorMessage" class="p-3.5 rounded-xl bg-red-950/80 border border-red-500/60 text-red-300 text-xs font-mono flex items-center gap-2 shadow-lg">
-                    <span>⚠️</span>
-                    <span>{{ errorMessage }}</span>
-                </div>
+                <Alert v-if="statusMessage" class="p-3.5 border-success/40 bg-success/10 text-success text-xs font-mono flex items-center gap-2">
+                    <Check class="w-4 h-4 shrink-0" />
+                    <AlertDescription>{{ statusMessage }}</AlertDescription>
+                </Alert>
+                <Alert v-if="errorMessage" variant="destructive" class="p-3.5 text-xs font-mono flex items-center gap-2">
+                    <AlertTriangle class="w-4 h-4 shrink-0" />
+                    <AlertDescription>{{ errorMessage }}</AlertDescription>
+                </Alert>
 
                 <!-- SUSPENSION LOCKDOWN BANNER -->
-                <div
+                <Alert
                     v-if="profile.is_suspended"
-                    class="p-4 rounded-2xl bg-amber-950/50 border-2 border-amber-500/60 text-amber-200 text-xs shadow-xl flex items-start gap-3"
+                    class="p-4 rounded-2xl bg-warning/15 border-2 border-warning/60 text-warning text-xs shadow-xl flex items-start gap-3"
                 >
-                    <span class="text-2xl shrink-0">⚠️</span>
+                    <AlertTriangle class="w-5 h-5 shrink-0 mt-0.5" />
                     <div class="space-y-1">
-                        <h4 class="font-bold font-mono uppercase text-amber-300 text-sm">
+                        <AlertTitle class="font-bold font-mono uppercase text-warning text-sm">
                             HALAMAN BIO-LINK DINONAKTIFKAN SEMENTARA (SUSPENDED)
-                        </h4>
-                        <p class="leading-relaxed">
+                        </AlertTitle>
+                        <AlertDescription class="leading-relaxed text-foreground">
                             Alasan: <strong>{{ profile.suspension_reason || "Sedang dalam peninjauan moderasi Komando SASP." }}</strong>
-                        </p>
-                        <p class="text-[11px] text-amber-400/80">
+                        </AlertDescription>
+                        <p class="text-xs text-warning/90">
                             Dasbor saat ini dalam mode read-only. Penambahan dan pengeditan tautan dikunci sampai pembekuan dicabut.
                         </p>
                     </div>
-                </div>
+                </Alert>
 
                 <!-- HERO SUMMARY CARD -->
-                <div class="p-5 rounded-2xl bg-slate-900/90 border border-white/10 shadow-xl flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
+                <Card class="p-5 rounded-2xl bg-card border-border shadow-xl flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
                     <div class="flex items-center gap-4">
-                        <img
+                        <OfficerAvatar
                             :src="officer.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=officer'"
-                            class="w-16 h-16 rounded-2xl bg-slate-950 border border-slate-700 object-cover shrink-0"
-                            alt=""
+                            :name="officer.officer_name"
+                            :department="officer.department"
+                            size="lg"
                         />
                         <div class="text-left">
                             <div class="flex items-center gap-2 flex-wrap">
-                                <h2 class="text-base font-black font-mono uppercase text-white">
+                                <h2 class="text-base font-bold font-mono uppercase text-foreground">
                                     {{ officer.officer_name }}
                                 </h2>
-                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-black font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/40">
+                                <Badge variant="info" class="font-mono text-xs font-bold uppercase">
                                     VERIFIED
-                                </span>
+                                </Badge>
                             </div>
-                            <p class="text-xs text-slate-400 font-mono mt-0.5">
+                            <p class="text-xs text-muted-foreground font-mono mt-0.5">
                                 {{ officer.department }} • {{ officer.rank }} • Callsign #{{ officer.callsign }}
                             </p>
                             <div class="mt-2 flex items-center gap-2">
-                                <code class="px-2 py-1 rounded-sm bg-slate-950 border border-white/10 text-cyan-300 font-mono text-[11px] select-all">
+                                <code class="px-2 py-1 rounded-sm bg-muted border border-border text-primary font-mono text-xs select-all">
                                     /@{{ profile.slug }}
                                 </code>
-                                <button
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
                                     @click="copyPublicUrl"
-                                    class="px-2 py-1 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono transition"
+                                    class="h-7 text-xs font-mono"
                                 >
-                                    {{ copied ? "✓ Tersalin" : "Salin URL" }}
-                                </button>
+                                    <Check v-if="copied" class="w-3.5 h-3.5 mr-1 text-success" />
+                                    <Copy v-else class="w-3.5 h-3.5 mr-1" />
+                                    {{ copied ? "Tersalin" : "Salin URL" }}
+                                </Button>
                             </div>
                         </div>
                     </div>
 
                     <!-- STATS BADGES -->
                     <div class="grid grid-cols-2 gap-2 text-center w-full sm:w-auto">
-                        <div class="p-2.5 rounded-xl bg-slate-950 border border-white/5">
-                            <div class="text-xs text-slate-400 font-mono uppercase text-[10px]">Tayangan</div>
-                            <div class="text-lg font-black font-mono text-cyan-400">{{ stats.total_views }}</div>
-                        </div>
-                        <div class="p-2.5 rounded-xl bg-slate-950 border border-white/5">
-                            <div class="text-xs text-slate-400 font-mono uppercase text-[10px]">Klik Tautan</div>
-                            <div class="text-lg font-black font-mono text-emerald-400">{{ stats.total_clicks }}</div>
-                        </div>
+                        <StatTile
+                            label="Tayangan"
+                            :value="stats.total_views"
+                        />
+                        <StatTile
+                            label="Klik Tautan"
+                            :value="stats.total_clicks"
+                        />
                     </div>
-                </div>
+                </Card>
 
                 <!-- NAVIGATION TABS -->
-                <div class="flex items-center gap-2 border-b border-white/10 pb-2 font-mono text-xs font-bold">
-                    <button
+                <div class="flex items-center gap-2 border-b border-border pb-2 font-mono text-xs font-bold">
+                    <Button
+                        :variant="activeTab === 'links' ? 'default' : 'ghost'"
+                        size="sm"
                         @click="onTabChange('links')"
-                        class="px-4 py-2 rounded-xl transition flex items-center gap-2"
-                        :class="activeTab === 'links' ? 'bg-cyan-600 text-black shadow-md' : 'text-slate-400 hover:text-white bg-slate-900/60'"
+                        class="rounded-xl flex items-center gap-2"
                     >
                         <span>🔗 Daftar Tautan</span>
-                        <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="activeTab === 'links' ? 'bg-black/30 text-black' : 'bg-slate-800 text-slate-300'">
+                        <Badge :variant="activeTab === 'links' ? 'secondary' : 'outline'" class="text-xs">
                             {{ localLinks.length }}
-                        </span>
-                    </button>
+                        </Badge>
+                    </Button>
 
-                    <button
+                    <Button
+                        :variant="activeTab === 'appearance' ? 'default' : 'ghost'"
+                        size="sm"
                         @click="onTabChange('appearance')"
-                        class="px-4 py-2 rounded-xl transition flex items-center gap-2"
-                        :class="activeTab === 'appearance' ? 'bg-cyan-600 text-black shadow-md' : 'text-slate-400 hover:text-white bg-slate-900/60'"
+                        class="rounded-xl flex items-center gap-2"
                     >
                         <span>🎨 Tampilan & Tema</span>
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
+                        :variant="activeTab === 'history' ? 'default' : 'ghost'"
+                        size="sm"
                         @click="onTabChange('history')"
-                        class="px-4 py-2 rounded-xl transition flex items-center gap-2"
-                        :class="activeTab === 'history' ? 'bg-cyan-600 text-black shadow-md' : 'text-slate-400 hover:text-white bg-slate-900/60'"
+                        class="rounded-xl flex items-center gap-2"
                     >
                         <span>📜 Riwayat Audit</span>
-                    </button>
+                    </Button>
                 </div>
 
                 <!-- TAB 1: LINKS MANAGEMENT -->
                 <div v-show="activeTab === 'links'" class="space-y-4">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-mono uppercase text-slate-400">
+                        <span class="text-xs font-mono uppercase text-muted-foreground">
                             Kelola Tautan (Maks. 30)
                         </span>
-                        <button
+                        <Button
                             v-if="!profile.is_suspended"
+                            size="sm"
                             @click="openAddModal"
-                            class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-black font-mono font-bold text-xs uppercase tracking-wider transition shadow-md flex items-center gap-1.5"
+                            class="font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-1.5"
                         >
-                            <span>+ Tambah Tautan</span>
-                        </button>
+                            <Plus class="w-4 h-4" />
+                            <span>Tambah Tautan</span>
+                        </Button>
                     </div>
 
                     <!-- LINKS LIST -->
                     <div v-if="localLinks.length > 0" class="space-y-2.5">
-                        <div
+                        <Card
                             v-for="(link, idx) in localLinks"
                             :key="link.id"
-                            class="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10 hover:border-slate-700 transition flex items-center justify-between gap-3 shadow-md"
+                            class="p-3.5 rounded-2xl bg-card border-border hover:border-primary/40 transition flex items-center justify-between gap-3 shadow-md"
                             :class="{ 'opacity-60': !link.is_active }"
                         >
                             <div class="flex items-center gap-3 min-w-0">
                                 <!-- Reorder Buttons -->
                                 <div class="flex flex-col gap-0.5 shrink-0">
-                                    <button
+                                    <Button
+                                        variant="outline"
+                                        size="icon-sm"
+                                        aria-label="Naikkan urutan tautan"
                                         @click="moveLink(idx, -1)"
                                         :disabled="idx === 0 || profile.is_suspended"
-                                        class="w-6 h-5 rounded-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-[10px] text-slate-300 flex items-center justify-center transition"
+                                        class="w-6 h-5 rounded-sm p-0"
                                     >
-                                        ▲
-                                    </button>
-                                    <button
+                                        <ArrowUp class="w-3 h-3" />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="icon-sm"
+                                        aria-label="Turunkan urutan tautan"
                                         @click="moveLink(idx, 1)"
                                         :disabled="idx === localLinks.length - 1 || profile.is_suspended"
-                                        class="w-6 h-5 rounded-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-[10px] text-slate-300 flex items-center justify-center transition"
+                                        class="w-6 h-5 rounded-sm p-0"
                                     >
-                                        ▼
-                                    </button>
+                                        <ArrowDown class="w-3 h-3" />
+                                    </Button>
                                 </div>
 
                                 <!-- Icon & Type -->
-                                <div class="w-9 h-9 rounded-xl bg-slate-950 border border-white/10 flex items-center justify-center text-base shrink-0">
+                                <div class="w-9 h-9 rounded-xl bg-muted border border-border flex items-center justify-center text-base shrink-0">
                                     <span v-if="link.link_type === 'donation'">🪙</span>
                                     <span v-else-if="link.link_type === 'officer_recommendation'">🚓</span>
                                     <span v-else-if="link.link_type === 'discord'">💬</span>
@@ -475,17 +543,17 @@ const domainHint = computed(() => {
                                 <!-- Details -->
                                 <div class="min-w-0 text-left">
                                     <div class="flex items-center gap-2">
-                                        <h4 class="text-xs font-black font-mono text-white truncate">
+                                        <h4 class="text-xs font-bold font-mono text-foreground truncate">
                                             {{ link.title }}
                                         </h4>
-                                        <span
-                                            class="px-1.5 py-0.2 rounded-sm text-[8px] font-mono font-bold uppercase"
-                                            :class="link.link_type === 'donation' ? 'bg-amber-950 text-amber-300 border border-amber-500/30' : 'bg-slate-800 text-slate-300'"
+                                        <Badge
+                                            :variant="link.link_type === 'donation' ? 'warning' : 'secondary'"
+                                            class="text-xs font-mono font-bold uppercase"
                                         >
                                             {{ link.link_type }}
-                                        </span>
+                                        </Badge>
                                     </div>
-                                    <p class="text-[11px] text-slate-400 font-mono truncate mt-0.5">
+                                    <p class="text-xs text-muted-foreground font-mono truncate mt-0.5">
                                         {{ link.subtitle || link.url || 'Rekan patroli' }}
                                     </p>
                                 </div>
@@ -494,96 +562,104 @@ const domainHint = computed(() => {
                             <!-- Actions -->
                             <div class="flex items-center gap-2 shrink-0">
                                 <!-- Active Toggle -->
-                                <button
+                                <Button
+                                    :variant="link.is_active ? 'outline' : 'secondary'"
+                                    size="sm"
                                     @click="toggleLink(link)"
                                     :disabled="profile.is_suspended"
-                                    class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition"
-                                    :class="link.is_active ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'"
+                                    class="text-xs font-mono font-bold"
+                                    :class="link.is_active ? 'border-success/40 text-success bg-success/10' : 'text-muted-foreground'"
                                     :title="link.is_active ? 'Tautan Aktif' : 'Tautan Disembunyikan'"
                                 >
                                     {{ link.is_active ? "Aktif" : "Mati" }}
-                                </button>
+                                </Button>
 
-                                <button
+                                <Button
                                     v-if="!profile.is_suspended"
+                                    variant="outline"
+                                    size="icon-sm"
+                                    aria-label="Edit tautan"
                                     @click="openEditModal(link)"
-                                    class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs transition"
                                     title="Edit Tautan"
                                 >
-                                    ✏️
-                                </button>
+                                    <Pencil class="w-3.5 h-3.5" />
+                                </Button>
 
-                                <button
+                                <Button
                                     v-if="!profile.is_suspended"
-                                    @click="deleteLink(link)"
-                                    class="w-7 h-7 rounded-lg bg-red-950/60 hover:bg-red-900 text-red-300 flex items-center justify-center text-xs transition"
+                                    variant="destructive"
+                                    size="icon-sm"
+                                    aria-label="Hapus tautan"
+                                    @click="promptDeleteLink(link)"
                                     title="Hapus Tautan"
                                 >
-                                    🗑️
-                                </button>
+                                    <Trash2 class="w-3.5 h-3.5" />
+                                </Button>
                             </div>
-                        </div>
+                        </Card>
                     </div>
 
-                    <div v-else class="py-12 text-center text-slate-500 font-mono text-xs border border-dashed border-slate-800 rounded-2xl">
-                        Belum ada tautan. Klik "+ Tambah Tautan" untuk menambahkan Saweria, Discord, atau rekan patroli.
-                    </div>
+                    <EmptyState
+                        v-else
+                        title="Belum Ada Tautan"
+                        description="Klik '+ Tambah Tautan' untuk menambahkan Saweria, Discord, atau rekan patroli."
+                    />
                 </div>
 
                 <!-- TAB 2: APPEARANCE & THEME CONFIG -->
-                <div v-show="activeTab === 'appearance'" class="space-y-5 p-5 rounded-2xl bg-slate-900/80 border border-white/10">
-                    <h3 class="text-sm font-black font-mono uppercase text-white">
+                <Card v-show="activeTab === 'appearance'" class="space-y-5 p-5 rounded-2xl bg-card border-border">
+                    <h3 class="text-sm font-bold font-mono uppercase text-foreground">
                         Kustomisasi Tampilan Bio-Link
                     </h3>
 
                     <!-- Display Title -->
                     <div class="space-y-1.5 text-left">
-                        <label class="block text-xs font-mono text-slate-300 uppercase">Judul Profil / Display Name</label>
-                        <input
+                        <Label class="text-xs font-mono text-muted-foreground uppercase">Judul Profil / Display Name</Label>
+                        <Input
                             v-model="appearanceForm.display_title"
                             type="text"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
+                            class="text-xs font-mono"
                             placeholder="Contoh: Ofc. John Doe"
                         />
                     </div>
 
                     <!-- Tagline -->
                     <div class="space-y-1.5 text-left">
-                        <label class="block text-xs font-mono text-slate-300 uppercase">Bio Tagline / Pesan Singkat (Maks. 255)</label>
-                        <textarea
+                        <Label class="text-xs font-mono text-muted-foreground uppercase">Bio Tagline / Pesan Singkat (Maks. 255)</Label>
+                        <Textarea
                             v-model="appearanceForm.bio_tagline"
                             rows="2"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-sans text-white focus:border-cyan-500 outline-hidden resize-none"
+                            class="text-xs font-sans resize-none"
                             placeholder="Tuliskan motto patroli atau info jadwal streaming Anda..."
-                        ></textarea>
+                        />
                     </div>
 
                     <!-- Theme Presets Grid -->
                     <div class="space-y-2 text-left">
-                        <label class="block text-xs font-mono text-slate-300 uppercase">Preset Tema Departemen</label>
+                        <Label class="text-xs font-mono text-muted-foreground uppercase">Preset Tema Departemen</Label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             <div
                                 v-for="(theme, key) in themes"
                                 :key="key"
                                 @click="appearanceForm.theme_preset = key; appearanceForm.accent_color = theme.accent"
                                 class="p-3 rounded-xl border cursor-pointer transition relative"
-                                :class="appearanceForm.theme_preset === key ? 'border-cyan-400 bg-cyan-950/20 ring-1 ring-cyan-500/50' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'"
+                                :class="appearanceForm.theme_preset === key ? 'border-primary bg-primary/10 ring-1 ring-primary/50' : 'border-border bg-muted/40 hover:border-primary/40'"
                             >
                                 <div class="flex items-center justify-between mb-1">
-                                    <span class="text-xs font-bold font-mono text-white">{{ theme.name }}</span>
+                                    <span class="text-xs font-bold font-mono text-foreground">{{ theme.name }}</span>
                                     <span class="w-3 h-3 rounded-full" :style="{ backgroundColor: theme.accent }"></span>
                                 </div>
-                                <p class="text-[10px] text-slate-400 leading-snug">{{ theme.description }}</p>
+                                <p class="text-xs text-muted-foreground leading-snug">{{ theme.description }}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Button Style -->
                     <div class="space-y-1.5 text-left">
-                        <label class="block text-xs font-mono text-slate-300 uppercase">Gaya Tombol (Button Style)</label>
+                        <Label class="text-xs font-mono text-muted-foreground uppercase">Gaya Tombol (Button Style)</Label>
                         <select
                             v-model="appearanceForm.button_style"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
+                            class="w-full px-3 py-2 rounded-xl bg-background border border-input text-xs font-mono text-foreground focus:border-primary outline-hidden"
                         >
                             <option v-for="style in buttonStyles" :key="style" :value="style">
                                 {{ style.replace('_', ' ').toUpperCase() }}
@@ -593,92 +669,95 @@ const domainHint = computed(() => {
 
                     <!-- Accent Color Picker -->
                     <div class="space-y-1.5 text-left">
-                        <label class="block text-xs font-mono text-slate-300 uppercase">Warna Aksen Taktis (Hex)</label>
+                        <Label class="text-xs font-mono text-muted-foreground uppercase">Warna Aksen Taktis (Hex)</Label>
                         <div class="flex items-center gap-3">
                             <input
                                 v-model="appearanceForm.accent_color"
                                 type="color"
                                 class="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0"
                             />
-                            <input
+                            <Input
                                 v-model="appearanceForm.accent_color"
                                 type="text"
-                                class="w-36 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white uppercase focus:border-cyan-500 outline-hidden"
+                                class="w-36 text-xs font-mono uppercase"
                             />
                         </div>
                     </div>
 
                     <!-- Live Stream Banner Toggle -->
-                    <div class="flex items-center justify-between pt-2 border-t border-white/5">
+                    <div class="flex items-center justify-between pt-2 border-t border-border">
                         <div>
-                            <div class="text-xs font-bold font-mono text-white">Tampilkan Banner Patroli Live</div>
-                            <div class="text-[11px] text-slate-400">Muncul otomatis ketika siaran YouTube Anda sedang aktif.</div>
+                            <div class="text-xs font-bold font-mono text-foreground">Tampilkan Banner Patroli Live</div>
+                            <div class="text-xs text-muted-foreground">Muncul otomatis ketika siaran YouTube Anda sedang aktif.</div>
                         </div>
-                        <input
-                            v-model="appearanceForm.show_live_stream_banner"
-                            type="checkbox"
-                            class="w-4 h-4 rounded-sm text-cyan-600 focus:ring-0 bg-slate-800 border-slate-700"
+                        <Switch
+                            :model-value="appearanceForm.show_live_stream_banner"
+                            @update:model-value="(val) => (appearanceForm.show_live_stream_banner = val)"
                         />
                     </div>
 
-                    <button
+                    <Button
                         @click="saveAppearance"
                         :disabled="isSavingAppearance || profile.is_suspended"
-                        class="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-black font-mono font-black text-xs uppercase tracking-wider transition shadow-lg"
+                        class="w-full font-mono font-bold text-xs uppercase tracking-wider"
                     >
                         {{ isSavingAppearance ? "Menyimpan..." : "Simpan Tampilan Profil" }}
-                    </button>
-                </div>
+                    </Button>
+                </Card>
 
                 <!-- TAB 3: AUDIT HISTORY -->
                 <div v-show="activeTab === 'history'" class="space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-mono uppercase text-slate-400">
+                        <span class="text-xs font-mono uppercase text-muted-foreground">
                             Log Perubahan Tautan & Profil Anda
                         </span>
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             @click="loadHistory"
-                            class="text-xs font-mono text-cyan-400 hover:underline"
+                            class="text-xs font-mono text-primary"
                         >
-                            ↻ Muat Ulang
-                        </button>
+                            <RefreshCw class="w-3.5 h-3.5 mr-1" />
+                            Muat Ulang
+                        </Button>
                     </div>
 
                     <div v-if="historyLogs.length > 0" class="space-y-2">
-                        <div
+                        <Card
                             v-for="log in historyLogs"
                             :key="log.id"
-                            class="p-3 rounded-xl bg-slate-900/60 border border-white/5 text-xs text-left font-mono"
+                            class="p-3 rounded-xl bg-card border-border text-xs text-left font-mono"
                         >
-                            <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                                <span class="font-bold text-cyan-300 uppercase">{{ log.action }}</span>
+                            <div class="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                                <span class="font-bold text-primary uppercase">{{ log.action }}</span>
                                 <span>{{ new Date(log.created_at).toLocaleString() }}</span>
                             </div>
-                            <p class="text-slate-200 text-xs font-sans">
+                            <p class="text-foreground text-xs font-sans">
                                 {{ log.reason || "Perubahan sistem / konfigurasi." }}
                             </p>
-                        </div>
+                        </Card>
                     </div>
 
-                    <div v-else-if="!isLoadingHistory" class="py-10 text-center text-slate-500 font-mono text-xs border border-dashed border-slate-800 rounded-xl">
-                        Belum ada riwayat aktivitas yang tercatat.
-                    </div>
+                    <EmptyState
+                        v-else-if="!isLoadingHistory"
+                        title="Belum Ada Riwayat"
+                        description="Belum ada riwayat aktivitas yang tercatat."
+                    />
                 </div>
-
             </div>
 
             <!-- RIGHT COLUMN: INTERACTIVE REAL-TIME MOBILE PREVIEW FRAME (5 cols) -->
             <div class="lg:col-span-5 flex flex-col items-center sticky top-20">
-                <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <div class="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <span>📱 PRATINJAU LANGSUNG MOBILE (380px)</span>
                 </div>
 
                 <!-- Realistic Smartphone Mockup -->
-                <div class="w-full max-w-[360px] h-[640px] rounded-[40px] bg-slate-950 border-[6px] border-slate-800 shadow-2xl relative overflow-hidden flex flex-col ring-1 ring-white/10">
+                <div class="w-full max-w-[360px] h-[640px] rounded-[40px] bg-background border-[6px] border-border shadow-2xl relative overflow-hidden flex flex-col ring-1 ring-border">
                     <!-- Notch / Speaker grill -->
-                    <div class="w-full h-6 bg-slate-950 flex items-center justify-center shrink-0 z-20">
-                        <div class="w-20 h-3.5 bg-slate-900 rounded-full flex items-center justify-end px-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-500/80"></span>
+                    <div class="w-full h-6 bg-background flex items-center justify-center shrink-0 z-20">
+                        <div class="w-20 h-3.5 bg-card rounded-full flex items-center justify-end px-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary/80"></span>
                         </div>
                     </div>
 
@@ -686,21 +765,23 @@ const domainHint = computed(() => {
                     <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4 text-center scrollbar-none font-sans text-xs">
                         <!-- Mini Hero -->
                         <div class="flex flex-col items-center">
-                            <img
+                            <OfficerAvatar
                                 :src="officer.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=officer'"
-                                class="w-16 h-16 rounded-full border-2 border-cyan-400 bg-slate-900 object-cover mb-2 shadow-lg"
-                                alt=""
+                                :name="officer.officer_name"
+                                :department="officer.department"
+                                size="lg"
+                                class="mb-2"
                             />
-                            <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[8px] font-mono font-black bg-cyan-950 text-cyan-300 border border-cyan-500/40 mb-1">
+                            <Badge variant="info" class="text-xs font-mono font-bold mb-1">
                                 🛡️ VERIFIED OFFICER
-                            </div>
-                            <h4 class="text-sm font-black font-mono uppercase text-white leading-tight">
+                            </Badge>
+                            <h4 class="text-sm font-bold font-mono uppercase text-foreground leading-tight">
                                 {{ appearanceForm.display_title || officer.officer_name }}
                             </h4>
-                            <p class="text-[10px] text-cyan-400 font-mono">
+                            <p class="text-xs text-primary font-mono">
                                 {{ officer.streamer_name }}
                             </p>
-                            <p v-if="appearanceForm.bio_tagline" class="text-[10px] text-slate-300 mt-1 max-w-[240px] leading-relaxed">
+                            <p v-if="appearanceForm.bio_tagline" class="text-xs text-muted-foreground mt-1 max-w-[240px] leading-relaxed">
                                 {{ appearanceForm.bio_tagline }}
                             </p>
                         </div>
@@ -710,7 +791,7 @@ const domainHint = computed(() => {
                             <div
                                 v-for="l in localLinks.filter((x) => x.is_active)"
                                 :key="l.id"
-                                class="p-2.5 rounded-xl bg-slate-900/90 border border-white/10 flex items-center justify-between text-left shadow-xs"
+                                class="p-2.5 rounded-xl bg-card border border-border flex items-center justify-between text-left shadow-xs"
                             >
                                 <div class="flex items-center gap-2 min-w-0">
                                     <span class="text-xs">
@@ -720,56 +801,46 @@ const domainHint = computed(() => {
                                         <span v-else>🔗</span>
                                     </span>
                                     <div class="min-w-0">
-                                        <div class="text-[11px] font-black font-mono text-white truncate">{{ l.title }}</div>
-                                        <div v-if="l.subtitle" class="text-[9px] text-slate-400 truncate">{{ l.subtitle }}</div>
+                                        <div class="text-xs font-bold font-mono text-foreground truncate">{{ l.title }}</div>
+                                        <div v-if="l.subtitle" class="text-xs text-muted-foreground truncate">{{ l.subtitle }}</div>
                                     </div>
                                 </div>
-                                <span class="text-[10px] text-cyan-400">→</span>
+                                <span class="text-xs text-primary">→</span>
                             </div>
 
-                            <div v-if="localLinks.filter((x) => x.is_active).length === 0" class="py-8 text-[11px] text-slate-600 font-mono">
+                            <div v-if="localLinks.filter((x) => x.is_active).length === 0" class="py-8 text-xs text-muted-foreground font-mono">
                                 (Belum ada tautan aktif)
                             </div>
                         </div>
 
-                        <div class="text-[9px] text-slate-600 font-mono pt-4 border-t border-white/5">
+                        <div class="text-xs text-muted-foreground font-mono pt-4 border-t border-border">
                             Police Duty Multiview • policeduty.sasp-motionliferp.com
                         </div>
                     </div>
 
                     <!-- Home Bar -->
-                    <div class="w-full h-4 bg-slate-950 flex items-center justify-center shrink-0 z-20">
-                        <div class="w-24 h-1 bg-slate-700 rounded-full"></div>
+                    <div class="w-full h-4 bg-background flex items-center justify-center shrink-0 z-20">
+                        <div class="w-24 h-1 bg-muted rounded-full"></div>
                     </div>
                 </div>
             </div>
-
         </main>
 
         <!-- ADD / EDIT LINK MODAL -->
-        <div
-            v-if="isModalOpen"
-            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
-        >
-            <div class="w-full max-w-md bg-slate-900 border border-white/10 rounded-2xl p-5 shadow-2xl text-left space-y-4">
-                <div class="flex items-center justify-between border-b border-white/10 pb-3">
-                    <h3 class="text-sm font-black font-mono uppercase text-white">
+        <Dialog :open="isModalOpen" @update:open="(val) => (isModalOpen = val)">
+            <DialogContent class="sm:max-w-md bg-card border-border text-left space-y-4">
+                <DialogHeader class="border-b border-border pb-3">
+                    <DialogTitle class="text-sm font-bold font-mono uppercase text-foreground">
                         {{ editingLinkId ? "Edit Tautan" : "Tambah Tautan Baru" }}
-                    </h3>
-                    <button
-                        @click="isModalOpen = false"
-                        class="text-slate-400 hover:text-white font-mono text-sm"
-                    >
-                        ✕
-                    </button>
-                </div>
+                    </DialogTitle>
+                </DialogHeader>
 
                 <!-- Link Type Selector -->
                 <div class="space-y-1 text-left">
-                    <label class="block text-xs font-mono text-slate-300 uppercase">Tipe Tautan</label>
+                    <Label class="text-xs font-mono text-muted-foreground uppercase">Tipe Tautan</Label>
                     <select
                         v-model="linkForm.link_type"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
+                        class="w-full px-3 py-2 rounded-xl bg-background border border-input text-xs font-mono text-foreground focus:border-primary outline-hidden"
                     >
                         <option value="donation">🪙 Donasi (Saweria, Bagibagi, Trakteer, Sociabuzz)</option>
                         <option value="discord">💬 Komunitas Discord</option>
@@ -781,10 +852,10 @@ const domainHint = computed(() => {
 
                 <!-- Squad Partner Selector (If officer_recommendation) -->
                 <div v-if="linkForm.link_type === 'officer_recommendation'" class="space-y-1 text-left">
-                    <label class="block text-xs font-mono text-slate-300 uppercase">Pilih Perwira Rekanan</label>
+                    <Label class="text-xs font-mono text-muted-foreground uppercase">Pilih Perwira Rekanan</Label>
                     <select
                         v-model="linkForm.recommended_officer_id"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
+                        class="w-full px-3 py-2 rounded-xl bg-background border border-input text-xs font-mono text-foreground focus:border-primary outline-hidden"
                     >
                         <option value="">-- Pilih Perwira Patroli --</option>
                         <option v-for="o in otherOfficers" :key="o.id" :value="o.id">
@@ -795,124 +866,144 @@ const domainHint = computed(() => {
 
                 <!-- URL Input (If not officer_recommendation) -->
                 <div v-else class="space-y-1 text-left">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-xs font-mono text-slate-300 uppercase">URL Tautan (HTTPS)</label>
-                    </div>
-                    <input
+                    <Label class="text-xs font-mono text-muted-foreground uppercase">URL Tautan (HTTPS)</Label>
+                    <Input
                         v-model="linkForm.url"
                         type="url"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
+                        class="text-xs font-mono"
                         placeholder="https://..."
                     />
-                    <p class="text-[10px] text-cyan-400/90 font-mono leading-tight mt-1">
+                    <p class="text-xs text-primary font-mono leading-tight mt-1">
                         {{ domainHint }}
                     </p>
                 </div>
 
                 <!-- Title -->
                 <div class="space-y-1 text-left">
-                    <label class="block text-xs font-mono text-slate-300 uppercase">Judul Tombol</label>
-                    <input
+                    <Label class="text-xs font-mono text-muted-foreground uppercase">Judul Tombol</Label>
+                    <Input
                         v-model="linkForm.title"
                         type="text"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
+                        class="text-xs font-mono"
                         placeholder="Contoh: Saweria Donasi Taktis"
                     />
                 </div>
 
                 <!-- Subtitle -->
                 <div class="space-y-1 text-left">
-                    <label class="block text-xs font-mono text-slate-300 uppercase">Sub-Teks (Opsional)</label>
-                    <input
+                    <Label class="text-xs font-mono text-muted-foreground uppercase">Sub-Teks (Opsional)</Label>
+                    <Input
                         v-model="linkForm.subtitle"
                         type="text"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
+                        class="text-xs font-mono"
                         placeholder="Contoh: Min 10k TTS On / Komunitas Resmi"
                     />
                 </div>
 
                 <!-- Badge Label -->
                 <div class="space-y-1 text-left">
-                    <label class="block text-xs font-mono text-slate-300 uppercase">Badge Promo (Opsional)</label>
-                    <input
+                    <Label class="text-xs font-mono text-muted-foreground uppercase">Badge Promo (Opsional)</Label>
+                    <Input
                         v-model="linkForm.badge_label"
                         type="text"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
+                        class="text-xs font-mono"
                         placeholder="Contoh: NEW, REKOMENDASI, 24/7"
                     />
                 </div>
 
                 <!-- Highlighted Toggle -->
                 <div class="flex items-center justify-between pt-1">
-                    <span class="text-xs font-mono text-slate-300">Beri Efek Glowing / Highlight</span>
-                    <input
-                        v-model="linkForm.is_highlighted"
-                        type="checkbox"
-                        class="w-4 h-4 rounded-sm text-cyan-600 focus:ring-0 bg-slate-800 border-slate-700"
+                    <span class="text-xs font-mono text-foreground">Beri Efek Glowing / Highlight</span>
+                    <Switch
+                        :model-value="linkForm.is_highlighted"
+                        @update:model-value="(val) => (linkForm.is_highlighted = val)"
                     />
                 </div>
 
                 <!-- Modal Actions -->
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-white/10">
-                    <button
+                <DialogFooter class="pt-3 border-t border-border">
+                    <Button
+                        variant="outline"
                         @click="isModalOpen = false"
-                        class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition"
+                        class="text-xs font-mono"
                     >
                         Batal
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         @click="saveLink"
                         :disabled="isSavingLink"
-                        class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-black font-mono font-bold text-xs uppercase tracking-wider transition shadow-md"
+                        class="font-mono font-bold text-xs uppercase tracking-wider"
                     >
                         {{ isSavingLink ? "Menyimpan..." : "Simpan Tautan" }}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
         <!-- PASSWORD CONFIRMATION MODAL (T-03) -->
-        <div
-            v-if="isPasswordConfirmModalOpen"
-            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
-        >
-            <div class="w-full max-w-sm bg-slate-900 border border-amber-500/30 rounded-2xl p-5 shadow-2xl text-left space-y-4">
-                <div class="flex items-center gap-2 text-amber-400 font-mono text-sm font-bold border-b border-white/10 pb-2">
-                    <span>🛡️ KONFIRMASI KEAMANAN AKUN</span>
-                </div>
-                <p class="text-xs text-slate-300 font-sans leading-relaxed">
-                    Untuk melindungi akun Anda dari pembajakan tautan donasi finansial, silakan masukkan password akun Anda untuk melanjutkan:
-                </p>
+        <Dialog :open="isPasswordConfirmModalOpen" @update:open="(val) => (isPasswordConfirmModalOpen = val)">
+            <DialogContent class="sm:max-w-sm bg-card border-warning/40 text-left space-y-4">
+                <DialogHeader class="border-b border-border pb-2">
+                    <DialogTitle class="flex items-center gap-2 text-warning font-mono text-sm font-bold">
+                        <ShieldAlert class="w-4 h-4" />
+                        <span>KONFIRMASI KEAMANAN AKUN</span>
+                    </DialogTitle>
+                    <DialogDescription class="text-xs text-muted-foreground font-sans leading-relaxed">
+                        Untuk melindungi akun Anda dari pembajakan tautan donasi finansial, silakan masukkan password akun Anda untuk melanjutkan:
+                    </DialogDescription>
+                </DialogHeader>
+
                 <div class="space-y-1">
-                    <input
+                    <Input
                         v-model="confirmPasswordInput"
                         type="password"
                         @keyup.enter="submitPasswordConfirmation"
                         placeholder="Masukkan password akun Anda..."
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-amber-400 outline-hidden"
+                        class="text-xs font-mono"
                         autofocus
                     />
-                    <p v-if="passwordConfirmError" class="text-[11px] font-mono text-rose-400 pt-1">
+                    <p v-if="passwordConfirmError" class="text-xs font-mono text-destructive pt-1">
                         {{ passwordConfirmError }}
                     </p>
                 </div>
-                <div class="flex items-center justify-end gap-2 pt-2">
-                    <button
+
+                <DialogFooter class="pt-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
                         @click="isPasswordConfirmModalOpen = false; confirmPasswordInput = '';"
-                        class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition"
+                        class="text-xs font-mono"
                     >
                         Batal
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        size="sm"
                         @click="submitPasswordConfirmation"
                         :disabled="isSubmittingPassword"
-                        class="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-mono font-bold text-xs uppercase tracking-wider transition shadow-md"
+                        class="font-mono font-bold text-xs uppercase tracking-wider"
                     >
                         {{ isSubmittingPassword ? "Memverifikasi..." : "Konfirmasi & Simpan" }}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
+        <!-- DELETE LINK ALERT DIALOG -->
+        <AlertDialog :open="linkToDelete !== null" @update:open="(val) => { if (!val) linkToDelete = null; }">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Hapus Tautan?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Hapus tautan '{{ linkToDelete?.title }}' secara permanen?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="linkToDelete = null">Batal</AlertDialogCancel>
+                    <AlertDialogAction class="bg-destructive text-destructive-foreground hover:bg-destructive/90" @click="confirmDeleteLink">
+                        Hapus Permanen
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
 </template>

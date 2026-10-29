@@ -2,6 +2,51 @@
 import { ref, computed } from "vue";
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import axios from "axios";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/Components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from "@/Components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/Components/ui/alert";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Switch } from "@/Components/ui/switch";
+import { Textarea } from "@/Components/ui/textarea";
+import {
+    OfficerAvatar,
+    EmptyState,
+} from "@/Components/tactical";
+import {
+    AlertTriangle,
+    ArrowLeft,
+    Award,
+    Building2,
+    Check,
+    Clock,
+    FileText,
+    Info,
+    Loader2,
+    Lock,
+    Plus,
+    RefreshCw,
+    Settings,
+    ShieldCheck,
+} from "@lucide/vue";
 
 const props = defineProps({
     officer: {
@@ -79,7 +124,6 @@ const saveProfile = async () => {
             division_id: form.value.division_id || null,
         };
 
-        // Only send callsign/badge if cooldown is not active
         if (props.canChangeCallsign) {
             payload.callsign = form.value.callsign;
             payload.badge_number = form.value.badge_number;
@@ -97,6 +141,7 @@ const saveProfile = async () => {
 
 // Change Request State (Pangkat & Kesatuan)
 const isRequestModalOpen = ref(false);
+const requestToCancelId = ref(null);
 const requestForm = ref({
     field: "rank_id", // 'rank_id' | 'agency_id'
     agency_id: props.officer.agency_id || "",
@@ -155,10 +200,14 @@ const submitChangeRequest = async () => {
     }
 };
 
-const cancelRequest = async (requestId) => {
-    if (!confirm("Apakah Anda yakin ingin membatalkan pengajuan mutasi ini?")) {
-        return;
-    }
+const promptCancelRequest = (requestId) => {
+    requestToCancelId.value = requestId;
+};
+
+const confirmCancelRequest = async () => {
+    const requestId = requestToCancelId.value;
+    if (!requestId) return;
+    requestToCancelId.value = null;
 
     try {
         await axios.delete(`/api/v1/officer/change-requests/${requestId}`);
@@ -196,224 +245,211 @@ const switchTab = (tab) => {
 <template>
     <Head title="Profil Dinas Saya - Tactical Bio-Link" />
 
-    <div class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-black pb-20">
+    <div class="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground pb-20">
         <!-- TOP NAVIGATION BAR -->
-        <header class="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-white/10 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+        <header class="sticky top-0 z-40 bg-card/80 backdrop-blur-md border-b border-border px-4 lg:px-8 py-3.5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <Link
-                    href="/dashboard/bio-links"
-                    class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
+                <Button
+                    as-child
+                    variant="outline"
+                    size="icon"
                     title="Kembali ke Tactical Hub"
                 >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                </Link>
+                    <Link href="/dashboard/bio-links" aria-label="Kembali ke Tactical Hub">
+                        <ArrowLeft class="w-5 h-5" />
+                    </Link>
+                </Button>
                 <div>
-                    <h1 class="text-sm sm:text-base font-black font-mono tracking-wider uppercase text-white flex items-center gap-2">
+                    <h1 class="text-sm sm:text-base font-bold font-mono tracking-wider uppercase text-foreground flex items-center gap-2">
                         <span>PROFIL DINAS PERWIRA</span>
-                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-sm bg-cyan-950 text-cyan-300 border border-cyan-500/40">
+                        <Badge variant="info" class="text-xs font-bold font-mono">
                             PRD v3
-                        </span>
+                        </Badge>
                     </h1>
-                    <p class="text-[11px] text-slate-400 font-mono">
+                    <p class="text-xs text-muted-foreground font-mono">
                         Manajemen Kepemilikan & Identitas Perwira Mandiri
                     </p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3">
-                <Link
-                    href="/dashboard/bio-links"
-                    class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 transition flex items-center gap-1.5"
-                >
-                    <span>🛡️ Kelola Tautan Bio</span>
-                </Link>
+                <Button as-child variant="outline" size="sm" class="text-xs font-mono text-primary">
+                    <Link href="/dashboard/bio-links" class="flex items-center gap-1.5">
+                        <ShieldCheck class="w-4 h-4" />
+                        <span>Kelola Tautan Bio</span>
+                    </Link>
+                </Button>
             </div>
         </header>
 
         <!-- FLASH NOTIFICATION -->
         <div class="max-w-6xl mx-auto px-4 mt-4">
-            <transition
-                enter-active-class="transition duration-200 ease-out"
-                enter-from-class="opacity-0 -translate-y-2"
-                enter-to-class="opacity-100 translate-y-0"
-                leave-active-class="transition duration-150 ease-in"
-                leave-from-class="opacity-100 translate-y-0"
-                leave-to-class="opacity-0 -translate-y-2"
+            <Alert
+                v-if="statusMessage"
+                class="p-3.5 border-success/40 bg-success/10 text-success text-xs font-mono flex items-center gap-2"
             >
-                <div
-                    v-if="statusMessage"
-                    class="p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/60 text-emerald-200 text-xs font-mono shadow-lg flex items-center gap-2"
-                >
-                    <svg class="w-4 h-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>{{ statusMessage }}</span>
-                </div>
-            </transition>
+                <Check class="w-4 h-4 shrink-0" />
+                <AlertDescription>{{ statusMessage }}</AlertDescription>
+            </Alert>
 
-            <transition
-                enter-active-class="transition duration-200 ease-out"
-                enter-from-class="opacity-0 -translate-y-2"
-                enter-to-class="opacity-100 translate-y-0"
-                leave-active-class="transition duration-150 ease-in"
-                leave-from-class="opacity-100 translate-y-0"
-                leave-to-class="opacity-0 -translate-y-2"
+            <Alert
+                v-if="errorMessage"
+                variant="destructive"
+                class="p-3.5 text-xs font-mono flex items-center gap-2"
             >
-                <div
-                    v-if="errorMessage"
-                    class="p-3.5 rounded-xl bg-rose-950/80 border border-rose-500/60 text-rose-200 text-xs font-mono shadow-lg flex items-center gap-2"
-                >
-                    <svg class="w-4 h-4 shrink-0 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <span>{{ errorMessage }}</span>
-                </div>
-            </transition>
+                <AlertTriangle class="w-4 h-4 shrink-0" />
+                <AlertDescription>{{ errorMessage }}</AlertDescription>
+            </Alert>
         </div>
 
         <!-- MAIN CONTAINER -->
         <main class="max-w-6xl mx-auto px-4 mt-6">
             <!-- HERO SUMMARY CARD -->
-            <div class="p-6 rounded-2xl bg-slate-900/80 border border-white/10 shadow-2xl flex flex-col md:flex-row items-center md:items-start justify-between gap-6 relative overflow-hidden">
-                <div class="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"></div>
-
+            <Card class="p-6 rounded-2xl bg-card border-border shadow-2xl flex flex-col md:flex-row items-center md:items-start justify-between gap-6 relative overflow-hidden">
                 <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                    <img
+                    <OfficerAvatar
                         :src="officer.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=officer'"
-                        class="w-20 h-20 rounded-2xl bg-slate-950 border-2 border-cyan-500/40 object-cover shadow-lg shrink-0"
-                        alt=""
+                        :name="officer.officer_name"
+                        :department="officer.department"
+                        size="lg"
+                        class="w-20 h-20"
                     />
                     <div class="text-center sm:text-left space-y-1">
                         <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
-                            <h2 class="text-xl font-black font-mono uppercase text-white tracking-wide">
+                            <h2 class="text-xl font-bold font-mono uppercase text-foreground tracking-wide">
                                 {{ officer.officer_name }}
                             </h2>
-                            <span class="px-2 py-0.5 rounded-sm text-[10px] font-black font-mono uppercase bg-emerald-950 text-emerald-300 border border-emerald-500/40">
+                            <Badge variant="success" class="text-xs font-bold font-mono uppercase">
                                 TERVERIFIKASI
-                            </span>
-                            <span v-if="officer.avatar_is_custom" class="px-2 py-0.5 rounded-sm text-[9px] font-bold font-mono uppercase bg-cyan-950 text-cyan-300 border border-cyan-500/30">
+                            </Badge>
+                            <Badge v-if="officer.avatar_is_custom" variant="info" class="text-xs font-bold font-mono uppercase">
                                 AVATAR KUSTOM
-                            </span>
+                            </Badge>
                         </div>
-                        <p class="text-xs text-slate-300 font-mono">
+                        <p class="text-xs text-foreground font-mono">
                             {{ officer.department }} • {{ officer.rank }} • Callsign #{{ officer.callsign }}
                         </p>
-                        <p class="text-xs text-slate-400 font-mono">
-                            Streamer: <span class="text-cyan-400 font-semibold">{{ officer.streamer_name || "-" }}</span>
+                        <p class="text-xs text-muted-foreground font-mono">
+                            Streamer: <span class="text-primary font-semibold">{{ officer.streamer_name || "-" }}</span>
                             <span v-if="officer.patrol_zone"> • Sektor: {{ officer.patrol_zone }}</span>
                         </p>
                     </div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center gap-3">
-                    <button
+                    <Button
+                        variant="outline"
                         @click="openChangeRequestModal('rank_id')"
-                        class="px-4 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/40 text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer"
+                        class="border-warning/40 text-warning hover:bg-warning/10 text-xs font-mono font-bold flex items-center gap-2 cursor-pointer"
                     >
-                        <span>🎖️ Ajukan Kenaikan Pangkat</span>
-                    </button>
-                    <button
+                        <Award class="w-4 h-4" />
+                        <span>Ajukan Kenaikan Pangkat</span>
+                    </Button>
+                    <Button
+                        variant="outline"
                         @click="openChangeRequestModal('agency_id')"
-                        class="px-4 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer"
+                        class="border-primary/40 text-primary hover:bg-primary/10 text-xs font-mono font-bold flex items-center gap-2 cursor-pointer"
                     >
-                        <span>🏢 Ajukan Mutasi Kesatuan</span>
-                    </button>
+                        <Building2 class="w-4 h-4" />
+                        <span>Ajukan Mutasi Kesatuan</span>
+                    </Button>
                 </div>
-            </div>
+            </Card>
 
             <!-- TAB SELECTOR -->
-            <div class="mt-6 flex border-b border-slate-800 text-xs font-mono">
+            <div class="mt-6 flex border-b border-border text-xs font-mono">
                 <button
                     @click="switchTab('profile')"
                     class="px-5 py-2.5 font-bold transition border-b-2 flex items-center gap-2 cursor-pointer"
-                    :class="activeTab === 'profile' ? 'border-cyan-400 text-cyan-300 bg-cyan-950/20' : 'border-transparent text-slate-400 hover:text-white'"
+                    :class="activeTab === 'profile' ? 'border-primary text-primary bg-primary/10' : 'border-transparent text-muted-foreground hover:text-foreground'"
                 >
-                    <span>⚙️ Pengaturan Profil</span>
+                    <Settings class="w-4 h-4" />
+                    <span>Pengaturan Profil</span>
                 </button>
                 <button
                     @click="switchTab('requests')"
                     class="px-5 py-2.5 font-bold transition border-b-2 flex items-center gap-2 cursor-pointer relative"
-                    :class="activeTab === 'requests' ? 'border-cyan-400 text-cyan-300 bg-cyan-950/20' : 'border-transparent text-slate-400 hover:text-white'"
+                    :class="activeTab === 'requests' ? 'border-primary text-primary bg-primary/10' : 'border-transparent text-muted-foreground hover:text-foreground'"
                 >
-                    <span>📜 Pengajuan Mutasi & Pangkat</span>
+                    <FileText class="w-4 h-4" />
+                    <span>Pengajuan Mutasi & Pangkat</span>
                     <span
                         v-if="localRequests.filter(r => r.status === 'pending').length > 0"
-                        class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"
+                        class="w-2 h-2 rounded-full bg-warning motion-safe:animate-pulse"
                     ></span>
                 </button>
                 <button
                     @click="switchTab('history')"
                     class="px-5 py-2.5 font-bold transition border-b-2 flex items-center gap-2 cursor-pointer"
-                    :class="activeTab === 'history' ? 'border-cyan-400 text-cyan-300 bg-cyan-950/20' : 'border-transparent text-slate-400 hover:text-white'"
+                    :class="activeTab === 'history' ? 'border-primary text-primary bg-primary/10' : 'border-transparent text-muted-foreground hover:text-foreground'"
                 >
-                    <span>🕒 Riwayat Perubahan</span>
+                    <Clock class="w-4 h-4" />
+                    <span>Riwayat Perubahan</span>
                 </button>
             </div>
 
-            <!-- TAB 1: PROFILE MANAGEMENT (PRD v3 4.3 4 GROUPS) -->
+            <!-- TAB 1: PROFILE MANAGEMENT (PRD v3 4.3 4 GROUPS — 4 Cards) -->
             <div v-if="activeTab === 'profile'" class="mt-6 space-y-6">
                 <!-- GROUP 1: IDENTITAS KARAKTER & STREAMER (LANGSUNG) -->
-                <div class="p-6 rounded-2xl bg-slate-900/60 border border-white/10 shadow-lg">
-                    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <Card class="p-6 rounded-2xl bg-card border-border shadow-lg">
+                    <div class="flex items-center justify-between pb-4 border-b border-border">
                         <div>
-                            <h3 class="text-sm font-bold font-mono uppercase text-white flex items-center gap-2">
+                            <h3 class="text-sm font-bold font-mono uppercase text-foreground flex items-center gap-2">
                                 <span>Grup 1: Identitas Karakter & Streamer</span>
-                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-black bg-emerald-950 text-emerald-300 border border-emerald-500/30">
+                                <Badge variant="success" class="text-xs font-bold">
                                     LANGSUNG
-                                </span>
+                                </Badge>
                             </h3>
-                            <p class="text-xs text-slate-400 mt-0.5">
+                            <p class="text-xs text-muted-foreground mt-0.5">
                                 Perubahan identitas nama dibatasi maksimal 3 kali dalam 30 hari kalender.
                             </p>
                         </div>
                     </div>
 
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">
-                                Nama Karakter RP <span class="text-rose-400">*</span>
-                            </label>
-                            <input
+                        <div class="space-y-1">
+                            <Label class="text-xs font-mono text-muted-foreground">
+                                Nama Karakter RP <span class="text-destructive">*</span>
+                            </Label>
+                            <Input
                                 v-model="form.officer_name"
                                 type="text"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden"
+                                class="text-sm font-mono"
                                 placeholder="Contoh: Saprudin Mintoro"
                             />
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">
+                        <div class="space-y-1">
+                            <Label class="text-xs font-mono text-muted-foreground">
                                 Nama Streamer / Alias
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 v-model="form.streamer_name"
                                 type="text"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden"
+                                class="text-sm font-mono"
                                 placeholder="Contoh: Bang Sapru Gaming"
                             />
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">
+                        <div class="space-y-1">
+                            <Label class="text-xs font-mono text-muted-foreground">
                                 Sektor / Zona Patroli Rutin
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 v-model="form.patrol_zone"
                                 type="text"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden"
+                                class="text-sm font-mono"
                                 placeholder="Contoh: Vinewood Hills & Sandy Shores"
                             />
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">
+                        <div class="space-y-1">
+                            <Label class="text-xs font-mono text-muted-foreground">
                                 Divisi / Satuan Tugas
-                            </label>
+                            </Label>
                             <select
                                 v-model="form.division_id"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden"
+                                class="w-full px-3.5 py-2 rounded-xl bg-background border border-input focus:border-primary text-sm font-mono text-foreground outline-hidden"
                             >
                                 <option value="">-- Tanpa Penugasan Khusus --</option>
                                 <option
@@ -426,185 +462,203 @@ const switchTab = (tab) => {
                             </select>
                         </div>
 
-                        <div class="md:col-span-2 space-y-2 pt-2 border-t border-slate-800/80">
-                            <label class="block text-xs font-mono text-slate-400 mb-1">
+                        <div class="md:col-span-2 space-y-2 pt-2 border-t border-border">
+                            <Label class="text-xs font-mono text-muted-foreground">
                                 Foto Avatar Profil
-                            </label>
-                            <div class="flex items-center gap-3">
-                                <input
+                            </Label>
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                                <Input
                                     v-model="form.avatar_url"
                                     type="url"
-                                    class="flex-1 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden"
+                                    class="flex-1 text-sm font-mono"
                                     placeholder="https://i.imgur.com/..."
                                 />
-                                <label class="flex items-center gap-2 cursor-pointer select-none text-xs font-mono text-slate-300">
-                                    <input
-                                        v-model="form.use_custom_avatar"
-                                        type="checkbox"
-                                        class="rounded-sm bg-slate-950 border-slate-700 text-cyan-500 focus:ring-0"
+                                <label class="flex items-center gap-2 cursor-pointer select-none text-xs font-mono text-foreground">
+                                    <Switch
+                                        :model-value="form.use_custom_avatar"
+                                        @update:model-value="(val) => (form.use_custom_avatar = val)"
                                     />
                                     <span>Gunakan Avatar Kustom (Kunci dari Overwrite Sync YouTube)</span>
                                 </label>
                             </div>
                         </div>
                     </div>
-                </div>
+                </Card>
 
                 <!-- GROUP 2: PENANDA UNIT (LANGSUNG + CEK UNIK + COOLDOWN 7 HARI) -->
-                <div class="p-6 rounded-2xl bg-slate-900/60 border border-white/10 shadow-lg">
-                    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <Card class="p-6 rounded-2xl bg-card border-border shadow-lg">
+                    <div class="flex items-center justify-between pb-4 border-b border-border flex-wrap gap-2">
                         <div>
-                            <h3 class="text-sm font-bold font-mono uppercase text-white flex items-center gap-2">
+                            <h3 class="text-sm font-bold font-mono uppercase text-foreground flex items-center gap-2">
                                 <span>Grup 2: Penanda Unit & Callsign</span>
-                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-black bg-amber-950 text-amber-300 border border-amber-500/30">
+                                <Badge variant="warning" class="text-xs font-bold">
                                     COOLDOWN 7 HARI
-                                </span>
+                                </Badge>
                             </h3>
-                            <p class="text-xs text-slate-400 mt-0.5">
+                            <p class="text-xs text-muted-foreground mt-0.5">
                                 Callsign harus unik di seluruh kesatuan aktif dan tunduk pada batas ubah 1x per 7 hari.
                             </p>
                         </div>
 
-                        <div v-if="!canChangeCallsign" class="px-3 py-1 rounded-xl bg-amber-950/60 border border-amber-500/50 text-amber-300 text-xs font-mono flex items-center gap-2">
-                            <span>⏳ Cooldown aktif: sisa {{ remainingCooldownDays }} hari</span>
-                        </div>
+                        <Badge v-if="!canChangeCallsign" variant="warning" class="text-xs font-mono flex items-center gap-1.5">
+                            <Clock class="w-3.5 h-3.5" />
+                            <span>Cooldown aktif: sisa {{ remainingCooldownDays }} hari</span>
+                        </Badge>
                     </div>
 
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">
-                                Callsign Unit <span class="text-rose-400">*</span>
-                            </label>
-                            <input
+                        <div class="space-y-1">
+                            <Label class="text-xs font-mono text-muted-foreground">
+                                Callsign Unit <span class="text-destructive">*</span>
+                            </Label>
+                            <Input
                                 v-model="form.callsign"
                                 :disabled="!canChangeCallsign"
                                 type="text"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden disabled:opacity-50 disabled:cursor-not-allowed uppercase"
+                                class="text-sm font-mono uppercase"
                                 placeholder="Contoh: 1-ADAM-12"
                             />
-                            <p class="text-[10px] text-slate-500 font-mono mt-1">
+                            <p class="text-xs text-muted-foreground font-mono mt-1">
                                 Tidak boleh sama dengan callsign perwira aktif lainnya.
                             </p>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">
+                        <div class="space-y-1">
+                            <Label class="text-xs font-mono text-muted-foreground">
                                 Nomor Lencana / Badge
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 v-model="form.badge_number"
                                 :disabled="!canChangeCallsign"
                                 type="text"
-                                class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm font-mono text-white outline-hidden disabled:opacity-50 disabled:cursor-not-allowed font-mono"
+                                class="text-sm font-mono"
                                 placeholder="Contoh: 704"
                             />
                         </div>
                     </div>
-                </div>
+                </Card>
 
                 <!-- GROUP 3: PANGKAT & KESATUAN (LEWAT PENGAJUAN KOMANDO) -->
-                <div class="p-6 rounded-2xl bg-slate-900/60 border border-white/10 shadow-lg">
-                    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <Card class="p-6 rounded-2xl bg-card border-border shadow-lg">
+                    <div class="flex items-center justify-between pb-4 border-b border-border">
                         <div>
-                            <h3 class="text-sm font-bold font-mono uppercase text-white flex items-center gap-2">
+                            <h3 class="text-sm font-bold font-mono uppercase text-foreground flex items-center gap-2">
                                 <span>Grup 3: Pangkat & Kesatuan</span>
-                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-black bg-blue-950 text-blue-300 border border-blue-500/30">
+                                <Badge variant="info" class="text-xs font-bold">
                                     LEWAT PENGAJUAN KOMANDO
-                                </span>
+                                </Badge>
                             </h3>
-                            <p class="text-xs text-slate-400 mt-0.5">
+                            <p class="text-xs text-muted-foreground mt-0.5">
                                 Kenaikan pangkat atau pindah kesatuan memerlukan verifikasi dan persetujuan Dispatcher / Komando SASP.
                             </p>
                         </div>
                     </div>
 
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                        <div class="p-4 rounded-xl bg-muted/50 border border-border flex items-center justify-between">
                             <div>
-                                <span class="text-[10px] uppercase font-mono text-slate-400 block">Kesatuan Saat Ini</span>
-                                <span class="text-sm font-black font-mono text-white">{{ officer.department || "-" }}</span>
+                                <span class="text-xs uppercase font-mono text-muted-foreground block">Kesatuan Saat Ini</span>
+                                <span class="text-sm font-bold font-mono text-foreground">{{ officer.department || "-" }}</span>
                             </div>
-                            <button
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 @click="openChangeRequestModal('agency_id')"
-                                class="px-3 py-1.5 rounded-lg bg-blue-950/60 hover:bg-blue-900/60 border border-blue-500/40 text-blue-300 text-xs font-mono transition cursor-pointer"
+                                class="text-xs font-mono text-primary cursor-pointer"
                             >
                                 Ajukan Mutasi
-                            </button>
+                            </Button>
                         </div>
 
-                        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                        <div class="p-4 rounded-xl bg-muted/50 border border-border flex items-center justify-between">
                             <div>
-                                <span class="text-[10px] uppercase font-mono text-slate-400 block">Pangkat Saat Ini</span>
-                                <span class="text-sm font-black font-mono text-white">{{ officer.rank || "-" }}</span>
+                                <span class="text-xs uppercase font-mono text-muted-foreground block">Pangkat Saat Ini</span>
+                                <span class="text-sm font-bold font-mono text-foreground">{{ officer.rank || "-" }}</span>
                             </div>
-                            <button
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 @click="openChangeRequestModal('rank_id')"
-                                class="px-3 py-1.5 rounded-lg bg-amber-950/60 hover:bg-amber-900/60 border border-amber-500/40 text-amber-300 text-xs font-mono transition cursor-pointer"
+                                class="text-xs font-mono text-warning cursor-pointer"
                             >
                                 Ajukan Kenaikan
-                            </button>
+                            </Button>
                         </div>
                     </div>
-                </div>
+                </Card>
 
-                <!-- GROUP 4: IDENTITAS TERKUNCI (READ-ONLY 🔒) -->
-                <div class="p-6 rounded-2xl bg-slate-900/60 border border-white/10 shadow-lg">
-                    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <!-- GROUP 4: IDENTITAS TERKUNCI (READ-ONLY 🔒 — Input disabled + Lock icon) -->
+                <Card class="p-6 rounded-2xl bg-card border-border shadow-lg">
+                    <div class="flex items-center justify-between pb-4 border-b border-border">
                         <div>
-                            <h3 class="text-sm font-bold font-mono uppercase text-white flex items-center gap-2">
+                            <h3 class="text-sm font-bold font-mono uppercase text-foreground flex items-center gap-2">
                                 <span>Grup 4: Identitas Terkunci</span>
-                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-black bg-rose-950 text-rose-300 border border-rose-500/30">
-                                    LOCKED 🔒
-                                </span>
+                                <Badge variant="destructive" class="text-xs font-bold flex items-center gap-1">
+                                    <Lock class="w-3 h-3" />
+                                    <span>LOCKED</span>
+                                </Badge>
                             </h3>
-                            <p class="text-xs text-slate-400 mt-0.5">
+                            <p class="text-xs text-muted-foreground mt-0.5">
                                 Dikunci permanen oleh sistem untuk mencegah pembajakan channel dan broken link publik.
                             </p>
                         </div>
                     </div>
 
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800">
-                            <span class="text-[10px] uppercase font-mono text-slate-400 block">Channel ID YouTube</span>
-                            <span class="text-xs font-mono text-slate-300 truncate block mt-1 select-all font-semibold">
-                                {{ officer.channel_id || "-" }}
-                            </span>
+                        <div class="space-y-1.5">
+                            <Label class="text-xs uppercase font-mono text-muted-foreground flex items-center gap-1.5">
+                                <Lock class="w-3.5 h-3.5 text-muted-foreground" />
+                                <span>Channel ID YouTube</span>
+                            </Label>
+                            <Input
+                                :model-value="officer.channel_id || '-'"
+                                disabled
+                                class="text-xs font-mono"
+                            />
                         </div>
 
-                        <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800">
-                            <span class="text-[10px] uppercase font-mono text-slate-400 block">YouTube Custom URL</span>
-                            <span class="text-xs font-mono text-cyan-300 truncate block mt-1">
-                                {{ officer.custom_url || "-" }}
-                            </span>
+                        <div class="space-y-1.5">
+                            <Label class="text-xs uppercase font-mono text-muted-foreground flex items-center gap-1.5">
+                                <Lock class="w-3.5 h-3.5 text-muted-foreground" />
+                                <span>YouTube Custom URL</span>
+                            </Label>
+                            <Input
+                                :model-value="officer.custom_url || '-'"
+                                disabled
+                                class="text-xs font-mono"
+                            />
                         </div>
 
-                        <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800">
-                            <span class="text-[10px] uppercase font-mono text-slate-400 block">Bio-Link Slug</span>
-                            <span class="text-xs font-mono text-emerald-300 truncate block mt-1 select-all">
-                                /@{{ officer.bio_profile?.slug || officer.slug || "-" }}
-                            </span>
+                        <div class="space-y-1.5">
+                            <Label class="text-xs uppercase font-mono text-muted-foreground flex items-center gap-1.5">
+                                <Lock class="w-3.5 h-3.5 text-muted-foreground" />
+                                <span>Bio-Link Slug</span>
+                            </Label>
+                            <Input
+                                :model-value="`/@${officer.bio_profile?.slug || officer.slug || '-'}`"
+                                disabled
+                                class="text-xs font-mono"
+                            />
                         </div>
                     </div>
 
-                    <div class="mt-3 p-3 rounded-xl bg-slate-950/40 border border-slate-800 text-[11px] text-slate-400 font-mono flex items-center gap-2">
-                        <span>ℹ️</span>
+                    <div class="mt-3 p-3 rounded-xl bg-muted/40 border border-border text-xs text-muted-foreground font-mono flex items-center gap-2">
+                        <Info class="w-4 h-4 text-primary shrink-0" />
                         <span>Jika Anda mengganti channel YouTube utama Anda, ajukan tiket bantuan ke Admin SASP untuk re-verifikasi.</span>
                     </div>
-                </div>
+                </Card>
 
                 <!-- SAVE BUTTON ACTIONS -->
                 <div class="flex items-center justify-end gap-3 pt-4">
-                    <button
+                    <Button
                         @click="saveProfile"
                         :disabled="isSavingProfile"
-                        class="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+                        size="lg"
+                        class="font-mono font-bold text-xs uppercase tracking-wider cursor-pointer flex items-center gap-2"
                     >
-                        <svg v-if="isSavingProfile" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                        </svg>
+                        <Loader2 v-if="isSavingProfile" class="w-4 h-4 animate-spin" />
                         <span>{{ isSavingProfile ? "Menyimpan Perubahan..." : "Simpan Pembaruan Profil" }}</span>
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -612,75 +666,77 @@ const switchTab = (tab) => {
             <div v-if="activeTab === 'requests'" class="mt-6 space-y-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-bold font-mono uppercase text-white">
+                        <h3 class="text-sm font-bold font-mono uppercase text-foreground">
                             Riwayat Pengajuan Pangkat & Kesatuan
                         </h3>
-                        <p class="text-xs text-slate-400">
+                        <p class="text-xs text-muted-foreground">
                             Daftar tiket mutasi atau kenaikan pangkat yang pernah diajukan.
                         </p>
                     </div>
 
-                    <button
+                    <Button
+                        size="sm"
                         @click="openChangeRequestModal('rank_id')"
-                        class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-mono font-bold transition cursor-pointer"
+                        class="text-xs font-mono font-bold cursor-pointer flex items-center gap-1.5"
                     >
-                        + Buat Pengajuan Baru
-                    </button>
+                        <Plus class="w-4 h-4" />
+                        <span>Buat Pengajuan Baru</span>
+                    </Button>
                 </div>
 
-                <div v-if="localRequests.length === 0" class="p-8 rounded-2xl bg-slate-900/40 border border-dashed border-slate-800 text-center text-xs font-mono text-slate-500">
-                    Belum ada pengajuan mutasi pangkat atau kesatuan.
-                </div>
+                <EmptyState
+                    v-if="localRequests.length === 0"
+                    title="Belum Ada Pengajuan"
+                    description="Belum ada pengajuan mutasi pangkat atau kesatuan."
+                />
 
                 <div v-else class="space-y-3">
-                    <div
+                    <Card
                         v-for="req in localRequests"
                         :key="req.id"
-                        class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                        class="p-4 rounded-xl bg-card border-border flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
                     >
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-bold font-mono uppercase bg-slate-800 text-slate-300">
+                                <Badge variant="secondary" class="text-xs font-bold font-mono uppercase">
                                     {{ req.field === 'rank_id' ? 'Kenaikan Pangkat' : 'Mutasi Kesatuan' }}
-                                </span>
-                                <span
-                                    :class="[
-                                        'px-2 py-0.5 rounded-sm text-[9px] font-bold font-mono uppercase',
-                                        req.status === 'pending' ? 'bg-amber-950 text-amber-300 border border-amber-500/30' :
-                                        req.status === 'approved' ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' :
-                                        'bg-rose-950 text-rose-300 border border-rose-500/30'
-                                    ]"
+                                </Badge>
+                                <Badge
+                                    :variant="req.status === 'pending' ? 'warning' : req.status === 'approved' ? 'success' : 'destructive'"
+                                    class="text-xs font-bold font-mono uppercase"
                                 >
                                     {{ req.status }}
-                                </span>
-                                <span class="text-[10px] text-slate-500 font-mono">
+                                </Badge>
+                                <span class="text-xs text-muted-foreground font-mono">
                                     Diajukan: {{ new Date(req.created_at).toLocaleDateString('id-ID') }}
                                 </span>
                             </div>
 
-                            <p class="text-xs font-mono text-slate-200">
-                                Permintaan ke: <strong class="text-cyan-300">{{ req.new_value }}</strong>
-                                <span class="text-slate-500"> (Sebelumnya: {{ req.old_value || '-' }})</span>
+                            <p class="text-xs font-mono text-foreground">
+                                Permintaan ke: <strong class="text-primary">{{ req.new_value }}</strong>
+                                <span class="text-muted-foreground"> (Sebelumnya: {{ req.old_value || '-' }})</span>
                             </p>
 
-                            <p class="text-[11px] text-slate-400 italic">
+                            <p class="text-xs text-muted-foreground italic">
                                 Alasan: "{{ req.reason }}"
                             </p>
 
-                            <p v-if="req.admin_reason" class="text-[11px] text-amber-300/90 font-mono">
+                            <p v-if="req.admin_reason" class="text-xs text-warning font-mono">
                                 Catatan Komando: {{ req.admin_reason }}
                             </p>
                         </div>
 
                         <div v-if="req.status === 'pending'" class="flex items-center gap-2">
-                            <button
-                                @click="cancelRequest(req.id)"
-                                class="px-3 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900/60 border border-rose-500/40 text-rose-300 text-xs font-mono transition cursor-pointer"
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                @click="promptCancelRequest(req.id)"
+                                class="text-xs font-mono cursor-pointer"
                             >
                                 Batalkan Pengajuan
-                            </button>
+                            </Button>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
 
@@ -688,107 +744,99 @@ const switchTab = (tab) => {
             <div v-if="activeTab === 'history'" class="mt-6 space-y-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="text-sm font-bold font-mono uppercase text-white">
+                        <h3 class="text-sm font-bold font-mono uppercase text-foreground">
                             Log Audit Perubahan Profil
                         </h3>
-                        <p class="text-xs text-slate-400">
+                        <p class="text-xs text-muted-foreground">
                             Catatan audit keamanan perubahan profil mandiri dan aksi admin.
                         </p>
                     </div>
 
-                    <button
+                    <Button
+                        variant="outline"
+                        size="sm"
                         @click="loadHistory"
                         :disabled="isLoadingHistory"
-                        class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 transition cursor-pointer"
+                        class="text-xs font-mono cursor-pointer flex items-center gap-1.5"
                     >
-                        {{ isLoadingHistory ? "Memuat..." : "Segarkan Log" }}
-                    </button>
+                        <RefreshCw class="w-3.5 h-3.5" :class="{ 'animate-spin': isLoadingHistory }" />
+                        <span>{{ isLoadingHistory ? "Memuat..." : "Segarkan Log" }}</span>
+                    </Button>
                 </div>
 
-                <div v-if="isLoadingHistory" class="p-8 text-center text-xs font-mono text-slate-400">
+                <div v-if="isLoadingHistory" class="p-8 text-center text-xs font-mono text-muted-foreground">
                     Memuat riwayat audit...
                 </div>
 
-                <div v-else-if="historyLogs.length === 0" class="p-8 rounded-2xl bg-slate-900/40 border border-dashed border-slate-800 text-center text-xs font-mono text-slate-500">
-                    Belum ada riwayat perubahan yang tercatat.
-                </div>
+                <EmptyState
+                    v-else-if="historyLogs.length === 0"
+                    title="Belum Ada Riwayat"
+                    description="Belum ada riwayat perubahan yang tercatat."
+                />
 
                 <div v-else class="space-y-2">
-                    <div
+                    <Card
                         v-for="log in historyLogs"
                         :key="log.id"
-                        class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 text-xs font-mono flex items-start justify-between gap-4"
+                        class="p-3.5 rounded-xl bg-card border-border text-xs font-mono flex items-start justify-between gap-4"
                     >
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded-sm text-[9px] font-bold uppercase bg-slate-800 text-cyan-300">
+                                <Badge variant="secondary" class="text-xs font-bold uppercase text-primary">
                                     {{ log.action }}
-                                </span>
-                                <span class="text-[10px] text-slate-500">
+                                </Badge>
+                                <span class="text-xs text-muted-foreground">
                                     {{ new Date(log.created_at).toLocaleString('id-ID') }}
                                 </span>
                             </div>
-                            <p class="text-slate-300">
+                            <p class="text-foreground">
                                 {{ log.details }}
                             </p>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
         </main>
 
         <!-- MODAL: AJUKAN KENAIKAN PANGKAT / MUTASI KESATUAN -->
-        <div
-            v-if="isRequestModalOpen"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in"
-        >
-            <div class="w-full max-w-md rounded-2xl bg-slate-900 border border-white/10 p-6 shadow-2xl space-y-4">
-                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                    <h3 class="text-sm font-bold font-mono uppercase text-white flex items-center gap-2">
+        <Dialog :open="isRequestModalOpen" @update:open="(val) => (isRequestModalOpen = val)">
+            <DialogContent class="sm:max-w-md bg-card border-border space-y-4">
+                <DialogHeader class="pb-3 border-b border-border">
+                    <DialogTitle class="text-sm font-bold font-mono uppercase text-foreground flex items-center gap-2">
                         <span>{{ requestForm.field === 'rank_id' ? '🎖️ Ajukan Kenaikan Pangkat' : '🏢 Ajukan Mutasi Kesatuan' }}</span>
-                    </h3>
-                    <button
-                        @click="isRequestModalOpen = false"
-                        class="text-slate-400 hover:text-white text-lg font-mono"
-                    >
-                        ✕
-                    </button>
-                </div>
+                    </DialogTitle>
+                </DialogHeader>
 
                 <div class="space-y-3 font-mono text-xs">
                     <!-- Field Type Toggle -->
-                    <div>
-                        <label class="block text-slate-400 mb-1">Jenis Pengajuan</label>
+                    <div class="space-y-1">
+                        <Label class="text-xs text-muted-foreground">Jenis Pengajuan</Label>
                         <div class="grid grid-cols-2 gap-2">
-                            <button
+                            <Button
                                 type="button"
+                                :variant="requestForm.field === 'rank_id' ? 'default' : 'outline'"
                                 @click="requestForm.field = 'rank_id'"
-                                :class="[
-                                    'py-2 px-3 rounded-xl border text-center transition cursor-pointer',
-                                    requestForm.field === 'rank_id' ? 'bg-amber-950/80 border-amber-500/60 text-amber-300' : 'bg-slate-950 border-slate-800 text-slate-400'
-                                ]"
+                                class="text-xs cursor-pointer"
                             >
                                 Pangkat
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 type="button"
+                                :variant="requestForm.field === 'agency_id' ? 'default' : 'outline'"
                                 @click="requestForm.field = 'agency_id'"
-                                :class="[
-                                    'py-2 px-3 rounded-xl border text-center transition cursor-pointer',
-                                    requestForm.field === 'agency_id' ? 'bg-blue-950/80 border-blue-500/60 text-blue-300' : 'bg-slate-950 border-slate-800 text-slate-400'
-                                ]"
+                                class="text-xs cursor-pointer"
                             >
                                 Kesatuan
-                            </button>
+                            </Button>
                         </div>
                     </div>
 
                     <!-- Target Selection for Agency Mutasi -->
-                    <div v-if="requestForm.field === 'agency_id'">
-                        <label class="block text-slate-400 mb-1">Kesatuan Tujuan <span class="text-rose-400">*</span></label>
+                    <div v-if="requestForm.field === 'agency_id'" class="space-y-1">
+                        <Label class="text-xs text-muted-foreground">Kesatuan Tujuan <span class="text-destructive">*</span></Label>
                         <select
                             v-model="requestForm.new_value"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-hidden focus:border-cyan-500"
+                            class="w-full px-3 py-2 rounded-xl bg-background border border-input text-foreground outline-hidden focus:border-primary"
                         >
                             <option value="">-- Pilih Kesatuan Tujuan --</option>
                             <option
@@ -802,11 +850,11 @@ const switchTab = (tab) => {
                     </div>
 
                     <!-- Target Selection for Rank Kenaikan -->
-                    <div v-else>
-                        <label class="block text-slate-400 mb-1">Pangkat Tujuan <span class="text-rose-400">*</span></label>
+                    <div v-else class="space-y-1">
+                        <Label class="text-xs text-muted-foreground">Pangkat Tujuan <span class="text-destructive">*</span></Label>
                         <select
                             v-model="requestForm.new_value"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-hidden focus:border-cyan-500"
+                            class="w-full px-3 py-2 rounded-xl bg-background border border-input text-foreground outline-hidden focus:border-primary"
                         >
                             <option value="">-- Pilih Pangkat Tujuan --</option>
                             <option
@@ -820,35 +868,54 @@ const switchTab = (tab) => {
                     </div>
 
                     <!-- Reason Textarea -->
-                    <div>
-                        <label class="block text-slate-400 mb-1">
-                            Alasan & Dasar Perintah Dinas <span class="text-rose-400">*</span>
-                        </label>
-                        <textarea
+                    <div class="space-y-1">
+                        <Label class="text-xs text-muted-foreground">
+                            Alasan & Dasar Perintah Dinas <span class="text-destructive">*</span>
+                        </Label>
+                        <Textarea
                             v-model="requestForm.reason"
                             rows="3"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white outline-hidden focus:border-cyan-500"
+                            class="text-xs font-mono"
                             placeholder="Contoh: Telah lulus diklat perwira / Nomor Sprin: SP/124/X/2026/SASP"
-                        ></textarea>
+                        />
                     </div>
                 </div>
 
-                <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-                    <button
+                <DialogFooter class="pt-3 border-t border-border">
+                    <Button
+                        variant="outline"
                         @click="isRequestModalOpen = false"
-                        class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 transition cursor-pointer"
+                        class="text-xs font-mono cursor-pointer"
                     >
                         Batal
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         @click="submitChangeRequest"
                         :disabled="isSubmittingRequest"
-                        class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-mono font-bold transition cursor-pointer disabled:opacity-50"
+                        class="text-xs font-mono font-bold cursor-pointer"
                     >
                         {{ isSubmittingRequest ? "Mengirim..." : "Kirim Pengajuan" }}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- CANCEL REQUEST ALERT DIALOG -->
+        <AlertDialog :open="requestToCancelId !== null" @update:open="(val) => { if (!val) requestToCancelId = null; }">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Batalkan Pengajuan Mutasi?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Apakah Anda yakin ingin membatalkan pengajuan mutasi ini?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="requestToCancelId = null">Tidak</AlertDialogCancel>
+                    <AlertDialogAction class="bg-destructive text-destructive-foreground hover:bg-destructive/90" @click="confirmCancelRequest">
+                        Ya, Batalkan
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
 </template>

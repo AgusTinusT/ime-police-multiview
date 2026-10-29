@@ -1,6 +1,45 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import axios from "axios";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/Components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from "@/Components/ui/alert-dialog";
+import {
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    TabsContent,
+} from "@/Components/ui/tabs";
+import { Alert, AlertDescription } from "@/Components/ui/alert";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Textarea } from "@/Components/ui/textarea";
+import {
+    AlertTriangle,
+    Check,
+    Copy,
+    Loader2,
+    ShieldCheck,
+    Zap,
+    FileText,
+} from "@lucide/vue";
 
 const props = defineProps({
     show: {
@@ -32,6 +71,7 @@ const issuedToken = ref("");
 const activeYouTubeClaim = ref(null);
 const isCheckingYouTube = ref(false);
 const copiedToken = ref(false);
+const claimToCancelId = ref(null);
 
 const activeClaim = computed(() => {
     return myClaims.value.find((c) => c.status === "pending") || null;
@@ -60,7 +100,6 @@ const loadData = async () => {
         unclaimedOfficers.value = officersRes.data.officers || [];
         myClaims.value = claimsRes.data.claims || [];
 
-        // Check if there is an active pending YouTube claim
         const pendingYt = myClaims.value.find((c) => c.status === "pending" && c.verification_method === "youtube_token");
         if (pendingYt) {
             activeYouTubeClaim.value = pendingYt;
@@ -175,8 +214,14 @@ const submitManualClaim = async () => {
     }
 };
 
-const cancelClaim = async (claimId) => {
-    if (!confirm("Apakah Anda yakin ingin membatalkan pengajuan klaim ini?")) return;
+const promptCancelClaim = (claimId) => {
+    claimToCancelId.value = claimId;
+};
+
+const confirmCancelClaim = async () => {
+    const claimId = claimToCancelId.value;
+    if (!claimId) return;
+    claimToCancelId.value = null;
     try {
         await axios.delete(`/api/v1/officer-claims/${claimId}`);
         activeYouTubeClaim.value = null;
@@ -204,282 +249,295 @@ onMounted(() => {
 </script>
 
 <template>
-    <Teleport to="body">
-        <div
-            v-if="show"
-            class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto font-sans"
-        >
-            <div class="w-full max-w-lg my-auto bg-slate-900 border border-cyan-500/30 rounded-2xl p-6 shadow-2xl text-left space-y-4 max-h-[90vh] overflow-y-auto">
+    <Dialog :open="show" @update:open="(val) => { if (!val) emit('close'); }">
+        <DialogContent class="sm:max-w-lg bg-card border-border text-foreground font-sans space-y-4 max-h-[90vh] overflow-y-auto">
             <!-- Header -->
-            <div class="flex items-center justify-between border-b border-white/10 pb-3">
-                <div class="flex items-center gap-2">
-                    <span class="text-xl">🛡️</span>
+            <DialogHeader class="border-b border-border pb-3 text-left">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+                        <ShieldCheck class="w-5 h-5" />
+                    </div>
                     <div>
-                        <h3 class="text-sm font-black font-mono uppercase text-white tracking-wider">
+                        <DialogTitle class="text-sm font-bold font-mono uppercase text-foreground tracking-wider">
                             Klaim Kepemilikan Profil Perwira
-                        </h3>
-                        <p class="text-[11px] text-slate-400 font-sans">
+                        </DialogTitle>
+                        <DialogDescription class="text-xs text-muted-foreground font-sans">
                             SASP Self-Service Ownership & Verification (PRD v3)
-                        </p>
+                        </DialogDescription>
                     </div>
                 </div>
-                <button
-                    @click="$emit('close')"
-                    class="text-slate-400 hover:text-white font-mono text-sm px-2 py-1"
-                >
-                    ✕
-                </button>
-            </div>
+            </DialogHeader>
 
             <!-- Messages -->
-            <div
+            <Alert
                 v-if="errorMessage"
-                class="p-3 rounded-xl bg-rose-950/80 border border-rose-500/50 text-rose-200 text-xs font-mono"
+                variant="destructive"
+                class="p-3 text-xs font-mono flex items-center gap-2"
             >
-                ⚠️ {{ errorMessage }}
-            </div>
+                <AlertTriangle class="w-4 h-4 shrink-0" />
+                <AlertDescription>{{ errorMessage }}</AlertDescription>
+            </Alert>
 
-            <div
+            <Alert
                 v-if="successMessage"
-                class="p-3 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 text-xs font-mono"
+                class="p-3 border-success/40 bg-success/10 text-success text-xs font-mono flex items-center gap-2"
             >
-                ✓ {{ successMessage }}
-            </div>
+                <Check class="w-4 h-4 shrink-0" />
+                <AlertDescription>{{ successMessage }}</AlertDescription>
+            </Alert>
 
             <!-- Existing Pending YouTube Token Claim Waiting for Verification -->
-            <div
+            <Card
                 v-if="activeYouTubeClaim && activeYouTubeClaim.status === 'pending'"
-                class="p-4 rounded-xl bg-slate-950 border border-cyan-500/40 space-y-3"
+                class="p-4 rounded-xl bg-muted/40 border-primary/40 space-y-3"
             >
                 <div class="flex items-center justify-between">
-                    <span class="px-2 py-0.5 rounded-sm text-[10px] font-mono font-black bg-cyan-950 text-cyan-400 border border-cyan-500/40">
+                    <Badge variant="info" class="font-mono text-xs font-bold">
                         ⚡ VERIFIKASI YOUTUBE AKTIF
-                    </span>
-                    <span class="text-[10px] text-slate-400 font-mono">
+                    </Badge>
+                    <span class="text-xs text-muted-foreground font-mono">
                         Berlaku 24 Jam
                     </span>
                 </div>
 
                 <div>
-                    <h4 class="text-xs font-bold text-white font-mono">
+                    <h4 class="text-xs font-bold text-foreground font-mono">
                         {{ activeYouTubeClaim.officer?.officer_name }} ({{ activeYouTubeClaim.officer?.callsign }})
                     </h4>
-                    <p class="text-[11px] text-slate-400 font-sans mt-0.5">
-                        Channel ID: <span class="text-cyan-300 font-mono">{{ activeYouTubeClaim.officer?.channel_id }}</span>
+                    <p class="text-xs text-muted-foreground font-sans mt-0.5">
+                        Channel ID: <span class="text-primary font-mono">{{ activeYouTubeClaim.officer?.channel_id }}</span>
                     </p>
                 </div>
 
                 <!-- Token Display Box -->
-                <div v-if="issuedToken" class="p-3 bg-slate-900 border border-cyan-500/30 rounded-xl space-y-1.5">
-                    <div class="text-[10px] uppercase font-mono text-cyan-400 font-bold">
+                <div v-if="issuedToken" class="p-3 bg-card border border-primary/30 rounded-xl space-y-1.5">
+                    <div class="text-xs uppercase font-mono text-primary font-bold">
                         Kode Token Anda (Tempel di Deskripsi YouTube):
                     </div>
                     <div class="flex items-center justify-between gap-2">
-                        <code class="text-xs font-mono text-amber-300 font-bold tracking-wider select-all break-all">
+                        <code class="text-xs font-mono text-warning font-bold tracking-wider select-all break-all">
                             {{ issuedToken }}
                         </code>
-                        <button
+                        <Button
+                            variant="outline"
+                            size="sm"
                             @click="copyToken"
-                            class="px-2.5 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-700 text-[10px] font-mono font-bold shrink-0 transition"
+                            class="text-xs font-mono font-bold shrink-0"
                         >
-                            {{ copiedToken ? "✓ Tersalin!" : "Salin" }}
-                        </button>
+                            <Check v-if="copiedToken" class="w-3.5 h-3.5 mr-1 text-success" />
+                            <Copy v-else class="w-3.5 h-3.5 mr-1" />
+                            {{ copiedToken ? "Tersalin!" : "Salin" }}
+                        </Button>
                     </div>
                 </div>
 
-                <div class="text-[11px] text-slate-300 space-y-1 font-sans bg-slate-900/60 p-3 rounded-lg border border-slate-800">
-                    <p class="font-bold text-white text-[11px]">Instruksi Langkah Mudah:</p>
-                    <ol class="list-decimal list-inside space-y-0.5 text-[11px] text-slate-300">
+                <div class="text-xs text-muted-foreground space-y-1 font-sans bg-card/60 p-3 rounded-lg border border-border">
+                    <p class="font-bold text-foreground text-xs">Instruksi Langkah Mudah:</p>
+                    <ol class="list-decimal list-inside space-y-0.5 text-xs text-muted-foreground">
                         <li>Buka channel YouTube Anda (atau deskripsi siaran live aktif).</li>
-                        <li>Tempelkan kode token di atas pada bagian <strong>Tentang (About)</strong> atau Deskripsi.</li>
-                        <li>Simpan perubahan di YouTube, lalu tekan tombol <strong>Periksa Sekarang</strong> di bawah.</li>
+                        <li>Tempelkan kode token di atas pada bagian <strong class="text-foreground">Tentang (About)</strong> atau Deskripsi.</li>
+                        <li>Simpan perubahan di YouTube, lalu tekan tombol <strong class="text-foreground">Periksa Sekarang</strong> di bawah.</li>
                     </ol>
                 </div>
 
-                <div class="flex items-center justify-between pt-2 border-t border-white/5">
-                    <button
-                        @click="cancelClaim(activeYouTubeClaim.id)"
-                        class="text-[10px] font-mono text-rose-400 hover:text-rose-300 underline"
+                <div class="flex items-center justify-between pt-2 border-t border-border">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        @click="promptCancelClaim(activeYouTubeClaim.id)"
+                        class="text-xs font-mono text-destructive hover:text-destructive"
                     >
                         Batalkan Klaim
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         @click="checkYouTubeVerification"
                         :disabled="isCheckingYouTube"
-                        class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-black font-mono font-bold text-xs uppercase tracking-wider transition shadow-md flex items-center gap-1.5"
+                        class="font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-1.5"
                     >
-                        <svg v-if="isCheckingYouTube" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                        </svg>
+                        <Loader2 v-if="isCheckingYouTube" class="w-3.5 h-3.5 animate-spin" />
                         <span>{{ isCheckingYouTube ? "Memeriksa..." : "Periksa Sekarang →" }}</span>
-                    </button>
+                    </Button>
                 </div>
-            </div>
+            </Card>
 
             <!-- Existing Pending Manual Claim -->
-            <div
+            <Card
                 v-else-if="activeClaim && activeClaim.status === 'pending' && activeClaim.verification_method === 'manual_admin'"
-                class="p-4 rounded-xl bg-slate-950 border border-amber-500/40 space-y-2.5"
+                class="p-4 rounded-xl bg-muted/40 border-warning/40 space-y-2.5"
             >
                 <div class="flex items-center justify-between">
-                    <span class="px-2 py-0.5 rounded-sm text-[10px] font-mono font-black bg-amber-950 text-amber-400 border border-amber-500/40">
+                    <Badge variant="warning" class="font-mono text-xs font-bold">
                         ⏳ REVIEW MANUAL ADMIN
-                    </span>
-                    <span class="text-[10px] text-slate-400 font-mono">
+                    </Badge>
+                    <span class="text-xs text-muted-foreground font-mono">
                         {{ new Date(activeClaim.created_at).toLocaleDateString() }}
                     </span>
                 </div>
                 <div>
-                    <h4 class="text-xs font-bold text-white font-mono">
+                    <h4 class="text-xs font-bold text-foreground font-mono">
                         {{ activeClaim.officer?.officer_name }} ({{ activeClaim.officer?.callsign }})
                     </h4>
-                    <p class="text-[11px] text-slate-400 font-sans mt-0.5">
-                        Discord Tag: <span class="text-cyan-300 font-mono">{{ activeClaim.proof_discord_tag }}</span>
+                    <p class="text-xs text-muted-foreground font-sans mt-0.5">
+                        Discord Tag: <span class="text-primary font-mono">{{ activeClaim.proof_discord_tag }}</span>
                     </p>
-                    <p v-if="activeClaim.notes" class="text-[11px] text-slate-400 italic mt-0.5">
+                    <p v-if="activeClaim.notes" class="text-xs text-muted-foreground italic mt-0.5">
                         "{{ activeClaim.notes }}"
                     </p>
                 </div>
-                <div class="flex items-center justify-between pt-2 border-t border-white/5">
-                    <span class="text-[10px] text-slate-500">
+                <div class="flex items-center justify-between pt-2 border-t border-border">
+                    <span class="text-xs text-muted-foreground">
                         Admin akan memverifikasi di saluran Discord SASP.
                     </span>
-                    <button
-                        @click="cancelClaim(activeClaim.id)"
-                        class="text-[10px] font-mono text-rose-400 hover:text-rose-300 underline"
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        @click="promptCancelClaim(activeClaim.id)"
+                        class="text-xs font-mono text-destructive hover:text-destructive"
                     >
                         Batalkan Pengajuan
-                    </button>
+                    </Button>
                 </div>
-            </div>
+            </Card>
 
             <!-- Form: Submit New Claim (if not already pending) -->
             <div v-else-if="!isLoading" class="space-y-4">
-                <!-- Method Selection Tabs -->
-                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono">
-                    <button
-                        type="button"
-                        @click="claimMode = 'youtube'"
-                        class="py-2 px-3 rounded-lg font-bold transition flex items-center justify-center gap-1.5"
-                        :class="claimMode === 'youtube' ? 'bg-cyan-600 text-black shadow-sm' : 'text-slate-400 hover:text-white'"
-                    >
-                        <span>⚡ Token YouTube</span>
-                        <span class="text-[9px] uppercase px-1 py-0.2 rounded-sm bg-black/30 font-mono">Utama</span>
-                    </button>
-                    <button
-                        type="button"
-                        @click="claimMode = 'manual'"
-                        class="py-2 px-3 rounded-lg font-bold transition flex items-center justify-center gap-1.5"
-                        :class="claimMode === 'manual' ? 'bg-cyan-600 text-black shadow-sm' : 'text-slate-400 hover:text-white'"
-                    >
-                        <span>📝 Review Admin</span>
-                        <span class="text-[9px] uppercase px-1 py-0.2 rounded-sm bg-black/30 font-mono">Cadangan</span>
-                    </button>
-                </div>
+                <Tabs v-model="claimMode" class="w-full space-y-4">
+                    <TabsList class="grid w-full grid-cols-2 font-mono text-xs">
+                        <TabsTrigger value="youtube" class="flex items-center gap-1.5 font-bold">
+                            <Zap class="w-3.5 h-3.5" />
+                            <span>Token YouTube</span>
+                            <Badge variant="secondary" class="text-xs uppercase px-1.5 py-0 font-mono">Utama</Badge>
+                        </TabsTrigger>
+                        <TabsTrigger value="manual" class="flex items-center gap-1.5 font-bold">
+                            <FileText class="w-3.5 h-3.5" />
+                            <span>Review Admin</span>
+                            <Badge variant="outline" class="text-xs uppercase px-1.5 py-0 font-mono">Cadangan</Badge>
+                        </TabsTrigger>
+                    </TabsList>
 
-                <!-- Search & Select Officer -->
-                <div class="space-y-1">
-                    <label class="block text-xs font-mono uppercase text-slate-300">
-                        Pilih Profil Perwira Dinas Anda
-                    </label>
-                    <input
-                        v-model="searchQuery"
-                        type="text"
-                        placeholder="Cari nama perwira, callsign, atau departemen..."
-                        class="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden mb-1.5"
-                    />
-                    <select
-                        v-model="selectedOfficerId"
-                        class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
-                    >
-                        <option value="">-- Pilih Perwira Dari Roster ({{ filteredOfficers.length }} tersedia) --</option>
-                        <option v-for="o in filteredOfficers" :key="o.id" :value="o.id">
-                            {{ o.officer_name }} ({{ o.streamer_name }}) • [{{ o.department }} #{{ o.callsign }}]
-                        </option>
-                    </select>
-                </div>
-
-                <!-- MODE 1: YOUTUBE VERIFICATION EXPLANATION & ACTION -->
-                <div v-if="claimMode === 'youtube'" class="space-y-3 p-3.5 bg-slate-950/60 rounded-xl border border-cyan-500/20">
-                    <div class="text-[11px] text-slate-300 space-y-1.5 leading-relaxed font-sans">
-                        <p class="font-bold text-cyan-400 flex items-center gap-1.5">
-                            <span>⚡ Cara Kerja Verifikasi Otomatis:</span>
-                        </p>
-                        <p>
-                            Sistem akan menerbitkan kode token acak rahasia. Anda cukup menempelkannya sementara di deskripsi channel YouTube yang terdaftar. Sistem akan memvalidasi secara otomatis tanpa menunggu approval admin.
-                        </p>
-                    </div>
-
-                    <div class="pt-2 flex items-center justify-end gap-2 border-t border-white/5">
-                        <button
-                            @click="$emit('close')"
-                            class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition"
-                        >
-                            Tutup
-                        </button>
-                        <button
-                            @click="requestYouTubeToken"
-                            :disabled="isSubmitting"
-                            class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-black font-mono font-bold text-xs uppercase tracking-wider transition shadow-md"
-                        >
-                            {{ isSubmitting ? "Menerbitkan Token..." : "Dapatkan Token Verifikasi →" }}
-                        </button>
-                    </div>
-                </div>
-
-                <!-- MODE 2: MANUAL ADMIN FORM -->
-                <div v-else class="space-y-3">
-                    <div class="space-y-1">
-                        <label class="block text-xs font-mono uppercase text-slate-300">
-                            Discord Tag Perwira <span class="text-cyan-400">*</span>
-                        </label>
-                        <input
-                            v-model="proofDiscordTag"
+                    <!-- Search & Select Officer -->
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-mono uppercase text-muted-foreground">
+                            Pilih Profil Perwira Dinas Anda
+                        </Label>
+                        <Input
+                            v-model="searchQuery"
                             type="text"
-                            placeholder="Contoh: username#1234 atau username"
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
+                            placeholder="Cari nama perwira, callsign, atau departemen..."
+                            class="text-xs font-mono"
                         />
-                        <p class="text-[10px] text-slate-400 font-sans">
-                            Admin SASP akan menghubungi Discord ini untuk memvalidasi identitas perwira jika channel tidak dapat diakses.
-                        </p>
+                        <select
+                            v-model="selectedOfficerId"
+                            class="w-full px-3 py-2 rounded-xl bg-background border border-input text-xs font-mono text-foreground focus:border-primary outline-hidden"
+                        >
+                            <option value="">-- Pilih Perwira Dari Roster ({{ filteredOfficers.length }} tersedia) --</option>
+                            <option v-for="o in filteredOfficers" :key="o.id" :value="o.id">
+                                {{ o.officer_name }} ({{ o.streamer_name }}) • [{{ o.department }} #{{ o.callsign }}]
+                            </option>
+                        </select>
                     </div>
 
-                    <div class="space-y-1">
-                        <label class="block text-xs font-mono uppercase text-slate-300">
-                            Catatan / Keterangan (Opsional)
-                        </label>
-                        <textarea
-                            v-model="notes"
-                            rows="2"
-                            placeholder="Alasan memakai verifikasi manual..."
-                            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:border-cyan-500 outline-hidden"
-                        ></textarea>
-                    </div>
+                    <!-- MODE 1: YOUTUBE VERIFICATION EXPLANATION & ACTION -->
+                    <TabsContent value="youtube" class="space-y-3 p-3.5 bg-muted/40 rounded-xl border border-primary/20 mt-0">
+                        <div class="text-xs text-muted-foreground space-y-1.5 leading-relaxed font-sans">
+                            <p class="font-bold text-primary flex items-center gap-1.5">
+                                <Zap class="w-3.5 h-3.5" />
+                                <span>Cara Kerja Verifikasi Otomatis:</span>
+                            </p>
+                            <p>
+                                Sistem akan menerbitkan kode token acak rahasia. Anda cukup menempelkannya sementara di deskripsi channel YouTube yang terdaftar. Sistem akan memvalidasi secara otomatis tanpa menunggu approval admin.
+                            </p>
+                        </div>
 
-                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
-                        <button
-                            @click="$emit('close')"
-                            class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition"
-                        >
-                            Tutup
-                        </button>
-                        <button
-                            @click="submitManualClaim"
-                            :disabled="isSubmitting"
-                            class="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-black font-mono font-bold text-xs uppercase tracking-wider transition shadow-md"
-                        >
-                            {{ isSubmitting ? "Mengirim..." : "Kirim Review Manual" }}
-                        </button>
-                    </div>
-                </div>
+                        <div class="pt-2 flex items-center justify-end gap-2 border-t border-border">
+                            <Button
+                                variant="outline"
+                                @click="$emit('close')"
+                                class="text-xs font-mono"
+                            >
+                                Tutup
+                            </Button>
+                            <Button
+                                @click="requestYouTubeToken"
+                                :disabled="isSubmitting"
+                                class="font-mono font-bold text-xs uppercase tracking-wider"
+                            >
+                                {{ isSubmitting ? "Menerbitkan Token..." : "Dapatkan Token Verifikasi →" }}
+                            </Button>
+                        </div>
+                    </TabsContent>
+
+                    <!-- MODE 2: MANUAL ADMIN FORM -->
+                    <TabsContent value="manual" class="space-y-3 mt-0">
+                        <div class="space-y-1">
+                            <Label class="text-xs font-mono uppercase text-muted-foreground">
+                                Discord Tag Perwira <span class="text-primary">*</span>
+                            </Label>
+                            <Input
+                                v-model="proofDiscordTag"
+                                type="text"
+                                placeholder="Contoh: username#1234 atau username"
+                                class="text-xs font-mono"
+                            />
+                            <p class="text-xs text-muted-foreground font-sans">
+                                Admin SASP akan menghubungi Discord ini untuk memvalidasi identitas perwira jika channel tidak dapat diakses.
+                            </p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <Label class="text-xs font-mono uppercase text-muted-foreground">
+                                Catatan / Keterangan (Opsional)
+                            </Label>
+                            <Textarea
+                                v-model="notes"
+                                rows="2"
+                                placeholder="Alasan memakai verifikasi manual..."
+                                class="text-xs font-mono"
+                            />
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2 pt-2 border-t border-border">
+                            <Button
+                                variant="outline"
+                                @click="$emit('close')"
+                                class="text-xs font-mono"
+                            >
+                                Tutup
+                            </Button>
+                            <Button
+                                @click="submitManualClaim"
+                                :disabled="isSubmitting"
+                                class="font-mono font-bold text-xs uppercase tracking-wider"
+                            >
+                                {{ isSubmitting ? "Mengirim..." : "Kirim Review Manual" }}
+                            </Button>
+                        </div>
+                    </TabsContent>
+                </Tabs>
             </div>
 
             <!-- Loading Spinner -->
-            <div v-else class="py-8 text-center text-slate-400 font-mono text-xs">
+            <div v-else class="py-8 text-center text-muted-foreground font-mono text-xs">
+                <Loader2 class="w-5 h-5 animate-spin mx-auto mb-2 text-primary" />
                 Memuat data perwira...
             </div>
-        </div>
-        </div>
-    </Teleport>
+        </DialogContent>
+    </Dialog>
+
+    <AlertDialog :open="claimToCancelId !== null" @update:open="(val) => { if (!val) claimToCancelId = null; }">
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Batalkan Pengajuan Klaim?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Apakah Anda yakin ingin membatalkan pengajuan klaim ini?
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel @click="claimToCancelId = null">Tidak</AlertDialogCancel>
+                <AlertDialogAction class="bg-destructive text-destructive-foreground hover:bg-destructive/90" @click="confirmCancelClaim">
+                    Ya, Batalkan
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
 </template>
