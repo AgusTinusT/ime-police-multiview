@@ -2,13 +2,11 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { usePage, Link } from "@inertiajs/vue3";
 
-// SVG Icon Assets & Branding Logos
 import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
-
-// Sub-components
+import { Badge } from "@/Components/ui/badge";
+import { cn } from "@/lib/utils";
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
-
 
 defineProps({
     isDataSaverEnabled: {
@@ -78,7 +76,7 @@ onUnmounted(() => {
 <template>
     <!-- 1. TOP HEADER (DESKTOP FULL & MOBILE COMPACT) -->
     <header
-        class="bg-tactical-base/90 backdrop-blur-md border-b border-tactical-border px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 sticky top-0 z-40"
+        class="bg-background/90 backdrop-blur-md border-b border-border px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 sticky top-0 z-40"
     >
         <div
             class="max-w-(--breakpoint-2xl) mx-auto w-full flex items-center justify-between gap-2"
@@ -93,7 +91,7 @@ onUnmounted(() => {
                     title="Halaman Beranda Dashboard"
                 >
                     <div
-                        class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-md bg-tactical-panel border border-tactical-border group-hover:border-tactical-border-light p-1 overflow-hidden transition"
+                        class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-md bg-card border border-border group-hover:border-primary/50 p-1 overflow-hidden transition"
                     >
                         <img
                             :src="logoSaspColor"
@@ -103,12 +101,12 @@ onUnmounted(() => {
                     </div>
                     <div class="flex flex-col">
                         <span
-                            class="text-[11px] sm:text-xs font-black tracking-wider text-blue-400 group-hover:text-blue-300 uppercase leading-tight transition"
+                            class="text-xs font-extrabold tracking-wider text-primary group-hover:text-primary/80 uppercase leading-tight transition"
                         >
                             IME ROLEPLAY
                         </span>
                         <span
-                            class="text-[9px] sm:text-[10px] font-bold tracking-wide text-slate-300 group-hover:text-white uppercase leading-tight transition"
+                            class="text-xs font-bold tracking-wide text-foreground/80 group-hover:text-foreground uppercase leading-tight transition"
                         >
                             POLICE DUTY
                         </span>
@@ -116,18 +114,20 @@ onUnmounted(() => {
                 </Link>
 
                 <!-- Vertical Divider (Visible on desktop) -->
-                <div class="h-5 w-px bg-tactical-border hidden md:block"></div>
+                <div class="h-5 w-px bg-border hidden md:block"></div>
 
                 <!-- Desktop Navigation Links (>= md) -->
                 <nav class="hidden md:flex items-center space-x-1 shrink-0">
                     <Link
                         href="/"
-                        :class="[
-                            'px-3 py-1.5 text-xs font-bold rounded-md transition shrink-0',
-                            isUrlActive('/')
-                                ? 'text-white bg-blue-600'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                        ]"
+                        :class="
+                            cn(
+                                'px-3 py-1.5 text-xs font-bold rounded-md transition shrink-0',
+                                isUrlActive('/')
+                                    ? 'text-primary-foreground bg-primary'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                            )
+                        "
                         title="Home Discovery Hub"
                     >
                         <span>{{ $t("nav.dashboard") }}</span>
@@ -135,12 +135,14 @@ onUnmounted(() => {
 
                     <Link
                         href="/multiview"
-                        :class="[
-                            'px-3 py-1.5 text-xs font-bold rounded-md transition shrink-0 flex items-center gap-1.5',
-                            isUrlActive('/multiview')
-                                ? 'text-white bg-blue-600'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                        ]"
+                        :class="
+                            cn(
+                                'px-3 py-1.5 text-xs font-bold rounded-md transition shrink-0 flex items-center gap-1.5',
+                                isUrlActive('/multiview')
+                                    ? 'text-primary-foreground bg-primary'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                            )
+                        "
                         title="Stand-alone Multiview Stage"
                     >
                         <span>{{ $t("nav.multiview") }}</span>
@@ -149,27 +151,32 @@ onUnmounted(() => {
                     <!-- Clip Studio Feature Link -->
                     <Link
                         href="/clipper"
-                        :class="[
-                            'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0 flex items-center gap-1.5',
-                            isUrlActive('/clipper')
-                                ? 'text-white bg-blue-600 font-bold'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                        ]"
+                        :class="
+                            cn(
+                                'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0 flex items-center gap-1.5',
+                                isUrlActive('/clipper')
+                                    ? 'text-primary-foreground bg-primary font-bold'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                            )
+                        "
                         title="Clip Studio"
                     >
                         <span>Clip Studio</span>
-                        <span class="px-1.5 py-0.2 text-[9px] font-mono font-extrabold rounded-sm bg-emerald-950 text-emerald-400 border border-emerald-800/80 shrink-0">BETA</span>
+                        <Badge variant="success" class="px-1.5 py-0 font-mono font-extrabold">
+                            BETA
+                        </Badge>
                     </Link>
 
                     <Link
                         href="/action-clips"
-                        :class="[
-                            'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
-                            isUrlActive('/action-clips') ||
-                            isUrlActive('/clips')
-                                ? 'text-white bg-blue-600 font-bold'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                        ]"
+                        :class="
+                            cn(
+                                'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
+                                isUrlActive('/action-clips') || isUrlActive('/clips')
+                                    ? 'text-primary-foreground bg-primary font-bold'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                            )
+                        "
                         title="TacClips — Kumpulan Klip Momen Aksi Kepolisian"
                     >
                         <span>{{ $t("nav.clips") }}</span>
@@ -177,12 +184,14 @@ onUnmounted(() => {
 
                     <Link
                         href="/officers"
-                        :class="[
-                            'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
-                            isUrlActive('/officers')
-                                ? 'text-white bg-blue-600 font-bold'
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                        ]"
+                        :class="
+                            cn(
+                                'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
+                                isUrlActive('/officers')
+                                    ? 'text-primary-foreground bg-primary font-bold'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                            )
+                        "
                         title="Direktori Perwira Kepolisian"
                     >
                         <span>{{ $t("nav.directory") }}</span>

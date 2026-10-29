@@ -1,5 +1,10 @@
 <script setup>
 import { ref, computed, watch, onUnmounted } from 'vue';
+import { Alert, AlertTitle, AlertDescription } from '@/Components/ui/alert';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { cn } from '@/lib/utils';
+import { ArrowRight, ChevronLeft, ChevronRight, Megaphone, X } from '@lucide/vue';
 
 const props = defineProps({
     announcements: {
@@ -17,6 +22,29 @@ let timer = null;
 const currentAnnouncement = computed(() => {
     if (!props.announcements || props.announcements.length === 0) return null;
     return props.announcements[activeIndex.value % props.announcements.length];
+});
+
+const announcementTone = computed(() => {
+    const type = (currentAnnouncement.value?.type || '').toLowerCase();
+    if (type === 'warning' || type === 'poll') {
+        return {
+            alertClass: 'border-warning/40 bg-warning/10',
+            iconWrapClass: 'bg-warning/15 border-warning/40 text-warning',
+            badgeVariant: 'warning',
+        };
+    }
+    if (type === 'info') {
+        return {
+            alertClass: 'border-info/40 bg-info/10',
+            iconWrapClass: 'bg-info/15 border-info/40 text-info',
+            badgeVariant: 'info',
+        };
+    }
+    return {
+        alertClass: 'border-primary/40 bg-card/95',
+        iconWrapClass: 'bg-primary/15 border-primary/40 text-primary',
+        badgeVariant: 'default',
+    };
 });
 
 const startTimer = () => {
@@ -67,92 +95,114 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div 
-        v-if="isVisible && currentAnnouncement" 
-        @mouseenter="stopTimer" 
+    <Alert
+        v-if="isVisible && currentAnnouncement"
+        @mouseenter="stopTimer"
         @mouseleave="startTimer"
-        class="bg-linear-to-r from-blue-950/90 via-indigo-950/95 to-slate-950 border border-blue-500/40 rounded-2xl p-3 sm:p-4 mb-4 shadow-2xl backdrop-blur-xl transition-all duration-300 relative overflow-hidden font-sans group"
+        :class="cn('block p-3 sm:p-4 mb-4 rounded-xl backdrop-blur-xl transition-all duration-300 relative overflow-hidden font-sans group', announcementTone.alertClass)"
     >
         <div class="flex items-start sm:items-center justify-between gap-3 relative z-10">
             <!-- Banner Main Content -->
             <div class="flex items-start sm:items-center space-x-3 min-w-0 flex-1">
-                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-blue-300 text-lg shrink-0 mt-0.5 sm:mt-0 shadow-inner">
-                    📢
+                <div
+                    :class="cn('w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 sm:mt-0', announcementTone.iconWrapClass)"
+                >
+                    <Megaphone class="size-5" />
                 </div>
-                
+
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                        <span 
-                            class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md bg-blue-600 text-white font-mono shadow-xs"
+                        <Badge
+                            :variant="announcementTone.badgeVariant"
+                            class="uppercase tracking-wider font-mono font-extrabold"
                         >
                             {{ currentAnnouncement.badge_text || 'DISPATCH ANNOUNCEMENT' }}
-                        </span>
+                        </Badge>
 
-                        <span v-if="props.announcements.length > 1" class="text-[10px] text-slate-400 font-mono">
+                        <span v-if="props.announcements.length > 1" class="text-xs text-muted-foreground font-mono">
                             ({{ activeIndex + 1 }}/{{ props.announcements.length }})
                         </span>
                     </div>
 
-                    <h4 class="text-xs sm:text-sm font-bold text-white mt-1 leading-snug truncate">
+                    <AlertTitle class="text-xs sm:text-sm font-bold text-foreground mt-1 leading-snug truncate">
                         {{ currentAnnouncement.title }}
-                    </h4>
+                    </AlertTitle>
 
-                    <p v-if="currentAnnouncement.content" class="text-[11px] sm:text-xs text-slate-300 mt-0.5 line-clamp-2 leading-relaxed">
+                    <AlertDescription v-if="currentAnnouncement.content" class="text-xs text-foreground/80 mt-0.5 line-clamp-2 leading-relaxed">
                         {{ currentAnnouncement.content }}
-                    </p>
+                    </AlertDescription>
                 </div>
             </div>
 
             <!-- Action Link & Navigation / Close Controls -->
             <div class="flex items-center space-x-2 shrink-0">
-                <a 
+                <Button
                     v-if="currentAnnouncement.action_url"
-                    :href="currentAnnouncement.action_url"
-                    target="_blank"
-                    class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs font-mono shadow-lg transition flex items-center gap-1"
+                    as-child
+                    size="sm"
+                    class="font-mono text-xs"
                 >
-                    <span>{{ currentAnnouncement.action_text || 'Buka Link' }}</span>
-                    <span>→</span>
-                </a>
+                    <a
+                        :href="currentAnnouncement.action_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <span>{{ currentAnnouncement.action_text || 'Buka Link' }}</span>
+                        <ArrowRight class="size-3.5" />
+                    </a>
+                </Button>
 
                 <!-- Carousel Controls (if > 1 announcements) -->
-                <div v-if="props.announcements.length > 1" class="hidden sm:flex items-center space-x-1 border-l border-slate-800 pl-2">
-                    <button 
-                        @click="prevSlide" 
-                        class="p-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white transition text-xs"
+                <div v-if="props.announcements.length > 1" class="hidden sm:flex items-center space-x-1 border-l border-border pl-2">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        class="size-7"
+                        aria-label="Pengumuman Sebelumnya"
                         title="Pengumuman Sebelumnya"
+                        @click="prevSlide"
                     >
-                        ❮
-                    </button>
-                    <button 
-                        @click="nextSlide" 
-                        class="p-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white transition text-xs"
+                        <ChevronLeft class="size-4" />
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        class="size-7"
+                        aria-label="Pengumuman Selanjutnya"
                         title="Pengumuman Selanjutnya"
+                        @click="nextSlide"
                     >
-                        ❯
-                    </button>
+                        <ChevronRight class="size-4" />
+                    </Button>
                 </div>
 
                 <!-- Dismiss Button -->
-                <button 
-                    @click="dismissBanner"
-                    class="p-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white transition text-xs font-mono"
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    class="size-7 text-muted-foreground hover:text-foreground"
+                    aria-label="Tutup Banner"
                     title="Tutup Banner"
+                    @click="dismissBanner"
                 >
-                    ✕
-                </button>
+                    <X class="size-4" />
+                </Button>
             </div>
         </div>
 
         <!-- Slide Indicators (If > 1) -->
-        <div v-if="props.announcements.length > 1" class="flex items-center justify-center space-x-1.5 mt-2.5 pt-2 border-t border-slate-800/60">
-            <button 
-                v-for="(_, idx) in props.announcements" 
+        <div v-if="props.announcements.length > 1" class="flex items-center justify-center space-x-1.5 mt-2.5 pt-2 border-t border-border/60">
+            <button
+                v-for="(_, idx) in props.announcements"
                 :key="idx"
+                type="button"
+                :aria-label="`Pengumuman ${idx + 1}`"
                 @click="setSlide(idx)"
-                class="h-1 rounded-full transition-all duration-300"
-                :class="idx === activeIndex ? 'w-5 bg-blue-400' : 'w-1.5 bg-slate-700 hover:bg-slate-500'"
+                :class="cn('h-1 rounded-full transition-all duration-300', idx === activeIndex ? 'w-5 bg-primary' : 'w-1.5 bg-muted hover:bg-muted-foreground')"
             ></button>
         </div>
-    </div>
+    </Alert>
 </template>

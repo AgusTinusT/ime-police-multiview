@@ -1,7 +1,27 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { usePage, Link } from "@inertiajs/vue3";
-import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
+import { Badge } from "@/Components/ui/badge";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from "@/Components/ui/sheet";
+import { cn } from "@/lib/utils";
+import {
+    ChevronRight,
+    Ellipsis,
+    HelpCircle,
+    House,
+    Info,
+    LayoutGrid,
+    MessageSquare,
+    Scissors,
+    Users,
+    Video,
+} from "@lucide/vue";
 
 const page = usePage();
 const isUrlActive = (path) => {
@@ -19,18 +39,10 @@ const isBottomSheetOpen = ref(false);
 
 const openBottomSheet = () => {
     isBottomSheetOpen.value = true;
-    document.body.style.overflow = "hidden";
 };
 
 const closeBottomSheet = () => {
     isBottomSheetOpen.value = false;
-    document.body.style.overflow = "";
-};
-
-const handleKeyDown = (e) => {
-    if (e.key === "Escape" && isBottomSheetOpen.value) {
-        closeBottomSheet();
-    }
 };
 
 const handleResize = () => {
@@ -40,14 +52,11 @@ const handleResize = () => {
 };
 
 onMounted(() => {
-    window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("resize", handleResize);
 });
 
 onUnmounted(() => {
-    window.removeEventListener("keydown", handleKeyDown);
     window.removeEventListener("resize", handleResize);
-    document.body.style.overflow = "";
 });
 </script>
 
@@ -55,287 +64,310 @@ onUnmounted(() => {
     <!-- MOBILE BOTTOM NAVIGATION BAR (FIXED BOTTOM, HIDDEN ON DESKTOP) -->
     <nav
         aria-label="Navigasi Bawah Mobile Taktis"
-        class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800/90 shadow-2xl pb-safe select-none"
+        class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t border-border pb-safe select-none"
     >
         <div class="max-w-md mx-auto px-2">
-            <div class="flex items-center justify-around h-15">
+            <div class="flex items-center justify-around min-h-14">
                 <!-- TAB 1: HOME -->
                 <Link
                     href="/"
-                    :class="[
-                        'flex-1 flex flex-col items-center justify-center py-1.5 transition-colors',
-                        isUrlActive('/') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'
-                    ]"
+                    :class="
+                        cn(
+                            'flex-1 min-h-12 flex flex-col items-center justify-center py-1.5 transition-colors',
+                            isUrlActive('/')
+                                ? 'text-primary font-bold'
+                                : 'text-muted-foreground hover:text-foreground',
+                        )
+                    "
                 >
                     <div class="relative p-0.5">
-                        <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                        </svg>
+                        <House class="size-5" />
                         <span
                             v-if="isUrlActive('/')"
-                            class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"
+                            class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
                         ></span>
                     </div>
-                    <span class="text-[10px] tracking-tight mt-0.5">Home</span>
+                    <span class="text-xs tracking-tight mt-0.5">Home</span>
                 </Link>
 
                 <!-- TAB 2: MULTIVIEW -->
                 <Link
                     href="/multiview"
-                    :class="[
-                        'flex-1 flex flex-col items-center justify-center py-1.5 transition-colors',
-                        isUrlActive('/multiview') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'
-                    ]"
+                    :class="
+                        cn(
+                            'flex-1 min-h-12 flex flex-col items-center justify-center py-1.5 transition-colors',
+                            isUrlActive('/multiview')
+                                ? 'text-primary font-bold'
+                                : 'text-muted-foreground hover:text-foreground',
+                        )
+                    "
                 >
                     <div class="relative p-0.5">
-                        <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-                        </svg>
+                        <LayoutGrid class="size-5" />
                         <span
                             v-if="isUrlActive('/multiview')"
-                            class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"
+                            class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
                         ></span>
                     </div>
-                    <span class="text-[10px] tracking-tight mt-0.5">Multiview</span>
+                    <span class="text-xs tracking-tight mt-0.5">Multiview</span>
                 </Link>
 
                 <!-- TAB 3: TACCLIPS -->
                 <Link
                     href="/action-clips"
-                    :class="[
-                        'flex-1 flex flex-col items-center justify-center py-1.5 transition-colors',
-                        isUrlActive('/action-clips') || isUrlActive('/clips') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'
-                    ]"
+                    :class="
+                        cn(
+                            'flex-1 min-h-12 flex flex-col items-center justify-center py-1.5 transition-colors',
+                            isUrlActive('/action-clips') || isUrlActive('/clips')
+                                ? 'text-primary font-bold'
+                                : 'text-muted-foreground hover:text-foreground',
+                        )
+                    "
                 >
                     <div class="relative p-0.5">
-                        <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                        </svg>
+                        <Video class="size-5" />
                         <span
                             v-if="isUrlActive('/action-clips') || isUrlActive('/clips')"
-                            class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"
+                            class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
                         ></span>
                     </div>
-                    <span class="text-[10px] tracking-tight mt-0.5">TacClips</span>
+                    <span class="text-xs tracking-tight mt-0.5">TacClips</span>
                 </Link>
 
                 <!-- TAB 4: CLIPPER -->
                 <Link
                     href="/clipper"
-                    :class="[
-                        'flex-1 flex flex-col items-center justify-center py-1.5 transition-colors',
-                        isUrlActive('/clipper') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-slate-200'
-                    ]"
+                    :class="
+                        cn(
+                            'flex-1 min-h-12 flex flex-col items-center justify-center py-1.5 transition-colors',
+                            isUrlActive('/clipper')
+                                ? 'text-primary font-bold'
+                                : 'text-muted-foreground hover:text-foreground',
+                        )
+                    "
                 >
                     <div class="relative p-0.5">
-                        <img :src="iconCut" class="w-5 h-5 invert opacity-90 shrink-0" alt="Clipper" />
+                        <Scissors class="size-5" />
                         <span
                             v-if="isUrlActive('/clipper')"
-                            class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"
+                            class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
                         ></span>
                     </div>
-                    <span class="text-[10px] tracking-tight mt-0.5">Clipper</span>
+                    <span class="text-xs tracking-tight mt-0.5">Clipper</span>
                 </Link>
 
                 <!-- TAB 5: LAINNYA (MORE / BOTTOM SHEET TRIGGER) -->
                 <button
                     type="button"
+                    aria-label="Menu navigasi lainnya"
                     @click="openBottomSheet"
-                    class="flex-1 flex flex-col items-center justify-center py-1.5 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                    class="flex-1 min-h-12 flex flex-col items-center justify-center py-1.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
                     <div class="relative p-0.5">
-                        <svg class="w-5 h-5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"/>
-                        </svg>
+                        <Ellipsis class="size-5" />
                     </div>
-                    <span class="text-[10px] tracking-tight mt-0.5">Lainnya</span>
+                    <span class="text-xs tracking-tight mt-0.5">Lainnya</span>
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- BOTTOM SHEET MODAL (SLIDE UP FOR SECONDARY NAV & QUICK ACCESS) -->
-    <Teleport to="body">
-        <div
-            v-if="isBottomSheetOpen"
-            class="fixed inset-0 z-50 flex flex-col justify-end md:hidden"
-            role="dialog"
-            aria-modal="true"
+    <Sheet v-model:open="isBottomSheetOpen">
+        <SheetContent
+            side="bottom"
+            class="md:hidden rounded-t-2xl max-h-[85vh] overflow-y-auto p-0"
         >
-            <!-- Backdrop Overlay -->
-            <div
-                class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity"
-                @click="closeBottomSheet"
-            ></div>
+            <SheetHeader class="px-5 pt-5 pb-3 border-b border-border text-left">
+                <SheetTitle class="font-bold text-foreground text-sm tracking-wide uppercase font-mono">
+                    Navigasi Taktis
+                </SheetTitle>
+                <SheetDescription class="text-xs text-muted-foreground">
+                    Pilih menu atau informasi platform
+                </SheetDescription>
+            </SheetHeader>
 
-            <!-- Bottom Sheet Container Panel -->
-            <div
-                class="relative z-10 w-full max-w-lg mx-auto bg-slate-900 border-t border-slate-800 rounded-t-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300"
-            >
-                <!-- Drag Handle -->
-                <div class="pt-3 pb-1 flex justify-center cursor-pointer" @click="closeBottomSheet">
-                    <div class="w-12 h-1.5 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors"></div>
+            <div class="p-5 space-y-5 pb-8">
+                <!-- Navigasi Utama List -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1 font-mono">
+                        Menu Utama
+                    </h4>
+                    <div class="space-y-1">
+                        <Link
+                            href="/"
+                            @click="closeBottomSheet"
+                            :class="
+                                cn(
+                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                    isUrlActive('/')
+                                        ? 'bg-primary/15 text-primary border border-primary/30'
+                                        : 'bg-background/60 text-foreground hover:bg-accent',
+                                )
+                            "
+                        >
+                            <div class="flex items-center gap-3">
+                                <House class="size-4 text-primary" />
+                                <span>Beranda (Home)</span>
+                            </div>
+                            <ChevronRight class="size-4 text-muted-foreground" />
+                        </Link>
+
+                        <Link
+                            href="/multiview"
+                            @click="closeBottomSheet"
+                            :class="
+                                cn(
+                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                    isUrlActive('/multiview')
+                                        ? 'bg-primary/15 text-primary border border-primary/30'
+                                        : 'bg-background/60 text-foreground hover:bg-accent',
+                                )
+                            "
+                        >
+                            <div class="flex items-center gap-3">
+                                <LayoutGrid class="size-4 text-primary" />
+                                <span>Multiview Stage</span>
+                            </div>
+                            <ChevronRight class="size-4 text-muted-foreground" />
+                        </Link>
+
+                        <Link
+                            href="/clipper"
+                            @click="closeBottomSheet"
+                            :class="
+                                cn(
+                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                    isUrlActive('/clipper')
+                                        ? 'bg-primary/15 text-primary border border-primary/30'
+                                        : 'bg-background/60 text-foreground hover:bg-accent',
+                                )
+                            "
+                        >
+                            <div class="flex items-center gap-3">
+                                <Scissors class="size-4 text-primary" />
+                                <div class="flex items-center gap-2">
+                                    <span>Clip Studio (Video Trimmer)</span>
+                                    <Badge variant="success" class="font-mono font-bold">
+                                        BETA
+                                    </Badge>
+                                </div>
+                            </div>
+                            <ChevronRight class="size-4 text-muted-foreground" />
+                        </Link>
+
+                        <Link
+                            href="/action-clips"
+                            @click="closeBottomSheet"
+                            :class="
+                                cn(
+                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                    isUrlActive('/action-clips') || isUrlActive('/clips')
+                                        ? 'bg-primary/15 text-primary border border-primary/30'
+                                        : 'bg-background/60 text-foreground hover:bg-accent',
+                                )
+                            "
+                        >
+                            <div class="flex items-center gap-3">
+                                <Video class="size-4 text-primary" />
+                                <span>TacClips Video</span>
+                            </div>
+                            <ChevronRight class="size-4 text-muted-foreground" />
+                        </Link>
+
+                        <Link
+                            href="/officers"
+                            @click="closeBottomSheet"
+                            :class="
+                                cn(
+                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                    isUrlActive('/officers')
+                                        ? 'bg-primary/15 text-primary border border-primary/30'
+                                        : 'bg-background/60 text-foreground hover:bg-accent',
+                                )
+                            "
+                        >
+                            <div class="flex items-center gap-3">
+                                <Users class="size-4 text-primary" />
+                                <span>Direktori Perwira (Officers)</span>
+                            </div>
+                            <ChevronRight class="size-4 text-muted-foreground" />
+                        </Link>
+                    </div>
                 </div>
 
-                <!-- Sheet Header -->
-                <div class="px-5 py-3 border-b border-slate-800 flex items-center justify-between">
-                    <div>
-                        <h3 class="font-bold text-slate-100 text-sm tracking-wide uppercase font-mono">Navigasi Taktis</h3>
-                        <p class="text-xs text-slate-400">Pilih menu atau informasi platform</p>
-                    </div>
-                    <button
-                        type="button"
-                        @click="closeBottomSheet"
-                        class="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors cursor-pointer"
-                    >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Sheet Scrollable Content -->
-                <div class="p-5 overflow-y-auto space-y-5 pb-8">
-                    <!-- Navigasi Utama List -->
-                    <div>
-                        <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 px-1 font-mono">Menu Utama</h4>
-                        <div class="space-y-1">
-                            <Link
-                                href="/"
-                                @click="closeBottomSheet"
-                                :class="[
+                <!-- Informasi Tambahan List -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1 font-mono">
+                        Informasi & Bantuan
+                    </h4>
+                    <div class="space-y-1">
+                        <Link
+                            href="/about"
+                            @click="closeBottomSheet"
+                            :class="
+                                cn(
                                     'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-slate-950/60 text-slate-200 hover:bg-slate-800'
-                                ]"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                                    </svg>
-                                    <span>Beranda (Home)</span>
-                                </div>
-                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </Link>
-
-                            <Link
-                                href="/multiview"
-                                @click="closeBottomSheet"
-                                :class="[
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/multiview') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-slate-950/60 text-slate-200 hover:bg-slate-800'
-                                ]"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-                                    </svg>
-                                    <span>Multiview Stage</span>
-                                </div>
-                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </Link>
-
-                            <Link
-                                href="/clipper"
-                                @click="closeBottomSheet"
-                                :class="[
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/clipper') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-slate-950/60 text-slate-200 hover:bg-slate-800'
-                                ]"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <img :src="iconCut" class="w-4 h-4 invert opacity-90 shrink-0" alt="" />
-                                    <div class="flex items-center gap-2">
-                                        <span>Clip Studio (Video Trimmer)</span>
-                                        <span class="px-1.5 py-0.2 text-[9px] font-mono font-bold rounded-sm bg-emerald-950 text-emerald-400 border border-emerald-800">BETA</span>
-                                    </div>
-                                </div>
-                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </Link>
-
-                            <Link
-                                href="/action-clips"
-                                @click="closeBottomSheet"
-                                :class="[
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/action-clips') || isUrlActive('/clips') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-slate-950/60 text-slate-200 hover:bg-slate-800'
-                                ]"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                    </svg>
-                                    <span>TacClips Video</span>
-                                </div>
-                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </Link>
-
-                            <Link
-                                href="/officers"
-                                @click="closeBottomSheet"
-                                :class="[
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/officers') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-slate-950/60 text-slate-200 hover:bg-slate-800'
-                                ]"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                    </svg>
-                                    <span>Direktori Perwira (Officers)</span>
-                                </div>
-                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </Link>
-                        </div>
-                    </div>
-
-                    <!-- Informasi Tambahan List -->
-                    <div>
-                        <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 px-1 font-mono">Informasi & Bantuan</h4>
-                        <div class="space-y-1">
-                            <Link
-                                href="/about"
-                                @click="closeBottomSheet"
-                                :class="[
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/about') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-slate-950/60 text-slate-300 hover:bg-slate-800'
-                                ]"
-                            >
+                                    isUrlActive('/about')
+                                        ? 'bg-primary/15 text-primary border border-primary/30'
+                                        : 'bg-background/60 text-foreground/80 hover:bg-accent',
+                                )
+                            "
+                        >
+                            <div class="flex items-center gap-3">
+                                <Info class="size-4 text-muted-foreground" />
                                 <span>Tentang IME Police</span>
-                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </Link>
+                            </div>
+                            <ChevronRight class="size-4 text-muted-foreground" />
+                        </Link>
 
-                            <Link
-                                href="/faq"
-                                @click="closeBottomSheet"
-                                :class="[
+                        <Link
+                            href="/faq"
+                            @click="closeBottomSheet"
+                            :class="
+                                cn(
                                     'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/faq') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-slate-950/60 text-slate-300 hover:bg-slate-800'
-                                ]"
-                            >
+                                    isUrlActive('/faq')
+                                        ? 'bg-primary/15 text-primary border border-primary/30'
+                                        : 'bg-background/60 text-foreground/80 hover:bg-accent',
+                                )
+                            "
+                        >
+                            <div class="flex items-center gap-3">
+                                <HelpCircle class="size-4 text-muted-foreground" />
                                 <span>Tanya Jawab (FAQ)</span>
-                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </Link>
+                            </div>
+                            <ChevronRight class="size-4 text-muted-foreground" />
+                        </Link>
 
-                            <Link
-                                href="/feedback"
-                                @click="closeBottomSheet"
-                                :class="[
+                        <Link
+                            href="/feedback"
+                            @click="closeBottomSheet"
+                            :class="
+                                cn(
                                     'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/feedback') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-slate-950/60 text-slate-300 hover:bg-slate-800'
-                                ]"
-                            >
+                                    isUrlActive('/feedback')
+                                        ? 'bg-primary/15 text-primary border border-primary/30'
+                                        : 'bg-background/60 text-foreground/80 hover:bg-accent',
+                                )
+                            "
+                        >
+                            <div class="flex items-center gap-3">
+                                <MessageSquare class="size-4 text-muted-foreground" />
                                 <span>Kirim Masukan (Feedback)</span>
-                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </Link>
-                        </div>
+                            </div>
+                            <ChevronRight class="size-4 text-muted-foreground" />
+                        </Link>
                     </div>
+                </div>
 
-                    <!-- Platform Version Footer -->
-                    <div class="pt-2 text-center border-t border-slate-800/80">
-                        <p class="text-[10px] text-slate-500 font-mono">IME Roleplay Police Duty &bull; Mobile Hybrid Interface</p>
-                    </div>
+                <!-- Platform Version Footer -->
+                <div class="pt-2 text-center border-t border-border/80">
+                    <p class="text-xs text-muted-foreground font-mono">
+                        IME Roleplay Police Duty &bull; Mobile Hybrid Interface
+                    </p>
                 </div>
             </div>
-        </div>
-    </Teleport>
+        </SheetContent>
+    </Sheet>
 </template>

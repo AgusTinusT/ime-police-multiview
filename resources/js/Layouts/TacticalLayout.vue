@@ -6,6 +6,7 @@ import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import { Toaster } from "@/Components/ui/sonner";
+
 defineProps({
     showFooter: {
         type: Boolean,
@@ -41,7 +42,7 @@ onUnmounted(() => {
 
 <template>
     <div
-        class="min-h-screen bg-[#070b12] text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased"
+        class="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex flex-col antialiased"
     >
         <!-- Standardized Tactical Header Bar -->
         <TacticalDashboardHeader />

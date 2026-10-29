@@ -1,10 +1,32 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed } from "vue";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { useI18n } from "vue-i18n";
-import iconLogout from "@/Components/Icons/leave-svgrepo-com.svg";
-import iconCut from "@/Components/Icons/cut-svgrepo-com.svg";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
+import { OfficerAvatar } from "@/Components/tactical";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
+import {
+    Award,
+    ChevronDown,
+    Globe,
+    Link2,
+    LogIn,
+    LogOut,
+    Scissors,
+    Settings,
+    ShieldCheck,
+    User,
+} from "@lucide/vue";
 
 const page = usePage();
 const { locale } = useI18n();
@@ -14,492 +36,361 @@ const isAdmin = computed(() => {
     return user?.role === "admin" || !!user?.is_admin;
 });
 
-const isOpen = ref(false);
-const dropdownRef = ref(null);
 const showOfficerClaimModal = ref(false);
 
-const toggleDropdown = () => {
-    isOpen.value = !isOpen.value;
-};
-
-const closeDropdown = (e) => {
-    if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
-        isOpen.value = false;
-    }
-};
-
 const handleLogout = () => {
-    isOpen.value = false;
     router.post("/logout");
 };
 
 const setLanguage = (lang) => {
     locale.value = lang;
 };
-
-onMounted(() => {
-    document.addEventListener("click", closeDropdown);
-});
-
-onUnmounted(() => {
-    document.removeEventListener("click", closeDropdown);
-});
 </script>
 
 <template>
-    <div
-        ref="dropdownRef"
-        class="relative flex items-center text-left z-50 shrink-0"
-    >
-        <!-- Logged-in State: Username + Down Arrow Button -->
+    <div class="relative flex items-center text-left shrink-0">
+        <!-- Logged-in State -->
         <template v-if="$page.props.auth?.user">
-            <button
-                @click.stop="toggleDropdown"
-                class="h-8 flex items-center space-x-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 transition group cursor-pointer focus:outline-hidden shrink-0"
-                :title="`Logged in as ${$page.props.auth.user.name} (${$page.props.auth.user.role || 'member'})`"
-            >
-                <!-- Username -->
-                <span
-                    class="text-xs font-bold text-slate-200 group-hover:text-white truncate max-w-[110px] sm:max-w-[140px] leading-none"
-                >
-                    {{ $page.props.auth.user.name }}
-                </span>
-
-                <!-- Down Arrow Icon -->
-                <svg
-                    class="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-transform duration-200 shrink-0"
-                    :class="{ 'rotate-180': isOpen }"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2.5"
-                        d="M19 9l-7 7-7-7"
-                    />
-                </svg>
-            </button>
-
-            <!-- Profile Floating Popover Dropdown Card -->
-            <transition
-                enter-active-class="transition ease-out duration-150 transform"
-                enter-from-class="opacity-0 scale-95 -translate-y-2"
-                enter-to-class="opacity-100 scale-100 translate-y-0"
-                leave-active-class="transition ease-in duration-100 transform"
-                leave-from-class="opacity-100 scale-100 translate-y-0"
-                leave-to-class="opacity-0 scale-95 -translate-y-2"
-            >
-                <div
-                    v-if="isOpen"
-                    class="absolute right-0 top-full mt-2 w-72 bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800 overflow-hidden font-sans z-50 animate-in shadow-xl"
-                >
-                    <!-- Header Profile Section -->
-                    <div class="p-4 bg-slate-900 flex items-start space-x-3">
-                        <div
-                            :class="[
-                                'w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold shrink-0 border border-slate-800 bg-slate-950',
-                                isAdmin ? 'text-amber-400' : 'text-blue-400',
-                            ]"
+            <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="h-8 gap-1.5 px-2.5 shrink-0"
+                        :title="`Logged in as ${$page.props.auth.user.name} (${$page.props.auth.user.role || 'member'})`"
+                    >
+                        <OfficerAvatar
+                            :src="$page.props.auth.user.avatar_url"
+                            :name="$page.props.auth.user.name"
+                            size="sm"
+                            class="size-5"
+                        />
+                        <span
+                            class="text-xs font-bold text-foreground truncate max-w-[110px] sm:max-w-[140px] leading-none"
                         >
-                            {{
-                                $page.props.auth.user.name
-                                    ?.charAt(0)
-                                    .toUpperCase() || "U"
-                            }}
-                        </div>
+                            {{ $page.props.auth.user.name }}
+                        </span>
+                        <ChevronDown class="size-3.5 text-muted-foreground shrink-0" />
+                    </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" class="w-72 p-0 font-sans">
+                    <!-- Header Profile Section -->
+                    <DropdownMenuLabel class="p-4 flex items-start gap-3 font-normal">
+                        <OfficerAvatar
+                            :src="$page.props.auth.user.avatar_url"
+                            :name="$page.props.auth.user.name"
+                            size="md"
+                        />
 
                         <div class="flex-1 min-w-0">
                             <h4
-                                class="text-sm font-bold text-white truncate leading-snug"
+                                class="text-sm font-bold text-foreground truncate leading-snug"
                             >
                                 {{ $page.props.auth.user.name }}
                             </h4>
                             <p
-                                class="text-xs text-slate-400 truncate mb-1.5 font-mono"
+                                class="text-xs text-muted-foreground truncate mb-1.5 font-mono"
                             >
                                 {{ $page.props.auth.user.email }}
                             </p>
 
                             <!-- Role Badge Pill -->
-                            <span
-                                :class="[
-                                    'inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-extrabold rounded-md uppercase border border-slate-800 bg-slate-950',
-                                    isAdmin
-                                        ? 'text-amber-400'
-                                        : 'text-emerald-400',
-                                ]"
+                            <Badge
+                                :variant="isAdmin ? 'warning' : 'success'"
+                                class="gap-1 font-extrabold uppercase"
                             >
-                                <svg
-                                    v-if="isAdmin"
-                                    class="w-3 h-3 text-amber-400 shrink-0"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                                    />
-                                </svg>
-                                <svg
-                                    v-else
-                                    class="w-3 h-3 text-emerald-400 shrink-0"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                    />
-                                </svg>
-                                {{
-                                    isAdmin
-                                        ? "Admin Dispatcher"
-                                        : "Member User"
-                                }}
-                            </span>
+                                <ShieldCheck v-if="isAdmin" class="size-3 shrink-0" />
+                                <User v-else class="size-3 shrink-0" />
+                                <span>
+                                    {{
+                                        isAdmin
+                                            ? "Admin Dispatcher"
+                                            : "Member User"
+                                    }}
+                                </span>
+                            </Badge>
                         </div>
-                    </div>
+                    </DropdownMenuLabel>
+
+                    <DropdownMenuSeparator class="m-0" />
 
                     <!-- Quick Navigation Action Links -->
-                    <div class="py-1.5 text-xs font-medium bg-slate-900">
+                    <DropdownMenuGroup class="p-1.5">
                         <!-- Admin Command Hub (Admin Only) -->
-                        <Link
-                            v-if="isAdmin"
-                            href="/admin/officers"
-                            @click="isOpen = false"
-                            class="flex items-center px-4 py-2.5 text-amber-300 hover:bg-slate-800 hover:text-amber-200 transition gap-2.5 font-semibold"
-                        >
-                            <svg
-                                class="w-4 h-4 text-amber-400 shrink-0"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                        <DropdownMenuItem v-if="isAdmin" as-child>
+                            <Link
+                                href="/admin/officers"
+                                class="flex items-center px-3 py-2 text-warning gap-2.5 font-semibold cursor-pointer"
                             >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                                />
-                            </svg>
-                            <div class="flex flex-col">
-                                <span>Admin Command Hub</span>
-                                <span
-                                    class="text-[10px] text-slate-400 font-normal"
-                                >
-                                    Kelola Perwira & Pengumuman
-                                </span>
-                            </div>
-                        </Link>
+                                <ShieldCheck class="size-4 text-warning shrink-0" />
+                                <div class="flex flex-col">
+                                    <span class="text-xs">Admin Command Hub</span>
+                                    <span class="text-xs text-muted-foreground font-normal">
+                                        Kelola Perwira & Pengumuman
+                                    </span>
+                                </div>
+                            </Link>
+                        </DropdownMenuItem>
 
                         <!-- Tactical Bio-Link Hub (Officers & Admins) -->
-                        <Link
+                        <DropdownMenuItem
                             v-if="$page.props.auth.user.is_officer || isAdmin"
-                            href="/dashboard/bio-links"
-                            @click="isOpen = false"
-                            class="flex items-center px-4 py-2.5 text-cyan-300 hover:bg-slate-800 hover:text-cyan-200 transition gap-2.5 font-semibold group"
+                            as-child
                         >
-                            <span class="text-base shrink-0">🛡️</span>
-                            <div class="flex flex-col">
-                                <div class="flex items-center gap-1.5">
-                                    <span>Tactical Bio-Link</span>
-                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded-sm bg-cyan-950 text-cyan-300 border border-cyan-500/40 font-mono">HUB</span>
+                            <Link
+                                href="/dashboard/bio-links"
+                                class="flex items-center px-3 py-2 text-info gap-2.5 font-semibold cursor-pointer"
+                            >
+                                <Link2 class="size-4 text-info shrink-0" />
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs">Tactical Bio-Link</span>
+                                        <Badge variant="info" class="font-mono font-extrabold">
+                                            HUB
+                                        </Badge>
+                                    </div>
+                                    <span class="text-xs text-muted-foreground font-normal">
+                                        Kelola Tautan, Donasi & Squad
+                                    </span>
                                 </div>
-                                <span class="text-[10px] text-slate-400 font-normal">
-                                    Kelola Tautan, Donasi & Squad
-                                </span>
-                            </div>
-                        </Link>
+                            </Link>
+                        </DropdownMenuItem>
 
                         <!-- Self-Service Officer Profile (PRD v3 T-18) -->
-                        <Link
+                        <DropdownMenuItem
                             v-if="$page.props.auth.user.is_officer || isAdmin"
-                            href="/dashboard/officer-profile"
-                            @click="isOpen = false"
-                            class="flex items-center px-4 py-2.5 text-blue-300 hover:bg-slate-800 hover:text-blue-200 transition gap-2.5 font-semibold group"
+                            as-child
                         >
-                            <span class="text-base shrink-0">🎖️</span>
-                            <div class="flex flex-col">
-                                <div class="flex items-center gap-1.5">
-                                    <span>Profil Dinas Saya</span>
-                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded-sm bg-blue-950 text-blue-300 border border-blue-500/40 font-mono">PERWIRA</span>
+                            <Link
+                                href="/dashboard/officer-profile"
+                                class="flex items-center px-3 py-2 text-primary gap-2.5 font-semibold cursor-pointer"
+                            >
+                                <Award class="size-4 text-primary shrink-0" />
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs">Profil Dinas Saya</span>
+                                        <Badge variant="secondary" class="font-mono font-extrabold">
+                                            PERWIRA
+                                        </Badge>
+                                    </div>
+                                    <span class="text-xs text-muted-foreground font-normal">
+                                        Identitas, Callsign & Mutasi Pangkat
+                                    </span>
                                 </div>
-                                <span class="text-[10px] text-slate-400 font-normal">
-                                    Identitas, Callsign & Mutasi Pangkat
-                                </span>
-                            </div>
-                        </Link>
+                            </Link>
+                        </DropdownMenuItem>
 
                         <!-- Claim Officer Profile (For Members) -->
-                        <button
+                        <DropdownMenuItem
                             v-else
-                            type="button"
-                            @click="isOpen = false; showOfficerClaimModal = true"
-                            class="flex items-center px-4 py-2.5 text-cyan-300 hover:bg-slate-800 hover:text-cyan-200 transition gap-2.5 font-semibold group text-left w-full cursor-pointer"
+                            class="flex items-center px-3 py-2 text-info gap-2.5 font-semibold cursor-pointer"
+                            @select="showOfficerClaimModal = true"
                         >
-                            <span class="text-base shrink-0">🛡️</span>
+                            <ShieldCheck class="size-4 text-info shrink-0" />
                             <div class="flex flex-col">
                                 <div class="flex items-center gap-1.5">
-                                    <span>Klaim Profil Perwira</span>
-                                    <span class="px-1.5 py-0.2 text-[8px] font-black rounded-sm bg-cyan-950 text-cyan-300 border border-cyan-500/40 font-mono">VERIFIKASI</span>
+                                    <span class="text-xs">Klaim Profil Perwira</span>
+                                    <Badge variant="info" class="font-mono font-extrabold">
+                                        VERIFIKASI
+                                    </Badge>
                                 </div>
-                                <span class="text-[10px] text-slate-400 font-normal">
+                                <span class="text-xs text-muted-foreground font-normal">
                                     Ajukan Verifikasi Akun Dinas Anda
                                 </span>
                             </div>
-                        </button>
+                        </DropdownMenuItem>
 
                         <!-- Tactical Video Trimmer Studio (All Users) -->
-                        <Link
-                            href="/clipper"
-                            @click="isOpen = false"
-                            class="flex items-center px-4 py-2.5 text-slate-200 hover:bg-slate-800 hover:text-white transition gap-2.5 font-semibold group"
-                        >
-                            <img
-                                :src="iconCut"
-                                class="w-4 h-4 invert opacity-80 group-hover:opacity-100 transition shrink-0"
-                                alt="Tactical Video Trimmer"
-                            />
-                            <div class="flex flex-col">
-                                <div class="flex items-center gap-1.5">
-                                    <span>Tactical Video Trimmer</span>
-                                    <span v-if="!$page.props.auth.user.can_trim_video" class="px-1.5 py-0.2 text-[9px] font-bold rounded-sm bg-blue-950 text-blue-400 border border-blue-800/60 font-mono">Free</span>
-                                    <span v-else class="px-1.5 py-0.2 text-[9px] font-bold rounded-sm bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-mono">PRO</span>
+                        <DropdownMenuItem as-child>
+                            <Link
+                                href="/clipper"
+                                class="flex items-center px-3 py-2 text-foreground gap-2.5 font-semibold cursor-pointer"
+                            >
+                                <Scissors class="size-4 text-muted-foreground shrink-0" />
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs">Tactical Video Trimmer</span>
+                                        <Badge
+                                            v-if="!$page.props.auth.user.can_trim_video"
+                                            variant="secondary"
+                                            class="font-mono font-bold"
+                                        >
+                                            Free
+                                        </Badge>
+                                        <Badge
+                                            v-else
+                                            variant="success"
+                                            class="font-mono font-bold"
+                                        >
+                                            PRO
+                                        </Badge>
+                                    </div>
+                                    <span class="text-xs text-muted-foreground font-normal">
+                                        Studio Preview & Potong Video YouTube
+                                    </span>
                                 </div>
-                                <span
-                                    class="text-[10px] text-slate-400 font-normal"
-                                >
-                                    Studio Preview & Potong Video YouTube
-                                </span>
-                            </div>
-                        </Link>
+                            </Link>
+                        </DropdownMenuItem>
 
                         <!-- Profile Settings -->
-                        <Link
-                            href="/profile"
-                            @click="isOpen = false"
-                            class="flex items-center px-4 py-2.5 text-slate-200 hover:bg-slate-800 hover:text-white transition gap-2.5"
-                        >
-                            <svg
-                                class="w-4 h-4 text-slate-400 shrink-0"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                        <DropdownMenuItem as-child>
+                            <Link
+                                href="/profile"
+                                class="flex items-center px-3 py-2 text-foreground gap-2.5 cursor-pointer"
                             >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                                />
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                            </svg>
-                            <div class="flex flex-col">
-                                <span>Profil & Akun</span>
-                                <span
-                                    class="text-[10px] text-slate-400 font-normal"
-                                >
-                                    Ubah nama, email, & password
-                                </span>
-                            </div>
-                        </Link>
-                    </div>
+                                <Settings class="size-4 text-muted-foreground shrink-0" />
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-medium">Profil & Akun</span>
+                                    <span class="text-xs text-muted-foreground font-normal">
+                                        Ubah nama, email, & password
+                                    </span>
+                                </div>
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+
+                    <DropdownMenuSeparator class="m-0" />
 
                     <!-- Language Switcher Section -->
-                    <div class="p-3 bg-slate-900 border-t border-slate-800">
+                    <div class="p-3">
                         <div class="flex items-center justify-between mb-2 px-1">
-                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">
-                                Bahasa / Language
+                            <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
+                                <Globe class="size-3.5" />
+                                <span>Bahasa / Language</span>
                             </span>
-                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-sm bg-slate-950 text-blue-400 font-bold border border-slate-800">
+                            <Badge variant="outline" class="font-mono">
                                 {{ locale.toUpperCase() }}
-                            </span>
+                            </Badge>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <button
+                            <Button
+                                type="button"
+                                :variant="locale === 'id' ? 'default' : 'outline'"
+                                size="sm"
+                                class="text-xs font-bold gap-1.5"
                                 @click="setLanguage('id')"
-                                :class="[
-                                    'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
-                                    locale === 'id'
-                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-xs'
-                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
-                                ]"
                             >
-                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded-sm bg-slate-900 border border-slate-700">ID</span>
+                                <span class="font-mono font-extrabold">ID</span>
                                 <span>Indonesia</span>
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                type="button"
+                                :variant="locale === 'en' ? 'default' : 'outline'"
+                                size="sm"
+                                class="text-xs font-bold gap-1.5"
                                 @click="setLanguage('en')"
-                                :class="[
-                                    'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
-                                    locale === 'en'
-                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-xs'
-                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
-                                ]"
                             >
-                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded-sm bg-slate-900 border border-slate-700">EN</span>
+                                <span class="font-mono font-extrabold">EN</span>
                                 <span>English</span>
-                            </button>
+                            </Button>
                         </div>
                     </div>
 
+                    <DropdownMenuSeparator class="m-0" />
+
                     <!-- Footer Section: Sign Out Button -->
-                    <div class="p-2 bg-slate-950">
-                        <button
-                            @click="handleLogout"
-                            class="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-md bg-slate-900 hover:bg-red-950/60 text-red-400 hover:text-red-300 border border-slate-800 transition text-xs font-bold group cursor-pointer"
+                    <div class="p-1.5">
+                        <DropdownMenuItem
+                            variant="destructive"
+                            class="w-full justify-center gap-2 py-2 text-xs font-bold cursor-pointer"
+                            @select="handleLogout"
                         >
-                            <img
-                                :src="iconLogout"
-                                class="w-4 h-4 invert opacity-80 group-hover:opacity-100 transition"
-                                alt="Logout"
-                            />
+                            <LogOut class="size-4" />
                             <span>Keluar (Sign Out)</span>
-                        </button>
+                        </DropdownMenuItem>
                     </div>
-                </div>
-            </transition>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </template>
 
         <!-- Guest State: Guest Button with Dropdown Trigger -->
         <template v-else>
-            <button
-                @click.stop="toggleDropdown"
-                class="h-8 flex items-center space-x-1.5 px-3 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 transition group cursor-pointer focus:outline-hidden shrink-0"
-                title="Menu Pengunjung & Masuk / Guest Menu & Sign In"
-            >
-                <!-- Guest Label -->
-                <span
-                    class="text-xs font-bold text-slate-200 group-hover:text-white leading-none"
-                >
-                    Guest
-                </span>
+            <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="h-8 gap-1.5 px-3 shrink-0"
+                        title="Menu Pengunjung & Masuk / Guest Menu & Sign In"
+                    >
+                        <User class="size-3.5 text-muted-foreground" />
+                        <span class="text-xs font-bold text-foreground leading-none">
+                            Guest
+                        </span>
+                        <ChevronDown class="size-3.5 text-muted-foreground shrink-0" />
+                    </Button>
+                </DropdownMenuTrigger>
 
-                <!-- Down Arrow Icon -->
-                <svg
-                    class="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-transform duration-200 shrink-0"
-                    :class="{ 'rotate-180': isOpen }"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2.5"
-                        d="M19 9l-7 7-7-7"
-                    />
-                </svg>
-            </button>
-
-            <!-- Guest Floating Dropdown Card -->
-            <transition
-                enter-active-class="transition ease-out duration-150 transform"
-                enter-from-class="opacity-0 scale-95 -translate-y-2"
-                enter-to-class="opacity-100 scale-100 translate-y-0"
-                leave-active-class="transition ease-in duration-100 transform"
-                leave-from-class="opacity-100 scale-100 translate-y-0"
-                leave-to-class="opacity-0 scale-95 -translate-y-2"
-            >
-                <div
-                    v-if="isOpen"
-                    class="absolute right-0 top-full mt-2 w-64 bg-slate-900 border border-slate-800 rounded-xl divide-y divide-slate-800 overflow-hidden font-sans z-50 shadow-xl"
-                >
+                <DropdownMenuContent align="end" class="w-64 p-0 font-sans">
                     <!-- Clipper Teaser Link & Sign In Action -->
-                    <div class="p-3 bg-slate-900 space-y-2">
-                        <Link
-                            href="/clipper"
-                            @click="isOpen = false"
-                            class="flex items-center px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 hover:text-white hover:border-slate-700 transition gap-2 font-semibold group text-xs"
-                        >
-                            <img
-                                :src="iconCut"
-                                class="w-3.5 h-3.5 invert opacity-80 group-hover:opacity-100 transition shrink-0"
-                                alt="Tactical Video Trimmer"
-                            />
-                            <div class="flex flex-col">
-                                <div class="flex items-center gap-1.5">
-                                    <span>Tactical Trimmer</span>
-                                    <span class="px-1.5 py-0.2 text-[9px] font-bold rounded-sm bg-blue-950 text-blue-400 border border-blue-800/60 font-mono">Demo</span>
-                                </div>
-                                <span class="text-[10px] text-slate-400 font-normal">Coba Potong Video YouTube Gratis</span>
-                            </div>
-                        </Link>
-
-                        <Link
-                            href="/login"
-                            @click="isOpen = false"
-                            class="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/30 transition cursor-pointer"
-                        >
-                            <svg
-                                class="w-4 h-4 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                    <div class="p-3 space-y-2">
+                        <DropdownMenuItem as-child>
+                            <Link
+                                href="/clipper"
+                                class="flex items-center px-3 py-2 rounded-lg bg-background border border-border text-foreground gap-2 font-semibold text-xs cursor-pointer"
                             >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                                />
-                            </svg>
-                            <span>Masuk / Sign In</span>
-                        </Link>
+                                <Scissors class="size-4 text-primary shrink-0" />
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span>Tactical Trimmer</span>
+                                        <Badge variant="secondary" class="font-mono font-bold">
+                                            Demo
+                                        </Badge>
+                                    </div>
+                                    <span class="text-xs text-muted-foreground font-normal">
+                                        Coba Potong Video YouTube Gratis
+                                    </span>
+                                </div>
+                            </Link>
+                        </DropdownMenuItem>
+
+                        <Button as-child size="sm" class="w-full font-bold text-xs">
+                            <Link href="/login">
+                                <LogIn class="size-4" />
+                                <span>Masuk / Sign In</span>
+                            </Link>
+                        </Button>
                     </div>
+
+                    <DropdownMenuSeparator class="m-0" />
 
                     <!-- Language Switcher Section -->
-                    <div class="p-3 bg-slate-900">
+                    <div class="p-3">
                         <div class="flex items-center justify-between mb-2 px-1">
-                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-mono">
-                                Bahasa / Language
+                            <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
+                                <Globe class="size-3.5" />
+                                <span>Bahasa / Language</span>
                             </span>
-                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded-sm bg-slate-950 text-blue-400 font-bold border border-slate-800">
+                            <Badge variant="outline" class="font-mono">
                                 {{ locale.toUpperCase() }}
-                            </span>
+                            </Badge>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <button
+                            <Button
+                                type="button"
+                                :variant="locale === 'id' ? 'default' : 'outline'"
+                                size="sm"
+                                class="text-xs font-bold gap-1.5"
                                 @click="setLanguage('id')"
-                                :class="[
-                                    'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
-                                    locale === 'id'
-                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-xs'
-                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
-                                ]"
                             >
-                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded-sm bg-slate-900 border border-slate-700">ID</span>
+                                <span class="font-mono font-extrabold">ID</span>
                                 <span>Indonesia</span>
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                type="button"
+                                :variant="locale === 'en' ? 'default' : 'outline'"
+                                size="sm"
+                                class="text-xs font-bold gap-1.5"
                                 @click="setLanguage('en')"
-                                :class="[
-                                    'flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer',
-                                    locale === 'en'
-                                        ? 'bg-blue-600/20 text-blue-400 border-blue-500/50 shadow-xs'
-                                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
-                                ]"
                             >
-                                <span class="px-1 py-0.2 text-[9px] font-mono font-extrabold rounded-sm bg-slate-900 border border-slate-700">EN</span>
+                                <span class="font-mono font-extrabold">EN</span>
                                 <span>English</span>
-                            </button>
+                            </Button>
                         </div>
                     </div>
-                </div>
-            </transition>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </template>
 
         <!-- Officer Claim Modal (T-07) -->
