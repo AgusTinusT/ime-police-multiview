@@ -565,26 +565,54 @@ const saveAgency = async () => {
         showToast("Request failed: " + e.message, "error");
     }
 };
-const deleteAgency = async (id) => {
-    if (!confirm("Hapus instansi ini beserta seluruh pangkat dan divisinya?"))
-        return;
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute("content");
-    try {
-        const res = await fetch(`/api/v1/agencies/${id}`, {
-            method: "DELETE",
-            headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
-        });
-        const json = await res.json();
-        if (res.ok && json.status === "success") {
-            showToast(json.message, "success");
-            fetchAgencies();
-            fetchOfficers();
-        }
-    } catch (e) {
-        showToast("Error deleting agency", "error");
+const confirmDialog = ref({
+    show: false,
+    title: "",
+    description: "",
+    onConfirm: null,
+});
+
+const openConfirmDialog = (title, description, onConfirm) => {
+    confirmDialog.value = {
+        show: true,
+        title,
+        description,
+        onConfirm,
+    };
+};
+
+const executeConfirmDialog = async () => {
+    const fn = confirmDialog.value.onConfirm;
+    confirmDialog.value.show = false;
+    if (typeof fn === "function") {
+        await fn();
     }
+};
+
+const deleteAgency = (id) => {
+    openConfirmDialog(
+        "Hapus Instansi?",
+        "Hapus instansi ini beserta seluruh pangkat dan divisinya? Tindakan ini tidak dapat dibatalkan.",
+        async () => {
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content");
+            try {
+                const res = await fetch(`/api/v1/agencies/${id}`, {
+                    method: "DELETE",
+                    headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
+                });
+                const json = await res.json();
+                if (res.ok && json.status === "success") {
+                    showToast(json.message, "success");
+                    fetchAgencies();
+                    fetchOfficers();
+                }
+            } catch (e) {
+                showToast("Error deleting agency", "error");
+            }
+        },
+    );
 };
 
 // Rank CRUD Handlers
@@ -633,24 +661,29 @@ const saveRank = async () => {
         showToast("Request failed: " + e.message, "error");
     }
 };
-const deleteRank = async (id) => {
-    if (!confirm("Hapus pangkat ini?")) return;
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute("content");
-    try {
-        const res = await fetch(`/api/v1/ranks/${id}`, {
-            method: "DELETE",
-            headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
-        });
-        const json = await res.json();
-        if (res.ok && json.status === "success") {
-            showToast(json.message, "success");
-            fetchAgencies();
-        }
-    } catch (e) {
-        showToast("Error deleting rank", "error");
-    }
+const deleteRank = (id) => {
+    openConfirmDialog(
+        "Hapus Pangkat?",
+        "Apakah Anda yakin ingin menghapus pangkat ini dari struktur instansi?",
+        async () => {
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content");
+            try {
+                const res = await fetch(`/api/v1/ranks/${id}`, {
+                    method: "DELETE",
+                    headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
+                });
+                const json = await res.json();
+                if (res.ok && json.status === "success") {
+                    showToast(json.message, "success");
+                    fetchAgencies();
+                }
+            } catch (e) {
+                showToast("Error deleting rank", "error");
+            }
+        },
+    );
 };
 
 // Division CRUD Handlers
@@ -695,24 +728,29 @@ const saveDivision = async () => {
         showToast("Request failed: " + e.message, "error");
     }
 };
-const deleteDivision = async (id) => {
-    if (!confirm("Hapus sub-divisi ini?")) return;
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute("content");
-    try {
-        const res = await fetch(`/api/v1/divisions/${id}`, {
-            method: "DELETE",
-            headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
-        });
-        const json = await res.json();
-        if (res.ok && json.status === "success") {
-            showToast(json.message, "success");
-            fetchAgencies();
-        }
-    } catch (e) {
-        showToast("Error deleting division", "error");
-    }
+const deleteDivision = (id) => {
+    openConfirmDialog(
+        "Hapus Sub-Divisi?",
+        "Apakah Anda yakin ingin menghapus sub-divisi kerja ini?",
+        async () => {
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content");
+            try {
+                const res = await fetch(`/api/v1/divisions/${id}`, {
+                    method: "DELETE",
+                    headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
+                });
+                const json = await res.json();
+                if (res.ok && json.status === "success") {
+                    showToast(json.message, "success");
+                    fetchAgencies();
+                }
+            } catch (e) {
+                showToast("Error deleting division", "error");
+            }
+        },
+    );
 };
 
 // Certifications Handlers
@@ -862,24 +900,29 @@ const saveAnnouncement = async () => {
     }
 };
 
-const deleteAnnouncement = async (id) => {
-    if (!confirm("Yakin ingin menghapus pengumuman ini?")) return;
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute("content");
-    try {
-        const res = await fetch(`/api/v1/announcements/${id}`, {
-            method: "DELETE",
-            headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
-        });
-        const json = await res.json();
-        if (res.ok && json.status === "success") {
-            showToast("Announcement deleted.", "success");
-            fetchAnnouncements();
-        }
-    } catch (e) {
-        showToast("Error deleting announcement.", "error");
-    }
+const deleteAnnouncement = (id) => {
+    openConfirmDialog(
+        "Hapus Pengumuman?",
+        "Yakin ingin menghapus pengumuman / alert ini?",
+        async () => {
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content");
+            try {
+                const res = await fetch(`/api/v1/announcements/${id}`, {
+                    method: "DELETE",
+                    headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
+                });
+                const json = await res.json();
+                if (res.ok && json.status === "success") {
+                    showToast("Announcement deleted.", "success");
+                    fetchAnnouncements();
+                }
+            } catch (e) {
+                showToast("Error deleting announcement.", "error");
+            }
+        },
+    );
 };
 
 const toggleAnnouncement = async (id) => {
@@ -1405,32 +1448,36 @@ const filteredUsers = computed(() => {
     );
 });
 
-const handleDeleteUser = async (id, name) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus akun member "${name}"?`))
-        return;
-    try {
-        const csrfToken =
-            document
-                .querySelector('meta[name="csrf-token"]')
-                ?.getAttribute("content") || "";
-        const res = await fetch(`/api/v1/admin/users/${id}`, {
-            method: "DELETE",
-            headers: {
-                "X-CSRF-TOKEN": csrfToken,
-                Accept: "application/json",
-            },
-            credentials: "same-origin",
-        });
-        const json = await res.json();
-        if (res.ok && json.status === "success") {
-            showToast("Akun member berhasil dihapus.", "success");
-            fetchUsers();
-        } else {
-            showToast(json.message || "Gagal menghapus user.", "error");
-        }
-    } catch (e) {
-        showToast("Gagal menghapus user: " + e.message, "error");
-    }
+const handleDeleteUser = (id, name) => {
+    openConfirmDialog(
+        "Hapus Akun Member?",
+        `Apakah Anda yakin ingin menghapus akun member "${name}"? Tindakan ini tidak dapat dibatalkan.`,
+        async () => {
+            try {
+                const csrfToken =
+                    document
+                        .querySelector('meta[name="csrf-token"]')
+                        ?.getAttribute("content") || "";
+                const res = await fetch(`/api/v1/admin/users/${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "X-CSRF-TOKEN": csrfToken,
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                });
+                const json = await res.json();
+                if (res.ok && json.status === "success") {
+                    showToast("Akun member berhasil dihapus.", "success");
+                    fetchUsers();
+                } else {
+                    showToast(json.message || "Gagal menghapus user.", "error");
+                }
+            } catch (e) {
+                showToast("Gagal menghapus user: " + e.message, "error");
+            }
+        },
+    );
 };
 
 onMounted(() => {
@@ -1923,504 +1970,418 @@ onMounted(() => {
             <!-- END TAB 1 -->
 
             <!-- TAB 2: AGENCIES & RANKS STRUCTURE -->
-            <div
-                v-if="activeTab === 'agencies'"
-                class="space-y-6 font-mono text-xs"
-            >
-                <div
-                    class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl p-4"
-                >
-                    <div>
-                        <h2 class="text-sm font-bold text-white uppercase">
-                            Master Instansi Kepolisian & Hierarki Pangkat
-                        </h2>
-                        <p class="text-slate-400 text-[11px] mt-0.5">
-                            Kelola data instansi (SASP, LSPD, BCSO, SAPR),
-                            tingkatan pangkat, level komando & sub-divisi
-                            taktis.
-                        </p>
-                    </div>
-                    <button
-                        @click="openAddAgencyModal"
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md"
-                    >
-                        + Tambah Instansi
-                    </button>
-                </div>
+            <div v-if="activeTab === 'agencies'" class="space-y-6 font-mono text-xs">
+                <Card>
+                    <CardContent class="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-sm font-bold text-foreground uppercase">
+                                Master Instansi Kepolisian & Hierarki Pangkat
+                            </h2>
+                            <p class="text-muted-foreground text-xs mt-0.5 font-sans">
+                                Kelola data instansi (SASP, LSPD, BCSO, SAPR), tingkatan pangkat, level komando & sub-divisi taktis.
+                            </p>
+                        </div>
+                        <Button size="sm" @click="openAddAgencyModal" class="font-bold gap-1.5">
+                            <Plus class="size-4" />
+                            <span>Tambah Instansi</span>
+                        </Button>
+                    </CardContent>
+                </Card>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div
-                        v-for="agency in agenciesList"
-                        :key="agency.id"
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4"
-                    >
-                        <!-- Agency Header -->
-                        <div
-                            class="flex items-center justify-between border-b border-slate-800 pb-3"
-                        >
-                            <div class="flex items-center space-x-3">
-                                <div
-                                    class="px-3 py-1.5 rounded-md font-black text-sm border"
-                                    :class="
-                                        getDeptBadgeClass(agency.agency_code)
-                                    "
-                                >
-                                    {{ agency.agency_code }}
-                                </div>
+                    <Card v-for="agency in agenciesList" :key="agency.id">
+                        <CardHeader class="pb-3 border-b border-border flex flex-row items-center justify-between space-y-0">
+                            <div class="flex items-center gap-3">
+                                <DeptBadge :department="agency.agency_code" />
                                 <div>
-                                    <h3 class="text-sm font-bold text-white">
+                                    <CardTitle class="text-sm font-bold text-foreground">
                                         {{ agency.agency_name }}
-                                    </h3>
-                                    <span class="text-[10px] text-slate-400"
-                                        >Yurisdiksi:
-                                        <strong class="text-blue-400">{{
-                                            agency.jurisdiction
-                                        }}</strong></span
-                                    >
+                                    </CardTitle>
+                                    <CardDescription class="text-xs font-mono">
+                                        Yurisdiksi: <strong class="text-primary">{{ agency.jurisdiction }}</strong>
+                                    </CardDescription>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <button
-                                    @click="openEditAgencyModal(agency)"
-                                    class="px-2.5 py-1 bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 rounded-md text-[11px]"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    @click="deleteAgency(agency.id)"
-                                    class="px-2.5 py-1 bg-rose-950 hover:bg-rose-900 text-rose-400 border border-rose-800 rounded-md text-[11px]"
-                                >
-                                    Hapus
-                                </button>
+                            <div class="flex items-center gap-1.5">
+                                <Button variant="outline" size="sm" @click="openEditAgencyModal(agency)" class="h-7 px-2.5 text-xs">
+                                    <Pencil class="size-3 mr-1" />
+                                    <span>Edit</span>
+                                </Button>
+                                <Button variant="destructive" size="sm" @click="deleteAgency(agency.id)" class="h-7 px-2.5 text-xs">
+                                    <Trash2 class="size-3 mr-1" />
+                                    <span>Hapus</span>
+                                </Button>
                             </div>
-                        </div>
+                        </CardHeader>
 
-                        <!-- Ranks List -->
-                        <div class="space-y-2">
-                            <div
-                                class="flex items-center justify-between text-[11px] text-slate-400 font-bold border-b border-slate-800 pb-1"
-                            >
-                                <span>TINGKATAN PANGKAT (LEVEL 1-10)</span>
-                                <button
-                                    @click="openAddRankModal(agency.id)"
-                                    class="text-blue-400 hover:underline"
-                                >
-                                    + Tambah Pangkat
-                                </button>
-                            </div>
-                            <div
-                                class="space-y-1.5 max-h-48 overflow-y-auto pr-1"
-                            >
-                                <div
-                                    v-for="r in agency.ranks"
-                                    :key="r.id"
-                                    class="p-2 bg-slate-950 border border-slate-800 rounded-md flex items-center justify-between"
-                                >
-                                    <div>
-                                        <span class="font-bold text-white">{{
-                                            r.rank_title
-                                        }}</span>
-                                        <span
-                                            class="text-[10px] text-slate-400 ml-2"
-                                            >Level {{ r.level }} • ${{
-                                                Number(
-                                                    r.base_salary,
-                                                ).toLocaleString()
-                                            }}/duty</span
-                                        >
-                                    </div>
-                                    <div class="flex items-center space-x-1.5">
-                                        <button
-                                            @click="openEditRankModal(r)"
-                                            class="text-slate-400 hover:text-white"
-                                        >
-                                            ✏️
-                                        </button>
-                                        <button
-                                            @click="deleteRank(r.id)"
-                                            class="text-rose-400 hover:text-rose-300"
-                                        >
-                                            ✕
-                                        </button>
+                        <CardContent class="pt-4 space-y-4">
+                            <!-- Ranks List -->
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between text-xs text-muted-foreground font-bold border-b border-border pb-1.5">
+                                    <span>TINGKATAN PANGKAT (LEVEL 1-10)</span>
+                                    <Button variant="link" size="sm" @click="openAddRankModal(agency.id)" class="h-auto p-0 text-xs">
+                                        + Tambah Pangkat
+                                    </Button>
+                                </div>
+                                <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                                    <div
+                                        v-for="r in agency.ranks"
+                                        :key="r.id"
+                                        class="p-2 bg-muted/40 border border-border rounded-md flex items-center justify-between"
+                                    >
+                                        <div>
+                                            <span class="font-bold text-foreground">{{ r.rank_title }}</span>
+                                            <span class="text-xs text-muted-foreground ml-2">
+                                                Level {{ r.level }} • ${{ Number(r.base_salary).toLocaleString() }}/duty
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon-sm"
+                                                :aria-label="`Edit pangkat ${r.rank_title}`"
+                                                @click="openEditRankModal(r)"
+                                                class="size-7 text-muted-foreground hover:text-foreground"
+                                            >
+                                                <Pencil class="size-3.5" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon-sm"
+                                                :aria-label="`Hapus pangkat ${r.rank_title}`"
+                                                @click="deleteRank(r.id)"
+                                                class="size-7 text-destructive hover:text-destructive"
+                                            >
+                                                <X class="size-3.5" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Divisions List -->
-                        <div class="space-y-2 pt-2 border-t border-slate-800">
-                            <div
-                                class="flex items-center justify-between text-[11px] text-slate-400 font-bold border-b border-slate-800 pb-1"
-                            >
-                                <span>SUB-DIVISI KERJA</span>
-                                <button
-                                    @click="openAddDivisionModal(agency.id)"
-                                    class="text-blue-400 hover:underline"
-                                >
-                                    + Tambah Divisi
-                                </button>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                <div
-                                    v-for="d in agency.divisions"
-                                    :key="d.id"
-                                    class="px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-md flex items-center gap-2"
-                                >
-                                    <span class="font-bold text-slate-200">{{
-                                        d.division_name
-                                    }}</span>
-                                    <span class="text-[10px] text-blue-400"
-                                        >({{ d.division_code || "-" }})</span
+                            <!-- Divisions List -->
+                            <div class="space-y-2 pt-2 border-t border-border">
+                                <div class="flex items-center justify-between text-xs text-muted-foreground font-bold border-b border-border pb-1.5">
+                                    <span>SUB-DIVISI KERJA</span>
+                                    <Button variant="link" size="sm" @click="openAddDivisionModal(agency.id)" class="h-auto p-0 text-xs">
+                                        + Tambah Divisi
+                                    </Button>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <Badge
+                                        v-for="d in agency.divisions"
+                                        :key="d.id"
+                                        variant="outline"
+                                        class="px-2.5 py-1 gap-1.5 text-xs font-mono"
                                     >
-                                    <button
-                                        @click="deleteDivision(d.id)"
-                                        class="text-rose-400 hover:text-rose-300 text-[10px]"
-                                    >
-                                        ✕
-                                    </button>
+                                        <span class="font-bold text-foreground">{{ d.division_name }}</span>
+                                        <span class="text-primary">({{ d.division_code || "-" }})</span>
+                                        <button
+                                            type="button"
+                                            :aria-label="`Hapus divisi ${d.division_name}`"
+                                            @click="deleteDivision(d.id)"
+                                            class="text-destructive hover:opacity-80 ml-1"
+                                        >
+                                            <X class="size-3" />
+                                        </button>
+                                    </Badge>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
             <!-- END TAB 2 -->
 
             <!-- TAB 3: TACTICAL CERTIFICATIONS -->
-            <div
-                v-if="activeTab === 'certifications'"
-                class="space-y-6 font-mono text-xs"
-            >
+            <div v-if="activeTab === 'certifications'" class="space-y-6 font-mono text-xs">
                 <!-- Cert Add Control -->
-                <div
-                    class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3"
-                >
-                    <h2 class="text-sm font-bold text-white uppercase">
-                        Pemberian Kualifikasi Taktis Personel
-                    </h2>
-                    <div
-                        class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
-                    >
-                        <select
-                            v-model="certOfficerId"
-                            class="bg-slate-950 border border-slate-800 text-slate-200 rounded-md px-3 py-2 text-xs flex-1"
-                        >
-                            <option :value="null">
-                                -- Pilih Petugas Kepolisian --
-                            </option>
-                            <option
-                                v-for="o in officers"
-                                :key="o.id"
-                                :value="o.id"
+                <Card>
+                    <CardHeader class="pb-3">
+                        <CardTitle class="text-sm font-bold uppercase font-mono">
+                            Pemberian Kualifikasi Taktis Personel
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                            <select
+                                v-model="certOfficerId"
+                                class="flex h-9 flex-1 rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                             >
-                                {{ o.officer_name }} ({{ o.callsign }} -
-                                {{ o.department }})
-                            </option>
-                        </select>
-                        <input
-                            v-model="certType"
-                            type="text"
-                            placeholder="Contoh: Class 2 Firearms, Air Support Pilot, CQB Breaching..."
-                            class="bg-slate-950 border border-slate-800 text-slate-200 rounded-md px-3 py-2 text-xs flex-1"
-                        />
-                        <button
-                            @click="addCertification"
-                            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md"
-                        >
-                            + Berikan Kualifikasi
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Certifications Roster Table -->
-                <div
-                    class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3"
-                >
-                    <h3 class="text-sm font-bold text-slate-200">
-                        Daftar Kualifikasi Taktis Aktif Member
-                    </h3>
-                    <div
-                        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-                    >
-                        <div
-                            v-for="o in officers.filter(
-                                (o) =>
-                                    o.certifications &&
-                                    o.certifications.length > 0,
-                            )"
-                            :key="o.id"
-                            class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2"
-                        >
-                            <div
-                                class="font-bold text-white text-sm flex items-center justify-between"
-                            >
-                                <span>{{ o.officer_name }}</span>
-                                <span class="text-blue-400 text-xs font-mono">{{
-                                    o.callsign
-                                }}</span>
-                            </div>
-                            <div class="flex flex-wrap gap-1.5">
-                                <span
-                                    v-for="c in o.certifications"
-                                    :key="c.id"
-                                    class="px-2 py-1 bg-slate-900 border border-slate-800 text-blue-300 rounded-md text-[10px] flex items-center gap-1.5"
+                                <option :value="null" class="bg-popover text-popover-foreground">
+                                    -- Pilih Petugas Kepolisian --
+                                </option>
+                                <option
+                                    v-for="o in officers"
+                                    :key="o.id"
+                                    :value="o.id"
+                                    class="bg-popover text-popover-foreground"
                                 >
-                                    <span>🎖️ {{ c.cert_type }}</span>
-                                    <button
-                                        @click="deleteCertification(c.id)"
-                                        class="text-rose-400 hover:text-white"
+                                    {{ o.officer_name }} ({{ o.callsign }} - {{ o.department }})
+                                </option>
+                            </select>
+                            <Input
+                                v-model="certType"
+                                type="text"
+                                placeholder="Contoh: Class 2 Firearms, Air Support Pilot, CQB Breaching..."
+                                class="flex-1 text-xs"
+                            />
+                            <Button @click="addCertification" class="font-bold gap-1.5 shrink-0">
+                                <Plus class="size-4" />
+                                <span>Berikan Kualifikasi</span>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Certifications Roster -->
+                <Card>
+                    <CardHeader class="pb-3">
+                        <CardTitle class="text-sm font-bold font-mono">
+                            Daftar Kualifikasi Taktis Aktif Member
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div
+                                v-for="o in officers.filter((o) => o.certifications && o.certifications.length > 0)"
+                                :key="o.id"
+                                class="p-4 bg-muted/40 border border-border rounded-lg space-y-2.5"
+                            >
+                                <div class="font-bold text-foreground text-sm flex items-center justify-between">
+                                    <span>{{ o.officer_name }}</span>
+                                    <span class="text-primary text-xs font-mono">{{ o.callsign }}</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <Badge
+                                        v-for="c in o.certifications"
+                                        :key="c.id"
+                                        variant="outline"
+                                        class="px-2 py-1 text-xs font-mono gap-1.5"
                                     >
-                                        ✕
-                                    </button>
-                                </span>
+                                        <Award class="size-3 text-primary shrink-0" />
+                                        <span>{{ c.cert_type }}</span>
+                                        <button
+                                            type="button"
+                                            :aria-label="`Hapus kualifikasi ${c.cert_type}`"
+                                            @click="deleteCertification(c.id)"
+                                            class="text-destructive hover:opacity-80 ml-0.5"
+                                        >
+                                            <X class="size-3" />
+                                        </button>
+                                    </Badge>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
             <!-- END TAB 3 -->
 
             <!-- TAB 4: ANNOUNCEMENTS & ALERTS -->
-            <div
-                v-if="activeTab === 'announcements'"
-                class="space-y-6 font-mono text-xs"
-            >
-                <div
-                    class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl p-4"
-                >
-                    <div>
-                        <h2 class="text-sm font-bold text-white uppercase">
-                            Manajemen Promosi, Pengumuman & Alert Dashboard
-                        </h2>
-                        <p class="text-slate-400 text-[11px] mt-0.5">
-                            Kelola banner pengumuman taktis yang muncul di
-                            halaman utama CCTV Multiview.
-                        </p>
-                    </div>
-                    <button
-                        @click="openAddAnnouncementModal"
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md"
-                    >
-                        + Tambah Alert
-                    </button>
-                </div>
+            <div v-if="activeTab === 'announcements'" class="space-y-6 font-mono text-xs">
+                <Card>
+                    <CardContent class="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-sm font-bold text-foreground uppercase">
+                                Manajemen Promosi, Pengumuman & Alert Dashboard
+                            </h2>
+                            <p class="text-muted-foreground text-xs mt-0.5 font-sans">
+                                Kelola banner pengumuman taktis yang muncul di halaman utama CCTV Multiview.
+                            </p>
+                        </div>
+                        <Button size="sm" @click="openAddAnnouncementModal" class="font-bold gap-1.5">
+                            <Plus class="size-4" />
+                            <span>Tambah Alert</span>
+                        </Button>
+                    </CardContent>
+                </Card>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div
+                    <Card
                         v-for="a in announcements"
                         :key="a.id"
-                        class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2 flex flex-col justify-between"
+                        class="flex flex-col justify-between"
                     >
-                        <div class="space-y-1">
+                        <CardContent class="p-4 space-y-2">
                             <div class="flex items-center justify-between">
-                                <span
-                                    class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-950 text-blue-300 border border-slate-800"
-                                >
+                                <Badge variant="info" class="text-xs font-mono uppercase">
                                     {{ a.type }}
-                                </span>
-                                <button
+                                </Badge>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     @click="toggleAnnouncement(a.id)"
-                                    class="px-2 py-0.5 rounded-md text-[10px] font-bold border"
+                                    class="h-6 px-2 text-xs font-mono font-bold"
                                     :class="
                                         a.is_active
-                                            ? 'bg-emerald-950 text-emerald-400 border-emerald-800'
-                                            : 'bg-rose-950 text-rose-400 border-rose-800'
+                                            ? 'bg-success/15 text-success border-success/40 hover:bg-success/25'
+                                            : 'bg-destructive/15 text-destructive border-destructive/40 hover:bg-destructive/25'
                                     "
                                 >
                                     {{ a.is_active ? "AKTIF" : "NONAKTIF" }}
-                                </button>
+                                </Button>
                             </div>
-                            <h3 class="text-sm font-bold text-white">
+                            <h3 class="text-sm font-bold text-foreground">
                                 {{ a.title }}
                             </h3>
-                            <p class="text-slate-300 leading-relaxed">
+                            <p class="text-muted-foreground leading-relaxed font-sans text-xs">
                                 {{ a.message }}
                             </p>
-                        </div>
+                        </CardContent>
 
-                        <div
-                            class="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]"
-                        >
-                            <span class="text-slate-500">{{
-                                a.action_text || "Tanpa Action"
-                            }}</span>
-                            <div class="flex items-center space-x-2">
-                                <button
-                                    @click="openEditAnnouncementModal(a)"
-                                    class="text-slate-300 hover:text-white"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    @click="deleteAnnouncement(a.id)"
-                                    class="text-rose-400 hover:text-rose-300"
-                                >
-                                    Hapus
-                                </button>
+                        <div class="px-4 py-3 border-t border-border flex items-center justify-between text-xs">
+                            <span class="text-muted-foreground">{{ a.action_text || "Tanpa Action" }}</span>
+                            <div class="flex items-center gap-2">
+                                <Button variant="ghost" size="sm" @click="openEditAnnouncementModal(a)" class="h-7 px-2 text-xs">
+                                    <Pencil class="size-3 mr-1" />
+                                    <span>Edit</span>
+                                </Button>
+                                <Button variant="ghost" size="sm" @click="deleteAnnouncement(a.id)" class="h-7 px-2 text-xs text-destructive hover:text-destructive">
+                                    <Trash2 class="size-3 mr-1" />
+                                    <span>Hapus</span>
+                                </Button>
                             </div>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
             <!-- END TAB 4 -->
 
             <!-- TAB 5: MEMBER ACCOUNTS -->
-            <div
-                v-if="activeTab === 'users'"
-                class="space-y-6 font-mono text-xs"
-            >
-                <div
-                    class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3"
-                >
-                    <div>
-                        <h2 class="text-sm font-bold text-white uppercase">
-                            Daftar Akun Member Terdaftar
-                        </h2>
-                        <p class="text-slate-400 text-[11px] mt-0.5">
-                            Kelola akun pengunjung & hak akses role di platform
-                            IME Police Multiview.
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <input
-                            v-model="userSearchQuery"
-                            type="text"
-                            placeholder="Cari nama / email..."
-                            class="w-64 bg-slate-950 border border-slate-800 text-slate-200 rounded-md px-3 py-1.5 text-xs"
-                        />
-                        <button
-                            @click="openAddUserModal"
-                            class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md shrink-0"
-                        >
-                            + Tambah Member
-                        </button>
-                    </div>
-                </div>
+            <div v-if="activeTab === 'users'" class="space-y-6 font-mono text-xs">
+                <Card>
+                    <CardContent class="p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-sm font-bold text-foreground uppercase">
+                                Daftar Akun Member Terdaftar
+                            </h2>
+                            <p class="text-muted-foreground text-xs mt-0.5 font-sans">
+                                Kelola akun pengunjung & hak akses role di platform IME Police Multiview.
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <Input
+                                v-model="userSearchQuery"
+                                type="text"
+                                placeholder="Cari nama / email..."
+                                class="w-64 text-xs"
+                            />
+                            <Button size="sm" @click="openAddUserModal" class="font-bold gap-1.5 shrink-0">
+                                <Plus class="size-4" />
+                                <span>Tambah Member</span>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
 
-                <div
-                    class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden"
-                >
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr
-                                class="bg-slate-950 text-slate-400 text-[11px] uppercase border-b border-slate-800"
-                            >
-                                <th class="p-3.5">Nama Member</th>
-                                <th class="p-3.5">Email</th>
-                                <th class="p-3.5">Role Access</th>
-                                <th class="p-3.5">Watchlist</th>
-                                <th class="p-3.5 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800">
-                            <tr
-                                v-for="u in filteredUsers"
-                                :key="u.id"
-                                class="hover:bg-slate-800/40"
-                            >
-                                <td class="p-3.5 font-bold text-white">
+                <Card class="overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            <TableRow class="bg-muted/40 text-xs uppercase font-mono">
+                                <TableHead>Nama Member</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Role Access</TableHead>
+                                <TableHead>Watchlist</TableHead>
+                                <TableHead class="text-right">Aksi</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody class="text-xs">
+                            <TableRow v-for="u in filteredUsers" :key="u.id">
+                                <TableCell class="font-bold text-foreground">
                                     {{ u.name }}
-                                </td>
-                                <td class="p-3.5 text-slate-300">
+                                </TableCell>
+                                <TableCell class="text-muted-foreground">
                                     {{ u.email }}
-                                </td>
-                                <td class="p-3.5 space-y-1">
+                                </TableCell>
+                                <TableCell class="space-y-1">
                                     <div class="flex items-center gap-1.5 flex-wrap">
                                         <!-- Role Badge -->
-                                        <span
-                                            class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase"
-                                            :class="{
-                                                'bg-purple-950 text-purple-300 border border-purple-800':
-                                                    u.role === 'admin',
-                                                'bg-emerald-950 text-emerald-300 border border-emerald-800':
-                                                    u.role === 'officer',
-                                                'bg-blue-950 text-blue-300 border border-blue-800':
-                                                    u.role === 'clipper',
-                                                'bg-slate-950 text-slate-300 border border-slate-800':
-                                                    u.role === 'member' || !u.role,
-                                            }"
+                                        <Badge
+                                            :variant="
+                                                u.role === 'admin'
+                                                    ? 'default'
+                                                    : u.role === 'officer'
+                                                    ? 'success'
+                                                    : u.role === 'clipper'
+                                                    ? 'info'
+                                                    : 'secondary'
+                                            "
+                                            class="text-xs font-mono font-bold uppercase"
                                         >
                                             {{
-                                                u.role === 'admin'
-                                                    ? 'Admin'
-                                                    : u.role === 'officer'
-                                                    ? 'Officer (2 Slot)'
-                                                    : u.role === 'clipper'
-                                                    ? 'Clipper'
-                                                    : 'Member'
+                                                u.role === "admin"
+                                                    ? "Admin"
+                                                    : u.role === "officer"
+                                                    ? "Officer (2 Slot)"
+                                                    : u.role === "clipper"
+                                                    ? "Clipper"
+                                                    : "Member"
                                             }}
-                                        </span>
+                                        </Badge>
 
                                         <!-- Tier / Package Badge -->
-                                        <span
-                                            class="px-1.5 py-0.5 rounded-sm text-[9px] font-mono font-semibold uppercase"
-                                            :class="{
-                                                'bg-amber-950 text-amber-300 border border-amber-800':
-                                                    (u.clipper_tier === 'ultimate' || u.role === 'officer' || u.role === 'admin'),
-                                                'bg-blue-950 text-blue-300 border border-blue-800':
-                                                    u.clipper_tier === 'creator',
-                                                'bg-slate-900 text-slate-400 border border-slate-800':
-                                                    (!u.clipper_tier || u.clipper_tier === 'free') && u.role !== 'officer' && u.role !== 'admin',
-                                            }"
+                                        <Badge
+                                            :variant="
+                                                u.clipper_tier === 'ultimate' || u.role === 'officer' || u.role === 'admin'
+                                                    ? 'warning'
+                                                    : u.clipper_tier === 'creator'
+                                                    ? 'info'
+                                                    : 'outline'
+                                            "
+                                            class="text-xs font-mono uppercase"
                                         >
                                             {{
-                                                (u.role === 'officer' || u.role === 'admin')
-                                                    ? 'PRO Ultimate'
-                                                    : u.clipper_tier === 'ultimate'
-                                                    ? 'VIP Supporter (Unlimited)'
-                                                    : u.clipper_tier === 'creator'
-                                                    ? 'IME Clipper (10/hari)'
-                                                    : 'Free Member (3/minggu)'
+                                                u.role === "officer" || u.role === "admin"
+                                                    ? "PRO Ultimate"
+                                                    : u.clipper_tier === "ultimate"
+                                                    ? "VIP Supporter (Unlimited)"
+                                                    : u.clipper_tier === "creator"
+                                                    ? "IME Clipper (10/hari)"
+                                                    : "Free Member (3/minggu)"
                                             }}
-                                        </span>
+                                        </Badge>
                                     </div>
-                                </td>
-                                <td class="p-3.5">
-                                    <button
+                                </TableCell>
+                                <TableCell>
+                                    <Button
+                                        variant="link"
+                                        size="sm"
                                         @click="selectedUserWatchlistModal = u"
-                                        class="text-blue-400 hover:underline flex items-center gap-1"
+                                        class="h-auto p-0 text-xs font-mono gap-1"
                                     >
-                                        <svg
-                                            class="w-3.5 h-3.5 text-amber-400 shrink-0"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                        >
-                                            <path
-                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                                            />
-                                        </svg>
-                                        <span
-                                            >{{
-                                                u.watchlists_count || 0
-                                            }}
-                                            Stream</span
-                                        >
-                                    </button>
-                                </td>
-                                <td class="p-3.5 text-right space-x-1.5">
-                                    <button
+                                        <Star class="size-3.5 text-warning shrink-0" />
+                                        <span>{{ u.watchlists_count || 0 }} Stream</span>
+                                    </Button>
+                                </TableCell>
+                                <TableCell class="text-right space-x-1.5">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
                                         @click="openEditUserModal(u)"
-                                        class="px-2.5 py-1 bg-slate-950 text-slate-200 border border-slate-800 rounded-md hover:bg-slate-800"
+                                        class="h-7 px-2.5 text-xs gap-1"
                                     >
-                                        ✏️ Edit
-                                    </button>
-                                    <button
+                                        <Pencil class="size-3" />
+                                        <span>Edit</span>
+                                    </Button>
+                                    <Button
                                         v-if="u.id !== auth.user?.id"
+                                        variant="destructive"
+                                        size="sm"
                                         @click="handleDeleteUser(u.id, u.name)"
-                                        class="px-2.5 py-1 bg-rose-950 text-rose-400 border border-rose-800 rounded-md hover:bg-rose-900"
+                                        class="h-7 px-2.5 text-xs gap-1"
                                     >
-                                        Hapus
-                                    </button>
-                                    <span
-                                        v-else
-                                        class="text-slate-500 italic text-[11px]"
-                                        >Anda (Admin)</span
-                                    >
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                                        <Trash2 class="size-3" />
+                                        <span>Hapus</span>
+                                    </Button>
+                                    <span v-else class="text-muted-foreground italic text-xs">
+                                        Anda (Admin)
+                                    </span>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </Card>
             </div>
             <!-- END TAB 5 -->
 
@@ -2661,637 +2622,382 @@ onMounted(() => {
         </Dialog>
 
         <!-- MODAL: ADD / EDIT AGENCY -->
-        <div
-            v-if="showAgencyModal"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
-        >
-            <div
-                class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-6 space-y-4 font-mono text-xs"
-            >
-                <div
-                    class="flex items-center justify-between border-b border-slate-800 pb-2"
-                >
-                    <h3 class="text-sm font-bold text-white uppercase">
-                        {{
-                            isEditAgency
-                                ? "Edit Instansi"
-                                : "Tambah Instansi Baru"
-                        }}
-                    </h3>
-                    <button
-                        @click="showAgencyModal = false"
-                        class="text-slate-400 hover:text-white"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-slate-300 mb-1 font-bold"
-                            >Kode Instansi (e.g. SASP, LSPD) *</label
-                        >
-                        <input
-                            v-model="agencyForm.agency_code"
-                            type="text"
-                            class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
-                        />
+        <Dialog :open="showAgencyModal" @update:open="showAgencyModal = $event">
+            <DialogContent class="sm:max-w-md font-mono text-xs">
+                <DialogHeader>
+                    <DialogTitle class="text-sm font-bold uppercase font-mono">
+                        {{ isEditAgency ? "Edit Instansi" : "Tambah Instansi Baru" }}
+                    </DialogTitle>
+                </DialogHeader>
+                <div class="space-y-3 py-2">
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Kode Instansi (e.g. SASP, LSPD) *</Label>
+                        <Input v-model="agencyForm.agency_code" type="text" class="text-xs font-mono" />
                     </div>
-                    <div>
-                        <label class="block text-slate-300 mb-1 font-bold"
-                            >Nama Lengkap Instansi *</label
-                        >
-                        <input
-                            v-model="agencyForm.agency_name"
-                            type="text"
-                            class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
-                        />
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Nama Lengkap Instansi *</Label>
+                        <Input v-model="agencyForm.agency_name" type="text" class="text-xs" />
                     </div>
-                    <div>
-                        <label class="block text-slate-300 mb-1 font-bold"
-                            >Yurisdiksi *</label
-                        >
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Yurisdiksi *</Label>
                         <select
                             v-model="agencyForm.jurisdiction"
-                            class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
+                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                         >
-                            <option value="Statewide">Statewide</option>
-                            <option value="City">City</option>
-                            <option value="County">County</option>
-                            <option value="State Parks">State Parks</option>
+                            <option value="Statewide" class="bg-popover text-popover-foreground">Statewide</option>
+                            <option value="City" class="bg-popover text-popover-foreground">City</option>
+                            <option value="County" class="bg-popover text-popover-foreground">County</option>
+                            <option value="State Parks" class="bg-popover text-popover-foreground">State Parks</option>
                         </select>
                     </div>
                 </div>
-                <div
-                    class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2"
-                >
-                    <button
-                        @click="showAgencyModal = false"
-                        class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        @click="saveAgency"
-                        class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md"
-                    >
-                        Simpan Instansi
-                    </button>
-                </div>
-            </div>
-        </div>
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="showAgencyModal = false">Batal</Button>
+                    <Button @click="saveAgency" class="font-bold">Simpan Instansi</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
         <!-- MODAL: ADD / EDIT RANK -->
-        <div
-            v-if="showRankModal"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
-        >
-            <div
-                class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-6 space-y-4 font-mono text-xs"
-            >
-                <div
-                    class="flex items-center justify-between border-b border-slate-800 pb-2"
-                >
-                    <h3 class="text-sm font-bold text-white uppercase">
-                        {{
-                            isEditRank ? "Edit Pangkat" : "Tambah Pangkat Baru"
-                        }}
-                    </h3>
-                    <button
-                        @click="showRankModal = false"
-                        class="text-slate-400 hover:text-white"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-slate-300 mb-1 font-bold"
-                            >Nama Pangkat (e.g. Senior Trooper) *</label
-                        >
-                        <input
-                            v-model="rankForm.rank_title"
-                            type="text"
-                            class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
-                        />
+        <Dialog :open="showRankModal" @update:open="showRankModal = $event">
+            <DialogContent class="sm:max-w-md font-mono text-xs">
+                <DialogHeader>
+                    <DialogTitle class="text-sm font-bold uppercase font-mono">
+                        {{ isEditRank ? "Edit Pangkat" : "Tambah Pangkat Baru" }}
+                    </DialogTitle>
+                </DialogHeader>
+                <div class="space-y-3 py-2">
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Nama Pangkat (e.g. Senior Trooper) *</Label>
+                        <Input v-model="rankForm.rank_title" type="text" class="text-xs" />
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Level (1 - 10)</label
-                            >
-                            <input
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Level (1 - 10)</Label>
+                            <Input
                                 v-model="rankForm.level"
                                 type="number"
                                 min="1"
                                 max="10"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
+                                class="text-xs font-mono"
                             />
                         </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Gaji Pokok ($)</label
-                            >
-                            <input
-                                v-model="rankForm.base_salary"
-                                type="number"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
-                            />
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Gaji Pokok ($)</Label>
+                            <Input v-model="rankForm.base_salary" type="number" class="text-xs font-mono" />
                         </div>
                     </div>
                 </div>
-                <div
-                    class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2"
-                >
-                    <button
-                        @click="showRankModal = false"
-                        class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        @click="saveRank"
-                        class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md"
-                    >
-                        Simpan Pangkat
-                    </button>
-                </div>
-            </div>
-        </div>
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="showRankModal = false">Batal</Button>
+                    <Button @click="saveRank" class="font-bold">Simpan Pangkat</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
         <!-- MODAL: ADD / EDIT DIVISION -->
-        <div
-            v-if="showDivisionModal"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
-        >
-            <div
-                class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-6 space-y-4 font-mono text-xs"
-            >
-                <div
-                    class="flex items-center justify-between border-b border-slate-800 pb-2"
-                >
-                    <h3 class="text-sm font-bold text-white uppercase">
-                        {{
-                            isEditDivision
-                                ? "Edit Sub-Divisi"
-                                : "Tambah Sub-Divisi Baru"
-                        }}
-                    </h3>
-                    <button
-                        @click="showDivisionModal = false"
-                        class="text-slate-400 hover:text-white"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-slate-300 mb-1 font-bold"
-                            >Nama Sub-Divisi (e.g. Special Response Team)
-                            *</label
-                        >
-                        <input
-                            v-model="divisionForm.division_name"
-                            type="text"
-                            class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
-                        />
+        <Dialog :open="showDivisionModal" @update:open="showDivisionModal = $event">
+            <DialogContent class="sm:max-w-md font-mono text-xs">
+                <DialogHeader>
+                    <DialogTitle class="text-sm font-bold uppercase font-mono">
+                        {{ isEditDivision ? "Edit Sub-Divisi" : "Tambah Sub-Divisi Baru" }}
+                    </DialogTitle>
+                </DialogHeader>
+                <div class="space-y-3 py-2">
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Nama Sub-Divisi (e.g. Special Response Team) *</Label>
+                        <Input v-model="divisionForm.division_name" type="text" class="text-xs" />
                     </div>
-                    <div>
-                        <label class="block text-slate-300 mb-1 font-bold"
-                            >Kode Divisi (e.g. SRT, HP, CID)</label
-                        >
-                        <input
-                            v-model="divisionForm.division_code"
-                            type="text"
-                            class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
-                        />
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Kode Divisi (e.g. SRT, HP, CID)</Label>
+                        <Input v-model="divisionForm.division_code" type="text" class="text-xs font-mono" />
                     </div>
                 </div>
-                <div
-                    class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2"
-                >
-                    <button
-                        @click="showDivisionModal = false"
-                        class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        @click="saveDivision"
-                        class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md"
-                    >
-                        Simpan Divisi
-                    </button>
-                </div>
-            </div>
-        </div>
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="showDivisionModal = false">Batal</Button>
+                    <Button @click="saveDivision" class="font-bold">Simpan Divisi</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
         <!-- MODAL: ADD / EDIT ANNOUNCEMENT / ALERT -->
-        <div
-            v-if="showAnnouncementModal"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
-        >
-            <div
-                class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-lg p-6 space-y-4 font-mono text-xs"
-            >
-                <div
-                    class="flex items-center justify-between border-b border-slate-800 pb-2"
-                >
-                    <h3 class="text-sm font-bold text-white uppercase">
-                        {{
-                            isEditAnnouncement
-                                ? "Edit Announcement / Alert"
-                                : "Tambah Announcement / Alert Baru"
-                        }}
-                    </h3>
-                    <button
-                        @click="showAnnouncementModal = false"
-                        class="text-slate-400 hover:text-white"
-                    >
-                        ✕
-                    </button>
-                </div>
-                <div class="space-y-3">
+        <Dialog :open="showAnnouncementModal" @update:open="showAnnouncementModal = $event">
+            <DialogContent class="sm:max-w-lg font-mono text-xs">
+                <DialogHeader>
+                    <DialogTitle class="text-sm font-bold uppercase font-mono">
+                        {{ isEditAnnouncement ? "Edit Announcement / Alert" : "Tambah Announcement / Alert Baru" }}
+                    </DialogTitle>
+                </DialogHeader>
+                <div class="space-y-3 py-2">
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Tipe Alert *</label
-                            >
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Tipe Alert *</Label>
                             <select
                                 v-model="announcementForm.type"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
+                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                             >
-                                <option value="info">Info (Biru)</option>
-                                <option value="warning">
-                                    Peringatan (Kuning)
-                                </option>
-                                <option value="danger">
-                                    Bahaya / Darurat (Merah)
-                                </option>
-                                <option value="success">Sukses (Hijau)</option>
-                                <option value="promo">
-                                    Promosi / Event (Ungu)
-                                </option>
+                                <option value="info" class="bg-popover text-popover-foreground">Info (Biru)</option>
+                                <option value="warning" class="bg-popover text-popover-foreground">Peringatan (Kuning)</option>
+                                <option value="danger" class="bg-popover text-popover-foreground">Bahaya / Darurat (Merah)</option>
+                                <option value="success" class="bg-popover text-popover-foreground">Sukses (Hijau)</option>
+                                <option value="promo" class="bg-popover text-popover-foreground">Promosi / Event (Ungu)</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Status *</label
-                            >
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Status *</Label>
                             <select
                                 v-model="announcementForm.is_active"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
+                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                             >
-                                <option :value="true">Aktif (Tampil)</option>
-                                <option :value="false">
-                                    Nonaktif (Sembunyikan)
-                                </option>
+                                <option :value="true" class="bg-popover text-popover-foreground">Aktif (Tampil)</option>
+                                <option :value="false" class="bg-popover text-popover-foreground">Nonaktif (Sembunyikan)</option>
                             </select>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-slate-300 mb-1 font-bold"
-                            >Judul Alert / Banner *</label
-                        >
-                        <input
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Judul Alert / Banner *</Label>
+                        <Input
                             v-model="announcementForm.title"
                             type="text"
                             placeholder="Contoh: CODE 3 EMERGENCY ANNOUNCEMENT"
-                            class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
+                            class="text-xs"
                         />
                     </div>
 
-                    <div>
-                        <label class="block text-slate-300 mb-1 font-bold"
-                            >Pesan Pengumuman *</label
-                        >
-                        <textarea
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Pesan Pengumuman *</Label>
+                        <Textarea
                             v-model="announcementForm.message"
                             rows="3"
                             placeholder="Tulis isi pengumuman atau instruksi taktis..."
-                            class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 resize-none"
-                        ></textarea>
+                            class="text-xs resize-none"
+                        />
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Teks Tombol Aksi (Opsional)</label
-                            >
-                            <input
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Teks Tombol Aksi (Opsional)</Label>
+                            <Input
                                 v-model="announcementForm.action_text"
                                 type="text"
                                 placeholder="Contoh: Lihat Detail"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
+                                class="text-xs"
                             />
                         </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >URL Aksi (Opsional)</label
-                            >
-                            <input
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">URL Aksi (Opsional)</Label>
+                            <Input
                                 v-model="announcementForm.action_url"
                                 type="text"
                                 placeholder="https://..."
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
+                                class="text-xs"
                             />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Icon (Opsional)</label
-                            >
-                            <input
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Icon (Opsional)</Label>
+                            <Input
                                 v-model="announcementForm.icon"
                                 type="text"
                                 placeholder="Contoh: 🚨, 📢, ⚠️"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
+                                class="text-xs"
                             />
                         </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >URL Banner Image (Opsional)</label
-                            >
-                            <input
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">URL Banner Image (Opsional)</Label>
+                            <Input
                                 v-model="announcementForm.image_url"
                                 type="text"
                                 placeholder="https://..."
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2"
+                                class="text-xs"
                             />
                         </div>
                     </div>
                 </div>
-                <div
-                    class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2"
-                >
-                    <button
-                        @click="showAnnouncementModal = false"
-                        class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-md"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        @click="saveAnnouncement"
-                        :disabled="isSavingAnnouncement"
-                        class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md disabled:opacity-50"
-                    >
-                        {{
-                            isSavingAnnouncement
-                                ? "Menyimpan..."
-                                : isEditAnnouncement
-                                  ? "Update Alert"
-                                  : "Simpan Alert Baru"
-                        }}
-                    </button>
-                </div>
-            </div>
-        </div>
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="showAnnouncementModal = false">Batal</Button>
+                    <Button @click="saveAnnouncement" :disabled="isSavingAnnouncement" class="font-bold">
+                        {{ isSavingAnnouncement ? "Menyimpan..." : isEditAnnouncement ? "Update Alert" : "Simpan Alert Baru" }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
         <!-- USER WATCHLIST DETAIL MODAL -->
-        <Teleport to="body">
-            <div
-                v-if="selectedUserWatchlistModal"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
-            >
-                <div
-                    class="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-xl p-6 text-slate-100 font-sans space-y-4"
-                >
-                    <div
-                        class="flex items-center justify-between border-b border-slate-800 pb-3"
-                    >
-                        <div class="flex items-center space-x-2">
-                            <svg
-                                class="w-5 h-5 text-amber-400 shrink-0"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                            >
-                                <path
-                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                                />
-                            </svg>
-                            <div>
-                                <h3
-                                    class="text-sm font-bold font-mono text-white"
-                                >
-                                    Cloud Watchlist Member
-                                </h3>
-                                <p class="text-xs text-slate-400">
-                                    {{ selectedUserWatchlistModal.name }} ({{
-                                        selectedUserWatchlistModal.email
-                                    }})
-                                </p>
-                            </div>
-                        </div>
-                        <button
-                            @click="selectedUserWatchlistModal = null"
-                            class="text-slate-400 hover:text-white text-lg"
-                        >
-                            ✕
-                        </button>
-                    </div>
+        <Dialog :open="!!selectedUserWatchlistModal" @update:open="(!$event) && (selectedUserWatchlistModal = null)">
+            <DialogContent class="sm:max-w-lg text-xs">
+                <DialogHeader>
+                    <DialogTitle class="text-sm font-bold font-mono flex items-center gap-2">
+                        <Star class="size-4 text-warning shrink-0" />
+                        <span>Cloud Watchlist Member</span>
+                    </DialogTitle>
+                    <DialogDescription v-if="selectedUserWatchlistModal" class="text-xs">
+                        {{ selectedUserWatchlistModal.name }} ({{ selectedUserWatchlistModal.email }})
+                    </DialogDescription>
+                </DialogHeader>
 
-                    <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
-                        <div
-                            v-if="
-                                !selectedUserWatchlistModal.watchlists ||
-                                selectedUserWatchlistModal.watchlists.length ===
-                                    0
-                            "
-                            class="py-6 text-center text-slate-500 font-mono text-xs"
-                        >
-                            Member ini belum menyimpan stream ke Cloud
-                            Watchlist.
-                        </div>
-                        <div
-                            v-else
-                            v-for="item in selectedUserWatchlistModal.watchlists"
-                            :key="item.id"
-                            class="p-3 bg-slate-950 border border-slate-800 rounded-md flex items-center justify-between text-xs"
-                        >
-                            <div>
-                                <div class="font-bold text-slate-200">
-                                    {{ item.officer_name || item.video_id }}
-                                </div>
-                                <div
-                                    class="text-[10px] text-slate-500 font-mono"
-                                >
-                                    Video ID: {{ item.video_id }}
-                                </div>
+                <div class="space-y-2 max-h-80 overflow-y-auto pr-1 py-2">
+                    <div
+                        v-if="!selectedUserWatchlistModal?.watchlists || selectedUserWatchlistModal.watchlists.length === 0"
+                        class="py-6 text-center text-muted-foreground font-mono text-xs"
+                    >
+                        Member ini belum menyimpan stream ke Cloud Watchlist.
+                    </div>
+                    <div
+                        v-else
+                        v-for="item in selectedUserWatchlistModal.watchlists"
+                        :key="item.id"
+                        class="p-3 bg-muted/40 border border-border rounded-md flex items-center justify-between text-xs"
+                    >
+                        <div>
+                            <div class="font-bold text-foreground">
+                                {{ item.officer_name || item.video_id }}
                             </div>
-                            <a
-                                :href="`https://youtube.com/watch?v=${item.video_id}`"
-                                target="_blank"
-                                class="px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800 rounded-md text-[11px] font-mono hover:bg-rose-900 transition"
-                            >
+                            <div class="text-xs text-muted-foreground font-mono">
+                                Video ID: {{ item.video_id }}
+                            </div>
+                        </div>
+                        <Button as-child variant="outline" size="sm" class="h-7 px-2.5 text-xs font-mono">
+                            <a :href="`https://youtube.com/watch?v=${item.video_id}`" target="_blank">
                                 YouTube ↗
                             </a>
-                        </div>
-                    </div>
-
-                    <div class="pt-2 text-right border-t border-slate-800">
-                        <button
-                            @click="selectedUserWatchlistModal = null"
-                            class="px-4 py-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-bold rounded-md text-slate-200 transition"
-                        >
-                            Tutup
-                        </button>
+                        </Button>
                     </div>
                 </div>
-            </div>
-        </Teleport>
+
+                <DialogFooter>
+                    <Button variant="outline" @click="selectedUserWatchlistModal = null">Tutup</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
         <!-- MODAL: ADD / EDIT USER MEMBER -->
-        <Teleport to="body">
-            <div
-                v-if="showUserModal"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
-            >
-                <div
-                    class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-6 space-y-4 font-mono text-xs text-slate-100"
-                >
-                    <div
-                        class="flex items-center justify-between border-b border-slate-800 pb-2"
-                    >
-                        <h3 class="text-sm font-bold text-white uppercase">
-                            {{
-                                isEditUser
-                                    ? "Edit Akun Member"
-                                    : "Tambah Akun Member Baru"
-                            }}
-                        </h3>
-                        <button
-                            @click="showUserModal = false"
-                            class="text-slate-400 hover:text-white"
-                        >
-                            ✕
-                        </button>
+        <Dialog :open="showUserModal" @update:open="showUserModal = $event">
+            <DialogContent class="sm:max-w-md font-mono text-xs">
+                <DialogHeader>
+                    <DialogTitle class="text-sm font-bold uppercase font-mono">
+                        {{ isEditUser ? "Edit Akun Member" : "Tambah Akun Member Baru" }}
+                    </DialogTitle>
+                </DialogHeader>
+                <div class="space-y-3 py-2">
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Nama Lengkap *</Label>
+                        <Input
+                            v-model="userForm.name"
+                            type="text"
+                            placeholder="Contoh: John Doe"
+                            class="text-xs"
+                        />
                     </div>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Nama Lengkap *</label
-                            >
-                            <input
-                                v-model="userForm.name"
-                                type="text"
-                                placeholder="Contoh: John Doe"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-hidden focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Email Address *</label
-                            >
-                            <input
-                                v-model="userForm.email"
-                                type="email"
-                                placeholder="nama@email.com"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-hidden focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold">
-                                Password
-                                {{
-                                    isEditUser
-                                        ? "(Opsional - Isi jika ingin ubah password)"
-                                        : "*"
-                                }}
-                            </label>
-                            <input
-                                v-model="userForm.password"
-                                type="password"
-                                placeholder="Minimal 6 karakter"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-hidden focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Role Utama Akun Pengguna *</label
-                            >
-                            <select
-                                v-model="userForm.role"
-                                @change="onUserRoleChange"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-hidden focus:border-blue-500"
-                            >
-                                <option value="member">
-                                    Member (Pengguna Umum / Pengunjung Platform)
-                                </option>
-                                <option value="officer">
-                                    Officer / Streamer RP (Akses Penuh Officer + Hak 2 Slot Clipper)
-                                </option>
-                                <option value="clipper">
-                                    Clipper Komunitas (IME Video Creator / Editor)
-                                </option>
-                                <option value="admin">
-                                    Admin (Administrator Taktis Command Center)
-                                </option>
-                            </select>
-                            <span class="text-[10px] text-slate-400 mt-1 block">
-                                Menentukan wewenang sistem & hak fitur penunjukan slot Officer.
-                            </span>
-                        </div>
-
-                        <!-- Clipper Tier / Subscription Package Selection -->
-                        <div
-                            v-if="userForm.role === 'officer' || userForm.role === 'admin'"
-                            class="p-3 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 text-xs"
-                        >
-                            <span class="font-bold">⚡ Akses Otomatis Tier Ultimate:</span>
-                            Akun bertipe {{ userForm.role === 'admin' ? 'Admin' : 'Officer' }} secara otomatis mendapatkan akses **PRO Ultimate** (Unlimited Klip, Durasi 10 Menit, DVR Live Stream, & 2 Slot Penunjukan).
-                        </div>
-
-                        <div v-else>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Paket Fitur Trimming / Clipper Tier *</label
-                            >
-                            <select
-                                v-model="userForm.clipper_tier"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3 py-2 focus:outline-hidden focus:border-blue-500"
-                            >
-                                <option value="free">
-                                    Free Member (Gratis - 3 Klip/minggu, Max 1 Menit)
-                                </option>
-                                <option value="creator">
-                                    Clipper Komunitas / Police Duty (10 Klip/hari, Max 5 Menit)
-                                </option>
-                                <option value="ultimate">
-                                    VIP Supporter Tier (Unlimited Klip, Max 10 Menit + DVR Live Stream)
-                                </option>
-                            </select>
-                            <span class="text-[10px] text-slate-400 mt-1 block">
-                                Pilih paket kuota & durasi pemotongan video untuk member ini.
-                            </span>
-                        </div>
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Email Address *</Label>
+                        <Input
+                            v-model="userForm.email"
+                            type="email"
+                            placeholder="nama@email.com"
+                            class="text-xs"
+                        />
                     </div>
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">
+                            Password {{ isEditUser ? "(Opsional - Isi jika ingin ubah password)" : "*" }}
+                        </Label>
+                        <Input
+                            v-model="userForm.password"
+                            type="password"
+                            placeholder="Minimal 6 karakter"
+                            class="text-xs"
+                        />
+                    </div>
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Role Utama Akun Pengguna *</Label>
+                        <select
+                            v-model="userForm.role"
+                            @change="onUserRoleChange"
+                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                        >
+                            <option value="member" class="bg-popover text-popover-foreground">
+                                Member (Pengguna Umum / Pengunjung Platform)
+                            </option>
+                            <option value="officer" class="bg-popover text-popover-foreground">
+                                Officer / Streamer RP (Akses Penuh Officer + Hak 2 Slot Clipper)
+                            </option>
+                            <option value="clipper" class="bg-popover text-popover-foreground">
+                                Clipper Komunitas (IME Video Creator / Editor)
+                            </option>
+                            <option value="admin" class="bg-popover text-popover-foreground">
+                                Admin (Administrator Taktis Command Center)
+                            </option>
+                        </select>
+                        <span class="text-xs text-muted-foreground block">
+                            Menentukan wewenang sistem & hak fitur penunjukan slot Officer.
+                        </span>
+                    </div>
+
+                    <!-- Clipper Tier / Subscription Package Selection -->
                     <div
-                        class="pt-2 text-right border-t border-slate-800 flex justify-end gap-2"
+                        v-if="userForm.role === 'officer' || userForm.role === 'admin'"
+                        class="p-3 rounded-lg bg-success/15 border border-success/40 text-success text-xs"
                     >
-                        <button
-                            @click="showUserModal = false"
-                            class="px-3 py-1.5 bg-slate-950 border border-slate-800 text-slate-300 rounded-md hover:bg-slate-800"
+                        <span class="font-bold">⚡ Akses Otomatis Tier Ultimate:</span>
+                        Akun bertipe {{ userForm.role === "admin" ? "Admin" : "Officer" }} secara otomatis mendapatkan akses **PRO Ultimate** (Unlimited Klip, Durasi 10 Menit, DVR Live Stream, & 2 Slot Penunjukan).
+                    </div>
+
+                    <div v-else class="space-y-1.5">
+                        <Label class="text-xs font-bold">Paket Fitur Trimming / Clipper Tier *</Label>
+                        <select
+                            v-model="userForm.clipper_tier"
+                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                         >
-                            Batal
-                        </button>
-                        <button
-                            @click="saveUser"
-                            :disabled="isSavingUser"
-                            class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md disabled:opacity-50"
-                        >
-                            {{
-                                isSavingUser
-                                    ? "Menyimpan..."
-                                    : isEditUser
-                                      ? "Update Akun"
-                                      : "Simpan Akun Baru"
-                            }}
-                        </button>
+                            <option value="free" class="bg-popover text-popover-foreground">
+                                Free Member (Gratis - 3 Klip/minggu, Max 1 Menit)
+                            </option>
+                            <option value="creator" class="bg-popover text-popover-foreground">
+                                Clipper Komunitas / Police Duty (10 Klip/hari, Max 5 Menit)
+                            </option>
+                            <option value="ultimate" class="bg-popover text-popover-foreground">
+                                VIP Supporter Tier (Unlimited Klip, Max 10 Menit + DVR Live Stream)
+                            </option>
+                        </select>
+                        <span class="text-xs text-muted-foreground block">
+                            Pilih paket kuota & durasi pemotongan video untuk member ini.
+                        </span>
                     </div>
                 </div>
-            </div>
-        </Teleport>
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="showUserModal = false">Batal</Button>
+                    <Button @click="saveUser" :disabled="isSavingUser" class="font-bold">
+                        {{ isSavingUser ? "Menyimpan..." : isEditUser ? "Update Akun" : "Simpan Akun Baru" }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- SHARED CONFIRMATION ALERT DIALOG (Agency, Rank, Division, Announcement, User) -->
+        <AlertDialog :open="confirmDialog.show" @update:open="confirmDialog.show = $event">
+            <AlertDialogContent class="font-mono text-xs">
+                <AlertDialogHeader>
+                    <AlertDialogTitle class="font-mono uppercase text-sm">
+                        {{ confirmDialog.title }}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription class="text-xs">
+                        {{ confirmDialog.description }}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="confirmDialog.show = false">Batal</AlertDialogCancel>
+                    <AlertDialogAction
+                        @click="executeConfirmDialog"
+                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                        Hapus
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
 
         <!-- MODAL: ADJUST DUTY TIME -->
         <Dialog :open="showDutyModal" @update:open="showDutyModal = $event">
