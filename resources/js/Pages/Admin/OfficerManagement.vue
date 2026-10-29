@@ -149,29 +149,38 @@ const openSlugModal = (officer) => {
     showBindingModal.value = true;
 };
 
+const reasonDialog = ref({
+    show: false,
+    mode: "suspend", // 'suspend' | 'ban'
+    officer: null,
+    reason: "",
+    isSubmitting: false,
+});
+
 const toggleSuspendProfile = async (officer) => {
     if (!officer?.bio_profile) return;
     const isCurrentlySuspended = !!officer.bio_profile.is_suspended;
     const targetSuspended = !isCurrentlySuspended;
 
-    let reason = "Pencabutan suspend oleh admin";
     if (targetSuspended) {
-        reason = prompt(`Masukkan alasan pembekuan (Kill-Switch) halaman bio untuk ${officer.officer_name}:`, "Pelanggaran SOP Kepolisian");
-        if (reason === null) return;
-        if (!reason.trim()) {
-            showToast("Alasan pembekuan wajib diisi.", "error");
-            return;
-        }
+        reasonDialog.value = {
+            show: true,
+            mode: "suspend",
+            officer,
+            reason: "Pelanggaran SOP Kepolisian",
+            isSubmitting: false,
+        };
+        return;
     }
 
     try {
         const res = await axios.patch(`/api/v1/admin/bio-profiles/${officer.bio_profile.id}/suspend`, {
-            is_suspended: targetSuspended,
-            reason: reason.trim(),
+            is_suspended: false,
+            reason: "Pencabutan suspend oleh admin",
         });
-        officer.bio_profile.is_suspended = targetSuspended;
-        officer.bio_profile.suspension_reason = targetSuspended ? reason.trim() : null;
-        showToast(res.data.message || (targetSuspended ? "Bio-link dibekukan." : "Suspend bio-link dicabut."), "success");
+        officer.bio_profile.is_suspended = false;
+        officer.bio_profile.suspension_reason = null;
+        showToast(res.data.message || "Suspend bio-link dicabut.", "success");
     } catch (err) {
         showToast(err.response?.data?.message || "Gagal mengubah status suspend bio-link.", "error");
     }
@@ -180,27 +189,77 @@ const toggleSuspendProfile = async (officer) => {
 const toggleBanUser = async (officer) => {
     if (!officer?.user) return;
     const isBanned = officer.user.status === 'banned';
-    const targetStatus = isBanned ? 'active' : 'banned';
 
-    let reason = "Pemulihan akun oleh admin";
     if (!isBanned) {
-        reason = prompt(`Masukkan alasan pemblokiran (Ban Akun) user ${officer.user.name}:`, "Pelanggaran Akun");
-        if (reason === null) return;
-        if (!reason.trim()) {
-            showToast("Alasan pemblokiran akun wajib diisi.", "error");
-            return;
-        }
+        reasonDialog.value = {
+            show: true,
+            mode: "ban",
+            officer,
+            reason: "Pelanggaran Akun",
+            isSubmitting: false,
+        };
+        return;
     }
 
     try {
         const res = await axios.patch(`/api/v1/admin/users/${officer.user.id}/status`, {
-            status: targetStatus,
-            reason: reason.trim(),
+            status: "active",
+            reason: "Pemulihan akun oleh admin",
         });
-        officer.user.status = targetStatus;
-        showToast(res.data.message || (targetStatus === 'banned' ? "Akun user berhasil di-ban." : "Ban akun dicabut."), "success");
+        officer.user.status = "active";
+        showToast(res.data.message || "Ban akun dicabut.", "success");
     } catch (err) {
         showToast(err.response?.data?.message || "Gagal mengubah status akun user.", "error");
+    }
+};
+
+const submitReasonDialog = async () => {
+    const { mode, officer, reason } = reasonDialog.value;
+    if (!officer) return;
+    if (!reason || !reason.trim()) {
+        showToast(
+            mode === "suspend"
+                ? "Alasan pembekuan wajib diisi."
+                : "Alasan pemblokiran akun wajib diisi.",
+            "error",
+        );
+        return;
+    }
+    reasonDialog.value.isSubmitting = true;
+    try {
+        if (mode === "suspend") {
+            const res = await axios.patch(
+                `/api/v1/admin/bio-profiles/${officer.bio_profile.id}/suspend`,
+                {
+                    is_suspended: true,
+                    reason: reason.trim(),
+                },
+            );
+            officer.bio_profile.is_suspended = true;
+            officer.bio_profile.suspension_reason = reason.trim();
+            showToast(res.data.message || "Bio-link dibekukan.", "success");
+        } else {
+            const res = await axios.patch(
+                `/api/v1/admin/users/${officer.user.id}/status`,
+                {
+                    status: "banned",
+                    reason: reason.trim(),
+                },
+            );
+            officer.user.status = "banned";
+            showToast(
+                res.data.message || "Akun user berhasil di-ban.",
+                "success",
+            );
+        }
+        reasonDialog.value.show = false;
+    } catch (err) {
+        showToast(
+            err.response?.data?.message || "Gagal memproses tindakan moderasi.",
+            "error",
+        );
+    } finally {
+        reasonDialog.value.isSubmitting = false;
     }
 };
 
@@ -914,20 +973,20 @@ const deptCounts = computed(() => {
     };
 });
 
-// Department Colors
+// Department Colors (Token-based)
 const getDeptBadgeClass = (dept) => {
     switch (dept) {
         case "LSPD":
-            return "bg-blue-950/80 text-blue-400 border-blue-700/60";
+            return "bg-dept-lspd/15 text-dept-lspd border-dept-lspd/40";
         case "BCSO":
-            return "bg-amber-950/80 text-amber-400 border-amber-700/60";
+            return "bg-dept-bcso/15 text-dept-bcso border-dept-bcso/40";
         case "SASP":
-            return "bg-emerald-950/80 text-emerald-400 border-emerald-700/60";
+            return "bg-dept-sasp/15 text-dept-sasp border-dept-sasp/40";
         case "SAPR":
         case "PARK RANGER":
-            return "bg-green-950/80 text-green-400 border-green-700/60";
+            return "bg-dept-sapr/15 text-dept-sapr border-dept-sapr/40";
         default:
-            return "bg-slate-800 text-slate-300 border-slate-700";
+            return "bg-muted text-muted-foreground border-border";
     }
 };
 
@@ -1128,6 +1187,33 @@ const toggleOfficerStatus = async (officer) => {
 const confirmDeleteOfficer = (officer) => {
     officerToDelete.value = officer;
     showDeleteConfirm.value = true;
+};
+
+const executeDeleteOfficer = async () => {
+    if (!officerToDelete.value) return;
+    const csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content");
+    try {
+        const res = await fetch(`/api/v1/officers/${officerToDelete.value.id}`, {
+            method: "DELETE",
+            headers: {
+                "X-CSRF-TOKEN": csrfToken,
+                Accept: "application/json",
+            },
+        });
+        const json = await res.json();
+        if (res.ok && json.status === "success") {
+            showToast(json.message || "Data perwira berhasil dihapus.", "success");
+            showDeleteConfirm.value = false;
+            officerToDelete.value = null;
+            fetchOfficers();
+        } else {
+            showToast(json.message || "Gagal menghapus perwira.", "error");
+        }
+    } catch (e) {
+        showToast("Gagal menghapus perwira: " + e.message, "error");
+    }
 };
 
 // Trigger Live Stream Sync
@@ -1455,382 +1541,231 @@ onMounted(() => {
 
             <!-- TAB 1: OFFICERS -->
             <div v-if="activeTab === 'officers'" class="space-y-6">
-
                 <!-- ACTION CONTROL BAR -->
-                <div
-                    class="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4"
-                >
-                    <!-- Search & Filters -->
-                    <div
-                        class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1"
-                    >
-                        <!-- Search Input -->
-                        <div class="relative flex-1 min-w-[220px]">
-                            <input
-                                v-model="searchQuery"
-                                type="text"
-                                placeholder="Search officer name, callsign, badge, handle..."
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 rounded-md px-4 py-2 pl-10 text-xs sm:text-sm focus:outline-hidden focus:border-blue-500"
-                            />
-                            <svg
-                                class="w-4 h-4 text-slate-500 absolute left-3.5 top-2.5 pointer-events-none"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                <Card>
+                    <CardContent class="p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                        <!-- Search & Filters -->
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+                            <!-- Search Input -->
+                            <div class="relative flex-1 min-w-[220px]">
+                                <Search class="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                <Input
+                                    v-model="searchQuery"
+                                    type="text"
+                                    placeholder="Search officer name, callsign, badge, handle..."
+                                    class="pl-9 pr-8 text-xs sm:text-sm"
                                 />
-                            </svg>
-                            <button
-                                v-if="searchQuery"
-                                @click="searchQuery = ''"
-                                class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 text-xs"
-                            >
-                                ✕
-                            </button>
+                                <Button
+                                    v-if="searchQuery"
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    aria-label="Hapus pencarian"
+                                    @click="searchQuery = ''"
+                                    class="absolute right-1.5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hover:text-foreground"
+                                >
+                                    <X class="size-3.5" />
+                                </Button>
+                            </div>
+
+                            <!-- Department Tabs Filter -->
+                            <div class="flex items-center gap-1 bg-muted/50 p-1 rounded-md border border-border shrink-0 overflow-x-auto">
+                                <Button
+                                    v-for="dept in ['ALL', 'LSPD', 'BCSO', 'SASP', 'SAPR']"
+                                    :key="dept"
+                                    size="sm"
+                                    :variant="selectedDept === dept ? 'default' : 'ghost'"
+                                    @click="selectedDept = dept"
+                                    class="h-7 px-2.5 text-xs font-mono font-bold"
+                                >
+                                    {{ dept }}
+                                </Button>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="shrink-0 min-w-[150px]">
+                                <Select v-model="selectedStatus">
+                                    <SelectTrigger class="h-9 text-xs font-mono">
+                                        <SelectValue placeholder="All Statuses" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL">All Statuses</SelectItem>
+                                        <SelectItem value="ACTIVE">Active Only</SelectItem>
+                                        <SelectItem value="DISABLED">Disabled Only</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
-                        <!-- Department Tabs Filter -->
-                        <div
-                            class="flex items-center space-x-1 bg-slate-950 p-1 rounded-md border border-slate-800 shrink-0"
-                        >
-                            <button
-                                v-for="dept in [
-                                    'ALL',
-                                    'LSPD',
-                                    'BCSO',
-                                    'SASP',
-                                    'SAPR',
-                                ]"
-                                :key="dept"
-                                @click="selectedDept = dept"
-                                class="px-3 py-1.5 rounded-md text-xs font-bold font-mono transition"
-                                :class="
-                                    selectedDept === dept
-                                        ? 'bg-blue-600 text-white'
-                                        : 'text-slate-400 hover:text-slate-200'
-                                "
+                        <!-- Action Buttons: Sync & Add -->
+                        <div class="flex flex-wrap items-center gap-2 shrink-0">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                @click="triggerSyncStreams"
+                                :disabled="isSyncingStreams"
+                                class="font-mono text-xs gap-1.5"
                             >
-                                {{ dept }}
-                            </button>
+                                <RefreshCw class="size-3.5" :class="{ 'motion-safe:animate-spin': isSyncingStreams }" />
+                                <span>{{ isSyncingStreams ? "Syncing..." : "Sync Live Streams" }}</span>
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                @click="triggerSyncSubs"
+                                :disabled="isSyncingSubs"
+                                class="font-mono text-xs gap-1.5 text-success border-success/40 hover:bg-success/10"
+                            >
+                                <RefreshCw class="size-3.5" :class="{ 'motion-safe:animate-spin': isSyncingSubs }" />
+                                <span>{{ isSyncingSubs ? "Syncing Subs..." : "Sync Subscribers" }}</span>
+                            </Button>
+
+                            <Button
+                                size="sm"
+                                @click="openAddModal"
+                                class="font-mono text-xs font-bold gap-1.5"
+                            >
+                                <Plus class="size-4" />
+                                <span>Add Officer</span>
+                            </Button>
                         </div>
-
-                        <!-- Status Filter -->
-                        <div class="relative shrink-0">
-                            <select
-                                v-model="selectedStatus"
-                                class="appearance-none bg-slate-950 border border-slate-800 text-slate-200 rounded-md pl-3.5 pr-9 py-2 text-xs font-mono focus:outline-hidden focus:border-blue-500 cursor-pointer"
-                            >
-                                <option value="ALL">All Statuses</option>
-                                <option value="ACTIVE">Active Only</option>
-                                <option value="DISABLED">Disabled Only</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons: Sync & Add -->
-                    <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-                        <button
-                            @click="triggerSyncStreams"
-                            :disabled="isSyncingStreams"
-                            class="px-3.5 py-2 rounded-md bg-slate-950 hover:bg-slate-800 disabled:opacity-50 text-slate-300 border border-slate-800 text-xs font-bold font-mono transition flex items-center space-x-2"
-                        >
-                            <span>{{
-                                isSyncingStreams
-                                    ? "Syncing..."
-                                    : "Sync Live Streams"
-                            }}</span>
-                        </button>
-
-                        <button
-                            @click="triggerSyncSubs"
-                            :disabled="isSyncingSubs"
-                            class="px-3.5 py-2 rounded-md bg-slate-950 hover:bg-slate-800 disabled:opacity-50 text-emerald-400 border border-slate-800 text-xs font-bold font-mono transition flex items-center space-x-2"
-                        >
-                            <span>{{
-                                isSyncingSubs
-                                    ? "Syncing Subs..."
-                                    : "Sync Subscribers"
-                            }}</span>
-                        </button>
-
-                        <button
-                            @click="openAddModal"
-                            class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold font-mono transition flex items-center space-x-1.5"
-                        >
-                            <svg
-                                class="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2.5"
-                                    d="M12 4v16m8-8H4"
-                                />
-                            </svg>
-                            <span>Add Officer</span>
-                        </button>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
 
                 <!-- OFFICERS TABLE -->
-                <div
-                    class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden"
-                >
-                    <div
-                        class="p-4 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono"
-                    >
+                <Card class="overflow-hidden">
+                    <div class="p-4 border-b border-border flex items-center justify-between text-xs text-muted-foreground font-mono">
                         <div>
                             Showing
-                            <strong class="text-white">{{
-                                filteredOfficers.length
-                            }}</strong>
+                            <strong class="text-foreground">{{ filteredOfficers.length }}</strong>
                             of {{ officers.length }} total units
                         </div>
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             @click="fetchOfficers"
-                            class="hover:text-blue-400 flex items-center space-x-1"
+                            class="h-7 text-xs font-mono gap-1.5"
                         >
+                            <RefreshCw class="size-3.5" />
                             <span>Refresh Data</span>
-                        </button>
+                        </Button>
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr
-                                    class="bg-slate-950 text-[11px] font-mono uppercase text-slate-400 border-b border-slate-800"
-                                >
-                                    <th class="py-3 px-4">Officer Unit</th>
-                                    <th class="py-3 px-4">Agency & Rank</th>
-                                    <th class="py-3 px-4">Callsign / Badge</th>
-                                    <th class="py-3 px-4">
-                                        Duty Status & Certs
-                                    </th>
-                                    <th class="py-3 px-4">
-                                        Akumulasi Duty & Hashtag Rule
-                                    </th>
-                                    <th class="py-3 px-4">YouTube Handle</th>
-                                    <th class="py-3 px-4">Akun Terikat & Bio</th>
-                                    <th class="py-3 px-4 text-center">
-                                        Status
-                                    </th>
-                                    <th class="py-3 px-4 text-right">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-800/60 text-xs">
-                                <tr
+                        <Table>
+                            <TableHeader>
+                                <TableRow class="bg-muted/40 font-mono text-xs uppercase">
+                                    <TableHead>Officer Unit</TableHead>
+                                    <TableHead>Agency & Rank</TableHead>
+                                    <TableHead>Callsign / Badge</TableHead>
+                                    <TableHead>Duty Status & Certs</TableHead>
+                                    <TableHead>Akumulasi Duty & Hashtag Rule</TableHead>
+                                    <TableHead>YouTube Handle</TableHead>
+                                    <TableHead>Akun Terikat & Bio</TableHead>
+                                    <TableHead class="text-center">Status</TableHead>
+                                    <TableHead class="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody class="text-xs">
+                                <TableRow
                                     v-for="officer in filteredOfficers"
                                     :key="officer.id"
-                                    class="hover:bg-slate-800/40 transition"
-                                    :class="{
-                                        'opacity-60 bg-slate-950/40':
-                                            !officer.is_active,
-                                    }"
+                                    :class="{ 'opacity-60 bg-muted/20': !officer.is_active }"
                                 >
                                     <!-- Officer Info & Avatar -->
-                                    <td class="py-3.5 px-4">
-                                        <div
-                                            class="flex items-center space-x-3"
-                                        >
-                                            <img
-                                                :src="
-                                                    officer.avatar_url ||
-                                                    `https://api.dicebear.com/7.x/bottts/svg?seed=${officer.callsign}`
-                                                "
-                                                referrerpolicy="no-referrer"
-                                                class="w-10 h-10 rounded-md bg-slate-950 object-cover border border-slate-800 shrink-0"
-                                                loading="lazy"
+                                    <TableCell>
+                                        <div class="flex items-center gap-3">
+                                            <OfficerAvatar
+                                                :src="officer.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${officer.callsign}`"
+                                                :name="officer.officer_name"
+                                                :callsign="officer.callsign"
+                                                :department="officer.agency?.agency_code || officer.department"
+                                                size="md"
                                             />
                                             <div>
-                                                <div
-                                                    class="font-bold text-white text-sm leading-tight"
-                                                >
+                                                <div class="font-bold text-foreground text-sm leading-tight">
                                                     {{ officer.officer_name }}
                                                 </div>
-                                                <div
-                                                    class="text-slate-400 text-[11px]"
-                                                >
-                                                    Streamer:
-                                                    {{
-                                                        officer.streamer_name ||
-                                                        "-"
-                                                    }}
+                                                <div class="text-muted-foreground text-xs">
+                                                    Streamer: {{ officer.streamer_name || "-" }}
                                                 </div>
                                             </div>
                                         </div>
-                                    </td>
+                                    </TableCell>
 
                                     <!-- Agency & Rank -->
-                                    <td class="py-3.5 px-4 font-mono">
-                                        <div
-                                            class="flex flex-col items-start gap-1"
-                                        >
-                                            <span
-                                                class="px-2 py-0.5 rounded-md text-[10px] font-bold border"
-                                                :class="
-                                                    getDeptBadgeClass(
-                                                        officer.agency
-                                                            ?.agency_code ||
-                                                            officer.department,
-                                                    )
-                                                "
-                                            >
-                                                {{
-                                                    officer.agency
-                                                        ?.agency_name ||
-                                                    officer.department
-                                                }}
-                                            </span>
-                                            <span
-                                                class="text-slate-300 text-[11px] font-medium"
-                                            >
-                                                {{
-                                                    officer.rank_relation
-                                                        ?.rank_title ||
-                                                    officer.rank ||
-                                                    "Officer"
-                                                }}
-                                                <span
-                                                    v-if="officer.division"
-                                                    class="text-blue-400"
-                                                    >({{
-                                                        officer.division
-                                                            .division_code ||
-                                                        officer.division
-                                                            .division_name
-                                                    }})</span
-                                                >
+                                    <TableCell class="font-mono">
+                                        <div class="flex flex-col items-start gap-1">
+                                            <DeptBadge :department="officer.agency?.agency_code || officer.department" />
+                                            <span class="text-foreground text-xs font-medium">
+                                                {{ officer.rank_relation?.rank_title || officer.rank || "Officer" }}
+                                                <span v-if="officer.division" class="text-primary">
+                                                    ({{ officer.division.division_code || officer.division.division_name }})
+                                                </span>
                                             </span>
                                         </div>
-                                    </td>
+                                    </TableCell>
 
                                     <!-- Callsign / Badge -->
-                                    <td class="py-3.5 px-4 font-mono">
-                                        <div class="font-bold text-blue-400">
+                                    <TableCell class="font-mono">
+                                        <div class="font-bold text-primary">
                                             {{ officer.callsign }}
                                         </div>
-                                        <div class="text-slate-400 text-[11px]">
-                                            Badge
-                                            {{ officer.badge_number || "#000" }}
+                                        <div class="text-muted-foreground text-xs">
+                                            Badge {{ officer.badge_number || "#000" }}
                                         </div>
-                                    </td>
+                                    </TableCell>
 
                                     <!-- Duty Status & Certifications -->
-                                    <td class="py-3.5 px-4 font-mono">
-                                        <div
-                                            class="text-[11px] text-emerald-400 font-bold mb-1"
-                                        >
-                                            {{
-                                                officer.duty_status ||
-                                                "10-8 (On-Duty)"
-                                            }}
+                                    <TableCell class="font-mono">
+                                        <div class="text-xs text-success font-bold mb-1">
+                                            {{ officer.duty_status || "10-8 (On-Duty)" }}
                                         </div>
                                         <div
+                                            v-if="officer.certifications && officer.certifications.length > 0"
                                             class="flex flex-wrap gap-1"
-                                            v-if="
-                                                officer.certifications &&
-                                                officer.certifications.length >
-                                                    0
-                                            "
                                         >
-                                            <span
+                                            <Badge
                                                 v-for="cert in officer.certifications"
                                                 :key="cert.id"
-                                                class="px-1.5 py-0.5 rounded-md bg-slate-950 text-blue-300 text-[9px] border border-slate-800 flex items-center gap-1 inline-flex"
+                                                variant="outline"
+                                                class="text-xs font-mono gap-1"
                                             >
-                                                <svg
-                                                    class="w-2.5 h-2.5 text-blue-400 shrink-0"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M5 3v4M3 5h4m6 12v4m-2-2h4m4-14v4m-2-2h4M5 15h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2z"
-                                                    />
-                                                </svg>
-                                                <span>{{
-                                                    cert.cert_type
-                                                }}</span>
-                                            </span>
+                                                <Award class="size-3 text-primary shrink-0" />
+                                                <span>{{ cert.cert_type }}</span>
+                                            </Badge>
                                         </div>
-                                        <span
-                                            v-else
-                                            class="text-[10px] text-slate-500 italic"
-                                            >No certs</span
-                                        >
-                                    </td>
+                                        <span v-else class="text-xs text-muted-foreground italic">No certs</span>
+                                    </TableCell>
 
                                     <!-- Akumulasi Duty & Hashtag Bypass -->
-                                    <td class="py-3.5 px-4 font-mono">
-                                        <div
-                                            class="flex items-center space-x-1.5 mb-1"
-                                        >
-                                            <span
-                                                class="text-amber-400 font-bold text-[11px] flex items-center gap-1"
-                                            >
-                                                <svg
-                                                    class="w-3 h-3 text-amber-400 shrink-0"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                </svg>
-                                                <span>{{
-                                                    formatDutyHours(
-                                                        officer.monthly_duty_minutes,
-                                                    )
-                                                }}</span>
+                                    <TableCell class="font-mono">
+                                        <div class="flex items-center gap-1.5 mb-1">
+                                            <span class="text-warning font-bold text-xs flex items-center gap-1">
+                                                <Clock class="size-3 text-warning shrink-0" />
+                                                <span>{{ formatDutyHours(officer.monthly_duty_minutes) }}</span>
                                             </span>
-                                            <button
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
                                                 @click="openDutyModal(officer)"
                                                 title="Kelola/Sesuaikan Waktu Jam Patroli"
-                                                class="px-1.5 py-0.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] border border-slate-700 transition flex items-center gap-1"
+                                                class="h-6 px-2 text-xs font-mono gap-1 text-warning border-warning/40 hover:bg-warning/10"
                                             >
-                                                <svg
-                                                    class="w-2.5 h-2.5 text-amber-300 shrink-0"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                                    />
-                                                </svg>
+                                                <Pencil class="size-2.5 shrink-0" />
                                                 <span>Adjust</span>
-                                            </button>
+                                            </Button>
                                         </div>
                                         <div class="mt-1">
-                                            <button
-                                                @click="
-                                                    toggleHashtagBypass(officer)
-                                                "
-                                                class="px-2 py-0.5 rounded-sm text-[10px] font-bold border transition flex items-center space-x-1"
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                @click="toggleHashtagBypass(officer)"
+                                                class="h-6 px-2 text-xs font-mono font-bold"
                                                 :class="
                                                     officer.bypass_hashtag_check
-                                                        ? 'bg-purple-950/80 text-purple-300 border-purple-700/60 hover:bg-purple-900'
-                                                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                                                        ? 'bg-info/15 text-info border-info/40 hover:bg-info/25'
+                                                        : 'text-muted-foreground'
                                                 "
                                                 :title="
                                                     officer.bypass_hashtag_check
@@ -1838,149 +1773,152 @@ onMounted(() => {
                                                         : 'Wajib Hashtag: Streamer harus memasukkan hashtag #imepolice / keyword valid'
                                                 "
                                             >
-                                                <span>{{
-                                                    officer.bypass_hashtag_check
-                                                        ? "🔓 Bypass Hashtag: ON"
-                                                        : "🔒 Hashtag Check: Strict"
-                                                }}</span>
-                                            </button>
+                                                <span>
+                                                    {{ officer.bypass_hashtag_check ? "🔓 Bypass Hashtag: ON" : "🔒 Hashtag Check: Strict" }}
+                                                </span>
+                                            </Button>
                                         </div>
-                                    </td>
+                                    </TableCell>
 
                                     <!-- YouTube Handle -->
-                                    <td class="py-3.5 px-4 font-mono">
+                                    <TableCell class="font-mono">
                                         <a
                                             :href="`https://www.youtube.com/${officer.handle && officer.handle.startsWith('@') ? officer.handle : '@' + (officer.handle || '')}`"
                                             target="_blank"
-                                            class="text-blue-400 hover:underline flex items-center space-x-1"
+                                            class="text-primary hover:underline inline-flex items-center gap-1"
                                         >
                                             <span>{{ officer.handle }}</span>
+                                            <ExternalLink class="size-3 shrink-0" />
                                         </a>
-                                    </td>
+                                    </TableCell>
 
                                     <!-- Akun Terikat & Bio -->
-                                    <td class="py-3.5 px-4 font-mono">
+                                    <TableCell class="font-mono">
                                         <div v-if="officer.user" class="space-y-1">
                                             <div class="flex items-center gap-1.5 flex-wrap">
-                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[10px] font-bold bg-blue-950/70 text-blue-300 border border-blue-800/60">
-                                                    <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                                <Badge variant="info" class="text-xs font-mono gap-1">
+                                                    <UserCheck class="size-3 shrink-0" />
                                                     <span class="truncate max-w-[100px]">{{ officer.user.name }}</span>
+                                                </Badge>
+                                                <span class="text-xs text-muted-foreground truncate max-w-[100px]" :title="officer.user.email">
+                                                    ({{ officer.user.email }})
                                                 </span>
-                                                <span class="text-[9px] text-slate-500 truncate max-w-[100px]" :title="officer.user.email">({{ officer.user.email }})</span>
-                                                <span v-if="officer.user.status === 'banned'" class="px-1 py-0.2 rounded-sm text-[8px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">BANNED</span>
+                                                <Badge v-if="officer.user.status === 'banned'" variant="destructive" class="text-xs font-bold">
+                                                    BANNED
+                                                </Badge>
                                             </div>
-                                            <div class="flex items-center gap-1.5 text-[10px]">
+                                            <div class="flex items-center gap-1.5 text-xs">
                                                 <a
                                                     :href="`/@${officer.bio_profile?.slug || (officer.handle || '').replace('@', '')}`"
                                                     target="_blank"
-                                                    class="text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-0.5 font-bold"
+                                                    class="text-warning hover:underline inline-flex items-center gap-0.5 font-bold"
                                                     title="Buka Bio-Link Publik"
                                                 >
                                                     <span>/@{{ officer.bio_profile?.slug || (officer.handle || '').replace('@', '') }}</span>
-                                                    <svg class="w-2.5 h-2.5 inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                                                    <ExternalLink class="size-3 shrink-0" />
                                                 </a>
-                                                <span v-if="officer.bio_profile?.is_suspended" class="px-1 py-0.2 rounded-sm text-[9px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">SUSPENDED</span>
-                                            </div>
-                                            <div class="flex items-center gap-1 pt-0.5 flex-wrap">
-                                                <button
-                                                    @click="openSlugModal(officer)"
-                                                    class="px-1.5 py-0.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-300 text-[9px] border border-slate-700 transition"
-                                                    title="Ubah URL Slug Bio-Link"
-                                                >
-                                                    Ubah Slug
-                                                </button>
-                                                <button
-                                                    @click="openUnbindModal(officer)"
-                                                    class="px-1.5 py-0.5 rounded-sm bg-rose-950/70 hover:bg-rose-900 text-rose-300 text-[9px] border border-rose-800/60 transition"
-                                                    title="Lepas ikatan akun user dari perwira ini"
-                                                >
-                                                    Unbind
-                                                </button>
-                                                <button
-                                                    v-if="officer.bio_profile"
-                                                    @click="toggleSuspendProfile(officer)"
-                                                    class="px-1.5 py-0.5 rounded-sm text-[9px] border transition"
-                                                    :class="officer.bio_profile.is_suspended ? 'bg-amber-950/60 hover:bg-amber-900 text-amber-300 border-amber-800/60' : 'bg-red-950/50 hover:bg-red-900 text-red-300 border-red-800/60'"
-                                                    :title="officer.bio_profile.is_suspended ? 'Cabut pembekuan bio-link' : 'Bekukan bio-link (Kill Switch)'"
-                                                >
-                                                    {{ officer.bio_profile.is_suspended ? 'Unsuspend' : 'Suspend' }}
-                                                </button>
-                                                <button
-                                                    @click="toggleBanUser(officer)"
-                                                    class="px-1.5 py-0.5 rounded-sm text-[9px] border transition"
-                                                    :class="officer.user.status === 'banned' ? 'bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border-emerald-800/60' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'"
-                                                    :title="officer.user.status === 'banned' ? 'Cabut ban user' : 'Ban akun user ini'"
-                                                >
-                                                    {{ officer.user.status === 'banned' ? 'Unban User' : 'Ban User' }}
-                                                </button>
+                                                <Badge v-if="officer.bio_profile?.is_suspended" variant="destructive" class="text-xs font-bold">
+                                                    SUSPENDED
+                                                </Badge>
                                             </div>
                                         </div>
                                         <div v-else class="space-y-1">
-                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[10px] font-bold bg-amber-950/40 text-amber-400 border border-amber-800/40">
+                                            <Badge variant="warning" class="text-xs font-mono">
                                                 Unclaimed
-                                            </span>
-                                            <div>
-                                                <button
-                                                    @click="openBindModal(officer)"
-                                                    class="px-2 py-0.5 rounded-sm bg-blue-900/60 hover:bg-blue-800 text-blue-200 text-[10px] font-bold border border-blue-700/60 transition flex items-center gap-1"
-                                                    title="Hubungkan akun user ke perwira ini secara manual"
-                                                >
-                                                    <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                                                    <span>Bind User</span>
-                                                </button>
-                                            </div>
+                                            </Badge>
                                         </div>
-                                    </td>
+                                    </TableCell>
 
                                     <!-- Status Toggle -->
-                                    <td class="py-3.5 px-4 text-center">
-                                        <button
-                                            @click="
-                                                toggleOfficerStatus(officer)
-                                            "
-                                            class="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-wider transition border"
+                                    <TableCell class="text-center">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            @click="toggleOfficerStatus(officer)"
+                                            class="h-7 px-2.5 text-xs font-mono font-bold tracking-wider"
                                             :class="
                                                 officer.is_active
-                                                    ? 'bg-emerald-950 text-emerald-400 border-emerald-800 hover:bg-emerald-900'
-                                                    : 'bg-rose-950 text-rose-400 border-rose-800 hover:bg-rose-900'
+                                                    ? 'bg-success/15 text-success border-success/40 hover:bg-success/25'
+                                                    : 'bg-destructive/15 text-destructive border-destructive/40 hover:bg-destructive/25'
                                             "
                                         >
-                                            {{
-                                                officer.is_active
-                                                    ? "ACTIVE"
-                                                    : "DISABLED"
-                                            }}
-                                        </button>
-                                    </td>
+                                            {{ officer.is_active ? "ACTIVE" : "DISABLED" }}
+                                        </Button>
+                                    </TableCell>
 
-                                    <!-- Actions -->
-                                    <td class="py-3.5 px-4 text-right">
-                                        <div
-                                            class="flex items-center justify-end space-x-2"
-                                        >
-                                            <button
-                                                @click="openEditModal(officer)"
-                                                class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 transition text-xs font-mono"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                @click="
-                                                    confirmDeleteOfficer(
-                                                        officer,
-                                                    )
-                                                "
-                                                class="px-2.5 py-1 rounded-md bg-rose-950 hover:bg-rose-900 text-rose-400 border border-rose-800 transition text-xs font-mono"
-                                            >
-                                                Hapus
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                    <!-- Actions via DropdownMenu -->
+                                    <TableCell class="text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger as-child>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon-sm"
+                                                    :aria-label="`Aksi untuk ${officer.officer_name}`"
+                                                >
+                                                    <MoreHorizontal class="size-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" class="w-48 font-mono text-xs">
+                                                <DropdownMenuLabel class="text-xs">{{ officer.callsign }} — {{ officer.officer_name }}</DropdownMenuLabel>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem @click="openEditModal(officer)" class="gap-2 cursor-pointer">
+                                                    <Pencil class="size-3.5" />
+                                                    <span>Edit Officer</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem @click="openDutyModal(officer)" class="gap-2 cursor-pointer">
+                                                    <Clock class="size-3.5" />
+                                                    <span>Adjust Duty Time</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    v-if="!officer.user"
+                                                    @click="openBindModal(officer)"
+                                                    class="gap-2 cursor-pointer text-primary"
+                                                >
+                                                    <UserCheck class="size-3.5" />
+                                                    <span>Bind User</span>
+                                                </DropdownMenuItem>
+                                                <template v-else>
+                                                    <DropdownMenuItem @click="openSlugModal(officer)" class="gap-2 cursor-pointer">
+                                                        <Link2 class="size-3.5" />
+                                                        <span>Ubah Slug Bio-Link</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem @click="openUnbindModal(officer)" class="gap-2 cursor-pointer text-warning">
+                                                        <UserX class="size-3.5" />
+                                                        <span>Unbind User</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        v-if="officer.bio_profile"
+                                                        @click="toggleSuspendProfile(officer)"
+                                                        class="gap-2 cursor-pointer text-warning"
+                                                    >
+                                                        <ShieldAlert class="size-3.5" />
+                                                        <span>{{ officer.bio_profile.is_suspended ? "Unsuspend Bio-Link" : "Suspend Bio-Link" }}</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        @click="toggleBanUser(officer)"
+                                                        class="gap-2 cursor-pointer text-destructive"
+                                                    >
+                                                        <Ban class="size-3.5" />
+                                                        <span>{{ officer.user.status === "banned" ? "Unban User" : "Ban User" }}</span>
+                                                    </DropdownMenuItem>
+                                                </template>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    @click="confirmDeleteOfficer(officer)"
+                                                    class="gap-2 cursor-pointer text-destructive"
+                                                >
+                                                    <Trash2 class="size-3.5" />
+                                                    <span>Hapus Officer</span>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
                     </div>
-                </div>
+                </Card>
             </div>
             <!-- END TAB 1 -->
 
@@ -2508,145 +2446,118 @@ onMounted(() => {
         </PageContainer>
 
         <!-- MODAL: ADD / EDIT OFFICER (With Cascading Agency Dropdown) -->
-        <div
-            v-if="showModal"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto"
-        >
-            <div
-                class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-xl p-6 space-y-5 my-8 font-mono text-xs"
-            >
-                <div
-                    class="flex items-center justify-between border-b border-slate-800 pb-3"
-                >
-                    <h3 class="text-base font-bold text-white uppercase">
-                        {{
-                            isEditMode
-                                ? "Edit Officer Details"
-                                : "Add New Police Unit"
-                        }}
-                    </h3>
-                    <button
-                        @click="showModal = false"
-                        class="text-slate-400 hover:text-white text-lg"
-                    >
-                        ✕
-                    </button>
-                </div>
+        <Dialog :open="showModal" @update:open="showModal = $event">
+            <DialogContent class="sm:max-w-xl max-h-[90vh] overflow-y-auto font-mono text-xs">
+                <DialogHeader>
+                    <DialogTitle class="text-base font-bold uppercase font-mono">
+                        {{ isEditMode ? "Edit Officer Details" : "Add New Police Unit" }}
+                    </DialogTitle>
+                    <DialogDescription class="text-xs">
+                        Kelola identitas perwira, instansi, pangkat, dan sinkronisasi kanal YouTube.
+                    </DialogDescription>
+                </DialogHeader>
 
-                <div class="space-y-4">
+                <div class="space-y-4 py-2">
                     <!-- YouTube Handle with Auto-Check Button -->
-                    <div>
-                        <label class="block text-slate-300 mb-1 font-bold"
-                            >YouTube Handle / Channel URL *</label
-                        >
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">YouTube Handle / Channel URL *</Label>
                         <div class="flex items-center gap-2">
-                            <input
+                            <Input
                                 v-model="form.handle"
                                 type="text"
                                 placeholder="@channelname"
-                                class="flex-1 bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2 focus:outline-hidden focus:border-blue-500"
+                                class="flex-1 text-xs font-mono"
                             />
-                            <button
+                            <Button
+                                type="button"
+                                variant="outline"
                                 @click="verifyYouTubeChannel"
                                 :disabled="isCheckingChannel"
-                                class="px-3 py-2 bg-slate-950 hover:bg-slate-800 text-blue-400 border border-slate-800 rounded-md font-bold transition shrink-0"
+                                class="font-bold text-xs shrink-0"
                             >
-                                {{
-                                    isCheckingChannel
-                                        ? "Verifying..."
-                                        : "Verify"
-                                }}
-                            </button>
+                                {{ isCheckingChannel ? "Verifying..." : "Verify" }}
+                            </Button>
                         </div>
                     </div>
 
                     <!-- Streamer Name & Officer Character Name -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Streamer OOC Name *</label
-                            >
-                            <input
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Streamer OOC Name *</Label>
+                            <Input
                                 v-model="form.streamer_name"
                                 type="text"
                                 placeholder="e.g. Gusti Aidan"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2"
+                                class="text-xs"
                             />
                         </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Officer IC Name *</label
-                            >
-                            <input
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Officer IC Name *</Label>
+                            <Input
                                 v-model="form.officer_name"
                                 type="text"
                                 placeholder="e.g. Ofc. Adam Darski"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2"
+                                class="text-xs"
                             />
                         </div>
                     </div>
 
                     <!-- Cascading Agency, Rank, & Division Selection -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Instansi (Agency) *</label
-                            >
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Instansi (Agency) *</Label>
                             <select
                                 v-model="form.agency_id"
                                 @change="onAgencyChange"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2"
+                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                             >
-                                <option :value="null">
+                                <option :value="null" class="bg-popover text-popover-foreground">
                                     -- Default (LSPD) --
                                 </option>
                                 <option
                                     v-for="a in agenciesList"
                                     :key="a.id"
                                     :value="a.id"
+                                    class="bg-popover text-popover-foreground"
                                 >
                                     {{ a.agency_code }} - {{ a.agency_name }}
                                 </option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Pangkat (Rank) *</label
-                            >
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Pangkat (Rank) *</Label>
                             <select
                                 v-model="form.rank_id"
                                 @change="onRankChange"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2"
+                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                             >
-                                <option :value="null">-- Select Rank --</option>
+                                <option :value="null" class="bg-popover text-popover-foreground">-- Select Rank --</option>
                                 <option
                                     v-for="r in availableRanksForSelectedAgency"
                                     :key="r.id"
                                     :value="r.id"
+                                    class="bg-popover text-popover-foreground"
                                 >
                                     {{ r.rank_title }} (Lvl {{ r.level }})
                                 </option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Sub-Divisi Kerja</label
-                            >
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Sub-Divisi Kerja</Label>
                             <select
                                 v-model="form.division_id"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2"
+                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                             >
-                                <option :value="null">
+                                <option :value="null" class="bg-popover text-popover-foreground">
                                     -- General Patrol --
                                 </option>
                                 <option
                                     v-for="d in availableDivisionsForSelectedAgency"
                                     :key="d.id"
                                     :value="d.id"
+                                    class="bg-popover text-popover-foreground"
                                 >
-                                    {{ d.division_name }} ({{
-                                        d.division_code
-                                    }})
+                                    {{ d.division_name }} ({{ d.division_code }})
                                 </option>
                             </select>
                         </div>
@@ -2654,149 +2565,100 @@ onMounted(() => {
 
                     <!-- Callsign, Badge, Duty Status -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Callsign Radio *</label
-                            >
-                            <input
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Callsign Radio *</Label>
+                            <Input
                                 v-model="form.callsign"
                                 type="text"
                                 placeholder="e.g. 1-ADAM-12"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2 font-bold text-blue-400"
+                                class="text-xs font-bold text-primary font-mono"
                             />
                         </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Badge Number</label
-                            >
-                            <input
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Badge Number</Label>
+                            <Input
                                 v-model="form.badge_number"
                                 type="text"
                                 placeholder="e.g. #163"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2"
+                                class="text-xs font-mono"
                             />
                         </div>
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Duty Status</label
-                            >
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Duty Status</Label>
                             <select
                                 v-model="form.duty_status"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2"
+                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                             >
-                                <option value="10-8 (On-Duty)">
-                                    10-8 (On-Duty)
-                                </option>
-                                <option value="10-7 (Off-Duty)">
-                                    10-7 (Off-Duty)
-                                </option>
-                                <option value="10-6 (Busy)">10-6 (Busy)</option>
-                                <option value="Suspended">Suspended</option>
+                                <option value="10-8 (On-Duty)" class="bg-popover text-popover-foreground">10-8 (On-Duty)</option>
+                                <option value="10-7 (Off-Duty)" class="bg-popover text-popover-foreground">10-7 (Off-Duty)</option>
+                                <option value="10-6 (Busy)" class="bg-popover text-popover-foreground">10-6 (Busy)</option>
+                                <option value="Suspended" class="bg-popover text-popover-foreground">Suspended</option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Patrol Zone & Active Status -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Patrol Zone</label
-                            >
-                            <input
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Patrol Zone</Label>
+                            <Input
                                 v-model="form.patrol_zone"
                                 type="text"
                                 placeholder="e.g. Mission Row / Downtown"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2"
+                                class="text-xs"
                             />
                         </div>
                         <div class="flex items-center pt-5">
-                            <label
-                                class="flex items-center space-x-2 cursor-pointer"
-                            >
-                                <input
-                                    v-model="form.is_active"
-                                    type="checkbox"
-                                    class="w-4 h-4 rounded-sm bg-slate-950 border-slate-800 text-blue-500"
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                    :checked="form.is_active"
+                                    @update:checked="form.is_active = $event"
                                 />
-                                <span class="text-slate-200 font-bold"
-                                    >Status Aktif Dimonitor</span
-                                >
+                                <span class="text-foreground font-bold text-xs">Status Aktif Dimonitor</span>
                             </label>
                         </div>
                     </div>
 
                     <!-- Admin Duty & Hashtag Settings -->
-                    <div
-                        class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-950/60 rounded-lg border border-slate-800"
-                    >
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Akumulasi Duty (Menit)</label
-                            >
-                            <input
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-muted/40 rounded-lg border border-border">
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">Akumulasi Duty (Menit)</Label>
+                            <Input
                                 v-model.number="form.monthly_duty_minutes"
                                 type="number"
                                 min="0"
                                 placeholder="0"
-                                class="w-full bg-slate-950 border border-slate-800 text-amber-400 font-mono font-bold rounded-md px-3.5 py-2"
+                                class="text-warning font-mono font-bold text-xs"
                             />
-                            <span class="text-[10px] text-slate-400"
-                                >Setara ~{{
-                                    (
-                                        (form.monthly_duty_minutes || 0) / 60
-                                    ).toFixed(1)
-                                }}
-                                jam patroli</span
-                            >
+                            <span class="text-xs text-muted-foreground block">
+                                Setara ~{{ ((form.monthly_duty_minutes || 0) / 60).toFixed(1) }} jam patroli
+                            </span>
                         </div>
                         <div class="flex items-center pt-2">
-                            <label
-                                class="flex items-center space-x-2 cursor-pointer"
-                            >
-                                <input
-                                    v-model="form.bypass_hashtag_check"
-                                    type="checkbox"
-                                    class="w-4 h-4 rounded-sm bg-slate-950 border-slate-800 text-purple-500"
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                    :checked="form.bypass_hashtag_check"
+                                    @update:checked="form.bypass_hashtag_check = $event"
                                 />
                                 <div>
-                                    <span
-                                        class="text-slate-200 font-bold block text-xs"
-                                        >Break / Bypass Hashtag Rule</span
-                                    >
-                                    <span
-                                        class="text-[10px] text-slate-400 block leading-tight"
-                                        >Selalu lolos 10-8 walau lupa hashtag
-                                        #IMEPolice</span
-                                    >
+                                    <span class="text-foreground font-bold block text-xs">Break / Bypass Hashtag Rule</span>
+                                    <span class="text-xs text-muted-foreground block leading-tight">
+                                        Selalu lolos 10-8 walau lupa hashtag #IMEPolice
+                                    </span>
                                 </div>
                             </label>
                         </div>
                     </div>
                 </div>
 
-                <div
-                    class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-3"
-                >
-                    <button
-                        @click="showModal = false"
-                        class="px-4 py-2 bg-slate-950 border border-slate-800 text-slate-300 rounded-md hover:bg-slate-800"
-                    >
-                        Batal
-                    </button>
-                    <button
-                        @click="saveOfficer"
-                        :disabled="isSavingOfficer"
-                        class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-md"
-                    >
-                        {{
-                            isSavingOfficer
-                                ? "Saving..."
-                                : "Simpan Data Petugas"
-                        }}
-                    </button>
-                </div>
-            </div>
-        </div>
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="showModal = false">Batal</Button>
+                    <Button @click="saveOfficer" :disabled="isSavingOfficer" class="font-bold">
+                        {{ isSavingOfficer ? "Saving..." : "Simpan Data Petugas" }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
 
         <!-- MODAL: ADD / EDIT AGENCY -->
         <div
@@ -3432,116 +3294,128 @@ onMounted(() => {
         </Teleport>
 
         <!-- MODAL: ADJUST DUTY TIME -->
-        <Teleport to="body">
-            <div
-                v-if="showDutyModal"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 font-mono text-xs"
-            >
-                <div
-                    class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-6 space-y-4 text-slate-100"
-                >
-                    <div
-                        class="flex items-center justify-between border-b border-slate-800 pb-3"
-                    >
-                        <div>
-                            <h3 class="text-sm font-bold text-white uppercase">
-                                Adjust Duty Time
-                            </h3>
-                            <p
-                                class="text-[11px] text-slate-400"
-                                v-if="dutyOfficer"
-                            >
-                                {{ dutyOfficer.officer_name }} ({{
-                                    dutyOfficer.callsign
-                                }})
-                            </p>
-                        </div>
-                        <button
-                            @click="showDutyModal = false"
-                            class="text-slate-400 hover:text-white"
-                        >
-                            ✕
-                        </button>
+        <Dialog :open="showDutyModal" @update:open="showDutyModal = $event">
+            <DialogContent class="sm:max-w-md font-mono text-xs">
+                <DialogHeader>
+                    <DialogTitle class="text-sm font-bold uppercase font-mono">
+                        Adjust Duty Time
+                    </DialogTitle>
+                    <DialogDescription v-if="dutyOfficer" class="text-xs">
+                        {{ dutyOfficer.officer_name }} ({{ dutyOfficer.callsign }})
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div class="space-y-3 py-2">
+                    <div class="p-3 bg-muted/40 border border-border rounded-md text-foreground">
+                        Waktu Akumulasi Saat Ini:
+                        <strong class="text-warning ml-1">{{
+                            formatDutyHours(dutyOfficer?.monthly_duty_minutes)
+                        }}</strong>
                     </div>
 
-                    <div class="space-y-3">
-                        <div
-                            class="p-3 bg-slate-950 border border-slate-800 rounded-md text-slate-300"
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Jenis Penyesuaian</Label>
+                        <select
+                            v-model="dutyAction"
+                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                         >
-                            <div>
-                                Waktu Akumulasi Saat Ini:
-                                <strong class="text-amber-400">{{
-                                    formatDutyHours(
-                                        dutyOfficer?.monthly_duty_minutes,
-                                    )
-                                }}</strong>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Jenis Penyesuaian</label
-                            >
-                            <select
-                                v-model="dutyAction"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2"
-                            >
-                                <option value="add">
-                                    Tambah Waktu (Menit)
-                                </option>
-                                <option value="subtract">
-                                    Kurangi Waktu (Menit)
-                                </option>
-                                <option value="set">
-                                    Set Total Menit Langsung
-                                </option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-slate-300 mb-1 font-bold"
-                                >Durasi Menit</label
-                            >
-                            <input
-                                v-model.number="dutyMinutesInput"
-                                type="number"
-                                min="0"
-                                placeholder="Masukkan menit, contoh: 60 (1 jam)"
-                                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-md px-3.5 py-2 font-mono text-white"
-                            />
-                            <div class="text-[10px] text-slate-400 mt-1">
-                                Subtotal setara ±{{
-                                    ((dutyMinutesInput || 0) / 60).toFixed(1)
-                                }}
-                                jam
-                            </div>
-                        </div>
+                            <option value="add" class="bg-popover text-popover-foreground">Tambah Waktu (Menit)</option>
+                            <option value="subtract" class="bg-popover text-popover-foreground">Kurangi Waktu (Menit)</option>
+                            <option value="set" class="bg-popover text-popover-foreground">Set Total Menit Langsung</option>
+                        </select>
                     </div>
 
-                    <div
-                        class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-2"
-                    >
-                        <button
-                            @click="showDutyModal = false"
-                            class="px-4 py-2 bg-slate-950 border border-slate-800 text-slate-300 rounded-md hover:bg-slate-800"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            @click="handleAdjustDuty"
-                            :disabled="isAdjustingDuty"
-                            class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-md disabled:opacity-50"
-                        >
-                            {{
-                                isAdjustingDuty
-                                    ? "Memproses..."
-                                    : "Terapkan Penyesuaian"
-                            }}
-                        </button>
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Durasi Menit</Label>
+                        <Input
+                            v-model.number="dutyMinutesInput"
+                            type="number"
+                            min="0"
+                            placeholder="Masukkan menit, contoh: 60 (1 jam)"
+                            class="font-mono text-xs"
+                        />
+                        <div class="text-xs text-muted-foreground">
+                            Subtotal setara ±{{ ((dutyMinutesInput || 0) / 60).toFixed(1) }} jam
+                        </div>
                     </div>
                 </div>
-            </div>
-        </Teleport>
+
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="showDutyModal = false">Batal</Button>
+                    <Button
+                        @click="handleAdjustDuty"
+                        :disabled="isAdjustingDuty"
+                        class="font-bold"
+                    >
+                        {{ isAdjustingDuty ? "Memproses..." : "Terapkan Penyesuaian" }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- MODAL: SUSPEND BIO-LINK / BAN USER REASON -->
+        <Dialog :open="reasonDialog.show" @update:open="reasonDialog.show = $event">
+            <DialogContent class="sm:max-w-md font-mono text-xs">
+                <DialogHeader>
+                    <DialogTitle class="text-sm font-bold uppercase font-mono">
+                        {{ reasonDialog.mode === "suspend" ? "Bekukan Bio-Link (Kill-Switch)" : "Ban Akun Pengguna" }}
+                    </DialogTitle>
+                    <DialogDescription class="text-xs">
+                        {{
+                            reasonDialog.mode === "suspend"
+                                ? `Masukkan alasan pembekuan halaman bio untuk ${reasonDialog.officer?.officer_name || ""}.`
+                                : `Masukkan alasan pemblokiran akun user ${reasonDialog.officer?.user?.name || ""}.`
+                        }}
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div class="space-y-2 py-2">
+                    <Label class="text-xs font-bold">Alasan Moderasi *</Label>
+                    <Input
+                        v-model="reasonDialog.reason"
+                        type="text"
+                        placeholder="Masukkan alasan tindakan..."
+                        class="text-xs"
+                    />
+                </div>
+
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="reasonDialog.show = false">Batal</Button>
+                    <Button
+                        variant="destructive"
+                        @click="submitReasonDialog"
+                        :disabled="reasonDialog.isSubmitting"
+                    >
+                        {{ reasonDialog.isSubmitting ? "Memproses..." : "Konfirmasi Tindakan" }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- ALERT DIALOG: DELETE OFFICER -->
+        <AlertDialog :open="showDeleteConfirm" @update:open="showDeleteConfirm = $event">
+            <AlertDialogContent class="font-mono text-xs">
+                <AlertDialogHeader>
+                    <AlertDialogTitle class="font-mono uppercase text-sm">
+                        Hapus Unit Perwira?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription class="text-xs">
+                        Apakah Anda yakin ingin menghapus data unit perwira
+                        <strong class="text-foreground">{{ officerToDelete?.officer_name }} ({{ officerToDelete?.callsign }})</strong>?
+                        Tindakan ini tidak dapat dibatalkan.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="showDeleteConfirm = false">Batal</AlertDialogCancel>
+                    <AlertDialogAction
+                        @click="executeDeleteOfficer"
+                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                        Hapus Perwira
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
 
         <!-- TACTICAL BIO-LINK & BINDING MODAL -->
         <OfficerBindingModal
