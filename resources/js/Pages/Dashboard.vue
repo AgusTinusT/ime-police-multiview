@@ -8,18 +8,16 @@ import axios from "axios";
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
-import { LiveBadge, PageContainer } from "@/Components/tactical";
+import { LiveBadge } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
-import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
 import CatalogCard from "@/Components/CatalogCard.vue";
 import CatalogRow from "@/Components/CatalogRow.vue";
 import ClipCatalogCard from "@/Components/ClipCatalogCard.vue";
 import SupportCatalogCard from "@/Components/SupportCatalogCard.vue";
 import OfficerDetailModal from "@/Components/OfficerDetailModal.vue";
-import TacticalSubSupportGrid from "@/Components/TacticalSubSupportGrid.vue";
 import { Toaster } from "@/Components/ui/sonner";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
 import { parseRelativeTimeToSeconds } from "@/Utils/timeHelpers";
@@ -385,7 +383,7 @@ onMounted(() => {
                     <a
                         v-for="o in top10"
                         :key="`top-${o.id}`"
-                        :href="o.youtube_url || '#leaderboard-section'"
+                        :href="o.youtube_url || '/officers'"
                         :target="o.youtube_url ? '_blank' : null"
                         rel="noopener"
                         class="group relative flex h-40 w-44 shrink-0 snap-start items-end rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:h-48 sm:w-52"
@@ -422,7 +420,7 @@ onMounted(() => {
                 >
                     <template #action>
                         <Button as-child variant="link" size="sm" class="ml-auto shrink-0">
-                            <a href="#support-section">Lihat semua <ChevronRight /></a>
+                            <Link href="/officers">Lihat semua <ChevronRight /></Link>
                         </Button>
                     </template>
                     <SupportCatalogCard
@@ -446,30 +444,6 @@ onMounted(() => {
                     />
                 </CatalogRow>
             </div>
-
-            <!-- SECTION 3: Monthly Patrol Streaming Leaderboard Section -->
-            <section
-                id="leaderboard-section"
-                v-reveal
-                class="w-full bg-background pt-12 sm:pt-16 pb-16 sm:pb-24 relative z-10"
-            >
-                <PageContainer>
-                    <TacticalMonthlyLeaderboard
-                        :leaderboard="monthlyLeaderboard"
-                    />
-                </PageContainer>
-            </section>
-
-            <!-- SECTION 4: 1K Sub Support Section -->
-            <section
-                id="support-section"
-                v-reveal
-                class="w-full bg-card/40 py-12 sm:py-16 relative z-10"
-            >
-                <PageContainer>
-                    <TacticalSubSupportGrid :officers="supportOfficers" />
-                </PageContainer>
-            </section>
         </main>
 
         <!-- Full-Width Edge-to-Edge Tactical Footer -->
