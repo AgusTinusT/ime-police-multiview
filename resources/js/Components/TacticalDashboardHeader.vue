@@ -28,7 +28,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits([
+defineEmits([
     "enable-data-saver",
     "disable-data-saver",
     "trigger-sync",
