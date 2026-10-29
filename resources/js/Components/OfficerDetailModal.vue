@@ -52,12 +52,12 @@ const incident = computed(() => {
                 <LiveBadge v-if="isLive" :viewers="stream.viewers_count" class="absolute left-4 top-4" />
                 <div class="absolute inset-x-4 bottom-4 flex flex-wrap gap-2">
                     <Button as-child>
-                        <Link :href="mvUrl([stream.video_id])"><Play /> Tonton</Link>
+                        <Link :href="mvUrl([stream.video_id])"><Play /> {{ $t('officer_detail.watch') }}</Link>
                     </Button>
                     <Button variant="secondary" :aria-pressed="inTray" @click="emit('toggle-tray', stream)">
                         <Check v-if="inTray" />
                         <Plus v-else />
-                        {{ inTray ? "Di multiview" : "Multiview" }}
+                        {{ inTray ? $t('officer_detail.in_multiview') : $t('officer_detail.multiview') }}
                     </Button>
                     <Button as-child variant="outline">
                         <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" rel="noopener">
@@ -87,10 +87,10 @@ const incident = computed(() => {
                 <div v-if="incident && incident.others.length">
                     <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                         <h3 class="flex items-center gap-2 text-base font-semibold text-foreground">
-                            <Radio class="size-4 text-warning" /> Unit lain di {{ incident.name }}
+                            <Radio class="size-4 text-warning" /> {{ $t('officer_detail.other_units_in_tac', { name: incident.name }) }}
                         </h3>
                         <Button as-child variant="link" size="sm" class="px-0">
-                            <Link :href="mvUrl(incident.units.map((u) => u.video_id))">Tonton {{ incident.units.length }} POV bersama</Link>
+                            <Link :href="mvUrl(incident.units.map((u) => u.video_id))">{{ $t('officer_detail.watch_povs_together', { count: incident.units.length }) }}</Link>
                         </Button>
                     </div>
                     <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -102,7 +102,7 @@ const incident = computed(() => {
                         </li>
                     </ul>
                 </div>
-                <p v-else class="text-sm text-muted-foreground">Officer ini tidak sedang berada di kanal TAC bersama unit lain.</p>
+                <p v-else class="text-sm text-muted-foreground">{{ $t('officer_detail.no_tac_channel') }}</p>
             </div>
         </DialogContent>
     </Dialog>

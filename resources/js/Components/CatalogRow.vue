@@ -31,7 +31,7 @@ const scrollBy = (dir) =>
             <Button
                 variant="ghost"
                 class="absolute inset-y-0 left-0 z-20 hidden h-auto w-10 rounded-none bg-background/70 opacity-0 transition-opacity group-hover/row:opacity-100 focus-visible:opacity-100 md:flex lg:w-12"
-                aria-label="Geser ke kiri"
+                :aria-label="$t('catalog.scroll_left')"
                 @click="scrollBy(-1)"
             >
                 <ChevronLeft class="size-6" />
@@ -39,7 +39,7 @@ const scrollBy = (dir) =>
             <Button
                 variant="ghost"
                 class="absolute inset-y-0 right-0 z-20 hidden h-auto w-10 rounded-none bg-background/70 opacity-0 transition-opacity group-hover/row:opacity-100 focus-visible:opacity-100 md:flex lg:w-12"
-                aria-label="Geser ke kanan"
+                :aria-label="$t('catalog.scroll_right')"
                 @click="scrollBy(1)"
             >
                 <ChevronRight class="size-6" />

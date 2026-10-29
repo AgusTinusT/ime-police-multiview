@@ -295,10 +295,10 @@ const triggerManualSync = async () => {
 
             <!-- SECTION 2: Catalog rows (Netflix-style browsing) -->
             <div id="units-grid" class="relative z-10 scroll-mt-6 space-y-8 py-8 sm:space-y-10 sm:py-12">
-                <CatalogRow v-if="liveByViewers.length" title="Sedang live" :subtitle="`${liveByViewers.length} unit · ${totalLiveViewers} menonton`">
+                <CatalogRow v-if="liveByViewers.length" :title="$t('catalog.live_now')" :subtitle="$t('catalog.live_summary', { units: liveByViewers.length, viewers: totalLiveViewers })">
                     <template #action>
                         <Button as-child variant="link" size="sm" class="ml-auto shrink-0">
-                            <Link :href="mvUrl(liveByViewers.slice(0, 9).map((s) => s.video_id))">Tonton semua <ChevronRight /></Link>
+                            <Link :href="mvUrl(liveByViewers.slice(0, 9).map((s) => s.video_id))">{{ $t('catalog.watch_all') }} <ChevronRight /></Link>
                         </Button>
                     </template>
                     <CatalogCard
@@ -313,10 +313,10 @@ const triggerManualSync = async () => {
                     />
                 </CatalogRow>
 
-                <CatalogRow v-for="ch in tacRows" :key="`tac-${ch.code}`" :title="`Insiden aktif · ${ch.name}`" subtitle="Satu kejadian, setiap sudut">
+                <CatalogRow v-for="ch in tacRows" :key="`tac-${ch.code}`" :title="$t('catalog.active_incident', { name: ch.name })" :subtitle="$t('catalog.active_incident_subtitle')">
                     <template #action>
                         <Button as-child variant="link" size="sm" class="ml-auto shrink-0">
-                            <Link :href="mvUrl(ch.units.map((u) => u.video_id))">Tonton {{ ch.units.length }} POV <ChevronRight /></Link>
+                            <Link :href="mvUrl(ch.units.map((u) => u.video_id))">{{ $t('catalog.watch_povs', { count: ch.units.length }) }} <ChevronRight /></Link>
                         </Button>
                     </template>
                     <CatalogCard
@@ -331,7 +331,7 @@ const triggerManualSync = async () => {
                     />
                 </CatalogRow>
 
-                <CatalogRow v-if="top10.length" title="Top 10 patroli bulan ini" :subtitle="monthlyLeaderboard?.period_text || ''">
+                <CatalogRow v-if="top10.length" :title="$t('catalog.top_10_patrols')" :subtitle="monthlyLeaderboard?.period_text || ''">
                     <a
                         v-for="o in top10"
                         :key="`top-${o.id}`"
@@ -352,7 +352,7 @@ const triggerManualSync = async () => {
                     </a>
                 </CatalogRow>
 
-                <CatalogRow v-for="r in deptRows" :key="`dept-${r.dept}`" :title="`Patroli ${r.dept}`">
+                <CatalogRow v-for="r in deptRows" :key="`dept-${r.dept}`" :title="$t('catalog.dept_patrol', { dept: r.dept })">
                     <CatalogCard
                         v-for="s in r.items"
                         :key="`dept-${r.dept}-${s.video_id}`"
@@ -366,7 +366,7 @@ const triggerManualSync = async () => {
                     />
                 </CatalogRow>
 
-                <CatalogRow v-if="recentReplayStreams.length" title="Rekaman terbaru">
+                <CatalogRow v-if="recentReplayStreams.length" :title="$t('catalog.recent_replays')">
                     <CatalogCard
                         v-for="s in recentReplayStreams.slice(0, 15)"
                         :key="`rep-${s.video_id}`"
@@ -437,12 +437,12 @@ const triggerManualSync = async () => {
         >
             <div class="flex items-center gap-3 rounded-xl border border-border bg-popover p-2 pl-4 text-popover-foreground shadow-lg">
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold">{{ tray.length }} POV dipilih</p>
+                    <p class="text-sm font-semibold">{{ $t('catalog.pov_selected', { count: tray.length }) }}</p>
                     <p class="truncate text-xs text-muted-foreground">{{ tray.map(nameOf).join(", ") }}</p>
                 </div>
-                <Button variant="ghost" size="sm" class="shrink-0" @click="tray = []">Kosongkan</Button>
+                <Button variant="ghost" size="sm" class="shrink-0" @click="tray = []">{{ $t('catalog.clear_tray') }}</Button>
                 <Button as-child size="sm" class="shrink-0">
-                    <Link :href="mvUrl(tray.map((t) => t.video_id))"><MonitorPlay /> Buka multiview</Link>
+                    <Link :href="mvUrl(tray.map((t) => t.video_id))"><MonitorPlay /> {{ $t('catalog.open_multiview') }}</Link>
                 </Button>
             </div>
         </div>

@@ -40,7 +40,7 @@ Tugas kecil lanjutan setelah katalog Dashboard (Claude, 31 Okt 2026). Satu brief
 
 | # | ID | Prioritas | Task | Bergantung | Status | Dev Notes | Review Notes |
 | :---: | :--- | :---: | :--- | :--- | :---: | :--- | :--- |
-| 19 | [UX-01](tasks/UX-01.md) | 🟡 P2 | i18n katalog Dashboard, modal detail, bar tile Multiview | — | ⚪ Todo | | |
+| 19 | [UX-01](tasks/UX-01.md) | 🟡 P2 | i18n katalog Dashboard, modal detail, bar tile Multiview | — | 🟣 Ready for Review | Grup i18n catalog, officer_detail, dan multiview_tile ditambahkan ke id.json & en.json dengan parameter dinamis; teks hardcode di Dashboard, CatalogCard, CatalogRow, OfficerDetailModal, dan Multiview diganti $t(). Visual 390px/1280px bebas horizontal scroll, lint:ui 0 error, build sukses. | |
 | 20 | [UX-02](tasks/UX-02.md) | 🟡 P2 | Baris katalog "Momen aksi komunitas" (TacClips) | — | ⚪ Todo | | |
 | 21 | [UX-03](tasks/UX-03.md) | 🟢 P3 | Bersihkan peringatan ESLint header & footer | — | ⚪ Todo | | |
 | 22 | [UX-04](tasks/UX-04.md) | 🟡 P2 | Tombol chat tidak menutupi kontrol Multiview & tray di HP | — | ⚪ Todo | | |

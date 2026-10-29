@@ -797,7 +797,7 @@ onUnmounted(() => {
                                         <button
                                             type="button"
                                             class="absolute inset-0 flex size-full items-end bg-linear-to-t from-background/80 via-transparent to-transparent p-1.5 text-left"
-                                            :aria-label="`Tonton ${infoOf(id)?.officer?.officer_name || 'POV'} sebagai utama`"
+                                            :aria-label="$t('multiview_tile.watch_as_main', { name: infoOf(id)?.officer?.officer_name || $t('multiview_tile.pov_fallback') })"
                                             @click="setFocus(id)"
                                         >
                                             <span class="flex min-w-0 items-center gap-1 text-xs font-bold text-foreground">
@@ -810,7 +810,7 @@ onUnmounted(() => {
                                                 type="button"
                                                 class="tile-btn"
                                                 :class="audioId === id ? 'bg-primary!' : ''"
-                                                :aria-label="audioId === id ? 'Bisukan' : 'Dengarkan POV ini'"
+                                                :aria-label="audioId === id ? $t('multiview_tile.mute') : $t('multiview_tile.unmute')"
                                                 @click="toggleAudio(id)"
                                             >
                                                 <Volume2 v-if="audioId === id" class="size-3.5" />
@@ -819,7 +819,7 @@ onUnmounted(() => {
                                             <button
                                                 type="button"
                                                 class="tile-btn hover:bg-destructive!"
-                                                aria-label="Tutup POV"
+                                                :aria-label="$t('multiview_tile.close_pov')"
                                                 @click="removeStream(id)"
                                             >
                                                 <X class="size-3.5" />
@@ -841,14 +841,14 @@ onUnmounted(() => {
                                     </span>
                                     <span class="hidden shrink-0 font-mono text-xs text-muted-foreground sm:inline">{{ infoOf(id)?.officer?.callsign }}</span>
                                     <Badge v-if="!liveIds.has(id)" variant="secondary" class="shrink-0">
-                                        {{ replayIds.has(id) ? "REKAMAN" : "OFFLINE" }}
+                                        {{ replayIds.has(id) ? $t('multiview_tile.replay') : $t('multiview_tile.offline') }}
                                     </Badge>
 
                                     <div class="ml-auto flex shrink-0 items-center gap-0.5">
                                         <Button
                                             size="icon-xs"
                                             :variant="audioId === id ? 'default' : 'ghost'"
-                                            :aria-label="audioId === id ? 'Bisukan' : 'Dengarkan POV ini'"
+                                            :aria-label="audioId === id ? $t('multiview_tile.mute') : $t('multiview_tile.unmute')"
                                             :aria-pressed="audioId === id"
                                             @click="toggleAudio(id)"
                                         >
@@ -859,7 +859,7 @@ onUnmounted(() => {
                                             v-if="layoutMode !== 'focus' || focusId !== id"
                                             size="icon-xs"
                                             variant="ghost"
-                                            aria-label="Jadikan utama"
+                                            :aria-label="$t('multiview_tile.make_main')"
                                             @click="setFocus(id)"
                                         >
                                             <Maximize />
@@ -868,7 +868,7 @@ onUnmounted(() => {
                                             size="icon-xs"
                                             variant="ghost"
                                             class="hover:bg-destructive hover:text-foreground"
-                                            aria-label="Tutup POV"
+                                            :aria-label="$t('multiview_tile.close_pov')"
                                             @click="removeStream(id)"
                                         >
                                             <X />

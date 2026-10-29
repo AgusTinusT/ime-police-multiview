@@ -146,5 +146,58 @@
     "hero_statement": "Building a patrol monitoring hub that respects your time.",
     "hero_description": "This platform was born out of a simple need: providing an integrated bodycam monitoring hub that respects viewer and command focus, eliminates navigation friction, and delivers an uninterrupted multiview experience.",
     "badge_tag": "ABOUT THE PLATFORM"
+  },
+  "footer": {
+    "tagline": "IME RP Police Duty Multiview — Tactical Officer Bodycam Monitoring Platform",
+    "copyright": "© 2026 IME RP Police Duty. All rights reserved.",
+    "disclaimer": "This platform was built to enhance the visibility of San Andreas streamers & officers."
+  },
+  "nav": {
+    "dashboard": "Home",
+    "multiview": "Multiview",
+    "directory": "Officer Directory",
+    "clips": "TacClips",
+    "updates": "Updates",
+    "about": "About",
+    "faq": "FAQ",
+    "feedback": "Feedback"
+  },
+  "catalog": {
+    "live_now": "Live now",
+    "live_summary": "{units} units · {viewers} watching",
+    "watch_all": "Watch all",
+    "active_incident": "Active incident · {name}",
+    "active_incident_subtitle": "One incident, every angle",
+    "watch_povs": "Watch {count} POVs",
+    "top_10_patrols": "Top 10 patrols this month",
+    "dept_patrol": "{dept} Patrol",
+    "recent_replays": "Recent replays",
+    "pov_selected": "{count} POVs selected",
+    "clear_tray": "Clear",
+    "open_multiview": "Open multiview",
+    "detail_officer_aria": "Officer details",
+    "add_to_multiview": "Add to multiview",
+    "remove_from_multiview": "Remove from multiview",
+    "watching_title": "{count} watching · {title}",
+    "scroll_left": "Scroll left",
+    "scroll_right": "Scroll right"
+  },
+  "officer_detail": {
+    "watch": "Watch",
+    "in_multiview": "In multiview",
+    "multiview": "Multiview",
+    "other_units_in_tac": "Other units in {name}",
+    "watch_povs_together": "Watch {count} POVs together",
+    "no_tac_channel": "This officer is not currently in a TAC channel with other units."
+  },
+  "multiview_tile": {
+    "replay": "REPLAY",
+    "offline": "OFFLINE",
+    "mute": "Mute",
+    "unmute": "Listen to this POV",
+    "make_main": "Make main",
+    "close_pov": "Close POV",
+    "watch_as_main": "Watch {name} as main",
+    "pov_fallback": "POV"
   }
 }

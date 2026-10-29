@@ -146,6 +146,44 @@
     "about": "Tentang",
     "faq": "FAQ",
     "feedback": "Feedback"
+  },
+  "catalog": {
+    "live_now": "Sedang live",
+    "live_summary": "{units} unit · {viewers} menonton",
+    "watch_all": "Tonton semua",
+    "active_incident": "Insiden aktif · {name}",
+    "active_incident_subtitle": "Satu kejadian, setiap sudut",
+    "watch_povs": "Tonton {count} POV",
+    "top_10_patrols": "Top 10 patroli bulan ini",
+    "dept_patrol": "Patroli {dept}",
+    "recent_replays": "Rekaman terbaru",
+    "pov_selected": "{count} POV dipilih",
+    "clear_tray": "Kosongkan",
+    "open_multiview": "Buka multiview",
+    "detail_officer_aria": "Detail officer",
+    "add_to_multiview": "Tambah ke multiview",
+    "remove_from_multiview": "Keluarkan dari multiview",
+    "watching_title": "{count} menonton · {title}",
+    "scroll_left": "Geser ke kiri",
+    "scroll_right": "Geser ke kanan"
+  },
+  "officer_detail": {
+    "watch": "Tonton",
+    "in_multiview": "Di multiview",
+    "multiview": "Multiview",
+    "other_units_in_tac": "Unit lain di {name}",
+    "watch_povs_together": "Tonton {count} POV bersama",
+    "no_tac_channel": "Officer ini tidak sedang berada di kanal TAC bersama unit lain."
+  },
+  "multiview_tile": {
+    "replay": "REKAMAN",
+    "offline": "OFFLINE",
+    "mute": "Bisukan",
+    "unmute": "Dengarkan POV ini",
+    "make_main": "Jadikan utama",
+    "close_pov": "Tutup POV",
+    "watch_as_main": "Tonton {name} sebagai utama",
+    "pov_fallback": "POV"
   }
 }
 

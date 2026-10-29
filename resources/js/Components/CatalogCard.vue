@@ -55,7 +55,7 @@ const dept = computed(() => props.stream.officer?.department || "");
                     size="icon-sm"
                     variant="secondary"
                     class="rounded-full bg-background/70 hover:bg-background"
-                    aria-label="Detail officer"
+                    :aria-label="$t('catalog.detail_officer_aria')"
                     @click.prevent.stop="emit('detail', stream)"
                 >
                     <Info />
@@ -64,7 +64,7 @@ const dept = computed(() => props.stream.officer?.department || "");
                     size="icon-sm"
                     :variant="inTray ? 'default' : 'secondary'"
                     :class="cn('rounded-full', !inTray && 'bg-background/70 hover:bg-primary hover:text-primary-foreground')"
-                    :aria-label="inTray ? 'Keluarkan dari multiview' : 'Tambah ke multiview'"
+                    :aria-label="inTray ? $t('catalog.remove_from_multiview') : $t('catalog.add_to_multiview')"
                     :aria-pressed="inTray"
                     @click.prevent.stop="emit('toggle-tray', stream)"
                 >
@@ -82,7 +82,7 @@ const dept = computed(() => props.stream.officer?.department || "");
                 <DeptBadge v-if="dept" :dept="dept" />
                 <span class="truncate">
                     <template v-if="kind === 'replay'">{{ name }}</template>
-                    <template v-else-if="kind === 'live'">{{ stream.viewers_count || 0 }} menonton · {{ stream.title }}</template>
+                    <template v-else-if="kind === 'live'">{{ $t('catalog.watching_title', { count: stream.viewers_count || 0, title: stream.title }) }}</template>
                     <template v-else>{{ stream.title }}</template>
                 </span>
             </div>
