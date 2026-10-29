@@ -327,3 +327,21 @@ Route::get('/@{slug}', [PublicBioLinkController::class, 'show'])
     ->where('slug', '[a-zA-Z0-9._-]+')
     ->name('bio.show');
 
+// 7. Squads API (SQ-01)
+use App\Http\Controllers\SquadController;
+
+Route::prefix('api/v1/squads')->group(function () {
+    Route::get('/public', [SquadController::class, 'public'])->name('squads.public');
+    Route::middleware('auth')->get('/mine', [SquadController::class, 'mine'])->name('squads.mine');
+    Route::middleware('auth')->post('/', [SquadController::class, 'store'])->name('squads.store');
+    Route::middleware('auth')->put('/{squad}', [SquadController::class, 'update'])->name('squads.update');
+    Route::middleware('auth')->delete('/{squad}', [SquadController::class, 'destroy'])->name('squads.destroy');
+    Route::middleware('auth')->post('/{squad}/fork', [SquadController::class, 'fork'])->name('squads.fork');
+    Route::get('/{slug}', [SquadController::class, 'show'])->name('squads.show');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/squads')->group(function () {
+    Route::patch('/{squad}/hide', [SquadController::class, 'toggleHide'])->name('admin.squads.hide');
+});
+
+

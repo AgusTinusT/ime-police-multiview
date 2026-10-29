@@ -131,6 +131,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Squads created by this user.
+     */
+    public function squads(): HasMany
+    {
+        return $this->hasMany(\App\Models\Squad::class);
+    }
+
+    /**
      * Get the user's cloud watchlist items.
      */
     public function watchlists(): \Illuminate\Database\Eloquent\Relations\HasMany
