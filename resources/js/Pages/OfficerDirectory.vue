@@ -410,10 +410,28 @@ const filteredOfficers = computed(() => {
 });
 
 // Group the (rank-sorted) list into tiers: command staff first, then one group per rank.
+// The department leader(s): everyone at the highest rank level present, shown as a
+// spotlight above the rest. Usually one officer, two at most; capped at three.
+const LEADER_MAX = 3;
+const leaders = computed(() => {
+    const top = Math.max(0, ...filteredOfficers.value.map((o) => o.rank_level || 0));
+    if (!top) return [];
+    const atTop = filteredOfficers.value.filter((o) => (o.rank_level || 0) === top);
+    return atTop.length <= LEADER_MAX ? atTop : [];
+});
+const leaderIds = computed(() => new Set(leaders.value.map((o) => o.id)));
+
+const deptTint = {
+    LSPD: "from-dept-lspd/25",
+    BCSO: "from-dept-bcso/25",
+    SASP: "from-dept-sasp/25",
+    SAPR: "from-dept-sapr/25",
+};
+
 const rankGroups = computed(() => {
     const groups = [];
     const byKey = new Map();
-    for (const o of filteredOfficers.value) {
+    for (const o of filteredOfficers.value.filter((o) => !leaderIds.value.has(o.id))) {
         const level = o.rank_level || 0;
         const key = level >= COMMAND_LEVEL ? "command" : level > 0 ? `rank-${level}-${o.rank}` : "unassigned";
         if (!byKey.has(key)) {
@@ -612,6 +630,49 @@ const liveInDept = computed(() =>
 
             <!-- VIEW MODE 1: GRID VIEW -->
             <div v-else-if="viewMode === 'grid'" class="space-y-8">
+                <!-- Leader spotlight: the highest rank in the department -->
+                <section v-if="leaders.length" aria-label="Pimpinan departemen">
+                    <div :class="['grid gap-4', leaders.length > 1 ? 'md:grid-cols-2' : '', leaders.length > 2 ? 'lg:grid-cols-3' : '']">
+                        <button
+                            v-for="officer in leaders"
+                            :key="`leader-${officer.id}`"
+                            type="button"
+                            :class="[
+                                'group relative flex items-center gap-5 overflow-hidden rounded-xl border border-border bg-linear-to-r to-card p-5 text-left transition-colors hover:border-primary/40 sm:p-6',
+                                deptTint[selectedDept] || 'from-muted',
+                            ]"
+                            @click="openDrawer(officer)"
+                        >
+                            <img
+                                :src="activeDept.logo"
+                                alt=""
+                                aria-hidden="true"
+                                class="pointer-events-none absolute -right-6 -top-6 size-40 rounded-full object-cover opacity-10"
+                            />
+                            <OfficerAvatar
+                                :src="officer.avatar_url"
+                                :name="officer.officer_name"
+                                :live="officer.is_online"
+                                size="xl"
+                                class="shrink-0 ring-2 ring-border"
+                            />
+                            <div class="relative min-w-0">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                    Pimpinan {{ selectedDept }} · {{ officer.rank }}
+                                </p>
+                                <h3 class="mt-1 truncate text-xl font-bold text-foreground group-hover:text-primary sm:text-2xl">
+                                    {{ officer.officer_name }}
+                                </h3>
+                                <p class="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                    <span class="font-mono">{{ officer.callsign }}</span>
+                                    <span v-if="officer.badge_number" class="font-mono">{{ officer.badge_number }}</span>
+                                    <LiveBadge v-if="officer.is_online" />
+                                </p>
+                            </div>
+                        </button>
+                    </div>
+                </section>
+
                 <section v-for="group in rankGroups" :key="group.key">
                     <h3 class="mb-3 flex items-baseline gap-2 text-sm font-semibold text-foreground">
                         {{ group.title }}
