@@ -10,21 +10,17 @@ import {
     Star,
     Target,
     Trophy,
-    Users,
-    Zap,
     UserPlus,
     Download,
-    Video,
-    Ban,
     LayoutGrid,
     Table as TableIcon,
     X,
 } from "@lucide/vue";
 
-import logoBcso from "@/Components/Icons/Logo_LSCSD.svg";
-import logoLspd from "@/Components/Icons/LSPD_HD.svg";
-import logoSapr from "@/Components/Icons/ranger_logo.svg";
-import logoSasp from "@/Components/Icons/SASP_HD.svg";
+import logoBcso from "@/Components/Icons/LSCSD_256.jpg";
+import logoLspd from "@/Components/Icons/LSPD_256.jpg";
+import logoSapr from "@/Components/Icons/SAPR_256.png";
+import logoSasp from "@/Components/Icons/SASP_256.jpg";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Card } from "@/Components/ui/card";
@@ -55,8 +51,6 @@ import {
 } from "@/Components/ui/sheet";
 import {
     PageContainer,
-    PageHeader,
-    StatTile,
     DeptBadge,
     LiveBadge,
     OfficerAvatar,
@@ -471,231 +465,116 @@ const liveInDept = computed(() =>
     <TacticalLayout>
         <Head title="Direktori & Manajemen Pengguna — IME Police Terminal" />
 
-        <PageContainer class="space-y-8">
-            <!-- PAGE HEADER -->
-            <Card class="p-6 sm:p-8 space-y-6">
-                <PageHeader
-                    eyebrow="SAN ANDREAS DIRECTORY"
-                    :title="$t('directory.title')"
-                    :subtitle="$t('directory.subtitle')"
-                >
-                    <template #actions>
-                        <div
-                            v-if="isAdmin"
-                            class="flex flex-row lg:flex-col items-center lg:items-end justify-start gap-2.5 shrink-0 font-mono"
-                        >
-                            <Button
-                                type="button"
-                                @click="openAddModal"
-                                class="w-full sm:w-auto font-bold text-xs sm:text-sm gap-2"
-                            >
-                                <UserPlus class="w-4 h-4" />
-                                <span>TAMBAH PENGGUNA BARU</span>
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                @click="exportCSV"
-                                class="w-full sm:w-auto text-xs font-semibold gap-2"
-                            >
-                                <Download class="w-4 h-4 text-primary" />
-                                <span>UNDUH LAPORAN (CSV)</span>
-                            </Button>
-                        </div>
-                    </template>
-                </PageHeader>
-
-                <!-- Operational Status Badges -->
-                <div
-                    class="flex flex-wrap items-center gap-2.5 text-xs font-mono text-muted-foreground"
-                >
-                    <Badge
-                        variant="success"
-                        class="inline-flex items-center gap-1.5 px-3 py-1 font-bold"
-                    >
-                        <span
-                            class="w-2 h-2 rounded-full bg-success"
-                        ></span>
-                        10-8 Live Duty: {{ deptStats.total_live || 0 }} Unit
-                    </Badge>
-                    <Badge
-                        variant="outline"
-                        class="inline-flex items-center gap-1.5 px-3 py-1"
-                    >
-                        <Users class="w-3.5 h-3.5 text-primary" />
-                        Multi-Divisi: LSPD / BCSO / SASP / SAPR
-                    </Badge>
-                    <Badge
-                        variant="outline"
-                        class="inline-flex items-center gap-1.5 px-3 py-1"
-                    >
-                        <Zap class="w-3.5 h-3.5 text-warning" />
-                        Pembaruan Real-Time
-                    </Badge>
+        <PageContainer class="space-y-6">
+            <!-- Header: title and tools in one row, department tabs right below -->
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div class="min-w-0">
+                    <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Direktori Perwira</h1>
+                    <p class="mt-1 text-sm text-muted-foreground">
+                        {{ officers.length }} perwira terdaftar ·
+                        <span class="text-live">{{ deptStats.total_live || 0 }} sedang live</span>
+                        · disusun menurut rantai komando
+                    </p>
                 </div>
-            </Card>
 
-            <!-- Top Telemetry KPI Cards -->
-            <section class="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono">
-                <StatTile
-                    label="Total Personil"
-                    :value="officers.length"
-                    delta="✓ Terdaftar di database repositori"
-                    :icon="Users"
-                />
-
-                <StatTile
-                    label="Petugas 10-8 (On Duty)"
-                    :value="deptStats.total_live || 0"
-                    delta="Sesi live streaming aktif"
-                    :icon="Video"
-                    accent="live"
-                />
-
-                <StatTile
-                    label="Petugas 10-7 (Off Duty)"
-                    :value="
-                        deptStats.total_offline ||
-                        officers.length - (deptStats.total_live || 0)
-                    "
-                    delta="Standby / Tidak siaran"
-                    :icon="Ban"
-                />
-
-                <Link
-                    href="/ranking?tab=road_to_1k"
-                    class="block cursor-pointer transition hover:opacity-90"
-                    title="Lihat peringkat Road to 1K"
-                >
-                    <StatTile
-                        label="Target <1K Subs"
-                        :value="
-                            officers.filter(
-                                (o) => (o.subscriber_count || 0) < 1000,
-                            ).length
-                        "
-                        delta="Personil butuh dukungan subscriber"
-                        :icon="Target"
-                        accent="primary"
-                    />
-                </Link>
-            </section>
-
-            <!-- Comprehensive Search, Filter, Sort & View Mode Switcher -->
-            <Card class="p-4 sm:p-5 space-y-4">
-                <!-- Top Row: Search Input & Controls -->
-                <div
-                    class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3"
-                >
-                    <!-- Search Input -->
-                    <div class="relative flex-1 group">
-                        <div
-                            class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors"
-                        >
-                            <Search class="w-4 h-4" />
-                        </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="relative w-full sm:w-64">
+                        <Search class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             v-model="searchQuery"
                             type="text"
                             :placeholder="$t('directory.search_placeholder')"
-                            class="w-full h-10 pl-10 pr-9 text-xs sm:text-sm font-sans"
+                            class="h-9 w-full pl-9 pr-8 text-sm"
                         />
                         <button
                             v-if="searchQuery"
                             type="button"
-                            @click="searchQuery = ''"
                             aria-label="Bersihkan pencarian"
-                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground text-xs font-bold font-mono transition cursor-pointer"
-                            title="Bersihkan pencarian"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            @click="searchQuery = ''"
                         >
-                            <X class="w-4 h-4" />
+                            <X class="size-4" />
                         </button>
                     </div>
 
-                    <!-- Filter Dropdowns & View Mode Buttons -->
-                    <div
-                        class="flex flex-wrap items-center gap-2 sm:gap-3 font-mono text-xs"
+                    <select
+                        v-model="statusFilter"
+                        aria-label="Filter status"
+                        class="h-9 cursor-pointer appearance-none rounded-md border border-input bg-background py-1 pl-3 pr-7 text-sm text-foreground focus:border-ring focus:outline-hidden"
                     >
-                        <!-- Status Filter Dropdown -->
-                        <div class="relative">
-                            <select
-                                v-model="statusFilter"
-                                class="h-10 appearance-none bg-background border border-input rounded-md pl-3 py-2 pr-7 text-xs text-foreground focus:outline-hidden focus:border-ring cursor-pointer"
-                            >
-                                <option value="all">Semua Status Akun</option>
-                                <option value="online">
-                                    Aktif Saja (10-8)
-                                </option>
-                                <option value="offline">
-                                    Menunggu / Off (10-7)
-                                </option>
-                            </select>
-                        </div>
+                        <option value="all">Semua status</option>
+                        <option value="online">Sedang live (10-8)</option>
+                        <option value="offline">Off duty (10-7)</option>
+                    </select>
 
-                        <!-- Achievement rankings (subscribers, duty hours) live on their own page -->
-                        <Button as-child variant="outline" size="sm" class="h-10 gap-1.5">
-                            <Link href="/ranking"><Trophy class="size-4" /> Lihat ranking</Link>
-                        </Button>
+                    <Button as-child variant="outline" size="sm" class="h-9 gap-1.5">
+                        <Link href="/ranking"><Trophy class="size-4" /> Ranking</Link>
+                    </Button>
 
-                        <!-- View Mode Switcher (Grid vs Table) -->
-                        <div
-                            class="inline-flex rounded-md bg-background p-1 border border-border gap-1"
+                    <div class="inline-flex gap-0.5 rounded-md border border-border bg-background p-0.5">
+                        <Button
+                            type="button"
+                            size="icon-sm"
+                            :variant="viewMode === 'grid' ? 'secondary' : 'ghost'"
+                            aria-label="Tampilan kartu"
+                            title="Tampilan kartu"
+                            @click="viewMode = 'grid'"
                         >
-                            <Button
-                                type="button"
-                                size="sm"
-                                :variant="
-                                    viewMode === 'grid' ? 'default' : 'ghost'
-                                "
-                                @click="viewMode = 'grid'"
-                                class="h-8 px-2.5 text-xs font-semibold gap-1.5"
-                                title="Tampilan Kartu Grid"
-                            >
-                                <LayoutGrid class="w-4 h-4" />
-                                <span class="hidden sm:inline">Grid</span>
-                            </Button>
-                            <Button
-                                type="button"
-                                size="sm"
-                                :variant="
-                                    viewMode === 'table' ? 'default' : 'ghost'
-                                "
-                                @click="viewMode = 'table'"
-                                class="h-8 px-2.5 text-xs font-semibold gap-1.5"
-                                title="Tampilan Tabel Detail"
-                            >
-                                <TableIcon class="w-4 h-4" />
-                                <span class="hidden sm:inline">Tabel</span>
-                            </Button>
-                        </div>
+                            <LayoutGrid />
+                        </Button>
+                        <Button
+                            type="button"
+                            size="icon-sm"
+                            :variant="viewMode === 'table' ? 'secondary' : 'ghost'"
+                            aria-label="Tampilan tabel"
+                            title="Tampilan tabel"
+                            @click="viewMode = 'table'"
+                        >
+                            <TableIcon />
+                        </Button>
                     </div>
-                </div>
 
-                <!-- Department tabs (one department at a time) -->
-                <div class="flex items-center gap-5 overflow-x-auto border-t border-border pt-3 scrollbar-none" role="tablist">
-                    <button
-                        v-for="d in DEPARTMENTS"
-                        :key="d.code"
-                        type="button"
-                        role="tab"
-                        :aria-selected="selectedDept === d.code"
-                        :class="[
-                            'flex shrink-0 items-center gap-1.5 border-b-2 pb-1 text-sm font-semibold transition-colors',
-                            selectedDept === d.code
-                                ? 'border-foreground text-foreground'
-                                : 'border-transparent text-muted-foreground hover:text-foreground',
-                        ]"
-                        @click="selectDept(d.code)"
-                    >
-                        {{ d.code }}
-                        <span class="text-xs font-normal text-muted-foreground">{{ deptCounts[d.code] }}</span>
-                    </button>
+                    <template v-if="isAdmin">
+                        <Button size="sm" class="h-9 gap-1.5" @click="openAddModal">
+                            <UserPlus class="size-4" /> Tambah
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon-sm"
+                            class="size-9"
+                            aria-label="Unduh laporan CSV"
+                            title="Unduh laporan CSV"
+                            @click="exportCSV"
+                        >
+                            <Download />
+                        </Button>
+                    </template>
                 </div>
-            </Card>
+            </div>
+
+            <div class="scrollbar-none flex items-center gap-6 overflow-x-auto border-b border-border" role="tablist">
+                <button
+                    v-for="d in DEPARTMENTS"
+                    :key="d.code"
+                    type="button"
+                    role="tab"
+                    :aria-selected="selectedDept === d.code"
+                    :class="[
+                        '-mb-px flex shrink-0 items-center gap-1.5 border-b-2 pb-2 text-sm font-semibold transition-colors',
+                        selectedDept === d.code
+                            ? 'border-foreground text-foreground'
+                            : 'border-transparent text-muted-foreground hover:text-foreground',
+                    ]"
+                    @click="selectDept(d.code)"
+                >
+                    {{ d.code }}
+                    <span class="text-xs font-normal text-muted-foreground">{{ deptCounts[d.code] }}</span>
+                </button>
+            </div>
 
             <!-- Department header -->
             <div class="flex items-center gap-3">
-                <img :src="activeDept.logo" :alt="activeDept.code" class="size-12 shrink-0 object-contain" />
+                <img :src="activeDept.logo" :alt="activeDept.code" class="size-12 shrink-0 rounded-md object-cover" />
                 <div class="min-w-0">
                     <h2 class="truncate text-lg font-bold text-foreground">{{ activeDept.name }}</h2>
                     <p class="text-xs text-muted-foreground">
