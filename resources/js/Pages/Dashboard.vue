@@ -88,7 +88,7 @@ const liveByViewers = computed(() =>
     [...streams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0)),
 );
 const DEPARTMENTS = ["LSPD", "BCSO", "SASP", "SAPR"];
-const deptStats = computed(() => {
+const deptGroups = computed(() => {
     return DEPARTMENTS.map((dept) => {
         const items = liveByViewers.value.filter((s) => deptOf(s) === dept);
         return {
@@ -99,7 +99,7 @@ const deptStats = computed(() => {
     });
 });
 const totalDeptLive = computed(() =>
-    deptStats.value.reduce((acc, curr) => acc + curr.count, 0),
+    deptGroups.value.reduce((acc, curr) => acc + curr.count, 0),
 );
 const selectedDept = ref(null);
 const activeDept = computed({
@@ -110,7 +110,7 @@ const activeDept = computed({
         // Default: dept with most live streams (tiebreak: LSPD -> BCSO -> SASP -> SAPR)
         let maxCount = -1;
         let chosen = DEPARTMENTS[0];
-        for (const stat of deptStats.value) {
+        for (const stat of deptGroups.value) {
             if (stat.count > maxCount) {
                 maxCount = stat.count;
                 chosen = stat.dept;
@@ -123,7 +123,7 @@ const activeDept = computed({
     },
 });
 const activeDeptStreams = computed(() => {
-    const found = deptStats.value.find((s) => s.dept === activeDept.value);
+    const found = deptGroups.value.find((s) => s.dept === activeDept.value);
     return found ? found.items : [];
 });
 const tacRows = computed(() => {
@@ -442,7 +442,7 @@ onMounted(() => {
                     <template #action>
                         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                             <Button
-                                v-for="stat in deptStats"
+                                v-for="stat in deptGroups"
                                 :key="`dept-chip-${stat.dept}`"
                                 size="xs"
                                 :variant="activeDept === stat.dept ? 'default' : 'secondary'"
@@ -554,6 +554,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.no-scrollbar {
+    scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
 .rank-number {
     color: var(--color-background);
     -webkit-text-stroke: 3px var(--color-muted-foreground);
