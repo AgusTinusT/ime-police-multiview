@@ -9,6 +9,7 @@ import BioModerationTab from "@/Components/Admin/BioModerationTab.vue";
 import AdminChangeRequestsTab from "@/Components/Admin/AdminChangeRequestsTab.vue";
 import HeroSlidesTab from "@/Components/Admin/HeroSlidesTab.vue";
 import OfficerBindingModal from "@/Components/Admin/OfficerBindingModal.vue";
+import OfficerDetailSheet from "@/Components/Admin/OfficerDetailSheet.vue";
 import {
     PageContainer,
     PageHeader,
@@ -17,9 +18,11 @@ import {
     DeptBadge,
     OfficerAvatar,
     EmptyState,
+    LiveBadge,
 } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
+import { Switch } from "@/Components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
@@ -91,6 +94,7 @@ import {
     ShieldAlert,
     Ban,
     Star,
+    Radio,
 } from "@lucide/vue";
 
 const props = defineProps({
@@ -377,6 +381,31 @@ const formatDutyHours = (minutes) => {
     const min = parseInt(minutes || 0);
     const hrs = (min / 60).toFixed(1);
     return `${hrs} Jam (${min} mnt)`;
+};
+
+const formatDutyCompact = (minutes) => {
+    const m = parseInt(minutes || 0, 10);
+    const h = Math.floor(m / 60);
+    const remM = m % 60;
+    return `${h}j ${remM}m`;
+};
+
+const isOfficerLive = (officer) => {
+    if (!officer) return false;
+    return Boolean(
+        officer.is_live ||
+        officer.is_online ||
+        (officer.duty_status && officer.duty_status.includes("10-8")) ||
+        officer.active_stream
+    );
+};
+
+const selectedDetailOfficer = ref(null);
+const showDetailSheet = ref(false);
+
+const openOfficerDetail = (officer) => {
+    selectedDetailOfficer.value = officer;
+    showDetailSheet.value = true;
 };
 
 const form = ref({
@@ -1282,6 +1311,10 @@ const executeDeleteOfficer = async () => {
         if (res.ok && json.status === "success") {
             showToast(json.message || "Data perwira berhasil dihapus.", "success");
             showDeleteConfirm.value = false;
+            if (selectedDetailOfficer.value?.id === officerToDelete.value.id) {
+                showDetailSheet.value = false;
+                selectedDetailOfficer.value = null;
+            }
             officerToDelete.value = null;
             fetchOfficers();
         } else {
@@ -1695,14 +1728,10 @@ onUnmounted(() => {
                         <Table>
                             <TableHeader>
                                 <TableRow class="bg-muted/40 font-mono text-xs uppercase">
-                                    <TableHead>Officer Unit</TableHead>
-                                    <TableHead>Agency & Rank</TableHead>
-                                    <TableHead>Callsign / Badge</TableHead>
-                                    <TableHead>Duty Status & Certs</TableHead>
-                                    <TableHead>Akumulasi Duty & Hashtag Rule</TableHead>
-                                    <TableHead>YouTube Handle</TableHead>
-                                    <TableHead>Akun Terikat & Bio</TableHead>
-                                    <TableHead class="text-center">Status</TableHead>
+                                    <TableHead>Perwira</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Duty Bulan Ini</TableHead>
+                                    <TableHead>Akun</TableHead>
                                     <TableHead class="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -1710,9 +1739,11 @@ onUnmounted(() => {
                                 <TableRow
                                     v-for="officer in filteredOfficers"
                                     :key="officer.id"
+                                    class="cursor-pointer hover:bg-muted/50 transition-colors"
                                     :class="{ 'opacity-60 bg-muted/20': !officer.is_active }"
+                                    @click="openOfficerDetail(officer)"
                                 >
-                                    <!-- Officer Info & Avatar -->
+                                    <!-- 1. Perwira: Avatar + Nama + Callsign, Dept, Rank -->
                                     <TableCell>
                                         <div class="flex items-center gap-3">
                                             <OfficerAvatar
@@ -1722,172 +1753,61 @@ onUnmounted(() => {
                                                 :department="officer.agency?.agency_code || officer.department"
                                                 size="md"
                                             />
-                                            <div>
-                                                <div class="font-bold text-foreground text-sm leading-tight">
+                                            <div class="min-w-0">
+                                                <div class="font-semibold text-foreground text-sm truncate">
                                                     {{ officer.officer_name }}
                                                 </div>
-                                                <div class="text-muted-foreground text-xs">
-                                                    Streamer: {{ officer.streamer_name || "-" }}
+                                                <div class="flex items-center gap-1.5 text-xs text-muted-foreground font-mono flex-wrap">
+                                                    <span>{{ officer.callsign }}</span>
+                                                    <span>·</span>
+                                                    <DeptBadge :department="officer.agency?.agency_code || officer.department" />
+                                                    <span>·</span>
+                                                    <span class="truncate">{{ officer.rank_relation?.rank_title || officer.rank || "Officer" }}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </TableCell>
 
-                                    <!-- Agency & Rank -->
-                                    <TableCell class="font-mono">
-                                        <div class="flex flex-col items-start gap-1">
-                                            <DeptBadge :department="officer.agency?.agency_code || officer.department" />
-                                            <span class="text-foreground text-xs font-medium">
-                                                {{ officer.rank_relation?.rank_title || officer.rank || "Officer" }}
-                                                <span v-if="officer.division" class="text-primary">
-                                                    ({{ officer.division.division_code || officer.division.division_name }})
-                                                </span>
-                                            </span>
-                                        </div>
-                                    </TableCell>
-
-                                    <!-- Callsign / Badge -->
-                                    <TableCell class="font-mono">
-                                        <div class="font-bold text-primary">
-                                            {{ officer.callsign }}
-                                        </div>
-                                        <div class="text-muted-foreground text-xs">
-                                            Badge {{ officer.badge_number || "#000" }}
-                                        </div>
-                                    </TableCell>
-
-                                    <!-- Duty Status & Certifications -->
-                                    <TableCell class="font-mono">
-                                        <div class="text-xs text-success font-bold mb-1">
-                                            {{ officer.duty_status || "10-8 (On-Duty)" }}
-                                        </div>
-                                        <div
-                                            v-if="officer.certifications && officer.certifications.length > 0"
-                                            class="flex flex-wrap gap-1"
-                                        >
-                                            <Badge
-                                                v-for="cert in officer.certifications"
-                                                :key="cert.id"
-                                                variant="outline"
-                                                class="text-xs font-mono gap-1"
-                                            >
-                                                <Award class="size-3 text-primary shrink-0" />
-                                                <span>{{ cert.cert_type }}</span>
+                                    <!-- 2. Status: LiveBadge / 10-7 + Switch Aktif -->
+                                    <TableCell>
+                                        <div class="flex items-center gap-2">
+                                            <LiveBadge v-if="isOfficerLive(officer)" />
+                                            <Badge v-else variant="secondary" class="font-mono text-xs">
+                                                10-7
                                             </Badge>
+                                            <Switch
+                                                :model-value="Boolean(officer.is_active)"
+                                                :aria-label="`Status aktif ${officer.officer_name}`"
+                                                @click.stop
+                                                @update:model-value="toggleOfficerStatus(officer)"
+                                            />
                                         </div>
-                                        <span v-else class="text-xs text-muted-foreground italic">No certs</span>
                                     </TableCell>
 
-                                    <!-- Akumulasi Duty & Hashtag Bypass -->
-                                    <TableCell class="font-mono">
-                                        <div class="flex items-center gap-1.5 mb-1">
-                                            <span class="text-warning font-bold text-xs flex items-center gap-1">
-                                                <Clock class="size-3 text-warning shrink-0" />
-                                                <span>{{ formatDutyHours(officer.monthly_duty_minutes) }}</span>
-                                            </span>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                @click="openDutyModal(officer)"
-                                                title="Kelola/Sesuaikan Waktu Jam Patroli"
-                                                class="h-6 px-2 text-xs font-mono gap-1 text-warning border-warning/40 hover:bg-warning/10"
+                                    <!-- 3. Duty bulan ini -->
+                                    <TableCell class="font-mono text-sm tabular-nums text-foreground">
+                                        {{ formatDutyCompact(officer.monthly_duty_minutes) }}
+                                    </TableCell>
+
+                                    <!-- 4. Akun: Link2 hijau + slug / "-" -->
+                                    <TableCell class="font-mono text-xs">
+                                        <div v-if="officer.user || officer.bio_profile?.slug" class="inline-flex items-center gap-1">
+                                            <Link2 class="size-3.5 text-success shrink-0" />
+                                            <a
+                                                :href="`/@${officer.bio_profile?.slug || (officer.handle || '').replace('@', '')}`"
+                                                target="_blank"
+                                                class="text-foreground hover:underline font-bold truncate max-w-[140px]"
+                                                :title="`/@${officer.bio_profile?.slug || (officer.handle || '').replace('@', '')}`"
+                                                @click.stop
                                             >
-                                                <Pencil class="size-2.5 shrink-0" />
-                                                <span>Adjust</span>
-                                            </Button>
+                                                /@{{ officer.bio_profile?.slug || (officer.handle || '').replace('@', '') }}
+                                            </a>
                                         </div>
-                                        <div class="mt-1">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                @click="toggleHashtagBypass(officer)"
-                                                class="h-6 px-2 text-xs font-mono font-bold"
-                                                :class="
-                                                    officer.bypass_hashtag_check
-                                                        ? 'bg-info/15 text-info border-info/40 hover:bg-info/25'
-                                                        : 'text-muted-foreground'
-                                                "
-                                                :title="
-                                                    officer.bypass_hashtag_check
-                                                        ? 'Bypass Aktif: Streamer dihitung valid patroli meski lupa memasukkan hashtag #imepolice'
-                                                        : 'Wajib Hashtag: Streamer harus memasukkan hashtag #imepolice / keyword valid'
-                                                "
-                                            >
-                                                <span>
-                                                    {{ officer.bypass_hashtag_check ? "🔓 Bypass Hashtag: ON" : "🔒 Hashtag Check: Strict" }}
-                                                </span>
-                                            </Button>
-                                        </div>
+                                        <span v-else class="text-muted-foreground">—</span>
                                     </TableCell>
 
-                                    <!-- YouTube Handle -->
-                                    <TableCell class="font-mono">
-                                        <a
-                                            :href="`https://www.youtube.com/${officer.handle && officer.handle.startsWith('@') ? officer.handle : '@' + (officer.handle || '')}`"
-                                            target="_blank"
-                                            class="text-primary hover:underline inline-flex items-center gap-1"
-                                        >
-                                            <span>{{ officer.handle }}</span>
-                                            <ExternalLink class="size-3 shrink-0" />
-                                        </a>
-                                    </TableCell>
-
-                                    <!-- Akun Terikat & Bio -->
-                                    <TableCell class="font-mono">
-                                        <div v-if="officer.user" class="space-y-1">
-                                            <div class="flex items-center gap-1.5 flex-wrap">
-                                                <Badge variant="info" class="text-xs font-mono gap-1">
-                                                    <UserCheck class="size-3 shrink-0" />
-                                                    <span class="truncate max-w-[100px]">{{ officer.user.name }}</span>
-                                                </Badge>
-                                                <span class="text-xs text-muted-foreground truncate max-w-[100px]" :title="officer.user.email">
-                                                    ({{ officer.user.email }})
-                                                </span>
-                                                <Badge v-if="officer.user.status === 'banned'" variant="destructive" class="text-xs font-bold">
-                                                    BANNED
-                                                </Badge>
-                                            </div>
-                                            <div class="flex items-center gap-1.5 text-xs">
-                                                <a
-                                                    :href="`/@${officer.bio_profile?.slug || (officer.handle || '').replace('@', '')}`"
-                                                    target="_blank"
-                                                    class="text-warning hover:underline inline-flex items-center gap-0.5 font-bold"
-                                                    title="Buka Bio-Link Publik"
-                                                >
-                                                    <span>/@{{ officer.bio_profile?.slug || (officer.handle || '').replace('@', '') }}</span>
-                                                    <ExternalLink class="size-3 shrink-0" />
-                                                </a>
-                                                <Badge v-if="officer.bio_profile?.is_suspended" variant="destructive" class="text-xs font-bold">
-                                                    SUSPENDED
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                        <div v-else class="space-y-1">
-                                            <Badge variant="warning" class="text-xs font-mono">
-                                                Unclaimed
-                                            </Badge>
-                                        </div>
-                                    </TableCell>
-
-                                    <!-- Status Toggle -->
-                                    <TableCell class="text-center">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            @click="toggleOfficerStatus(officer)"
-                                            class="h-7 px-2.5 text-xs font-mono font-bold tracking-wider"
-                                            :class="
-                                                officer.is_active
-                                                    ? 'bg-success/15 text-success border-success/40 hover:bg-success/25'
-                                                    : 'bg-destructive/15 text-destructive border-destructive/40 hover:bg-destructive/25'
-                                            "
-                                        >
-                                            {{ officer.is_active ? "ACTIVE" : "DISABLED" }}
-                                        </Button>
-                                    </TableCell>
-
-                                    <!-- Actions via DropdownMenu -->
-                                    <TableCell class="text-right">
+                                    <!-- 5. Actions via DropdownMenu -->
+                                    <TableCell class="text-right" @click.stop>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger as-child>
                                                 <Button
@@ -1898,8 +1818,17 @@ onUnmounted(() => {
                                                     <MoreHorizontal class="size-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" class="w-48 font-mono text-xs">
+                                            <DropdownMenuContent align="end" class="w-56 font-mono text-xs">
                                                 <DropdownMenuLabel class="text-xs">{{ officer.callsign }} — {{ officer.officer_name }}</DropdownMenuLabel>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem @click="openOfficerDetail(officer)" class="gap-2 cursor-pointer font-semibold text-primary">
+                                                    <Radio class="size-3.5" />
+                                                    <span>Detail</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem @click="toggleHashtagBypass(officer)" class="gap-2 cursor-pointer">
+                                                    <Lock class="size-3.5" />
+                                                    <span>Hashtag bypass: {{ officer.bypass_hashtag_check ? "ON" : "OFF" }}</span>
+                                                </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem @click="openEditModal(officer)" class="gap-2 cursor-pointer">
                                                     <Pencil class="size-3.5" />
@@ -3125,6 +3054,21 @@ onUnmounted(() => {
             @close="showBindingModal = false"
             @success="fetchOfficers"
             @toast="showToast"
+        />
+
+        <!-- OFFICER DETAIL SHEET (UX-09) -->
+        <OfficerDetailSheet
+            v-model:open="showDetailSheet"
+            :officer="selectedDetailOfficer"
+            @edit="openEditModal"
+            @delete="confirmDeleteOfficer"
+            @duty="openDutyModal"
+            @toggle-hashtag="toggleHashtagBypass"
+            @bind="openBindModal"
+            @slug="openSlugModal"
+            @unbind="openUnbindModal"
+            @toggle-suspend="toggleSuspendProfile"
+            @toggle-ban="toggleBanUser"
         />
     </AdminLayout>
 </template>
