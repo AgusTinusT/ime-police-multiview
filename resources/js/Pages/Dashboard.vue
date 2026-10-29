@@ -2,12 +2,15 @@
 import { Head, Link } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 
-// SVG Icon Assets & Branding Logos
-import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
-
 // Refactored Sub-Components
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
+import {
+    DeptBadge,
+    PageContainer,
+    StatTile,
+    TacticalFrame,
+} from "@/Components/tactical";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import TacticalClipperBetaBanner from "@/Components/TacticalClipperBetaBanner.vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
@@ -15,9 +18,12 @@ import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
 import TacticalStreamSlimles from "@/Components/TacticalStreamSlimles.vue";
 import TacticalSubSupportGrid from "@/Components/TacticalSubSupportGrid.vue";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Toaster } from "@/Components/ui/sonner";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
 import { parseRelativeTimeToSeconds } from "@/Utils/timeHelpers";
-import { defineProps } from "vue";
+import { Eye, Film, Radio, RefreshCw, Shield, Users, Video } from "@lucide/vue";
 
 const props = defineProps({
     heroSlides: {
@@ -65,10 +71,14 @@ const recentReplays = ref(props.initialReplays || []);
 const isSyncingFeeds = ref(false);
 const showClipperClaimModal = ref(false);
 
-// Featured Spotlight Stream for Hero Section
-
 // Computed All Active & Catalog Streams
 const allActiveStreams = computed(() => streams.value);
+const totalLiveViewers = computed(() =>
+    streams.value.reduce(
+        (sum, s) => sum + Number(s.viewers_count ?? s.viewer_count ?? 0),
+        0,
+    ),
+);
 const trendingStreams = computed(() => streams.value.slice(0, 8));
 const recentReplayStreams = computed(() => {
     const list = [...(recentReplays.value || [])];
@@ -182,12 +192,13 @@ const scrollToUnitsGrid = () => {
     </Head>
 
     <div
-        class="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-600 selection:text-white flex flex-col antialiased relative overflow-hidden"
+        class="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex flex-col antialiased relative overflow-hidden"
     >
         <!-- Crisp Minimalist Grid Overlay -->
         <div
-            class="fixed inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] bg-size-[24px_24px] opacity-20 pointer-events-none z-0"
+            class="fixed inset-0 hud-grid opacity-20 pointer-events-none z-0"
         ></div>
+
         <!-- Refactored Tactical Header Bar Component -->
         <TacticalDashboardHeader
             :is-data-saver-enabled="isDataSaverEnabled"
@@ -205,8 +216,11 @@ const scrollToUnitsGrid = () => {
                 v-if="heroSlides && heroSlides.length > 0"
                 :slides="heroSlides"
             />
-            <!-- HERO SPOTLIGHT BANNER SECTION (Section 1: Darkest Slate Canvas - bg-slate-950, No Border) -->
-            <section v-else class="relative w-full bg-slate-950 overflow-hidden group">
+            <!-- HERO SPOTLIGHT BANNER SECTION (Fallback) -->
+            <section
+                v-else
+                class="relative w-full bg-background overflow-hidden group"
+            >
                 <!-- Full-Width Background Hero Backdrop Image with Minimal Overlay -->
                 <div
                     class="absolute inset-0 z-0 pointer-events-none opacity-30"
@@ -218,342 +232,278 @@ const scrollToUnitsGrid = () => {
                         class="w-full h-full object-cover grayscale mix-blend-luminosity"
                         alt="IME Police Duty Hero Backdrop"
                     />
-                    <div class="absolute inset-0 bg-slate-950/40"></div>
+                    <div class="absolute inset-0 bg-background/40"></div>
                 </div>
 
-                <!-- Inner Content Container (Restricted to max-w-screen-2xl) -->
-                <div
-                    class="max-w-(--breakpoint-2xl) mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 lg:pt-14 pb-10 sm:pb-14 relative z-10"
+                <!-- Inner Content Container -->
+                <PageContainer
+                    class="pt-8 sm:pt-10 lg:pt-14 pb-10 sm:pb-14 relative z-10"
                 >
                     <div
                         class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
                     >
                         <!-- Left Hero Content -->
                         <div class="lg:col-span-7 space-y-5">
-                            <div class="hidden sm:inline-flex tactical-badge">
+                            <Badge
+                                variant="outline"
+                                class="hidden sm:inline-flex items-center gap-2 py-1 px-3 font-mono text-xs bg-card/80"
+                            >
                                 <span
-                                    class="w-2 h-2 rounded-full bg-blue-500 animate-pulse shrink-0"
+                                    class="w-2 h-2 rounded-full bg-primary motion-safe:animate-pulse shrink-0"
                                 ></span>
-                                <span
-                                    >SERVER: IME ROLEPLAY // LIVE MULTIVIEW
-                                    STREAMING</span
-                                >
-                                <span class="text-slate-700">|</span>
-                                <span class="text-slate-400"
-                                    >SAN ANDREAS STATE</span
-                                >
-                            </div>
+                                <span>
+                                    SERVER: IME ROLEPLAY // LIVE MULTIVIEW
+                                    STREAMING
+                                </span>
+                                <span class="text-border">|</span>
+                                <span class="text-muted-foreground">
+                                    SAN ANDREAS STATE
+                                </span>
+                            </Badge>
 
                             <h1
-                                class="text-3xl sm:text-5xl lg:text-6xl font-sans font-bold text-slate-100 tracking-tight leading-tight"
+                                class="text-3xl sm:text-5xl lg:text-6xl font-sans font-bold text-foreground tracking-tight leading-tight"
                             >
                                 IME POLICE <br />
-                                <span class="text-blue-500"
-                                    >BODYCAM STREAMING</span
-                                >
+                                <span class="text-primary">
+                                    BODYCAM STREAMING
+                                </span>
                             </h1>
 
                             <p
-                                class="text-tactical-muted text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl font-normal"
+                                class="text-muted-foreground text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl font-normal"
                             >
                                 {{ $t("dashboard.hero_description") }}
                             </p>
 
-                            <!-- Department Quick Status Badges (Flat Crisp Badges) -->
+                            <!-- Department Quick Status Badges -->
                             <div class="flex flex-wrap items-center gap-2 pt-1">
-                                <div class="tactical-badge">
-                                    <span
-                                        class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"
-                                    ></span>
-                                    <span
-                                        >ALL UNITS ({{
-                                            allActiveStreams.length
-                                        }})</span
-                                    >
-                                </div>
-
-                                <div class="tactical-badge">
-                                    <span
-                                        class="w-2 h-2 rounded-full bg-blue-500 shrink-0"
-                                    ></span>
-                                    <span
-                                        >LSPD METRO ({{
-                                            lspdCatalogStreams.length
-                                        }})</span
-                                    >
-                                </div>
-
-                                <div
-                                    class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 border bg-slate-900 border-slate-800 text-slate-300"
+                                <Badge
+                                    variant="secondary"
+                                    class="gap-2 py-1 px-2.5 font-mono text-xs"
                                 >
                                     <span
-                                        class="w-2 h-2 rounded-full bg-amber-500 shrink-0"
+                                        class="w-2 h-2 rounded-full bg-success shrink-0"
                                     ></span>
-                                    <span
-                                        >BCSO SHERIFF ({{
-                                            bcsoCatalogStreams.length
-                                        }})</span
-                                    >
-                                </div>
+                                    <span>
+                                        ALL UNITS ({{ allActiveStreams.length }})
+                                    </span>
+                                </Badge>
 
-                                <div
-                                    class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 border bg-slate-900 border-slate-800 text-slate-300"
-                                >
-                                    <span
-                                        class="w-2 h-2 rounded-full bg-teal-500 shrink-0"
-                                    ></span>
-                                    <span
-                                        >SASP STATE ({{
-                                            saspCatalogStreams.length
-                                        }})</span
-                                    >
-                                </div>
-
-                                <div
-                                    class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 border bg-slate-900 border-slate-800 text-slate-300"
-                                >
-                                    <span
-                                        class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"
-                                    ></span>
-                                    <span
-                                        >PARK RANGER ({{
-                                            saprCatalogStreams.length
-                                        }})</span
-                                    >
-                                </div>
+                                <DeptBadge
+                                    dept="LSPD"
+                                    :label="`LSPD METRO (${lspdCatalogStreams.length})`"
+                                />
+                                <DeptBadge
+                                    dept="BCSO"
+                                    :label="`BCSO SHERIFF (${bcsoCatalogStreams.length})`"
+                                />
+                                <DeptBadge
+                                    dept="SASP"
+                                    :label="`SASP STATE (${saspCatalogStreams.length})`"
+                                />
+                                <DeptBadge
+                                    dept="SAPR"
+                                    :label="`PARK RANGER (${saprCatalogStreams.length})`"
+                                />
                             </div>
 
-                            <!-- Hero Action Links (Flat Buttons from panduan.html) -->
+                            <!-- Hero Action Links -->
                             <div class="flex flex-wrap items-center gap-3 pt-2">
-                                <Link
-                                    href="/multiview"
-                                    class="px-4 py-2.5 rounded-md bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-medium text-xs transition-colors flex items-center gap-2"
-                                >
-                                    <svg
-                                        class="w-4 h-4 text-white"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                        />
-                                    </svg>
-                                    <span>{{
-                                        $t("dashboard.btn_open_multi_bodycam")
-                                    }}</span>
-                                </Link>
+                                <Button as-child size="default">
+                                    <Link href="/multiview">
+                                        <Video class="size-4" />
+                                        <span>{{
+                                            $t(
+                                                "dashboard.btn_open_multi_bodycam",
+                                            )
+                                        }}</span>
+                                    </Link>
+                                </Button>
 
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
+                                    size="default"
                                     @click="scrollToUnitsGrid"
-                                    class="px-4 py-2.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-slate-700 font-medium text-xs flex items-center gap-2 transition-colors cursor-pointer"
                                 >
-                                    <svg
-                                        class="w-4 h-4 text-slate-400"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                        />
-                                    </svg>
+                                    <Users class="size-4 text-muted-foreground" />
                                     <span>{{
                                         $t("dashboard.btn_explore_feeds")
                                     }}</span>
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
-                        <!-- Right Tactical Live HUD Card (Flat Surface & Crisp Borders) -->
+                        <!-- Right Tactical Live HUD Card -->
                         <div class="lg:col-span-5">
                             <div
-                                class="rounded-xl bg-slate-900 border border-slate-800 p-5 space-y-4"
+                                class="rounded-xl bg-card border border-border p-5 space-y-4"
                             >
                                 <!-- HUD Accent Header -->
                                 <div
-                                    class="flex items-center justify-between pb-3 border-b border-slate-800"
+                                    class="flex items-center justify-between pb-3 border-b border-border"
                                 >
                                     <div class="flex items-center gap-2">
                                         <span
-                                            class="w-2 h-2 rounded-full bg-cyan-400"
+                                            class="w-2 h-2 rounded-full bg-info"
                                         ></span>
                                         <span
-                                            class="text-xs font-mono font-semibold tracking-wider text-slate-200 uppercase"
-                                            >{{
-                                                $t("dashboard.grid_monitor")
-                                            }}</span
+                                            class="text-xs font-mono font-semibold tracking-wider text-foreground uppercase"
                                         >
+                                            {{ $t("dashboard.grid_monitor") }}
+                                        </span>
                                     </div>
-                                    <span
-                                        class="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-sm border border-emerald-800/80 font-medium"
-                                        >{{
-                                            $t("dashboard.live_metrics")
-                                        }}</span
+                                    <Badge
+                                        variant="success"
+                                        class="font-mono text-xs"
                                     >
+                                        {{ $t("dashboard.live_metrics") }}
+                                    </Badge>
                                 </div>
 
                                 <!-- Stats Matrix Grid (2x2) -->
                                 <div class="grid grid-cols-2 gap-3">
                                     <div
-                                        class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
+                                        class="p-3 rounded-lg bg-background border border-border space-y-1"
                                     >
                                         <span
-                                            class="text-[10px] font-mono text-slate-400 block uppercase"
-                                            >{{
-                                                $t("dashboard.on_duty_feeds")
-                                            }}</span
+                                            class="text-xs font-mono text-muted-foreground block uppercase"
                                         >
+                                            {{ $t("dashboard.on_duty_feeds") }}
+                                        </span>
                                         <div class="flex items-baseline gap-2">
                                             <span
-                                                class="text-xl font-mono font-bold text-cyan-400"
-                                                >{{
-                                                    allActiveStreams.length
-                                                }}</span
+                                                class="text-xl font-mono font-bold text-info"
                                             >
+                                                {{ allActiveStreams.length }}
+                                            </span>
                                             <span
-                                                class="text-[11px] text-slate-500 font-mono"
-                                                >{{
-                                                    $t("dashboard.active")
-                                                }}</span
+                                                class="text-xs text-muted-foreground font-mono"
                                             >
+                                                {{ $t("dashboard.active") }}
+                                            </span>
                                         </div>
                                     </div>
 
                                     <div
-                                        class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
+                                        class="p-3 rounded-lg bg-background border border-border space-y-1"
                                     >
                                         <span
-                                            class="text-[10px] font-mono text-slate-400 block uppercase"
-                                            >{{
-                                                $t("common.departments")
-                                            }}</span
+                                            class="text-xs font-mono text-muted-foreground block uppercase"
                                         >
+                                            {{ $t("common.departments") }}
+                                        </span>
                                         <div class="flex items-baseline gap-2">
                                             <span
-                                                class="text-xl font-mono font-bold text-emerald-400"
-                                                >4</span
+                                                class="text-xl font-mono font-bold text-success"
                                             >
+                                                4
+                                            </span>
                                             <span
-                                                class="text-[11px] text-slate-500 font-mono"
-                                                >{{
-                                                    $t("dashboard.divisions")
-                                                }}</span
+                                                class="text-xs text-muted-foreground font-mono"
                                             >
+                                                {{ $t("dashboard.divisions") }}
+                                            </span>
                                         </div>
                                     </div>
 
                                     <div
-                                        class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
+                                        class="p-3 rounded-lg bg-background border border-border space-y-1"
                                     >
                                         <span
-                                            class="text-[10px] font-mono text-slate-400 block uppercase"
-                                            >{{
-                                                $t("dashboard.total_officers")
-                                            }}</span
+                                            class="text-xs font-mono text-muted-foreground block uppercase"
                                         >
+                                            {{ $t("dashboard.total_officers") }}
+                                        </span>
                                         <div class="flex items-baseline gap-2">
                                             <span
-                                                class="text-xl font-mono font-bold text-amber-400"
-                                                >{{
+                                                class="text-xl font-mono font-bold text-warning"
+                                            >
+                                                {{
                                                     allActiveStreams.length +
                                                     offlineOfficers.length
-                                                }}</span
-                                            >
+                                                }}
+                                            </span>
                                             <span
-                                                class="text-[11px] text-slate-500 font-mono"
-                                                >{{
+                                                class="text-xs text-muted-foreground font-mono"
+                                            >
+                                                {{
                                                     $t(
                                                         "dashboard.officers_unit",
                                                     )
-                                                }}</span
-                                            >
+                                                }}
+                                            </span>
                                         </div>
                                     </div>
 
                                     <div
-                                        class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
+                                        class="p-3 rounded-lg bg-background border border-border space-y-1"
                                     >
                                         <span
-                                            class="text-[10px] font-mono text-slate-400 block uppercase"
-                                            >{{
-                                                $t("dashboard.replay_archive")
-                                            }}</span
+                                            class="text-xs font-mono text-muted-foreground block uppercase"
                                         >
+                                            {{ $t("dashboard.replay_archive") }}
+                                        </span>
                                         <div class="flex items-baseline gap-2">
                                             <span
-                                                class="text-xl font-mono font-bold text-blue-400"
-                                                >{{
-                                                    recentReplays.length
-                                                }}</span
+                                                class="text-xl font-mono font-bold text-primary"
                                             >
+                                                {{ recentReplays.length }}
+                                            </span>
                                             <span
-                                                class="text-[11px] text-slate-500 font-mono"
-                                                >{{
-                                                    $t("dashboard.videos_unit")
-                                                }}</span
+                                                class="text-xs text-muted-foreground font-mono"
                                             >
+                                                {{
+                                                    $t("dashboard.videos_unit")
+                                                }}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Live Stream Transmission Info Box -->
                                 <div
-                                    class="bg-slate-950 rounded-lg p-3 border border-slate-800 space-y-2"
+                                    class="bg-background rounded-lg p-3 border border-border space-y-2"
                                 >
                                     <div
                                         class="flex items-center justify-between text-xs font-mono"
                                     >
                                         <span
-                                            class="text-slate-400 flex items-center gap-1.5"
+                                            class="text-muted-foreground flex items-center gap-1.5"
                                         >
-                                            <svg
-                                                class="w-3.5 h-3.5 text-blue-400"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                                />
-                                            </svg>
+                                            <Video
+                                                class="size-3.5 text-primary"
+                                            />
                                             {{
                                                 $t(
                                                     "dashboard.transmission_feed",
                                                 )
                                             }}
                                         </span>
-                                        <span class="text-cyan-400 text-[10px]"
-                                            >YOUTUBE LIVE</span
-                                        >
+                                        <span class="text-info text-xs">
+                                            YOUTUBE LIVE
+                                        </span>
                                     </div>
                                     <p
-                                        class="text-xs font-mono text-slate-400 bg-slate-900 p-2 rounded-sm border border-slate-800 leading-relaxed"
+                                        class="text-xs font-mono text-muted-foreground bg-card p-2 rounded-sm border border-border leading-relaxed"
                                     >
                                         {{ $t("dashboard.transmission_log") }}
                                     </p>
                                     <div
                                         class="flex items-center justify-between pt-1"
                                     >
-                                        <button
-                                            @click="triggerManualSync"
+                                        <Button
+                                            type="button"
+                                            variant="link"
+                                            size="sm"
                                             :disabled="isSyncingFeeds"
-                                            class="text-[11px] font-mono text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+                                            class="h-auto p-0 text-xs font-mono text-primary hover:text-primary/80 gap-1.5"
+                                            @click="triggerManualSync"
                                         >
-                                            <img
-                                                :src="iconRefresh"
+                                            <RefreshCw
                                                 :class="[
-                                                    'w-3 h-3 invert opacity-80',
+                                                    'size-3',
                                                     isSyncingFeeds
                                                         ? 'animate-spin'
                                                         : '',
@@ -566,26 +516,65 @@ const scrollToUnitsGrid = () => {
                                                           "common.sync_live_feeds",
                                                       )
                                             }}</span>
-                                        </button>
+                                        </Button>
                                         <span
-                                            class="text-[10px] text-slate-500 font-mono"
-                                            >Feeds: LSPD / BCSO / SASP /
-                                            SAPR</span
+                                            class="text-xs text-muted-foreground font-mono"
                                         >
+                                            Feeds: LSPD / BCSO / SASP / SAPR
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </PageContainer>
             </section>
 
-            <!-- SECTION 2: Live Officers & Recent Patrol Replays Section (Section 2: Tactical Navy Surface - bg-[#0a0f1d], No Border) -->
+            <!-- SECTION 2: Live Officers & Recent Patrol Replays Section -->
             <section
                 id="units-grid"
-                class="w-full bg-[#0a0f1d] pt-10 sm:pt-14 pb-12 sm:pb-16 scroll-mt-6 relative z-10"
+                class="w-full bg-card/40 pt-10 sm:pt-14 pb-12 sm:pb-16 scroll-mt-6 relative z-10"
             >
-                <div class="max-w-(--breakpoint-2xl) mx-auto px-3.5 sm:px-6 lg:px-8">
+                <PageContainer class="space-y-8">
+                    <!-- Ringkasan Statistik Taktis (1 baris TacticalFrame variant="panel") -->
+                    <TacticalFrame
+                        variant="panel"
+                        accent="primary"
+                        class="p-4 sm:p-5"
+                    >
+                        <div
+                            class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+                        >
+                            <StatTile
+                                :label="$t('dashboard.on_duty_feeds')"
+                                :value="allActiveStreams.length"
+                                :sublabel="$t('dashboard.active')"
+                                :icon="Radio"
+                            />
+                            <StatTile
+                                label="Total Penonton Live"
+                                :value="totalLiveViewers"
+                                sublabel="Penonton Aktif"
+                                :icon="Eye"
+                            />
+                            <StatTile
+                                :label="$t('dashboard.total_officers')"
+                                :value="
+                                    allActiveStreams.length +
+                                    offlineOfficers.length
+                                "
+                                :sublabel="$t('dashboard.officers_unit')"
+                                :icon="Shield"
+                            />
+                            <StatTile
+                                :label="$t('dashboard.replay_archive')"
+                                :value="recentReplays.length"
+                                :sublabel="$t('dashboard.videos_unit')"
+                                :icon="Film"
+                            />
+                        </div>
+                    </TacticalFrame>
+
                     <TacticalStreamSlimles
                         :is-syncing-feeds="isSyncingFeeds"
                         :all-active-streams="allActiveStreams"
@@ -595,15 +584,15 @@ const scrollToUnitsGrid = () => {
                         @play-stream-in-focus="playStreamInFocus"
                         @trigger-manual-sync="triggerManualSync"
                     />
-                </div>
+                </PageContainer>
             </section>
 
-            <!-- SECTION 3: Monthly Patrol Streaming Leaderboard Section (Section 3: Darkest Slate Canvas - bg-slate-950, No Border) -->
+            <!-- SECTION 3: Monthly Patrol Streaming Leaderboard Section -->
             <section
                 id="leaderboard-section"
-                class="w-full bg-slate-950 pt-12 sm:pt-16 pb-16 sm:pb-24 relative z-10"
+                class="w-full bg-background pt-12 sm:pt-16 pb-16 sm:pb-24 relative z-10"
             >
-                <div class="max-w-(--breakpoint-2xl) mx-auto px-3.5 sm:px-6 lg:px-8">
+                <PageContainer>
                     <!-- Informative Clipper Beta Access Banner -->
                     <TacticalClipperBetaBanner
                         @open-claim-modal="showClipperClaimModal = true"
@@ -612,17 +601,17 @@ const scrollToUnitsGrid = () => {
                     <TacticalMonthlyLeaderboard
                         :leaderboard="monthlyLeaderboard"
                     />
-                </div>
+                </PageContainer>
             </section>
 
-            <!-- SECTION 4: 1K Sub Support Section (Section 4: Tactical Navy Surface - bg-[#0a0f1d], No Border) -->
+            <!-- SECTION 4: 1K Sub Support Section -->
             <section
                 id="support-section"
-                class="w-full bg-[#0a0f1d] py-12 sm:py-16 relative z-10"
+                class="w-full bg-card/40 py-12 sm:py-16 relative z-10"
             >
-                <div class="max-w-(--breakpoint-2xl) mx-auto px-3.5 sm:px-6 lg:px-8">
+                <PageContainer>
                     <TacticalSubSupportGrid :officers="supportOfficers" />
-                </div>
+                </PageContainer>
             </section>
         </main>
 
@@ -637,5 +626,7 @@ const scrollToUnitsGrid = () => {
             :show="showClipperClaimModal"
             @close="showClipperClaimModal = false"
         />
+
+        <Toaster rich-colors position="top-right" />
     </div>
 </template>
