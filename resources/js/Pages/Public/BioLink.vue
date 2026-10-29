@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
 import axios from "axios";
+import PublicLinkButton from "@/Components/BioLink/PublicLinkButton.vue";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Card } from "@/Components/ui/card";
@@ -15,14 +16,17 @@ import {
 } from "@/Components/tactical";
 import {
     ArrowLeft,
-    ArrowRight,
     Share2,
     Check,
     ShieldCheck,
     AlertTriangle,
     Radio,
     Play,
-    ExternalLink,
+    Coins,
+    Eye,
+    Link2,
+    MessageCircle,
+    Users,
 } from "@lucide/vue";
 
 const props = defineProps({
@@ -128,28 +132,6 @@ const customLinks = computed(() =>
 // Dynamic accent styling via CSS variable --primary
 const accentColor = computed(() => props.profile?.accent_color || "hsl(217 91% 60%)");
 
-// Icon mapper for social & donations
-const getLinkIcon = (link) => {
-    const t = link.link_type;
-    const title = (link.title || "").toLowerCase();
-    const url = (link.url || "").toLowerCase();
-
-    if (t === "donation") {
-        if (title.includes("saweria") || url.includes("saweria")) return "🪙";
-        if (title.includes("trakteer") || url.includes("trakteer")) return "☕";
-        if (title.includes("bagibagi") || url.includes("bagibagi")) return "🎁";
-        if (title.includes("sociabuzz") || url.includes("sociabuzz")) return "⚡";
-        return "💳";
-    }
-    if (t === "discord" || url.includes("discord")) return "💬";
-    if (url.includes("youtube.com") || url.includes("youtu.be")) return "▶️";
-    if (url.includes("tiktok.com")) return "🎵";
-    if (url.includes("instagram.com")) return "📷";
-    if (url.includes("x.com") || url.includes("twitter.com")) return "✖️";
-    if (url.includes("twitch.tv")) return "🟣";
-    return "🔗";
-};
-
 // Button style class mapper using semantic tokens
 const buttonStyleClass = computed(() => {
     const s = props.profile?.button_style || "glass_tactical";
@@ -194,7 +176,7 @@ const buttonStyleClass = computed(() => {
                 >
                     <Link href="/" class="flex items-center gap-2 group">
                         <ArrowLeft class="w-4 h-4 text-primary group-hover:-translate-x-0.5 transition-transform" />
-                        <span class="tracking-wider uppercase font-bold text-xs">SASP Command</span>
+                        <span class="text-sm font-semibold">Police Duty</span>
                     </Link>
                 </Button>
 
@@ -238,20 +220,20 @@ const buttonStyleClass = computed(() => {
                     <Badge
                         v-if="profile.is_verified"
                         variant="info"
-                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono tracking-wider uppercase"
+                        class="gap-1"
                     >
-                        <ShieldCheck class="w-3.5 h-3.5" />
-                        <span>VERIFIED OFFICER</span>
-                        <span class="text-muted-foreground">#{{ officer.callsign }}</span>
+                        <ShieldCheck class="size-3.5" />
+                        <span>Terverifikasi</span>
+                        <span class="font-mono text-muted-foreground">{{ officer.callsign }}</span>
                     </Badge>
 
                     <Badge
                         v-else-if="profile.is_unclaimed"
                         variant="warning"
-                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold font-mono tracking-wider uppercase"
+                        class="gap-1"
                     >
-                        <AlertTriangle class="w-3.5 h-3.5" />
-                        <span>BELUM DIKLAIM</span>
+                        <AlertTriangle class="size-3.5" />
+                        <span>Belum diklaim</span>
                     </Badge>
 
                     <!-- Agency / Department Tag -->
@@ -262,17 +244,17 @@ const buttonStyleClass = computed(() => {
                 </div>
 
                 <!-- Names -->
-                <h1 class="text-xl sm:text-2xl font-bold text-foreground tracking-wide font-mono uppercase mb-0.5">
+                <h1 class="mb-0.5 text-2xl font-bold tracking-tight text-foreground">
                     {{ officer.officer_name }}
                 </h1>
-                <p class="text-xs text-primary font-mono tracking-wider uppercase mb-2">
+                <p class="mb-2 text-sm font-medium text-primary">
                     {{ officer.streamer_name }}
                 </p>
 
                 <!-- Tagline / Bio -->
                 <p
                     v-if="profile.bio_tagline"
-                    class="text-xs text-muted-foreground max-w-sm font-sans leading-relaxed px-4 py-1.5 rounded-xl bg-card/60 border border-border"
+                    class="max-w-sm text-sm leading-relaxed text-muted-foreground"
                 >
                     {{ profile.bio_tagline }}
                 </p>
@@ -283,38 +265,31 @@ const buttonStyleClass = computed(() => {
                 v-if="officerState.is_live && profile.show_live_stream_banner && officerState.live_stream"
                 class="w-full mb-6 p-4 rounded-2xl bg-card border-live/40 shadow-xl relative overflow-hidden group"
             >
-                <div class="flex items-center justify-between gap-2 mb-2">
-                    <div class="flex items-center gap-2">
-                        <LiveBadge label="SEDANG PATROLI (LIVE NOW)" />
-                    </div>
-
-                    <Badge
-                        v-if="officerState.live_stream.viewer_count"
-                        variant="outline"
-                        class="text-xs font-mono text-muted-foreground"
-                    >
-                        👁️ {{ Number(officerState.live_stream.viewer_count).toLocaleString() }} penonton
-                    </Badge>
+                <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <LiveBadge label="Sedang patroli" />
+                    <span v-if="officerState.live_stream.viewer_count" class="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Eye class="size-3.5" /> {{ Number(officerState.live_stream.viewer_count).toLocaleString("id-ID") }} menonton
+                    </span>
                 </div>
 
-                <h4 class="text-xs font-bold text-foreground line-clamp-2 mb-3 leading-snug">
+                <h4 class="mb-3 line-clamp-2 text-sm font-semibold leading-snug text-foreground">
                     {{ officerState.live_stream.title }}
                 </h4>
 
                 <div class="flex items-center gap-2">
                     <Button
                         as-child
-                        class="flex-1 min-h-10 rounded-xl bg-live hover:bg-live/90 text-foreground font-mono text-xs font-bold uppercase tracking-wider"
+                        class="min-h-10 flex-1 bg-live text-live-foreground hover:bg-live/90"
                     >
-                        <a :href="`/multiview?streams=${officerState.live_stream.video_id}`">
-                            <Radio class="w-4 h-4 mr-1.5" />
+                        <a :href="`/multiview?v=${officerState.live_stream.video_id}`">
+                            <Radio class="size-4" />
                             <span>Tonton di Multiview</span>
                         </a>
                     </Button>
                     <Button
                         as-child
                         variant="outline"
-                        class="min-h-10 px-3 rounded-xl font-mono text-xs font-semibold"
+                        class="min-h-10 px-3"
                     >
                         <a
                             :href="`https://www.youtube.com/watch?v=${officerState.live_stream.video_id}`"
@@ -366,276 +341,84 @@ const buttonStyleClass = computed(() => {
             </Card>
 
             <!-- NORMAL CONTENT: MODULAR LINK BLOCKS -->
-            <div v-else class="w-full space-y-4">
-                <!-- 1. DONATION / SUPPORT LINKS -->
-                <section v-if="donationLinks.length > 0" class="w-full space-y-2.5">
-                    <div class="flex items-center gap-2 px-1">
-                        <span class="text-xs font-bold font-mono tracking-widest text-warning uppercase">
-                            🪙 DUKUNGAN & DONASI
-                        </span>
-                        <div class="flex-1 h-px bg-linear-to-r from-warning/30 to-transparent"></div>
-                    </div>
-
+            <div v-else class="w-full space-y-6">
+                <!-- 1. Support / donation -->
+                <section v-if="donationLinks.length > 0" class="space-y-2">
+                    <h2 class="flex items-center gap-1.5 px-1 text-xs font-semibold text-muted-foreground">
+                        <Coins class="size-3.5 text-warning" /> Dukungan & donasi
+                    </h2>
                     <template v-for="link in donationLinks" :key="link.id">
-                        <!-- Featured Donation Link: max 1 TacticalFrame -->
-                        <TacticalFrame
-                            v-if="link.id === firstHighlightedDonationId"
-                            variant="panel"
-                            accent="warning"
-                        >
-                            <Button
-                                as-child
-                                variant="ghost"
-                                class="w-full h-auto min-h-14 p-3.5 flex items-center justify-between gap-3 rounded-none hover:bg-warning/10 group"
-                            >
-                                <a
-                                    :href="link.redirect_url"
-                                    target="_blank"
-                                    rel="noopener noreferrer nofollow ugc"
-                                >
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <span class="text-xl shrink-0 p-2 rounded-xl bg-warning/15 text-warning border border-warning/30 group-hover:scale-110 transition-transform">
-                                            {{ getLinkIcon(link) }}
-                                        </span>
-                                        <div class="min-w-0 text-left">
-                                            <div class="flex items-center gap-2">
-                                                <h3 class="text-xs font-bold text-foreground font-mono tracking-wide truncate group-hover:text-warning transition-colors">
-                                                    {{ link.title }}
-                                                </h3>
-                                                <Badge
-                                                    v-if="link.badge_label"
-                                                    variant="warning"
-                                                    class="text-xs font-bold font-mono uppercase shrink-0"
-                                                >
-                                                    {{ link.badge_label }}
-                                                </Badge>
-                                            </div>
-                                            <p v-if="link.subtitle" class="text-xs text-muted-foreground truncate mt-0.5">
-                                                {{ link.subtitle }}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <ArrowRight class="w-4 h-4 text-warning shrink-0 group-hover:translate-x-1 transition-transform" />
-                                </a>
-                            </Button>
+                        <!-- Featured donation: the page's single TacticalFrame -->
+                        <TacticalFrame v-if="link.id === firstHighlightedDonationId" variant="panel" accent="warning">
+                            <PublicLinkButton :link="link" tone="warning" framed />
                         </TacticalFrame>
-
-                        <Button
-                            v-else
-                            as-child
-                            variant="outline"
-                            class="w-full h-auto min-h-14 p-3.5 flex items-center justify-between gap-3 transition-all duration-200 group active:scale-98"
-                            :class="[
-                                buttonStyleClass,
-                                link.is_highlighted
-                                    ? 'ring-1 ring-warning/60 bg-warning/10'
-                                    : 'hover:border-warning/50',
-                            ]"
-                        >
-                            <a
-                                :href="link.redirect_url"
-                                target="_blank"
-                                rel="noopener noreferrer nofollow ugc"
-                            >
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <span class="text-xl shrink-0 p-2 rounded-xl bg-warning/10 text-warning border border-warning/20 group-hover:scale-110 transition-transform">
-                                        {{ getLinkIcon(link) }}
-                                    </span>
-                                    <div class="min-w-0 text-left">
-                                        <div class="flex items-center gap-2">
-                                            <h3 class="text-xs font-bold text-foreground font-mono tracking-wide truncate group-hover:text-warning transition-colors">
-                                                {{ link.title }}
-                                            </h3>
-                                            <Badge
-                                                v-if="link.badge_label"
-                                                variant="warning"
-                                                class="text-xs font-bold font-mono uppercase shrink-0"
-                                            >
-                                                {{ link.badge_label }}
-                                            </Badge>
-                                        </div>
-                                        <p v-if="link.subtitle" class="text-xs text-muted-foreground truncate mt-0.5">
-                                            {{ link.subtitle }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <ArrowRight class="w-4 h-4 text-warning shrink-0 group-hover:translate-x-1 transition-transform" />
-                            </a>
-                        </Button>
+                        <PublicLinkButton v-else :link="link" tone="warning" :style-class="buttonStyleClass" />
                     </template>
                 </section>
 
-                <!-- 2. SQUAD PATROL PARTNERS (LIVE RECOMMENDATIONS) -->
-                <section v-if="partnerLinks.length > 0" class="w-full space-y-2.5">
-                    <div class="flex items-center gap-2 px-1 pt-1">
-                        <span class="text-xs font-bold font-mono tracking-widest text-primary uppercase">
-                            🚓 REKAN PATROLI (SQUAD)
-                        </span>
-                        <div class="flex-1 h-px bg-linear-to-r from-primary/30 to-transparent"></div>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-2.5">
-                        <Card
-                            v-for="link in partnerLinks"
-                            :key="link.id"
-                            v-show="link.recommended_officer"
-                            class="p-3 rounded-2xl bg-card/80 border-border hover:border-primary/50 transition-all flex flex-row items-center justify-between gap-3 shadow-md backdrop-blur-md"
-                        >
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <OfficerAvatar
-                                    :src="link.recommended_officer?.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=partner'"
-                                    :name="link.recommended_officer?.officer_name || 'Officer'"
-                                    :department="link.recommended_officer?.department"
-                                    :live="link.recommended_officer?.is_live"
-                                    size="md"
-                                />
-
-                                <div class="min-w-0 text-left">
-                                    <div class="flex items-center gap-1.5">
-                                        <h4 class="text-xs font-bold text-foreground font-mono truncate">
-                                            {{ link.recommended_officer?.officer_name }}
-                                        </h4>
-                                        <LiveBadge
-                                            v-if="link.recommended_officer?.is_live"
-                                            class="shrink-0"
-                                        />
-                                    </div>
-                                    <p class="text-xs text-muted-foreground font-mono truncate">
-                                        {{ link.recommended_officer?.department }} • #{{ link.recommended_officer?.callsign }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-1.5 shrink-0">
-                                <Button
-                                    v-if="link.recommended_officer?.is_live && link.recommended_officer?.active_stream?.video_id"
-                                    as-child
-                                    size="sm"
-                                    class="min-h-10 px-3 rounded-lg bg-live hover:bg-live/90 text-foreground font-mono text-xs font-bold uppercase"
-                                >
-                                    <a
-                                        :href="`/multiview?streams=${link.recommended_officer.active_stream.video_id}`"
-                                        title="Tonton Siaran"
-                                    >
-                                        Tonton
-                                    </a>
-                                </Button>
-                                <Button
-                                    v-if="link.recommended_officer?.bio_slug"
-                                    as-child
-                                    variant="outline"
-                                    size="sm"
-                                    class="min-h-10 px-3 rounded-lg text-primary font-mono text-xs font-bold uppercase"
-                                >
-                                    <a
-                                        :href="`/@${link.recommended_officer.bio_slug}`"
-                                        title="Buka Bio"
-                                    >
-                                        Bio
-                                    </a>
-                                </Button>
-                            </div>
-                        </Card>
-                    </div>
-                </section>
-
-                <!-- 3. COMMUNITY & SOCIAL LINKS -->
-                <section v-if="socialLinks.length > 0" class="w-full space-y-2.5">
-                    <div class="flex items-center gap-2 px-1 pt-1">
-                        <span class="text-xs font-bold font-mono tracking-widest text-info uppercase">
-                            💬 KOMUNITAS & MEDIA SOSIAL
-                        </span>
-                        <div class="flex-1 h-px bg-linear-to-r from-info/30 to-transparent"></div>
-                    </div>
-
-                    <Button
-                        v-for="link in socialLinks"
+                <!-- 2. Patrol partners -->
+                <section v-if="partnerLinks.length > 0" class="space-y-2">
+                    <h2 class="flex items-center gap-1.5 px-1 text-xs font-semibold text-muted-foreground">
+                        <Users class="size-3.5 text-primary" /> Rekan patroli
+                    </h2>
+                    <div
+                        v-for="link in partnerLinks"
+                        v-show="link.recommended_officer"
                         :key="link.id"
-                        as-child
-                        variant="outline"
-                        class="w-full h-auto min-h-14 p-3.5 flex items-center justify-between gap-3 transition-all duration-200 group active:scale-98"
-                        :class="buttonStyleClass"
+                        :class="['flex items-center gap-3 border p-3', buttonStyleClass]"
                     >
-                        <a
-                            :href="link.redirect_url"
-                            target="_blank"
-                            rel="noopener noreferrer nofollow ugc"
-                        >
-                            <div class="flex items-center gap-3 min-w-0">
-                                <span class="text-xl shrink-0 p-2 rounded-xl bg-info/10 text-info border border-info/20 group-hover:scale-110 transition-transform">
-                                    {{ getLinkIcon(link) }}
-                                </span>
-                                <div class="min-w-0 text-left">
-                                    <h3 class="text-xs font-bold text-foreground font-mono tracking-wide truncate group-hover:text-primary transition-colors">
-                                        {{ link.title }}
-                                    </h3>
-                                    <p v-if="link.subtitle" class="text-xs text-muted-foreground truncate mt-0.5">
-                                        {{ link.subtitle }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <ArrowRight class="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                        </a>
-                    </Button>
-                </section>
-
-                <!-- 4. CUSTOM LINKS -->
-                <section v-if="customLinks.length > 0" class="w-full space-y-2.5">
-                    <div class="flex items-center gap-2 px-1 pt-1">
-                        <span class="text-xs font-bold font-mono tracking-widest text-muted-foreground uppercase">
-                            🌐 TAUTAN LAINNYA
-                        </span>
-                        <div class="flex-1 h-px bg-linear-to-r from-border to-transparent"></div>
+                        <OfficerAvatar
+                            :src="link.recommended_officer?.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=partner'"
+                            :name="link.recommended_officer?.officer_name || 'Officer'"
+                            :live="link.recommended_officer?.is_live"
+                            size="md"
+                            class="shrink-0"
+                        />
+                        <div class="min-w-0 flex-1">
+                            <p class="flex items-center gap-1.5">
+                                <span class="truncate text-sm font-semibold text-foreground">{{ link.recommended_officer?.officer_name }}</span>
+                                <LiveBadge v-if="link.recommended_officer?.is_live" class="shrink-0" />
+                            </p>
+                            <p class="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <DeptBadge v-if="link.recommended_officer?.department" :dept="link.recommended_officer.department" />
+                                <span class="truncate font-mono">{{ link.recommended_officer?.callsign }}</span>
+                            </p>
+                        </div>
+                        <div class="flex shrink-0 items-center gap-1.5">
+                            <Button
+                                v-if="link.recommended_officer?.is_live && link.recommended_officer?.active_stream?.video_id"
+                                as-child
+                                size="sm"
+                                class="bg-live text-live-foreground hover:bg-live/90"
+                            >
+                                <a :href="`/multiview?v=${link.recommended_officer.active_stream.video_id}`">Tonton</a>
+                            </Button>
+                            <Button v-if="link.recommended_officer?.bio_slug" as-child variant="outline" size="sm">
+                                <a :href="`/@${link.recommended_officer.bio_slug}`">Bio</a>
+                            </Button>
+                        </div>
                     </div>
-
-                    <Button
-                        v-for="link in customLinks"
-                        :key="link.id"
-                        as-child
-                        variant="outline"
-                        class="w-full h-auto min-h-14 p-3.5 flex items-center justify-between gap-3 transition-all duration-200 group active:scale-98"
-                        :class="buttonStyleClass"
-                    >
-                        <a
-                            :href="link.redirect_url"
-                            target="_blank"
-                            rel="noopener noreferrer nofollow ugc"
-                        >
-                            <div class="flex items-center gap-3 min-w-0">
-                                <span class="text-lg shrink-0 p-2 rounded-xl bg-muted text-foreground border border-border group-hover:scale-110 transition-transform">
-                                    🔗
-                                </span>
-                                <div class="min-w-0 text-left">
-                                    <div class="flex items-center gap-2">
-                                        <h3 class="text-xs font-bold text-foreground font-mono tracking-wide truncate group-hover:text-primary transition-colors">
-                                            {{ link.title }}
-                                        </h3>
-                                        <Badge
-                                            v-if="link.badge_label"
-                                            variant="secondary"
-                                            class="text-xs font-bold font-mono uppercase shrink-0"
-                                        >
-                                            {{ link.badge_label }}
-                                        </Badge>
-                                    </div>
-                                    <p v-if="link.subtitle" class="text-xs text-muted-foreground truncate mt-0.5">
-                                        {{ link.subtitle }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <ExternalLink class="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                        </a>
-                    </Button>
                 </section>
 
-                <!-- EMPTY STATE -->
+                <!-- 3. Community & social -->
+                <section v-if="socialLinks.length > 0" class="space-y-2">
+                    <h2 class="flex items-center gap-1.5 px-1 text-xs font-semibold text-muted-foreground">
+                        <MessageCircle class="size-3.5 text-info" /> Komunitas & media sosial
+                    </h2>
+                    <PublicLinkButton v-for="link in socialLinks" :key="link.id" :link="link" tone="info" :style-class="buttonStyleClass" />
+                </section>
+
+                <!-- 4. Other links -->
+                <section v-if="customLinks.length > 0" class="space-y-2">
+                    <h2 class="flex items-center gap-1.5 px-1 text-xs font-semibold text-muted-foreground">
+                        <Link2 class="size-3.5" /> Tautan lainnya
+                    </h2>
+                    <PublicLinkButton v-for="link in customLinks" :key="link.id" :link="link" :style-class="buttonStyleClass" />
+                </section>
+
                 <EmptyState
                     v-if="linksState.length === 0"
-                    title="Belum Ada Tautan Publik"
+                    title="Belum ada tautan"
                     description="Perwira ini belum menambahkan tautan publik."
                 />
             </div>
@@ -647,7 +430,7 @@ const buttonStyleClass = computed(() => {
                     class="inline-flex items-center gap-2 min-h-10 text-muted-foreground hover:text-primary transition"
                 >
                     <span class="w-2 h-2 rounded-full bg-primary"></span>
-                    <span class="font-bold tracking-wider uppercase">POLICE DUTY MULTIVIEW</span>
+                    <span class="font-semibold">Police Duty Multiview</span>
                 </Link>
                 <p class="text-xs text-muted-foreground/80">
                     SASP Tactical Command Center • policeduty.sasp-motionliferp.com
