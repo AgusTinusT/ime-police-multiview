@@ -1529,9 +1529,16 @@ onUnmounted(() => {
 <template>
     <Head title="Admin Command Hub - Tactical Police Multiview" />
 
-    <AdminLayout :current-tab="activeTab" @update:current-tab="setActiveTab">
+    <AdminLayout
+        :current-tab="activeTab"
+        :badges="{ claims: stats.pending_claims }"
+        :user-name="auth.user?.name || ''"
+        @update:current-tab="setActiveTab"
+    >
         <PageContainer class="space-y-6">
+            <!-- Overview (header + unit summary) only on the roster; other sections get the layout's title bar. -->
             <PageHeader
+                v-if="activeTab === 'officers'"
                 eyebrow="DISPATCHER PORTAL"
                 title="Tactical Admin Hub"
                 subtitle="Police Unit Roster Management, Master Agencies, Ranks & YouTube Stream Synchronization"
@@ -1547,7 +1554,7 @@ onUnmounted(() => {
             </PageHeader>
 
             <!-- RINGKASAN STATTILE DENGAN 1 TACTICALFRAME (MAKS. 2 PER LAYAR) -->
-            <TacticalFrame variant="panel" accent="primary" inner-class="p-4 sm:p-5">
+            <TacticalFrame v-if="activeTab === 'officers'" variant="panel" accent="primary" inner-class="p-4 sm:p-5">
                 <div
                     class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4"
                 >

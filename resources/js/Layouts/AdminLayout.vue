@@ -4,17 +4,21 @@ import { Link } from "@inertiajs/vue3";
 import {
     Sidebar,
     SidebarContent,
+    SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
+    SidebarGroupLabel,
     SidebarHeader,
     SidebarInset,
     SidebarMenu,
+    SidebarMenuBadge,
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarProvider,
     SidebarRail,
     SidebarTrigger,
 } from "@/Components/ui/sidebar";
+import { OfficerAvatar } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
 import { Toaster } from "@/Components/ui/sonner";
 import {
@@ -40,21 +44,46 @@ const props = defineProps({
         type: String,
         default: "",
     },
+    // Pending-work counters shown next to menu items, e.g. { claims: 3 }.
+    badges: {
+        type: Object,
+        default: () => ({}),
+    },
+    userName: {
+        type: String,
+        default: "",
+    },
 });
 
 defineEmits(["update:currentTab"]);
 
-const navItems = [
-    { id: "officers", label: "Officers Roster", icon: Shield },
-    { id: "agencies", label: "Agencies & Ranks Structure", icon: Building2 },
-    { id: "certifications", label: "Tactical Certifications", icon: Award },
-    { id: "announcements", label: "Promotions & Alerts", icon: Megaphone },
-    { id: "users", label: "Member Accounts", icon: Users },
-    { id: "claims", label: "Klaim Perwira", icon: FileCheck },
-    { id: "moderation", label: "Moderasi Bio-Link", icon: Lock },
-    { id: "requests", label: "Pengajuan Mutasi", icon: GitPullRequest },
-    { id: "hero", label: "Hero Slides", icon: Images },
+const navGroups = [
+    {
+        label: "Perwira",
+        items: [
+            { id: "officers", label: "Daftar Perwira", icon: Shield },
+            { id: "claims", label: "Klaim Perwira", icon: FileCheck },
+            { id: "requests", label: "Pengajuan Mutasi", icon: GitPullRequest },
+            { id: "certifications", label: "Sertifikasi", icon: Award },
+        ],
+    },
+    {
+        label: "Konten",
+        items: [
+            { id: "hero", label: "Hero Slides", icon: Images },
+            { id: "announcements", label: "Pengumuman", icon: Megaphone },
+            { id: "moderation", label: "Moderasi Bio-Link", icon: Lock },
+        ],
+    },
+    {
+        label: "Sistem",
+        items: [
+            { id: "agencies", label: "Agensi & Pangkat", icon: Building2 },
+            { id: "users", label: "Akun Member", icon: Users },
+        ],
+    },
 ];
+const navItems = navGroups.flatMap((group) => group.items);
 
 const currentSectionTitle = computed(() => {
     if (props.title) return props.title;
@@ -91,29 +120,52 @@ const currentSectionTitle = computed(() => {
             </SidebarHeader>
 
             <SidebarContent>
-                <SidebarGroup>
+                <SidebarGroup v-for="group in navGroups" :key="group.label">
+                    <SidebarGroupLabel>{{ group.label }}</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            <SidebarMenuItem
-                                v-for="item in navItems"
-                                :key="item.id"
-                            >
+                            <SidebarMenuItem v-for="item in group.items" :key="item.id">
                                 <SidebarMenuButton
                                     :is-active="currentTab === item.id"
                                     :tooltip="item.label"
                                     @click="$emit('update:currentTab', item.id)"
                                 >
-                                    <component
-                                        :is="item.icon"
-                                        class="size-4 shrink-0"
-                                    />
+                                    <component :is="item.icon" class="size-4 shrink-0" />
                                     <span>{{ item.label }}</span>
                                 </SidebarMenuButton>
+                                <SidebarMenuBadge
+                                    v-if="badges[item.id] > 0"
+                                    class="bg-warning text-warning-foreground"
+                                >
+                                    {{ badges[item.id] }}
+                                </SidebarMenuBadge>
                             </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+
+            <SidebarFooter class="border-t border-sidebar-border">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton as-child tooltip="Kembali ke situs">
+                            <Link href="/">
+                                <ArrowLeft class="size-4 shrink-0" />
+                                <span>Kembali ke situs</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem v-if="userName">
+                        <div class="flex items-center gap-2 px-2 py-1.5 group-data-[collapsible=icon]:px-0">
+                            <OfficerAvatar :name="userName" size="sm" />
+                            <div class="min-w-0 group-data-[collapsible=icon]:hidden">
+                                <p class="truncate text-xs font-semibold text-sidebar-foreground">{{ userName }}</p>
+                                <p class="text-xs text-muted-foreground">Admin</p>
+                            </div>
+                        </div>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarFooter>
 
             <SidebarRail />
         </Sidebar>
@@ -140,7 +192,7 @@ const currentSectionTitle = computed(() => {
                         as-child
                         variant="ghost"
                         size="sm"
-                        class="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                        class="gap-1.5 text-xs text-muted-foreground hover:text-foreground md:hidden"
                     >
                         <Link href="/">
                             <ArrowLeft class="size-3.5" />
@@ -159,3 +211,4 @@ const currentSectionTitle = computed(() => {
         </SidebarInset>
     </SidebarProvider>
 </template>
+
