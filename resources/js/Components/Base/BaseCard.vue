@@ -1,5 +1,8 @@
 <script setup>
+// Deprecated: gunakan @/Components/ui/card (dihapus di MIG-10)
 import { computed } from "vue";
+import { Card } from "@/Components/ui/card";
+import { cn } from "@/lib/utils";
 
 const props = defineProps({
     as: {
@@ -8,37 +11,41 @@ const props = defineProps({
     },
     variant: {
         type: String,
-        default: "default", // 'default' | 'hover' | 'outline-solid' | 'flat'
+        default: "default",
     },
     padding: {
         type: String,
-        default: "md", // 'none' | 'sm' | 'md' | 'lg'
+        default: "md",
+    },
+    class: {
+        type: [Boolean, null, String, Object, Array],
+        default: "",
     },
 });
 
-const cardClasses = computed(() => {
-    const base = "rounded-xl transition-all duration-200";
-    
-    let variantClass = "bg-tactical-panel border border-tactical-border";
+const variantClass = computed(() => {
     if (props.variant === "hover") {
-        variantClass = "bg-tactical-panel border border-tactical-border hover:border-tactical-border-light hover:bg-tactical-surface/50";
-    } else if (props.variant === "outline-solid") {
-        variantClass = "bg-transparent border border-tactical-border";
-    } else if (props.variant === "flat") {
-        variantClass = "bg-tactical-base border border-tactical-border";
+        return "transition-colors hover:border-input hover:bg-muted/50";
     }
+    if (props.variant === "outline-solid") {
+        return "bg-transparent";
+    }
+    if (props.variant === "flat") {
+        return "bg-background";
+    }
+    return "";
+});
 
-    let paddingClass = "p-5";
-    if (props.padding === "none") paddingClass = "p-0";
-    else if (props.padding === "sm") paddingClass = "p-3 sm:p-4";
-    else if (props.padding === "lg") paddingClass = "p-6 sm:p-8";
-
-    return `${base} ${variantClass} ${paddingClass}`;
+const paddingClass = computed(() => {
+    if (props.padding === "none") return "p-0 py-0";
+    if (props.padding === "sm") return "p-3 sm:p-4";
+    if (props.padding === "lg") return "p-6 sm:p-8";
+    return "p-5";
 });
 </script>
 
 <template>
-    <component :is="as" :class="cardClasses">
+    <Card :as="as" :class="cn(variantClass, paddingClass, props.class)">
         <slot />
-    </component>
+    </Card>
 </template>

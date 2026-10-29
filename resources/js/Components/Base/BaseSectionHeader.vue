@@ -1,5 +1,7 @@
 <script setup>
-import BaseBadge from "@/Components/Base/BaseBadge.vue";
+// Deprecated: gunakan @/Components/tactical PageHeader/SectionHeader (dihapus di MIG-10)
+import { PageHeader } from "@/Components/tactical";
+import { cn } from "@/lib/utils";
 
 defineProps({
     title: {
@@ -26,25 +28,13 @@ defineProps({
 </script>
 
 <template>
-    <div :class="['space-y-3', centered ? 'text-center max-w-3xl mx-auto' : '']">
-        <BaseBadge v-if="badgeText" :variant="badgeVariant" pulse>
-            <span class="uppercase tracking-wider font-semibold">{{ badgeText }}</span>
-        </BaseBadge>
-
-        <h1
-            class="text-2xl sm:text-4xl lg:text-5xl font-tactical font-extrabold uppercase text-slate-100 tracking-wider leading-[1.15]"
-        >
-            {{ title }}
-        </h1>
-
-        <p
-            v-if="subtitle"
-            class="text-xs sm:text-sm text-tactical-muted font-sans leading-relaxed max-w-2xl"
-            :class="[centered ? 'mx-auto' : '']"
-        >
-            {{ subtitle }}
-        </p>
-
+    <div :class="cn('space-y-3', centered && 'mx-auto max-w-3xl text-center')">
+        <PageHeader
+            :eyebrow="badgeText"
+            :title="title"
+            :description="subtitle"
+            :class="cn(centered && 'sm:flex-col sm:items-center text-center')"
+        />
         <slot />
     </div>
 </template>
