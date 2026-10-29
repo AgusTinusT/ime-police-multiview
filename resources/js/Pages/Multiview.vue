@@ -1,5 +1,5 @@
 <script setup>
-import { Head } from "@inertiajs/vue3";
+import { Head, Link } from "@inertiajs/vue3";
 import {
     computed,
     nextTick,
@@ -13,10 +13,16 @@ import { toast as sonnerToast } from "vue-sonner";
 
 import MultiviewStreamPicker from "@/Components/MultiviewStreamPicker.vue";
 import { DeptBadge, LiveBadge } from "@/Components/tactical";
-import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
+import MultiviewSoloStrip from "@/Components/MultiviewSoloStrip.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
 import { Toaster } from "@/Components/ui/sonner";
 import {
     Tooltip,
@@ -29,10 +35,11 @@ import {
     LayoutGrid,
     Link2,
     Maximize,
+    Menu,
     MessageSquare,
-    Minimize,
     PanelRight,
     Plus,
+    Square,
     Trash2,
     Volume2,
     VolumeX,
@@ -114,9 +121,9 @@ const isNarrow = computed(
 const isCompactLandscape = computed(
     () => viewport.h < 500 && viewport.w > viewport.h,
 );
-const showChrome = computed(
-    () => !isCompactLandscape.value && !isFullscreen.value,
-);
+// The compact toolbar stays visible in every orientation and in fullscreen, so
+// no controls ever have to float on top of a video.
+const showChrome = computed(() => true);
 
 const maxTiles = computed(() => {
     if (viewport.w < 768) return 4;
@@ -131,7 +138,7 @@ const maxTiles = computed(() => {
 const selectedIds = ref([]);
 const focusId = ref(null);
 const audioId = ref(null);
-const layoutMode = ref("grid"); // 'grid' | 'focus'
+const layoutMode = ref("grid"); // 'grid' | 'focus' | 'solo'
 
 const readInitialSelection = () => {
     const params = new URLSearchParams(window.location.search);
@@ -173,6 +180,7 @@ const removeStream = (id) => {
 };
 
 const toggleStream = (stream) => {
+    if (layoutMode.value === "solo") return switchSolo(stream.video_id);
     if (selectedIds.value.includes(stream.video_id))
         removeStream(stream.video_id);
     else addStream(stream.video_id);
@@ -192,6 +200,41 @@ const setFocus = (id) => {
 
 const toggleAudio = (id) => {
     audioId.value = audioId.value === id ? null : id;
+};
+
+// Solo: watch one officer and jump to another POV in one click. Only one player
+// runs, so switching swaps the video and moves the sound along with it.
+const soloStrip = ref(null);
+
+const siteNav = [
+    { href: "/", label: "Beranda" },
+    { href: "/multiview", label: "Multiview" },
+    { href: "/clipper", label: "Clip Studio" },
+    { href: "/action-clips", label: "TacClips" },
+    { href: "/officers", label: "Direktori Perwira" },
+];
+
+const switchSolo = (id, { withAudio = true } = {}) => {
+    if (!id) return;
+    Object.keys(iframes).forEach((k) => k !== id && delete iframes[k]);
+    selectedIds.value = [id];
+    focusId.value = id;
+    if (withAudio) audioId.value = id;
+    const info = infoOf(id);
+    if (info) trackSelectStream(info);
+};
+
+const enterSolo = (options) => {
+    layoutMode.value = "solo";
+    switchSolo(
+        audioId.value || focusId.value || selectedIds.value[0] || streams.value[0]?.video_id,
+        options,
+    );
+};
+
+const setLayout = (mode) => {
+    if (mode === "solo") enterSolo();
+    else layoutMode.value = mode;
 };
 
 watch(
@@ -300,6 +343,7 @@ const muteAll = () => {
 // Layout engine
 // ---------------------------------------------------------------------------
 const stageBox = ref(null);
+const pageRoot = ref(null);
 const stageSize = reactive({ w: 0, h: 0 });
 
 // Tiles narrower than THUMB_W become tap-to-focus previews; wider tiles get a
@@ -500,7 +544,7 @@ const shareLink = async () => {
 const toggleFullscreen = async () => {
     try {
         if (document.fullscreenElement) await document.exitFullscreen();
-        else await stageWrap.value?.requestFullscreen();
+        else await pageRoot.value?.requestFullscreen();
     } catch {
         showToast("Fullscreen tidak didukung di perangkat ini");
     }
@@ -513,12 +557,18 @@ const onFullscreenChange = () => {
 const onKeydown = (e) => {
     if (e.target.closest?.("input, textarea, [contenteditable]")) return;
     if (e.key >= "1" && e.key <= "9") {
-        const id = selectedIds.value[Number(e.key) - 1];
+        const n = Number(e.key) - 1;
+        if (layoutMode.value === "solo") {
+            switchSolo(soloStrip.value?.items?.[n]?.video_id);
+            return;
+        }
+        const id = selectedIds.value[n];
         if (id) toggleAudio(id);
     } else if (e.key === "m") {
         muteAll();
     } else if (e.key === "g") {
-        layoutMode.value = layoutMode.value === "grid" ? "focus" : "grid";
+        const order = ["grid", "focus", "solo"];
+        setLayout(order[(order.indexOf(layoutMode.value) + 1) % order.length]);
     } else if (e.key === "Escape") {
         sheetOpen.value = false;
     }
@@ -541,7 +591,7 @@ onMounted(() => {
     try {
         const savedLayout = localStorage.getItem(LAYOUT_KEY);
         layoutMode.value =
-            savedLayout === "focus" || savedLayout === "grid"
+            ["grid", "focus", "solo"].includes(savedLayout)
                 ? savedLayout
                 : isNarrow.value
                   ? "focus"
@@ -552,6 +602,8 @@ onMounted(() => {
 
     selectedIds.value = readInitialSelection().slice(0, maxTiles.value);
     focusId.value = selectedIds.value[0] || null;
+    // No sound on page load: browsers block unmuted autoplay without a click.
+    if (layoutMode.value === "solo") enterSolo({ withAudio: false });
 
     resizeObserver = new ResizeObserver(([entry]) => {
         stageSize.w = entry.contentRect.width;
@@ -583,19 +635,30 @@ onUnmounted(() => {
 
     <TooltipProvider :delay-duration="200">
         <div
+            ref="pageRoot"
             class="bg-background text-foreground font-sans antialiased flex flex-col"
             :class="isNarrow ? 'min-h-dvh pb-20' : 'h-dvh overflow-hidden'"
         >
-            <TacticalDashboardHeader v-if="showChrome" />
-
             <!-- Toolbar -->
             <div
                 v-if="showChrome"
-                class="flex items-center gap-2 px-2 sm:px-4 py-2 border-b border-border bg-background/80"
+                class="flex items-center gap-2 px-2 sm:px-4 py-1.5 border-b border-border bg-background/80"
             >
                 <div class="flex items-center gap-2 min-w-0 mr-auto">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button variant="ghost" size="icon" class="size-8 shrink-0" aria-label="Menu situs">
+                                <Menu class="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" class="w-48">
+                            <DropdownMenuItem v-for="nav in siteNav" :key="nav.href" as-child>
+                                <Link :href="nav.href">{{ nav.label }}</Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <h1
-                        class="font-heading text-base sm:text-xl font-bold tracking-wide leading-none"
+                        class="font-heading text-base sm:text-lg font-bold tracking-wide leading-none"
                     >
                         MULTIVIEW
                     </h1>
@@ -618,7 +681,7 @@ onUnmounted(() => {
                             size="sm"
                             class="h-8 px-2 text-xs font-bold gap-1"
                             title="Grid (G)"
-                            @click="layoutMode = 'grid'"
+                            @click="setLayout('grid')"
                         >
                             <LayoutGrid class="size-4" />
                             <span class="hidden md:inline">Grid</span>
@@ -631,10 +694,21 @@ onUnmounted(() => {
                             size="sm"
                             class="h-8 px-2 text-xs font-bold gap-1"
                             title="Fokus (G)"
-                            @click="layoutMode = 'focus'"
+                            @click="setLayout('focus')"
                         >
                             <PanelRight class="size-4" />
                             <span class="hidden md:inline">Fokus</span>
+                        </Button>
+                        <Button
+                            type="button"
+                            :variant="layoutMode === 'solo' ? 'default' : 'ghost'"
+                            size="sm"
+                            class="h-8 px-2 text-xs font-bold gap-1"
+                            title="Solo: satu POV + ganti cepat (G)"
+                            @click="setLayout('solo')"
+                        >
+                            <Square class="size-4" />
+                            <span class="hidden md:inline">Solo</span>
                         </Button>
                     </div>
 
@@ -754,7 +828,7 @@ onUnmounted(() => {
                 <!-- Stage -->
                 <section
                     ref="stageWrap"
-                    class="relative flex-1 min-w-0 bg-background"
+                    class="relative flex flex-1 min-w-0 flex-col bg-background"
                     :class="
                         isCompactLandscape || isFullscreen
                             ? 'p-0.5'
@@ -764,7 +838,7 @@ onUnmounted(() => {
                     <div
                         ref="stageBox"
                         class="relative w-full"
-                        :class="isNarrow ? '' : 'h-full'"
+                        :class="isNarrow ? '' : 'min-h-0 flex-1'"
                         :style="
                             isNarrow ? { height: `${layout.height}px` } : {}
                         "
@@ -828,10 +902,10 @@ onUnmounted(() => {
                                     </template>
                                 </div>
 
-                                <!-- Full tile: our controls live in their own bar below the video. -->
+                                <!-- Full tile: our controls live in their own bar above the video, next to the toolbar. -->
                                 <div
                                     v-if="!isThumb(i)"
-                                    class="flex shrink-0 items-center gap-1.5 border-t border-border px-1.5"
+                                    class="order-first flex shrink-0 items-center gap-1.5 border-b border-border px-1.5"
                                     :style="{ height: `${TILE_BAR}px` }"
                                 >
                                     <span class="flex size-5 shrink-0 items-center justify-center rounded-sm bg-muted font-mono text-xs font-bold text-muted-foreground">{{ i + 1 }}</span>
@@ -879,6 +953,16 @@ onUnmounted(() => {
                         </div>
                     </div>
 
+                    <MultiviewSoloStrip
+                        v-if="layoutMode === 'solo' && streams.length"
+                        ref="soloStrip"
+                        :streams="streams"
+                        :current-id="selectedIds[0] || null"
+                        :tac-channels="initialTacChannels"
+                        class="-mx-1.5 -mb-1.5 mt-1.5 sm:-mx-2 sm:-mb-2 sm:mt-2"
+                        @select="switchSolo"
+                    />
+
                     <!-- Empty state -->
                     <div
                         v-if="!selectedIds.length"
@@ -912,47 +996,6 @@ onUnmounted(() => {
                             <Plus class="size-4" />
                             <span>Pilih POV</span>
                         </Button>
-                    </div>
-
-                    <!-- Floating controls when the toolbar is hidden (phone landscape / fullscreen) -->
-                    <div
-                        v-if="!showChrome"
-                        class="absolute bottom-2 left-2 z-20 flex gap-1.5 opacity-70 hover:opacity-100"
-                    >
-                        <button
-                            type="button"
-                            class="float-btn"
-                            aria-label="Tambah POV"
-                            title="Tambah POV"
-                            @click="
-                                sheetOpen = true;
-                                panelTab = 'pov';
-                            "
-                        >
-                            <Plus class="size-4" />
-                        </button>
-                        <button
-                            type="button"
-                            class="float-btn"
-                            aria-label="Ganti layout"
-                            title="Ganti layout"
-                            @click="
-                                layoutMode =
-                                    layoutMode === 'grid' ? 'focus' : 'grid'
-                            "
-                        >
-                            <LayoutGrid class="size-4" />
-                        </button>
-                        <button
-                            v-if="isFullscreen"
-                            type="button"
-                            class="float-btn"
-                            aria-label="Keluar layar penuh"
-                            title="Keluar layar penuh"
-                            @click="toggleFullscreen"
-                        >
-                            <Minimize class="size-4" />
-                        </button>
                     </div>
 
                     <!-- Bottom sheet / drawer for tablets, phones & fullscreen -->
@@ -1176,18 +1219,6 @@ onUnmounted(() => {
 }
 .tile-btn:hover {
     background: var(--primary);
-}
-
-.float-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 9999px;
-    background: color-mix(in oklab, var(--card) 85%, transparent);
-    border: 1px solid var(--border);
-    color: var(--foreground);
 }
 
 kbd {
