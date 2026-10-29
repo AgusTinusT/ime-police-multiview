@@ -13,10 +13,6 @@ import {
 } from "@/Components/tactical";
 import {
     Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
 } from "@/Components/ui/card";
 import {
     Tabs,
@@ -35,12 +31,10 @@ import {
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Progress } from "@/Components/ui/progress";
-import { cn } from "@/lib/utils";
 import {
     Calendar,
     Clock,
     Crown,
-    ExternalLink,
     Medal,
     Play,
     Target,
@@ -89,7 +83,10 @@ const getTabFromUrl = () => {
     if (typeof window === "undefined") return "duty_month";
     const params = new URLSearchParams(window.location.search);
     const tab = params.get("tab");
-    return VALID_TABS.includes(tab) ? tab : "duty_month";
+    if (VALID_TABS.includes(tab)) return tab;
+    // Without ?tab, open the first ranking that actually has entries (early in the
+    // month "this month" is empty, so visitors would otherwise land on a blank page).
+    return VALID_TABS.find((key) => (props.ranking?.[key] || []).length) || "duty_month";
 };
 
 const activeTab = ref(getTabFromUrl());
@@ -99,11 +96,7 @@ const setActiveTab = (tab) => {
     activeTab.value = tab;
     if (typeof window !== "undefined") {
         const url = new URL(window.location.href);
-        if (tab === "duty_month") {
-            url.searchParams.delete("tab");
-        } else {
-            url.searchParams.set("tab", tab);
-        }
+        url.searchParams.set("tab", tab);
         window.history.pushState({ tab }, "", url.toString());
     }
 };
@@ -114,6 +107,10 @@ const handlePopState = () => {
 
 onMounted(() => {
     window.addEventListener("popstate", handlePopState);
+    // On narrow screens the tab strip scrolls; bring the active tab into view.
+    document
+        .querySelector('[role="tab"][data-state="active"]')
+        ?.scrollIntoView({ block: "nearest", inline: "center" });
 });
 
 onUnmounted(() => {
@@ -152,7 +149,7 @@ const formatDate = (isoString) => {
     <Head :title="t('ranking.title')" />
 
     <TacticalLayout activeTab="ranking">
-        <PageContainer>
+        <PageContainer class="space-y-6 pb-16 pt-8 sm:pt-10">
             <!-- Page Header -->
             <PageHeader
                 :title="t('ranking.title')"
@@ -221,7 +218,6 @@ const formatDate = (isoString) => {
                                             <Medal class="size-3.5 text-rank-silver" />
                                             <span>{{ (activeTab === 'duty_month' || activeTab === 'duty_last_month') ? t('leaderboard.rank_2_silver') : t('ranking.podium.rank_2') }}</span>
                                         </Badge>
-                                        <span class="font-mono text-xs font-bold text-muted-foreground">#2</span>
                                     </div>
 
                                     <div class="flex flex-col items-center text-center space-y-2">
@@ -292,7 +288,6 @@ const formatDate = (isoString) => {
                                             <Crown class="size-3.5 fill-current" />
                                             <span>{{ (activeTab === 'duty_month' || activeTab === 'duty_last_month') ? t('leaderboard.rank_1_gold') : t('ranking.podium.rank_1') }}</span>
                                         </Badge>
-                                        <span class="font-mono text-xs font-bold text-primary">#1</span>
                                     </div>
 
                                     <div class="flex flex-col items-center text-center space-y-2">
@@ -369,7 +364,6 @@ const formatDate = (isoString) => {
                                             <Medal class="size-3.5 text-rank-bronze" />
                                             <span>{{ (activeTab === 'duty_month' || activeTab === 'duty_last_month') ? t('leaderboard.rank_3_bronze') : t('ranking.podium.rank_3') }}</span>
                                         </Badge>
-                                        <span class="font-mono text-xs font-bold text-muted-foreground">#3</span>
                                     </div>
 
                                     <div class="flex flex-col items-center text-center space-y-2">
