@@ -27,14 +27,14 @@ const normalizedDept = computed(() => (props.dept || props.department || "").tri
 const deptClasses = computed(() => {
     switch (normalizedDept.value) {
         case "LSPD":
-            return "border-dept-lspd/50 text-dept-lspd";
+            return "border-dept-lspd/30 text-dept-lspd";
         case "BCSO":
         case "LSCSD":
-            return "border-dept-bcso/50 text-dept-bcso";
+            return "border-dept-bcso/30 text-dept-bcso";
         case "SASP":
-            return "border-dept-sasp/50 text-dept-sasp";
+            return "border-dept-sasp/30 text-dept-sasp";
         case "SAPR":
-            return "border-dept-sapr/50 text-dept-sapr";
+            return "border-dept-sapr/30 text-dept-sapr";
         default:
             return "border-border text-muted-foreground";
     }
@@ -46,7 +46,7 @@ const deptClasses = computed(() => {
         variant="outline"
         :class="
             cn(
-                'inline-flex items-center gap-1.5 py-1 px-2.5 font-mono text-xs font-semibold uppercase tracking-wider bg-card/90 backdrop-blur-md shadow-xs',
+                'inline-flex h-5 items-center gap-1 rounded-sm px-1.5 py-0 font-mono text-xs font-semibold uppercase leading-none tracking-normal bg-card/60',
                 deptClasses,
                 props.class,
             )
