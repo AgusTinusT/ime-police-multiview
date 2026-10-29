@@ -8,7 +8,6 @@ import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
 import { PageContainer } from "@/Components/tactical";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
-import TacticalClipperBetaBanner from "@/Components/TacticalClipperBetaBanner.vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
@@ -284,11 +283,6 @@ const playStreamInFocus = () => {};
                 class="w-full bg-background pt-12 sm:pt-16 pb-16 sm:pb-24 relative z-10"
             >
                 <PageContainer>
-                    <!-- Informative Clipper Beta Access Banner -->
-                    <TacticalClipperBetaBanner
-                        @open-claim-modal="showClipperClaimModal = true"
-                    />
-
                     <TacticalMonthlyLeaderboard
                         :leaderboard="monthlyLeaderboard"
                     />
