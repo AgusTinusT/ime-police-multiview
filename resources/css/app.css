@@ -61,6 +61,8 @@
   --dept-sasp: #cbd5e1;
   --dept-sapr: #10b981;
   --hud-line: rgba(59, 130, 246, 0.4);
+  --rank-silver: #e2e8f0;
+  --rank-silver-foreground: #020617;
   --rank-bronze: #ea580c;
   --rank-bronze-foreground: #ffffff;
 }
@@ -115,6 +117,8 @@
   --color-dept-sasp: var(--dept-sasp);
   --color-dept-sapr: var(--dept-sapr);
   --color-hud: var(--hud-line);
+  --color-rank-silver: var(--rank-silver);
+  --color-rank-silver-foreground: var(--rank-silver-foreground);
   --color-rank-bronze: var(--rank-bronze);
   --color-rank-bronze-foreground: var(--rank-bronze-foreground);
 
