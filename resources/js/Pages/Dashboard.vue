@@ -88,6 +88,7 @@ const liveByViewers = computed(() =>
     [...streams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0)),
 );
 const DEPARTMENTS = ["LSPD", "BCSO", "SASP", "SAPR"];
+const deptDot = { LSPD: "bg-dept-lspd", BCSO: "bg-dept-bcso", SASP: "bg-dept-sasp", SAPR: "bg-dept-sapr" };
 const deptGroups = computed(() => {
     return DEPARTMENTS.map((dept) => {
         const items = liveByViewers.value.filter((s) => deptOf(s) === dept);
@@ -440,18 +441,25 @@ onMounted(() => {
                     :title="$t('catalog.patrol_by_dept')"
                 >
                     <template #action>
-                        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-                            <Button
+                        <div role="tablist" class="no-scrollbar ml-2 flex items-center gap-4 overflow-x-auto">
+                            <button
                                 v-for="stat in deptGroups"
                                 :key="`dept-chip-${stat.dept}`"
-                                size="xs"
-                                :variant="activeDept === stat.dept ? 'default' : 'secondary'"
-                                class="shrink-0 font-mono text-xs cursor-pointer"
+                                type="button"
+                                role="tab"
+                                :aria-selected="activeDept === stat.dept"
+                                :class="[
+                                    'flex shrink-0 items-center gap-1.5 border-b-2 pb-0.5 text-sm font-semibold transition-colors',
+                                    activeDept === stat.dept
+                                        ? 'border-foreground text-foreground'
+                                        : 'border-transparent text-muted-foreground hover:text-foreground',
+                                ]"
                                 @click="activeDept = stat.dept"
                             >
-                                <span>{{ stat.dept }}</span>
-                                <span class="opacity-80">({{ stat.count }})</span>
-                            </Button>
+                                <span class="size-1.5 rounded-full" :class="deptDot[stat.dept]" />
+                                {{ stat.dept }}
+                                <span class="text-xs font-normal text-muted-foreground">{{ stat.count }}</span>
+                            </button>
                         </div>
                     </template>
 

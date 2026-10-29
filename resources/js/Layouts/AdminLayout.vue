@@ -95,8 +95,8 @@ const currentSectionTitle = computed(() => {
 <template>
     <SidebarProvider>
         <Sidebar collapsible="icon">
-            <SidebarHeader class="border-b border-sidebar-border p-3">
-                <div class="flex items-center gap-2.5 px-1">
+            <SidebarHeader class="border-b border-sidebar-border p-3 group-data-[collapsible=icon]:p-2">
+                <div class="flex items-center gap-2.5 px-1 group-data-[collapsible=icon]:px-0">
                     <div
                         class="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground"
                     >

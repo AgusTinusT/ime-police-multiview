@@ -850,8 +850,7 @@ onUnmounted(() => {
                             :style="tileStyle(i)"
                         >
                             <div
-                                class="flex size-full flex-col overflow-hidden rounded-md bg-card ring-2 transition-colors"
-                                :class="audioId === id ? 'ring-primary' : 'ring-transparent'"
+                                class="flex size-full flex-col overflow-hidden rounded-md bg-card"
                             >
                                 <!-- The video area belongs to YouTube: nothing of ours covers a full tile. -->
                                 <div class="relative min-h-0 flex-1 bg-background">
