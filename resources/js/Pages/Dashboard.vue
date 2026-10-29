@@ -533,6 +533,7 @@ const scrollToUnitsGrid = () => {
             <!-- SECTION 2: Live Officers & Recent Patrol Replays Section -->
             <section
                 id="units-grid"
+                v-reveal
                 class="w-full bg-card/40 pt-10 sm:pt-14 pb-12 sm:pb-16 scroll-mt-6 relative z-10"
             >
                 <PageContainer class="space-y-8">
@@ -590,6 +591,7 @@ const scrollToUnitsGrid = () => {
             <!-- SECTION 3: Monthly Patrol Streaming Leaderboard Section -->
             <section
                 id="leaderboard-section"
+                v-reveal
                 class="w-full bg-background pt-12 sm:pt-16 pb-16 sm:pb-24 relative z-10"
             >
                 <PageContainer>
@@ -607,6 +609,7 @@ const scrollToUnitsGrid = () => {
             <!-- SECTION 4: 1K Sub Support Section -->
             <section
                 id="support-section"
+                v-reveal
                 class="w-full bg-card/40 py-12 sm:py-16 relative z-10"
             >
                 <PageContainer>

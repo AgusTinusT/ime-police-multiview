@@ -274,12 +274,12 @@ const getStreamTac = (videoId) => {
             <div
                 v-else
                 id="row-unified-dispatch"
-                class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-1 focus:outline-hidden"
+                class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-2 focus:outline-hidden"
             >
                 <Card
                     v-for="stream in combinedStreams"
                     :key="`dispatch-${stream.video_id}`"
-                    class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer py-0 gap-0 overflow-hidden border-border hover:border-input transition-colors"
+                    class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer py-0 gap-0 overflow-hidden border-border hover:border-input hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
                     @click="handleStreamCardClick(stream)"
                 >
                     <AspectRatio

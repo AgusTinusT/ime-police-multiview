@@ -233,7 +233,7 @@ const submitFeedbackForm = async () => {
             </Alert>
 
             <!-- Main Form Card Container -->
-            <Card>
+            <Card v-reveal>
                 <CardContent class="p-6 sm:p-8 space-y-8">
                     <!-- 1. Category Selector (4 Interactive Cards) -->
                     <div>

@@ -750,7 +750,7 @@ const filteredOfficers = computed(() => {
                     v-for="officer in filteredOfficers"
                     :key="officer.id"
                     @click="openDrawer(officer)"
-                    class="hover:border-primary/40 p-4 flex flex-col justify-between transition cursor-pointer group"
+                    class="hover:border-primary/40 hover:-translate-y-1 hover:shadow-lg p-4 flex flex-col justify-between transition-all duration-300 cursor-pointer group"
                 >
                     <div>
                         <!-- Card Header: Department, Callsign, Status Badge -->

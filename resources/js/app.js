@@ -42,6 +42,41 @@ setInterval(() => {
     }
 }, GA_HEARTBEAT_INTERVAL_MS);
 
+// Subtle Scroll-driven Entrance Directive (Adapted from pixel-clean design patterns)
+const revealDirective = {
+    mounted(el, binding) {
+        if (typeof window === "undefined") return;
+        if (
+            window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ||
+            !("IntersectionObserver" in window)
+        ) {
+            el.classList.add("is-visible");
+            return;
+        }
+        el.classList.add("reveal");
+        if (binding.value && typeof binding.value === "number") {
+            el.style.transitionDelay = `${binding.value}ms`;
+        }
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry && entry.isIntersecting) {
+                    el.classList.add("is-visible");
+                    observer.unobserve(el);
+                }
+            },
+            { threshold: 0.08, rootMargin: "0px 0px -40px 0px" },
+        );
+        el._revealObserver = observer;
+        observer.observe(el);
+    },
+    unmounted(el) {
+        if (el._revealObserver) {
+            el._revealObserver.disconnect();
+            delete el._revealObserver;
+        }
+    },
+};
+
 createInertiaApp({
     title: (title) => (title ? title : "IME RP — SASP Police Duty"),
     resolve: (name) =>
@@ -50,7 +85,9 @@ createInertiaApp({
             import.meta.glob("./Pages/**/*.vue"),
         ),
     setup({ el, App, props, plugin }) {
-        return createApp({ render: () => h(App, props) })
+        const app = createApp({ render: () => h(App, props) });
+        app.directive("reveal", revealDirective);
+        return app
             .use(plugin)
             .use(i18n)
             .use(ZiggyVue)

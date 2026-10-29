@@ -95,7 +95,7 @@ const techStack = [
 
         <PageContainer class="py-8 sm:py-12 space-y-14">
             <!-- 1. PAGE HEADER & SPLIT HERO: STATEMENT VS QUICK FACTS (1 TacticalFrame) -->
-            <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            <section v-reveal class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                 <!-- Left Statement Column -->
                 <div class="lg:col-span-7 space-y-5">
                     <PageHeader
@@ -190,7 +190,7 @@ const techStack = [
             </section>
 
             <!-- 2. KEPOLISIAN TERDAFTAR (HORIZONTAL TILES) -->
-            <section class="space-y-6">
+            <section v-reveal class="space-y-6">
                 <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-5">
                     <SectionHeader
                         eyebrow="KESATUAN OPERASIONAL"
@@ -205,7 +205,7 @@ const techStack = [
                     <Card
                         v-for="dept in departments"
                         :key="dept.code"
-                        class="group hover:border-primary/40 transition"
+                        class="group hover:border-primary/40 hover:-translate-y-1 hover:shadow-md transition-all duration-300"
                     >
                         <CardContent class="p-5 flex flex-col justify-between h-full space-y-4">
                             <div class="space-y-3">
@@ -241,7 +241,7 @@ const techStack = [
             </section>
 
             <!-- 3. WORKFLOW STORY (STEPPER TIMELINE) -->
-            <section class="space-y-8">
+            <section v-reveal class="space-y-8">
                 <SectionHeader
                     eyebrow="WORKFLOW STORY"
                     title="ALUR PEMANTAUAN TAKTIS MULTIVIEW"
@@ -319,7 +319,7 @@ const techStack = [
             </section>
 
             <!-- 4. DEVELOPER & TECH STACK (SPLIT DEVELOPER SHOWCASE) -->
-            <Card>
+            <Card v-reveal>
                 <CardContent class="p-6 sm:p-8">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                         <!-- Left Developer Profile Column -->
