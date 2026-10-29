@@ -3,17 +3,29 @@ import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import { Head } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { toast } from "vue-sonner";
+import {
+    Bug,
+    FileEdit,
+    PlusCircle,
+    MessageSquarePlus,
+    Send,
+    RefreshCw,
+    Info,
+    CheckCircle2,
+    AlertCircle,
+    Bot,
+} from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
+import { Label } from "@/Components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
+import { PageContainer, PageHeader } from "@/Components/tactical";
+import { cn } from "@/lib/utils";
 
-const { t } = useI18n();
-
-import iconBug from "@/Components/Icons/bug-svgrepo-com.svg";
-import iconQuickAdd from "@/Components/Icons/button-plus-svgrepo-com.svg";
-import iconEdit from "@/Components/Icons/edit-2-svgrepo-com.svg";
-import iconRadio from "@/Components/Icons/radio-signal-svgrepo-com.svg";
-import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
-import iconFeedback from "@/Components/Icons/report-svgrepo-com.svg";
-import iconSend from "@/Components/Icons/send-svgrepo-com.svg";
-import { defineProps } from "vue";
+useI18n();
 
 const props = defineProps({
     prefillType: {
@@ -22,7 +34,6 @@ const props = defineProps({
     },
 });
 
-// Feedback Form reactive state matching feeback_reverensi.html
 const feedbackForm = ref({
     type: props.prefillType || "BUG_REPORT",
     title: "",
@@ -41,6 +52,37 @@ const feedbackForm = ref({
 const isSubmitting = ref(false);
 const successMessage = ref("");
 const errorMessage = ref("");
+
+const categoryOptions = [
+    {
+        id: "BUG_REPORT",
+        title: "Bug / Error",
+        subtitle: "Sistem bermasalah",
+        icon: Bug,
+        activeClass: "bg-destructive/15 border-destructive/50 text-foreground",
+    },
+    {
+        id: "DATA_CORRECTION",
+        title: "Typo / Teks",
+        subtitle: "Koreksi kata",
+        icon: FileEdit,
+        activeClass: "bg-warning/15 border-warning/50 text-foreground",
+    },
+    {
+        id: "CHANNEL_REQUEST",
+        title: "Ide Fitur",
+        subtitle: "Usulan streamer",
+        icon: PlusCircle,
+        activeClass: "bg-primary/15 border-primary/50 text-foreground",
+    },
+    {
+        id: "OTHER",
+        title: "Lainnya",
+        subtitle: "Kritik & kesan",
+        icon: MessageSquarePlus,
+        activeClass: "bg-info/15 border-info/50 text-foreground",
+    },
+];
 
 // Category Selection Function
 const selectType = (type) => {
@@ -94,7 +136,7 @@ const submitFeedbackForm = async () => {
         !feedbackForm.value.message ||
         feedbackForm.value.message.trim() === ""
     ) {
-        alert("Mohon isi deskripsi / detail laporan Anda.");
+        toast.error("Mohon isi deskripsi / detail laporan Anda.");
         return;
     }
 
@@ -120,9 +162,11 @@ const submitFeedbackForm = async () => {
 
         const data = await res.json();
         if (res.ok && data.status === "success") {
-            successMessage.value =
+            const msg =
                 data.message ||
                 "Masukan Anda berhasil dikirim ke Discord Dispatcher!";
+            successMessage.value = msg;
+            toast.success(msg);
             feedbackForm.value = {
                 type: "BUG_REPORT",
                 title: "",
@@ -138,12 +182,15 @@ const submitFeedbackForm = async () => {
                 department: "LSPD",
             };
         } else {
-            errorMessage.value =
+            const errMsg =
                 data.message || "Gagal mengirim laporan. Silakan coba lagi.";
+            errorMessage.value = errMsg;
+            toast.error(errMsg);
         }
-    } catch (e) {
-        errorMessage.value =
-            "Terjadi kesalahan jaringan saat mengirim laporan.";
+    } catch {
+        const netMsg = "Terjadi kesalahan jaringan saat mengirim laporan.";
+        errorMessage.value = netMsg;
+        toast.error(netMsg);
     } finally {
         isSubmitting.value = false;
     }
@@ -154,406 +201,255 @@ const submitFeedbackForm = async () => {
     <TacticalLayout>
         <Head title="Pusat Laporan & Feedback — IME Police Terminal" />
 
-        <main
-            class="relative z-10 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8"
-        >
+        <PageContainer size="md" class="py-8 sm:py-12 space-y-8">
             <!-- Hero Header Section -->
-            <div class="text-center space-y-3">
-                <div class="tactical-badge">
-                    <img
-                        :src="iconRadio"
-                        class="w-3.5 h-3.5 invert opacity-90"
-                        alt=""
-                    />
-                    <span>DUKUNGAN PENGGUNA & DISPATCH</span>
-                </div>
-                <h1
-                    class="text-3xl sm:text-4xl font-tactical font-black text-slate-100 uppercase tracking-wider"
-                >
-                    {{ $t("feedback.title") }}
-                </h1>
-                <p
-                    class="text-xs sm:text-sm text-tactical-muted max-w-lg mx-auto leading-relaxed font-sans"
-                >
-                    {{ $t("feedback.subtitle") }}
-                </p>
-            </div>
+            <PageHeader
+                eyebrow="DUKUNGAN PENGGUNA & DISPATCH"
+                :title="$t('feedback.title')"
+                :subtitle="$t('feedback.subtitle')"
+            />
 
-            <!-- Toast Notifications -->
-            <div
+            <!-- Alert Notifications -->
+            <Alert
                 v-if="successMessage"
-                class="bg-tactical-panel border border-emerald-800 rounded-md p-4 text-xs text-emerald-400 font-mono flex items-start gap-3"
+                class="border-success/30 bg-success/15 text-success"
             >
-                <span class="text-lg leading-none">✓</span>
-                <div>
-                    <div class="font-bold text-emerald-300 mb-0.5">
-                        Laporan Berhasil Terkirim!
-                    </div>
-                    <div>{{ successMessage }}</div>
-                </div>
-            </div>
+                <CheckCircle2 class="size-4 text-success" />
+                <AlertTitle class="font-bold">Laporan Berhasil Terkirim!</AlertTitle>
+                <AlertDescription class="text-xs font-mono">
+                    {{ successMessage }}
+                </AlertDescription>
+            </Alert>
 
-            <div
+            <Alert
                 v-if="errorMessage"
-                class="bg-tactical-panel border border-rose-800 rounded-md p-4 text-xs text-rose-400 font-mono flex items-start gap-3"
+                variant="destructive"
             >
-                <span class="text-lg leading-none">✕</span>
-                <div>
-                    <div class="font-bold text-rose-300 mb-0.5">
-                        Gagal Mengirim Laporan
-                    </div>
-                    <div>{{ errorMessage }}</div>
-                </div>
-            </div>
+                <AlertCircle class="size-4" />
+                <AlertTitle class="font-bold">Gagal Mengirim Laporan</AlertTitle>
+                <AlertDescription class="text-xs font-mono">
+                    {{ errorMessage }}
+                </AlertDescription>
+            </Alert>
 
-            <!-- Main Form Card Container (Solid Dark Surface) -->
-            <div class="tactical-card p-6 sm:p-8 space-y-8">
-                <!-- 1. Category Selector (4 Interactive Cards) -->
-                <div>
-                    <label
-                        class="block text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-3"
-                    >
-                        1. Pilih Jenis Masukan
-                        <span class="text-rose-400">*</span>
-                    </label>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <!-- Option 1: Bug / Error -->
-                        <button
-                            type="button"
-                            @click="selectType('BUG_REPORT')"
-                            :class="[
-                                'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
-                                feedbackForm.type === 'BUG_REPORT'
-                                    ? 'bg-rose-950 border-rose-800 text-white'
-                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200',
-                            ]"
-                        >
-                            <img :src="iconBug" class="w-6 h-6 invert" alt="" />
-                            <span
-                                class="text-xs font-bold font-tactical uppercase tracking-wider"
-                                >Bug / Error</span
-                            >
-                            <span class="text-[10px] text-slate-400 font-mono"
-                                >Sistem bermasalah</span
-                            >
-                        </button>
-
-                        <!-- Option 2: Typo / Text Correction -->
-                        <button
-                            type="button"
-                            @click="selectType('DATA_CORRECTION')"
-                            :class="[
-                                'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
-                                feedbackForm.type === 'DATA_CORRECTION'
-                                    ? 'bg-amber-950 border-amber-800 text-white'
-                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200',
-                            ]"
-                        >
-                            <img
-                                :src="iconEdit"
-                                class="w-6 h-6 invert"
-                                alt=""
-                            />
-                            <span
-                                class="text-xs font-bold font-tactical uppercase tracking-wider"
-                                >Typo / Teks</span
-                            >
-                            <span class="text-[10px] text-slate-400 font-mono"
-                                >Koreksi kata</span
-                            >
-                        </button>
-
-                        <!-- Option 3: Feature / Streamer Idea -->
-                        <button
-                            type="button"
-                            @click="selectType('CHANNEL_REQUEST')"
-                            :class="[
-                                'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
-                                feedbackForm.type === 'CHANNEL_REQUEST'
-                                    ? 'bg-blue-950 border-blue-800 text-white'
-                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200',
-                            ]"
-                        >
-                            <img
-                                :src="iconQuickAdd"
-                                class="w-6 h-6 invert"
-                                alt=""
-                            />
-                            <span
-                                class="text-xs font-bold font-tactical uppercase tracking-wider"
-                                >Ide Fitur</span
-                            >
-                            <span class="text-[10px] text-slate-400 font-mono"
-                                >Usulan streamer</span
-                            >
-                        </button>
-
-                        <!-- Option 4: General Feedback -->
-                        <button
-                            type="button"
-                            @click="selectType('OTHER')"
-                            :class="[
-                                'p-4 rounded-md border text-center transition flex flex-col items-center justify-center gap-1.5',
-                                feedbackForm.type === 'OTHER'
-                                    ? 'bg-purple-950 border-purple-800 text-white'
-                                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200',
-                            ]"
-                        >
-                            <img
-                                :src="iconFeedback"
-                                class="w-6 h-6 invert"
-                                alt=""
-                            />
-                            <span
-                                class="text-xs font-bold font-tactical uppercase tracking-wider"
-                                >Lainnya</span
-                            >
-                            <span class="text-[10px] text-slate-400 font-mono"
-                                >Kritik & kesan</span
-                            >
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Form Inputs -->
-                <form @submit.prevent="submitFeedbackForm" class="space-y-6">
-                    <!-- Report Title -->
+            <!-- Main Form Card Container -->
+            <Card>
+                <CardContent class="p-6 sm:p-8 space-y-8">
+                    <!-- 1. Category Selector (4 Interactive Cards) -->
                     <div>
-                        <label
-                            class="block text-xs font-semibold text-slate-300 mb-1.5"
-                        >
-                            {{ titleLabel }}
-                            <span class="text-rose-400">*</span>
-                        </label>
-                        <input
-                            v-model="feedbackForm.title"
-                            type="text"
-                            required
-                            :placeholder="titlePlaceholder"
-                            class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs sm:text-sm focus:outline-hidden focus:border-blue-500 transition"
-                        />
+                        <Label class="block text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                            1. Pilih Jenis Masukan
+                            <span class="text-destructive">*</span>
+                        </Label>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <button
+                                v-for="opt in categoryOptions"
+                                :key="opt.id"
+                                type="button"
+                                :class="
+                                    cn(
+                                        'p-4 rounded-lg border text-center transition flex flex-col items-center justify-center gap-1.5',
+                                        feedbackForm.type === opt.id
+                                            ? opt.activeClass
+                                            : 'bg-muted/30 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                                    )
+                                "
+                                @click="selectType(opt.id)"
+                            >
+                                <component :is="opt.icon" class="size-5 text-primary" />
+                                <span class="text-xs font-bold font-display uppercase tracking-wider">
+                                    {{ opt.title }}
+                                </span>
+                                <span class="text-xs text-muted-foreground font-mono">
+                                    {{ opt.subtitle }}
+                                </span>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Dynamic Typo / Text Correction Fields (Shown when Typo category is active) -->
-                    <div
-                        v-if="feedbackForm.type === 'DATA_CORRECTION'"
-                        class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1"
-                    >
-                        <div>
-                            <label
-                                class="block text-xs font-semibold text-slate-300 mb-1.5"
-                            >
-                                Teks yang Salah (Saat Ini)
-                            </label>
-                            <input
-                                v-model="feedbackForm.typo_wrong"
+                    <!-- Form Inputs -->
+                    <form class="space-y-6" @submit.prevent="submitFeedbackForm">
+                        <!-- Report Title -->
+                        <div class="space-y-1.5">
+                            <Label for="feedback-title" class="text-xs font-semibold">
+                                {{ titleLabel }}
+                                <span class="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="feedback-title"
+                                v-model="feedbackForm.title"
                                 type="text"
-                                placeholder="Contoh: 'Pengamban Patroli'"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-hidden focus:border-blue-500 font-mono"
+                                required
+                                :placeholder="titlePlaceholder"
                             />
                         </div>
-                        <div>
-                            <label
-                                class="block text-xs font-semibold text-slate-300 mb-1.5"
-                            >
-                                Usulan Koreksi yang Benar
-                            </label>
-                            <input
-                                v-model="feedbackForm.typo_correct"
-                                type="text"
-                                placeholder="Contoh: 'Pengembangan Patroli'"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-hidden focus:border-blue-500 font-mono"
+
+                        <!-- Dynamic Typo / Text Correction Fields -->
+                        <div
+                            v-if="feedbackForm.type === 'DATA_CORRECTION'"
+                            class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1"
+                        >
+                            <div class="space-y-1.5">
+                                <Label for="feedback-typo-wrong" class="text-xs font-semibold">
+                                    Teks yang Salah (Saat Ini)
+                                </Label>
+                                <Input
+                                    id="feedback-typo-wrong"
+                                    v-model="feedbackForm.typo_wrong"
+                                    type="text"
+                                    placeholder="Contoh: 'Pengamban Patroli'"
+                                    class="font-mono"
+                                />
+                            </div>
+                            <div class="space-y-1.5">
+                                <Label for="feedback-typo-correct" class="text-xs font-semibold">
+                                    Usulan Koreksi yang Benar
+                                </Label>
+                                <Input
+                                    id="feedback-typo-correct"
+                                    v-model="feedbackForm.typo_correct"
+                                    type="text"
+                                    placeholder="Contoh: 'Pengembangan Patroli'"
+                                    class="font-mono"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Officer / Streamer Fields -->
+                        <div
+                            v-if="feedbackForm.type === 'CHANNEL_REQUEST'"
+                            class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1"
+                        >
+                            <div class="sm:col-span-2 space-y-1.5">
+                                <Label for="feedback-officer-name" class="text-xs font-semibold">
+                                    Nama Karakter / Callsign Polisi
+                                </Label>
+                                <Input
+                                    id="feedback-officer-name"
+                                    v-model="feedbackForm.officer_name"
+                                    type="text"
+                                    placeholder="Ofc. Budi / 1-ADAM-12"
+                                />
+                            </div>
+                            <div class="space-y-1.5">
+                                <Label for="feedback-department" class="text-xs font-semibold">
+                                    Kesatuan / Department
+                                </Label>
+                                <select
+                                    id="feedback-department"
+                                    v-model="feedbackForm.department"
+                                    class="w-full h-9 px-3 rounded-md bg-background border border-input text-foreground text-xs focus:outline-hidden focus:ring-2 focus:ring-ring font-mono"
+                                >
+                                    <option value="LSPD">LSPD (Police)</option>
+                                    <option value="BCSO">BCSO (Sheriff)</option>
+                                    <option value="SASP">SASP (State Police)</option>
+                                    <option value="SAPR">SAPR (Park Rangers)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Main Description Textarea -->
+                        <div class="space-y-1.5">
+                            <Label for="feedback-message" class="text-xs font-semibold">
+                                {{ descriptionLabel }}
+                                <span class="text-destructive">*</span>
+                            </Label>
+                            <Textarea
+                                id="feedback-message"
+                                v-model="feedbackForm.message"
+                                required
+                                rows="4"
+                                :placeholder="descriptionPlaceholder"
                             />
                         </div>
-                    </div>
 
-                    <!-- Dynamic Officer / Streamer Fields (Shown when Feature/Streamer category is active) -->
-                    <div
-                        v-if="feedbackForm.type === 'CHANNEL_REQUEST'"
-                        class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1"
-                    >
-                        <div class="sm:col-span-2">
-                            <label
-                                class="block text-xs font-semibold text-slate-300 mb-1.5"
-                            >
-                                Nama Karakter / Callsign Polisi
-                            </label>
-                            <input
-                                v-model="feedbackForm.officer_name"
-                                type="text"
-                                placeholder="Ofc. Budi / 1-ADAM-12"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-hidden focus:border-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                class="block text-xs font-semibold text-slate-300 mb-1.5"
-                            >
-                                Kesatuan / Department
-                            </label>
-                            <select
-                                v-model="feedbackForm.department"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-hidden focus:border-blue-500 font-mono cursor-pointer"
-                            >
-                                <option value="LSPD">LSPD (Police)</option>
-                                <option value="BCSO">BCSO (Sheriff)</option>
-                                <option value="SASP">
-                                    SASP (State Police)
-                                </option>
-                                <option value="SAPR">
-                                    SAPR (Park Rangers)
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Main Description Textarea -->
-                    <div>
-                        <label
-                            class="block text-xs font-semibold text-slate-300 mb-1.5"
-                        >
-                            {{ descriptionLabel }}
-                            <span class="text-rose-400">*</span>
-                        </label>
-                        <textarea
-                            v-model="feedbackForm.message"
-                            required
-                            rows="4"
-                            :placeholder="descriptionPlaceholder"
-                            class="w-full px-4 py-3 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs sm:text-sm focus:outline-hidden focus:border-blue-500 transition leading-relaxed"
-                        ></textarea>
-                    </div>
-
-                    <!-- Screenshot / Image Link Input Field -->
-                    <div>
-                        <label
-                            class="block text-xs font-semibold text-slate-300 mb-1.5"
-                        >
-                            Tangkapan Layar / Screenshot URL (Opsional)
-                        </label>
+                        <!-- Screenshot / Image Link Input Field -->
                         <div class="space-y-2">
-                            <input
+                            <Label for="feedback-image-url" class="text-xs font-semibold">
+                                Tangkapan Layar / Screenshot URL (Opsional)
+                            </Label>
+                            <Input
+                                id="feedback-image-url"
                                 v-model="feedbackForm.image_url"
                                 type="url"
                                 placeholder="Tempelkan URL Gambar (contoh: https://i.imgur.com/example.png atau Discord attachment link)..."
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-hidden focus:border-blue-500"
+                                class="font-mono"
                             />
-                            <div
-                                class="border border-dashed border-slate-800 rounded-md p-4 text-center bg-slate-950 text-xs text-slate-400 space-y-1"
-                            >
-                                <div
-                                    class="flex items-center justify-center gap-1.5 text-blue-400 font-mono text-[11px] font-semibold"
-                                >
-                                    <span
-                                        >🤖 INTEGRASI GAMBAR DISCORD BOT
-                                        AUTOMATIC</span
-                                    >
+                            <div class="border border-dashed border-border rounded-lg p-4 text-center bg-muted/30 text-xs text-muted-foreground space-y-1">
+                                <div class="flex items-center justify-center gap-1.5 text-primary font-mono text-xs font-semibold">
+                                    <Bot class="size-4" />
+                                    <span>INTEGRASI GAMBAR DISCORD BOT AUTOMATIC</span>
                                 </div>
-                                <p class="text-[11px] text-slate-400">
-                                    Discord Webhook otomatis mendeteksi URL
-                                    gambar (Imgur, Discord Attachment, Gyazo,
-                                    dsb.) dan menampilkan gambar pratinjau utuh
-                                    secara langsung di channel Discord
-                                    Dispatcher!
+                                <p class="text-xs text-muted-foreground max-w-prose mx-auto">
+                                    Discord Webhook otomatis mendeteksi URL gambar (Imgur, Discord Attachment, Gyazo, dsb.) dan menampilkan gambar pratinjau utuh secara langsung di channel Discord Dispatcher!
                                 </p>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Contact & Related Links -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label
-                                class="block text-xs font-semibold text-slate-300 mb-1.5"
-                            >
-                                Nama / Email Pengirim (Untuk Notifikasi
-                                Perbaikan)
-                            </label>
-                            <input
-                                v-model="feedbackForm.sender_name"
-                                type="text"
-                                placeholder="Contoh: Citizen Ray / raymond@gmail.com"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs focus:outline-hidden focus:border-blue-500"
-                            />
+                        <!-- Contact & Related Links -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <Label for="feedback-sender-name" class="text-xs font-semibold">
+                                    Nama / Email Pengirim (Untuk Notifikasi Perbaikan)
+                                </Label>
+                                <Input
+                                    id="feedback-sender-name"
+                                    v-model="feedbackForm.sender_name"
+                                    type="text"
+                                    placeholder="Contoh: Citizen Ray / raymond@gmail.com"
+                                />
+                            </div>
+                            <div class="space-y-1.5">
+                                <Label for="feedback-handle-url" class="text-xs font-semibold">
+                                    Tautan URL / YouTube Terkait (Jika Ada)
+                                </Label>
+                                <Input
+                                    id="feedback-handle-url"
+                                    v-model="feedbackForm.handle_or_url"
+                                    type="url"
+                                    placeholder="https://youtube.com/@handle atau link halaman terkait"
+                                    class="font-mono"
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <label
-                                class="block text-xs font-semibold text-slate-300 mb-1.5"
+
+                        <!-- Submit Action Footer -->
+                        <div class="pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <span class="text-xs text-muted-foreground font-mono">
+                                Terhubung langsung ke Webhook Dispatcher
+                            </span>
+
+                            <Button
+                                type="submit"
+                                :disabled="isSubmitting"
+                                class="w-full sm:w-auto font-mono font-bold uppercase tracking-wider"
                             >
-                                Tautan URL / YouTube Terkait (Jika Ada)
-                            </label>
-                            <input
-                                v-model="feedbackForm.handle_or_url"
-                                type="url"
-                                placeholder="https://youtube.com/@handle atau link halaman terkait"
-                                class="w-full px-4 py-2.5 rounded-md bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-600 text-xs font-mono focus:outline-hidden focus:border-blue-500"
-                            />
+                                <RefreshCw
+                                    v-if="isSubmitting"
+                                    class="size-4 mr-2 motion-safe:animate-spin"
+                                />
+                                <Send v-else class="size-4 mr-2" />
+                                <span>
+                                    {{
+                                        isSubmitting
+                                            ? "MENGIRIM LAPORAN..."
+                                            : "KIRIM MASUKAN SEKARANG"
+                                    }}
+                                </span>
+                            </Button>
                         </div>
-                    </div>
-
-                    <!-- Submit Action Footer -->
-                    <div
-                        class="pt-2 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4"
-                    >
-                        <span class="text-[11px] text-slate-500 font-mono">
-                            ⚡ Terhubung langsung ke Webhook Dispatcher
-                        </span>
-
-                        <button
-                            type="submit"
-                            :disabled="isSubmitting"
-                            class="w-full sm:w-auto px-6 py-3 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-center gap-2"
-                        >
-                            <img
-                                v-if="isSubmitting"
-                                :src="iconRefresh"
-                                class="w-4 h-4 animate-spin invert"
-                                alt=""
-                            />
-                            <img
-                                v-else
-                                :src="iconSend"
-                                class="w-4 h-4 invert"
-                                alt=""
-                            />
-                            <span>{{
-                                isSubmitting
-                                    ? "MENGIRIM LAPORAN..."
-                                    : "KIRIM MASUKAN SEKARANG"
-                            }}</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
+                    </form>
+                </CardContent>
+            </Card>
 
             <!-- Bottom Info Banner -->
-            <div
-                class="flex items-center gap-3 p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400"
-            >
-                <div
-                    class="p-1.5 rounded-md bg-slate-950 text-blue-400 border border-slate-800 shrink-0"
-                >
-                    <svg
-                        class="w-4 h-4 text-blue-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                    </svg>
-                </div>
-                <span class="leading-relaxed">
-                    Semua laporan diproses secara otomatis oleh sistem
-                    Dispatcher. Bug kritis dan usulan streamer akan langsung
-                    ditinjau oleh Komando IME Roleplay.
-                </span>
-            </div>
-        </main>
+            <Alert>
+                <Info class="size-4 text-primary" />
+                <AlertDescription class="text-xs text-muted-foreground leading-relaxed max-w-prose">
+                    Semua laporan diproses secara otomatis oleh sistem Dispatcher. Bug kritis dan usulan streamer akan langsung ditinjau oleh Komando IME Roleplay.
+                </AlertDescription>
+            </Alert>
+        </PageContainer>
     </TacticalLayout>
 </template>

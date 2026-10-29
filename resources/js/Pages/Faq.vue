@@ -1,17 +1,47 @@
 <script setup>
-import iconSend from "@/Components/Icons/send-svgrepo-com.svg";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import { Head, Link } from "@inertiajs/vue3";
-import { computed, defineProps, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import {
+    Search,
+    X,
+    Filter,
+    ChevronsUpDown,
+    CheckCircle2,
+    Link2,
+    ListFilter,
+    LayoutGrid,
+    Video,
+    Scissors,
+    Radio,
+    User,
+    Wrench,
+    LifeBuoy,
+    Send,
+    Mic,
+    Check,
+    ShieldCheck,
+    Clock,
+} from "@lucide/vue";
 import { faqsId } from "@/Data/faqs.id.js";
 import { faqsEn } from "@/Data/faqs.en.js";
-import BaseSearchInput from "@/Components/Base/BaseSearchInput.vue";
-import BaseBadge from "@/Components/Base/BaseBadge.vue";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/Components/ui/accordion";
+import { PageContainer, EmptyState } from "@/Components/tactical";
+import { cn } from "@/lib/utils";
 
-const { t, locale } = useI18n();
+const { locale } = useI18n();
 
-const props = defineProps({
+defineProps({
     appVersion: {
         type: String,
         default: "2.4.0-Pro",
@@ -22,27 +52,60 @@ const props = defineProps({
 const activeCategory = ref("ALL");
 const searchQuery = ref("");
 
-// Accordion State (Array of open FAQ IDs)
-const openFaqIds = ref([1, 5]);
+// Accordion State (Array of open FAQ ID strings for type="multiple")
+const openFaqIds = ref(["1", "5"]);
 
 // Copy Link Toast State
 const copiedFaqCode = ref(null);
 
-const toggleFaq = (id) => {
-    if (openFaqIds.value.includes(id)) {
-        openFaqIds.value = openFaqIds.value.filter((item) => item !== id);
-    } else {
-        openFaqIds.value.push(id);
-    }
-};
+// Comprehensive IME Police SOP & FAQ Data (Multi-language Data Modules)
+const faqs = computed(() => (locale.value === "en" ? faqsEn : faqsId));
 
-const isFaqOpen = (id) => openFaqIds.value.includes(id);
+// Categories configuration with Lucide icons
+const categories = [
+    { id: "ALL", name: "Semua Kategori", code: "ALL", icon: LayoutGrid },
+    { id: "MULTIVIEW", name: "Multiview & Fitur", code: "MV", icon: Video },
+    { id: "CLIPS", name: "TacClips & Studio Pro", code: "CLIP", icon: Scissors },
+    { id: "TAC", name: "Radio Taktis (TAC)", code: "TAC", icon: Radio },
+    { id: "OFFICERS", name: "Streamer & Registrasi", code: "REG", icon: User },
+    { id: "TROUBLESHOOTING", name: "Kendala Teknis", code: "SYS", icon: Wrench },
+];
+
+const quickKeywords = [
+    { label: "# #imepolice", value: "#imepolice" },
+    { label: "# Focus Mode", value: "Focus Mode" },
+    { label: "# Klip Aksi", value: "Klip" },
+    { label: "# Studio Clipper", value: "Studio Clipper" },
+    { label: "# TAC Radio", value: "TAC" },
+];
+
+// Filtered FAQs based on Category and Search Query
+const filteredFaqs = computed(() => {
+    let list = faqs.value || [];
+
+    if (activeCategory.value !== "ALL") {
+        list = list.filter((item) => item.category === activeCategory.value);
+    }
+
+    if (searchQuery.value.trim()) {
+        const q = searchQuery.value.toLowerCase().trim();
+        list = list.filter(
+            (item) =>
+                item.question.toLowerCase().includes(q) ||
+                item.answer.toLowerCase().includes(q) ||
+                item.code.toLowerCase().includes(q) ||
+                item.categoryLabel.toLowerCase().includes(q),
+        );
+    }
+
+    return list;
+});
 
 // Toggle All Accordions State
 const isAllOpen = computed(() => {
     return (
         filteredFaqs.value.length > 0 &&
-        filteredFaqs.value.every((f) => openFaqIds.value.includes(f.id))
+        filteredFaqs.value.every((f) => openFaqIds.value.includes(String(f.id)))
     );
 });
 
@@ -50,7 +113,7 @@ const toggleAllAccordions = () => {
     if (isAllOpen.value) {
         openFaqIds.value = [];
     } else {
-        openFaqIds.value = filteredFaqs.value.map((f) => f.id);
+        openFaqIds.value = filteredFaqs.value.map((f) => String(f.id));
     }
 };
 
@@ -80,70 +143,24 @@ onMounted(() => {
         const hash = window.location.hash.replace("#", "").toUpperCase();
         const found = faqs.value?.find((f) => f.code.toUpperCase() === hash);
         if (found) {
-            openFaqIds.value = [found.id];
+            openFaqIds.value = [String(found.id)];
             activeCategory.value = found.category;
             setTimeout(() => {
                 const el = document.getElementById(found.code);
-                if (el)
-                    el.scrollIntoView({ behavior: "smooth", block: "center" });
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
             }, 300);
         }
     }
 });
 
-// Comprehensive IME Police SOP & FAQ Data (Multi-language Data Modules)
-const faqs = computed(() => (locale.value === "en" ? faqsEn : faqsId));
-
-// Categories configuration with dedicated SVG icons
-const categories = [
-    { id: "ALL", name: "Semua Kategori", code: "ALL", icon: "grid" },
-    { id: "MULTIVIEW", name: "Multiview & Fitur", code: "MV", icon: "video" },
-    { id: "CLIPS", name: "TacClips & Studio Pro", code: "CLIP", icon: "cut" },
-    { id: "TAC", name: "Radio Taktis (TAC)", code: "TAC", icon: "radio" },
-    {
-        id: "OFFICERS",
-        name: "Streamer & Registrasi",
-        code: "REG",
-        icon: "user",
-    },
-    {
-        id: "TROUBLESHOOTING",
-        name: "Kendala Teknis",
-        code: "SYS",
-        icon: "wrench",
-    },
-];
-
-// Filtered FAQs based on Category and Search Query
-const filteredFaqs = computed(() => {
-    let list = faqs.value || [];
-
-    if (activeCategory.value !== "ALL") {
-        list = list.filter((item) => item.category === activeCategory.value);
-    }
-
-    if (searchQuery.value.trim()) {
-        const q = searchQuery.value.toLowerCase().trim();
-        list = list.filter(
-            (item) =>
-                item.question.toLowerCase().includes(q) ||
-                item.answer.toLowerCase().includes(q) ||
-                item.code.toLowerCase().includes(q) ||
-                item.categoryLabel.toLowerCase().includes(q),
-        );
-    }
-
-    return list;
-});
-
-// Dynamic Keyword Highlight Function (Brand Blue Accent)
+// Dynamic Keyword Highlight Function (Semantic Primary Accent)
 const highlightKeyword = (text) => {
     if (!searchQuery.value || !searchQuery.value.trim()) return text;
     const q = searchQuery.value.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(`(${q})`, "gi");
     return text.replace(
         regex,
-        '<mark class="bg-blue-500/25 text-blue-200 font-bold px-1 py-0.5 rounded-sm border-b border-blue-400">$1</mark>',
+        '<mark class="bg-primary/20 text-primary font-bold px-1 py-0.5 rounded-sm border-b border-primary">$1</mark>',
     );
 };
 </script>
@@ -152,74 +169,55 @@ const highlightKeyword = (text) => {
     <TacticalLayout>
         <Head title="SOP & FAQ — IME Police Terminal" />
 
-        <main
-            class="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-12"
-        >
+        <PageContainer class="py-8 sm:py-12 space-y-12">
             <!-- Hero Header Section -->
-            <section
-                class="text-center max-w-3xl mx-auto py-6 sm:py-10 space-y-6 sm:space-y-8"
-            >
-                <BaseBadge pulse>
-                    <span
-                        >DISPATCH MANUAL v{{ appVersion }} •
-                        {{ faqs.length }} {{ $t("faq.sop_count") }}</span
-                    >
-                </BaseBadge>
+            <section class="text-center max-w-3xl mx-auto py-4 sm:py-6 space-y-5">
+                <Badge variant="outline" class="font-mono text-primary border-primary/30 bg-primary/10">
+                    DISPATCH MANUAL v{{ appVersion }} • {{ faqs.length }} {{ $t("faq.sop_count") }}
+                </Badge>
 
-                <h1
-                    class="text-3xl sm:text-4xl md:text-5xl font-tactical font-extrabold uppercase text-slate-100 tracking-wider leading-tight sm:leading-tight"
-                >
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-display font-bold uppercase text-foreground tracking-wider leading-tight">
                     {{ $t("faq.title") }}
                 </h1>
-                <p
-                    class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed font-sans"
-                >
+                <p class="text-xs sm:text-sm text-muted-foreground max-w-prose mx-auto leading-relaxed">
                     {{ $t("faq.subtitle") }}
                 </p>
 
                 <!-- Search Field -->
-                <div class="relative max-w-2xl mx-auto pt-4 sm:pt-6">
-                    <BaseSearchInput
-                        v-model="searchQuery"
-                        :placeholder="$t('faq.search_placeholder')"
-                        @clear="clearSearch"
-                    />
+                <div class="relative max-w-2xl mx-auto pt-4">
+                    <div class="relative flex items-center">
+                        <Search class="size-4 text-muted-foreground absolute left-3.5 pointer-events-none" />
+                        <Input
+                            v-model="searchQuery"
+                            type="text"
+                            :placeholder="$t('faq.search_placeholder')"
+                            class="pl-10 pr-10 h-11 text-sm"
+                        />
+                        <Button
+                            v-if="searchQuery"
+                            size="icon"
+                            variant="ghost"
+                            aria-label="Hapus pencarian"
+                            class="size-8 absolute right-1.5 text-muted-foreground hover:text-foreground"
+                            @click="clearSearch"
+                        >
+                            <X class="size-4" />
+                        </Button>
+                    </div>
 
                     <!-- Quick Search Chips -->
-                    <div
-                        class="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-slate-400"
-                    >
-                        <span class="text-slate-500">Kata Kunci Cepat:</span>
-                        <button
-                            @click="setSearchKeyword('#imepolice')"
-                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 transition"
+                    <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-muted-foreground">
+                        <span>Kata Kunci Cepat:</span>
+                        <Button
+                            v-for="kw in quickKeywords"
+                            :key="kw.value"
+                            size="sm"
+                            variant="outline"
+                            class="h-7 px-2.5 text-xs font-mono"
+                            @click="setSearchKeyword(kw.value)"
                         >
-                            # #imepolice
-                        </button>
-                        <button
-                            @click="setSearchKeyword('Focus Mode')"
-                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
-                        >
-                            # Focus Mode
-                        </button>
-                        <button
-                            @click="setSearchKeyword('Klip')"
-                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
-                        >
-                            # Klip Aksi
-                        </button>
-                        <button
-                            @click="setSearchKeyword('Studio Clipper')"
-                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
-                        >
-                            # Studio Clipper
-                        </button>
-                        <button
-                            @click="setSearchKeyword('TAC')"
-                            class="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-slate-100 transition"
-                        >
-                            # TAC Radio
-                        </button>
+                            {{ kw.label }}
+                        </Button>
                     </div>
                 </div>
             </section>
@@ -229,602 +227,272 @@ const highlightKeyword = (text) => {
                 <!-- Main Content Area: Search Meta Bar + Accordion List (Left Column - 8 cols) -->
                 <section class="lg:col-span-8 space-y-4">
                     <!-- Search Meta Indicator & Expand All Toolbar -->
-                    <div
-                        class="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono"
-                    >
-                        <div class="flex items-center gap-2 text-slate-300">
-                            <svg
-                                class="w-4 h-4 text-blue-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                                />
-                            </svg>
-                            <span v-if="searchQuery">
-                                Hasil pencarian:
-                                <strong class="text-blue-400">{{
-                                    searchQuery
-                                }}</strong>
-                                ({{ filteredFaqs.length }} dokumen)
-                            </span>
-                            <span v-else class="text-slate-400">
-                                Menampilkan {{ filteredFaqs.length }} dokumen
-                                SOP
-                            </span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <button
-                                v-if="searchQuery"
-                                @click="clearSearch"
-                                class="text-blue-400 hover:underline font-semibold"
-                            >
-                                Reset Filter
-                            </button>
-                            <button
-                                @click="toggleAllAccordions"
-                                class="px-3 py-1 rounded-md bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 transition text-[11px] font-mono font-semibold flex items-center gap-1.5"
-                            >
-                                <svg
-                                    class="w-3.5 h-3.5 text-blue-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
+                    <Card>
+                        <CardContent class="px-4 py-3 flex items-center justify-between gap-3 text-xs font-mono">
+                            <div class="flex items-center gap-2 text-foreground">
+                                <Filter class="size-4 text-primary shrink-0" />
+                                <span v-if="searchQuery">
+                                    Hasil pencarian:
+                                    <strong class="text-primary">{{ searchQuery }}</strong>
+                                    ({{ filteredFaqs.length }} dokumen)
+                                </span>
+                                <span v-else class="text-muted-foreground">
+                                    Menampilkan {{ filteredFaqs.length }} dokumen SOP
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <Button
+                                    v-if="searchQuery"
+                                    size="sm"
+                                    variant="ghost"
+                                    class="text-primary text-xs"
+                                    @click="clearSearch"
                                 >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M19 13l-7 7-7-7m14-8l-7 7-7-7"
-                                    />
-                                </svg>
-                                <span>{{
-                                    isAllOpen ? "TUTUP SEMUA" : "BUKA SEMUA"
-                                }}</span>
-                            </button>
-                        </div>
-                    </div>
+                                    Reset Filter
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    class="font-mono text-xs"
+                                    @click="toggleAllAccordions"
+                                >
+                                    <ChevronsUpDown class="size-3.5 mr-1.5 text-primary" />
+                                    <span>{{ isAllOpen ? "TUTUP SEMUA" : "BUKA SEMUA" }}</span>
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     <!-- Empty Search State -->
-                    <div
-                        v-if="filteredFaqs.length === 0"
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-10 text-center space-y-4"
-                    >
-                        <div
-                            class="w-12 h-12 rounded-md bg-slate-950 border border-slate-800 flex items-center justify-center mx-auto text-blue-400"
-                        >
-                            <svg
-                                class="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                    <Card v-if="filteredFaqs.length === 0">
+                        <CardContent class="p-6">
+                            <EmptyState
+                                :icon="Search"
+                                title="TIDAK DITEMUKAN SOP YANG COCOK"
+                                description="Kami tidak menemukan dokumen SOP dengan kata kunci tersebut. Coba kata kunci lain atau reset filter."
                             >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                />
-                            </svg>
-                        </div>
-                        <div class="space-y-1">
-                            <h3
-                                class="font-tactical text-lg font-bold uppercase text-slate-100 tracking-wider"
-                            >
-                                TIDAK DITEMUKAN SOP YANG COCOK
-                            </h3>
-                            <p class="text-xs text-slate-400 max-w-sm mx-auto">
-                                Kami tidak menemukan dokumen SOP dengan kata
-                                kunci tersebut. Coba kata kunci lain atau reset
-                                filter.
-                            </p>
-                        </div>
-                        <button
-                            @click="
-                                clearSearch();
-                                activeCategory = 'ALL';
-                            "
-                            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-mono font-bold uppercase transition"
-                        >
-                            RESET FILTER PENCARIAN
-                        </button>
-                    </div>
+                                <Button
+                                    size="sm"
+                                    class="font-mono font-bold uppercase"
+                                    @click="
+                                        clearSearch();
+                                        activeCategory = 'ALL';
+                                    "
+                                >
+                                    RESET FILTER PENCARIAN
+                                </Button>
+                            </EmptyState>
+                        </CardContent>
+                    </Card>
 
                     <!-- FAQ Accordion List -->
-                    <div class="space-y-3">
-                        <div
+                    <Accordion
+                        v-else
+                        v-model="openFaqIds"
+                        type="multiple"
+                        class="space-y-3"
+                    >
+                        <AccordionItem
                             v-for="faq in filteredFaqs"
-                            :key="faq.id"
                             :id="faq.code"
-                            class="bg-slate-900 border rounded-xl transition overflow-hidden"
-                            :class="
-                                isFaqOpen(faq.id)
-                                    ? 'border-slate-700'
-                                    : 'border-slate-800 hover:border-slate-700'
-                            "
+                            :key="faq.id"
+                            :value="String(faq.id)"
+                            class="bg-card border border-border rounded-xl px-5 overflow-hidden"
                         >
-                            <!-- Accordion Header Button -->
-                            <button
-                                @click="toggleFaq(faq.id)"
-                                class="w-full px-5 py-4 flex items-start justify-between text-left gap-4 hover:bg-slate-800/40 transition group"
-                            >
-                                <div class="space-y-2 min-w-0">
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            class="px-2 py-0.5 text-[11px] font-mono font-semibold rounded-md bg-slate-950 text-slate-300 border border-slate-800 uppercase"
-                                        >
+                            <AccordionTrigger class="hover:no-underline py-4">
+                                <div class="space-y-2 min-w-0 text-left pr-2">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <Badge variant="secondary" class="font-mono uppercase text-xs">
                                             {{ faq.code }}
-                                        </span>
-                                        <span
-                                            class="text-xs font-mono text-slate-500"
-                                        >
+                                        </Badge>
+                                        <span class="text-xs font-mono text-muted-foreground">
                                             {{ faq.categoryLabel }}
                                         </span>
                                     </div>
                                     <h2
-                                        class="font-tactical text-base sm:text-[18px] font-bold uppercase text-slate-100 tracking-wide group-hover:text-blue-300 transition leading-snug"
+                                        class="font-display text-base sm:text-lg font-bold uppercase text-foreground tracking-wide leading-snug"
                                         v-html="highlightKeyword(faq.question)"
                                     ></h2>
                                 </div>
+                            </AccordionTrigger>
 
-                                <!-- Chevron Icon -->
+                            <AccordionContent class="pt-3 border-t border-border text-muted-foreground text-sm leading-relaxed space-y-4">
                                 <div
-                                    class="w-7 h-7 rounded-md bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 shrink-0 transition duration-200 mt-1"
-                                >
-                                    <svg
-                                        class="w-4 h-4 transform transition-transform duration-200"
-                                        :class="
-                                            isFaqOpen(faq.id)
-                                                ? 'rotate-180 text-blue-400'
-                                                : ''
-                                        "
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M19 9l-7 7-7-7"
-                                        />
-                                    </svg>
-                                </div>
-                            </button>
-
-                            <!-- Accordion Body Answer -->
-                            <div
-                                v-show="isFaqOpen(faq.id)"
-                                class="px-5 pb-5 pt-2 border-t border-slate-800 bg-slate-950/60 text-slate-300 font-sans text-sm leading-relaxed space-y-4"
-                            >
-                                <div
-                                    class="prose prose-invert max-w-2xl text-slate-300 text-sm leading-relaxed"
+                                    class="prose prose-invert max-w-prose text-foreground/90 text-sm leading-relaxed"
                                     v-html="highlightKeyword(faq.answer)"
                                 ></div>
 
                                 <!-- Shareable Direct Link & Action Footer -->
-                                <div
-                                    class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400"
-                                >
-                                    <span
-                                        class="text-slate-500 flex items-center gap-1.5"
-                                    >
-                                        <svg
-                                            class="w-3.5 h-3.5 text-blue-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
+                                <div class="pt-3 border-t border-border flex items-center justify-between text-xs font-mono text-muted-foreground">
+                                    <span class="flex items-center gap-1.5">
+                                        <CheckCircle2 class="size-3.5 text-primary" />
                                         IME Police Dispatch Document
                                     </span>
-                                    <button
-                                        @click.stop="copyDirectLink(faq)"
-                                        class="text-slate-400 hover:text-blue-400 transition flex items-center gap-1.5"
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        class="h-7 px-2 text-xs font-mono"
                                         title="Copy Direct Link URL"
+                                        @click.stop="copyDirectLink(faq)"
                                     >
-                                        <svg
-                                            class="w-3.5 h-3.5 text-blue-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                                            />
-                                        </svg>
-                                        <span>{{
-                                            copiedFaqCode === faq.code
-                                                ? "TAUTAN TERSALIN! ✓"
-                                                : "BAGIKAN TAUTAN SOP"
-                                        }}</span>
-                                    </button>
+                                        <Link2 class="size-3.5 mr-1.5 text-primary" />
+                                        <span>
+                                            {{
+                                                copiedFaqCode === faq.code
+                                                    ? "TAUTAN TERSALIN! ✓"
+                                                    : "BAGIKAN TAUTAN SOP"
+                                            }}
+                                        </span>
+                                    </Button>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
                 </section>
 
                 <!-- Right Column: Sticky Navigation Sidebar -->
                 <aside class="lg:col-span-4 space-y-5 lg:sticky lg:top-20">
                     <!-- Category Navigation Pills Card -->
-                    <div
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3"
-                    >
-                        <div
-                            class="flex items-center justify-between pb-3 border-b border-slate-800"
-                        >
-                            <span
-                                class="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2"
-                            >
-                                <svg
-                                    class="w-4 h-4 text-blue-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                                    />
-                                </svg>
-                                KATEGORI PROSEDUR
-                            </span>
-                            <span
-                                class="text-[11px] px-2.5 py-0.5 rounded-md bg-slate-950 text-blue-400 font-mono border border-slate-800 font-semibold"
-                            >
-                                {{
-                                    activeCategory === "ALL"
-                                        ? "Semua Topik"
-                                        : categories.find(
-                                              (c) => c.id === activeCategory,
-                                          )?.name
-                                }}
-                            </span>
-                        </div>
-
-                        <nav class="space-y-1.5">
-                            <button
-                                v-for="cat in categories"
-                                :key="cat.id"
-                                @click="activeCategory = cat.id"
-                                :class="[
-                                    'w-full px-3.5 py-2.5 rounded-md text-xs font-sans font-medium transition flex items-center justify-between text-left border',
-                                    activeCategory === cat.id
-                                        ? 'bg-blue-600 text-white font-semibold border-blue-600'
-                                        : 'bg-slate-950 text-slate-400 hover:text-slate-100 hover:bg-slate-800 border-slate-800',
-                                ]"
-                            >
-                                <div class="flex items-center gap-2.5 min-w-0">
-                                    <svg
-                                        v-if="cat.icon === 'grid'"
-                                        class="w-4 h-4 shrink-0"
-                                        :class="
-                                            activeCategory === cat.id
-                                                ? 'text-white'
-                                                : 'text-blue-400'
-                                        "
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                                        />
-                                    </svg>
-                                    <svg
-                                        v-else-if="cat.icon === 'video'"
-                                        class="w-4 h-4 shrink-0"
-                                        :class="
-                                            activeCategory === cat.id
-                                                ? 'text-white'
-                                                : 'text-blue-400'
-                                        "
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                                        />
-                                    </svg>
-                                    <svg
-                                        v-else-if="cat.icon === 'cut'"
-                                        class="w-4 h-4 shrink-0"
-                                        :class="
-                                            activeCategory === cat.id
-                                                ? 'text-white'
-                                                : 'text-blue-400'
-                                        "
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 0L4 4m5.121 5.121L4 14"
-                                        />
-                                    </svg>
-                                    <svg
-                                        v-else-if="cat.icon === 'radio'"
-                                        class="w-4 h-4 shrink-0"
-                                        :class="
-                                            activeCategory === cat.id
-                                                ? 'text-white'
-                                                : 'text-blue-400'
-                                        "
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M13 10V3L4 14h7v7l9-11h-7z"
-                                        />
-                                    </svg>
-                                    <svg
-                                        v-else-if="cat.icon === 'user'"
-                                        class="w-4 h-4 shrink-0"
-                                        :class="
-                                            activeCategory === cat.id
-                                                ? 'text-white'
-                                                : 'text-blue-400'
-                                        "
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                        />
-                                    </svg>
-                                    <svg
-                                        v-else-if="cat.icon === 'wrench'"
-                                        class="w-4 h-4 shrink-0"
-                                        :class="
-                                            activeCategory === cat.id
-                                                ? 'text-white'
-                                                : 'text-blue-400'
-                                        "
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                                        />
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                        />
-                                    </svg>
-                                    <span class="truncate">{{ cat.name }}</span>
-                                </div>
-                                <span
-                                    class="px-2 py-0.5 text-[10px] font-mono rounded-md shrink-0"
-                                    :class="
-                                        activeCategory === cat.id
-                                            ? 'bg-blue-700 text-white'
-                                            : 'bg-slate-900 text-slate-500'
-                                    "
-                                >
-                                    {{
-                                        cat.id === "ALL"
-                                            ? faqs.length
-                                            : faqs.filter(
-                                                  (f) => f.category === cat.id,
-                                              ).length
-                                    }}
+                    <Card>
+                        <CardContent class="p-4 space-y-3">
+                            <div class="flex items-center justify-between pb-3 border-b border-border">
+                                <span class="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                                    <ListFilter class="size-4 text-primary" />
+                                    KATEGORI PROSEDUR
                                 </span>
-                            </button>
-                        </nav>
-                    </div>
+                                <Badge variant="outline" class="font-mono text-primary border-primary/30 bg-primary/10 text-xs">
+                                    {{
+                                        activeCategory === "ALL"
+                                            ? "Semua Topik"
+                                            : categories.find((c) => c.id === activeCategory)?.name
+                                    }}
+                                </Badge>
+                            </div>
+
+                            <nav class="space-y-1.5">
+                                <button
+                                    v-for="cat in categories"
+                                    :key="cat.id"
+                                    type="button"
+                                    :class="
+                                        cn(
+                                            'w-full px-3.5 py-2.5 rounded-md text-xs font-medium transition flex items-center justify-between text-left border',
+                                            activeCategory === cat.id
+                                                ? 'bg-primary text-primary-foreground font-semibold border-primary'
+                                                : 'bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted border-border',
+                                        )
+                                    "
+                                    @click="activeCategory = cat.id"
+                                >
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <component
+                                            :is="cat.icon"
+                                            :class="
+                                                cn(
+                                                    'size-4 shrink-0',
+                                                    activeCategory === cat.id
+                                                        ? 'text-primary-foreground'
+                                                        : 'text-primary',
+                                                )
+                                            "
+                                        />
+                                        <span class="truncate">{{ cat.name }}</span>
+                                    </div>
+                                    <Badge
+                                        variant="secondary"
+                                        class="font-mono text-xs shrink-0"
+                                    >
+                                        {{
+                                            cat.id === "ALL"
+                                                ? faqs.length
+                                                : faqs.filter((f) => f.category === cat.id).length
+                                        }}
+                                    </Badge>
+                                </button>
+                            </nav>
+                        </CardContent>
+                    </Card>
 
                     <!-- Dispatch Support CTA Box -->
-                    <div
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3.5"
-                    >
-                        <div class="flex items-start gap-3">
-                            <div
-                                class="p-2 rounded-md bg-slate-950 text-blue-400 border border-slate-800 shrink-0"
-                            >
-                                <svg
-                                    class="w-5 h-5 text-blue-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-                                    />
-                                </svg>
+                    <Card>
+                        <CardContent class="p-5 space-y-3.5">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 rounded-md bg-muted text-primary border border-border shrink-0">
+                                    <LifeBuoy class="size-5 text-primary" />
+                                </div>
+                                <div class="space-y-1">
+                                    <h3 class="font-display font-bold text-sm uppercase text-foreground tracking-wider">
+                                        BUTUH BANTUAN DISPATCHER?
+                                    </h3>
+                                    <p class="text-xs text-muted-foreground leading-relaxed">
+                                        Ajukan pendaftaran streamer perwira baru atau laporkan kendala operasional ke komando.
+                                    </p>
+                                </div>
                             </div>
-                            <div class="space-y-1">
-                                <h3
-                                    class="font-tactical font-bold text-sm uppercase text-slate-100 tracking-wider"
-                                >
-                                    BUTUH BANTUAN DISPATCHER?
-                                </h3>
-                                <p
-                                    class="text-xs text-slate-400 leading-relaxed"
-                                >
-                                    Ajukan pendaftaran streamer perwira baru
-                                    atau laporkan kendala operasional ke
-                                    komando.
-                                </p>
-                            </div>
-                        </div>
-                        <Link
-                            href="/feedback"
-                            class="w-full py-2.5 px-4 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold uppercase tracking-wider transition flex items-center justify-center gap-2"
-                        >
-                            <span>LAPOR DISPATCH / FEEDBACK</span>
-                            <img
-                                :src="iconSend"
-                                class="w-3.5 h-3.5 invert opacity-80"
-                                alt="Send"
-                            />
-                        </Link>
-                    </div>
+                            <Button as-child class="w-full font-mono font-bold uppercase tracking-wider text-xs">
+                                <Link href="/feedback">
+                                    <span>LAPOR DISPATCH / FEEDBACK</span>
+                                    <Send class="size-3.5 ml-2" />
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
                 </aside>
             </div>
 
             <!-- Bottom Operational Support Card (#hubungi-kami) -->
-            <section id="hubungi-kami" class="pt-8 border-t border-slate-800">
-                <div
-                    class="rounded-xl bg-slate-900 border border-slate-800 p-6 sm:p-10 space-y-6 text-center max-w-4xl mx-auto"
-                >
-                    <div
-                        class="w-12 h-12 rounded-md bg-slate-950 text-blue-400 border border-slate-800 flex items-center justify-center mx-auto"
-                    >
-                        <svg
-                            class="w-6 h-6 text-blue-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"
-                            />
-                        </svg>
-                    </div>
+            <section id="hubungi-kami" class="pt-8 border-t border-border">
+                <Card class="max-w-4xl mx-auto">
+                    <CardContent class="p-6 sm:p-10 space-y-6 text-center">
+                        <div class="size-12 rounded-md bg-muted text-primary border border-border flex items-center justify-center mx-auto">
+                            <Mic class="size-6 text-primary" />
+                        </div>
 
-                    <div class="space-y-2">
-                        <h2
-                            class="text-xl sm:text-2xl font-tactical font-bold text-slate-100 uppercase tracking-wider"
-                        >
-                            BELUM MENEMUKAN SOLUSI OPERASIONAL YANG ANDA
-                            BUTUHKAN?
-                        </h2>
-                        <p
-                            class="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed font-sans"
-                        >
-                            Tim Komando Dispatch dan Admin Sistem siap membantu
-                            perwira 24/7 dalam penanganan alokasi frekuensi,
-                            verifikasi channel live, atau troubleshooting
-                            bodycam.
-                        </p>
-                    </div>
+                        <div class="space-y-2">
+                            <h2 class="text-xl sm:text-2xl font-display font-bold text-foreground uppercase tracking-wider">
+                                BELUM MENEMUKAN SOLUSI OPERASIONAL YANG ANDA BUTUHKAN?
+                            </h2>
+                            <p class="text-xs sm:text-sm text-muted-foreground max-w-prose mx-auto leading-relaxed">
+                                Tim Komando Dispatch dan Admin Sistem siap membantu perwira 24/7 dalam penanganan alokasi frekuensi, verifikasi channel live, atau troubleshooting bodycam.
+                            </p>
+                        </div>
 
-                    <div
-                        class="flex flex-wrap items-center justify-center gap-3"
-                    >
-                        <Link
-                            href="/feedback"
-                            class="px-6 py-3 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold uppercase tracking-wider transition flex items-center gap-2"
-                        >
-                            <span>KIRIM LAPORAN / TIKET DISPATCH</span>
-                            <img
-                                :src="iconSend"
-                                class="w-3.5 h-3.5 invert opacity-80"
-                                alt="Send"
-                            />
-                        </Link>
-                        <button
-                            @click="
-                                clearSearch();
-                                activeCategory = 'ALL';
-                            "
-                            class="px-6 py-3 rounded-md bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-mono font-semibold uppercase transition"
-                        >
-                            LIHAT SEMUA DOKUMEN SOP
-                        </button>
-                    </div>
+                        <div class="flex flex-wrap items-center justify-center gap-3">
+                            <Button as-child class="font-mono font-bold uppercase tracking-wider text-xs">
+                                <Link href="/feedback">
+                                    <span>KIRIM LAPORAN / TIKET DISPATCH</span>
+                                    <Send class="size-3.5 ml-2" />
+                                </Link>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                class="font-mono font-semibold uppercase text-xs"
+                                @click="
+                                    clearSearch();
+                                    activeCategory = 'ALL';
+                                "
+                            >
+                                LIHAT SEMUA DOKUMEN SOP
+                            </Button>
+                        </div>
 
-                    <div
-                        class="pt-5 border-t border-slate-800 flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-slate-400"
-                    >
-                        <span class="flex items-center gap-2">
-                            <svg
-                                class="w-4 h-4 text-blue-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M5 13l4 4L19 7"
-                                />
-                            </svg>
-                            Dukungan Laporan Best Effort
-                        </span>
-                        <span class="flex items-center gap-2">
-                            <svg
-                                class="w-4 h-4 text-blue-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                                />
-                            </svg>
-                            Project Komunitas Independent
-                        </span>
-                        <span class="flex items-center gap-2">
-                            <svg
-                                class="w-4 h-4 text-blue-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                            </svg>
-                            Sinkronisasi Live Otomatis
-                        </span>
-                    </div>
-                </div>
+                        <div class="pt-5 border-t border-border flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-muted-foreground">
+                            <span class="flex items-center gap-2">
+                                <Check class="size-4 text-primary" />
+                                Dukungan Laporan Best Effort
+                            </span>
+                            <span class="flex items-center gap-2">
+                                <ShieldCheck class="size-4 text-primary" />
+                                Project Komunitas Independent
+                            </span>
+                            <span class="flex items-center gap-2">
+                                <Clock class="size-4 text-primary" />
+                                Sinkronisasi Live Otomatis
+                            </span>
+                        </div>
+                    </CardContent>
+                </Card>
             </section>
-        </main>
+        </PageContainer>
     </TacticalLayout>
 </template>
