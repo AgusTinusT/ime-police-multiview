@@ -141,6 +141,7 @@
     "dashboard": "Beranda",
     "multiview": "Multiview",
     "directory": "Direktori Perwira",
+    "ranking": "Ranking",
     "clips": "TacClips",
     "updates": "Pembaruan",
     "about": "Tentang",
@@ -220,6 +221,41 @@
     "members_offline": "{count} anggota squad sedang offline.",
     "no_live_members": "Semua anggota squad sedang offline.",
     "not_found": "Squad tidak ditemukan atau bersifat privat."
+  },
+  "ranking": {
+    "title": "Ranking Perwira",
+    "subtitle": "Papan peringkat pencapaian operasional, jam patroli, dan dukungan komunitas untuk perwira San Andreas.",
+    "period": "Periode: {period}",
+    "reset_cycle": "Siklus Reset: {days} Hari Lagi",
+    "tabs": {
+      "duty_month": "Bulan Ini",
+      "duty_last_month": "Bulan Lalu",
+      "subscribers": "Subscriber Terbanyak",
+      "road_to_1k": "Road to 1K",
+      "recently_on_duty": "Baru Selesai Tugas"
+    },
+    "columns": {
+      "rank": "#",
+      "officer": "Perwira",
+      "department": "Departemen",
+      "hours": "Total Jam",
+      "subscribers": "Subscribers",
+      "progress": "Target 1K",
+      "last_duty": "Terakhir Tugas",
+      "channel": "Kanal"
+    },
+    "empty": {
+      "duty_month": "Belum ada jam patroli bulan ini.",
+      "duty_last_month": "Belum ada jam patroli bulan lalu.",
+      "subscribers": "Belum ada data subscriber perwira.",
+      "road_to_1k": "Tidak ada perwira dalam kategori Road to 1K.",
+      "recently_on_duty": "Belum ada data aktivitas tugas terbaru."
+    },
+    "podium": {
+      "rank_1": "Peringkat #1",
+      "rank_2": "Peringkat #2",
+      "rank_3": "Peringkat #3"
+    }
   }
 }
 

@@ -214,6 +214,21 @@ onUnmounted(() => {
                     >
                         <span>{{ $t("nav.directory") }}</span>
                     </Link>
+
+                    <Link
+                        href="/ranking"
+                        :class="
+                            cn(
+                                'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
+                                isUrlActive('/ranking')
+                                    ? 'text-primary-foreground bg-primary font-bold'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                            )
+                        "
+                        title="Ranking Perwira Kepolisian"
+                    >
+                        <span>{{ $t("nav.ranking") }}</span>
+                    </Link>
                 </nav>
             </div>
 

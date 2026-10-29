@@ -19,6 +19,7 @@ import {
     LayoutGrid,
     MessageSquare,
     Scissors,
+    Trophy,
     Users,
     Video,
 } from "@lucide/vue";
@@ -290,6 +291,25 @@ onUnmounted(() => {
                             <div class="flex items-center gap-3">
                                 <Users class="size-4 text-primary" />
                                 <span>Direktori Perwira (Officers)</span>
+                            </div>
+                            <ChevronRight class="size-4 text-muted-foreground" />
+                        </Link>
+
+                        <Link
+                            href="/ranking"
+                            @click="closeBottomSheet"
+                            :class="
+                                cn(
+                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                    isUrlActive('/ranking')
+                                        ? 'bg-primary/15 text-primary border border-primary/30'
+                                        : 'bg-background/60 text-foreground hover:bg-accent',
+                                )
+                            "
+                        >
+                            <div class="flex items-center gap-3">
+                                <Trophy class="size-4 text-primary" />
+                                <span>Ranking Perwira</span>
                             </div>
                             <ChevronRight class="size-4 text-muted-foreground" />
                         </Link>

@@ -15,6 +15,7 @@ Route::get('/multiview', [PoliceCommandController::class, 'multiview'])->name('m
 
 // Dedicated Standalone Pages
 Route::get('/officers', [PoliceCommandController::class, 'officers'])->name('officers.index');
+Route::get('/ranking', [PoliceCommandController::class, 'rankingPage'])->name('ranking');
 Route::get('/action-clips', [PoliceCommandController::class, 'clipsPage'])->name('clips');
 Route::get('/clips', function () {
     return redirect()->route('clips');

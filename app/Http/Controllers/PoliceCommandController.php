@@ -861,13 +861,13 @@ class PoliceCommandController extends Controller
      * Generate monthly leaderboard metrics for officers based on DB data & live status.
      * Falls back to previous month if no officers have hours recorded in the current month.
      */
-    public function getMonthlyLeaderboard(): array
+    public function getMonthlyLeaderboard(?int $limit = 6): array
     {
         $now = now();
         $liveStreams = ActiveStream::where('status', 'LIVE')->get()->keyBy('channel_id');
-        $officers = Officer::where('is_active', true)->get();
+        $officers = Officer::with(['rankRelation', 'activeStream'])->where('is_active', true)->get();
 
-        $buildForMonth = function (\Carbon\CarbonInterface $date, bool $isCurrent) use ($officers, $liveStreams) {
+        $buildForMonth = function (\Carbon\CarbonInterface $date, bool $isCurrent) use ($officers, $liveStreams, $limit) {
             $daysInMonth = $date->daysInMonth;
             $daysLeft = max(1, $daysInMonth - $date->day);
             $monthName = strtoupper($date->locale('id')->translatedFormat('F Y'));
@@ -886,8 +886,8 @@ class PoliceCommandController extends Controller
             }
 
             $mapped = $officers->map(function ($officer) use ($liveStreams, $date, $isCurrent) {
-                $isLive = $isCurrent && $liveStreams->has($officer->channel_id);
-                $liveStream = $isLive ? $liveStreams->get($officer->channel_id) : null;
+                $isLive = $isCurrent && ($officer->activeStream !== null || $liveStreams->has($officer->channel_id));
+                $liveStream = $isLive ? ($officer->activeStream ?? $liveStreams->get($officer->channel_id)) : null;
 
                 $totalMinutesRaw = 0;
                 if ($isCurrent) {
@@ -909,25 +909,20 @@ class PoliceCommandController extends Controller
                 $avgDaily = round($totalHoursDecimal / $divisor, 1);
                 $avgShiftStr = "{$avgDaily}j / hari";
 
-                $handle = trim($officer->handle ?? '');
-                if (!empty($handle)) {
-                    $cleanHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
-                    $youtubeUrl = "https://www.youtube.com/{$cleanHandle}";
-                } elseif (!empty($officer->channel_id) && !str_starts_with($officer->channel_id, 'UC_')) {
-                    $youtubeUrl = "https://www.youtube.com/channel/{$officer->channel_id}";
-                } else {
-                    $youtubeUrl = "https://youtube.com";
-                }
+                $youtubeUrl = $this->buildOfficerYoutubeUrl($officer);
 
                 return [
                     'id' => $officer->id,
                     'officer_name' => $officer->officer_name,
                     'streamer_name' => $officer->streamer_name,
                     'callsign' => $officer->department ? "{$officer->department} • {$officer->callsign}" : $officer->callsign,
+                    'raw_callsign' => $officer->callsign,
                     'department' => $officer->department,
+                    'officer_rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
                     'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
                     'total_hours' => $totalHoursStr,
                     'total_hours_num' => $totalHoursDecimal,
+                    'total_minutes' => $totalMinutesRaw,
                     'avg_shift' => $avgShiftStr,
                     'is_live' => $isLive,
                     'live_viewers' => $liveStream ? ($liveStream->viewers_count ?? 0) : 0,
@@ -938,7 +933,12 @@ class PoliceCommandController extends Controller
             $hasHours = $mapped->contains(fn($item) => $item['total_hours_num'] > 0);
             $topHours = $mapped->first()['total_hours_num'] ?? 184;
 
-            $leaderboard = $mapped->take(6)->map(function ($item, $index) use ($topHours) {
+            $query = $mapped;
+            if ($limit !== null) {
+                $query = $query->take($limit);
+            }
+
+            $leaderboard = $query->map(function ($item, $index) use ($topHours) {
                 $rank = $index + 1;
                 $percent = $topHours > 0 ? min(100, round(($item['total_hours_num'] / $topHours) * 100)) : 100;
 
@@ -990,6 +990,208 @@ class PoliceCommandController extends Controller
         unset($currentData['has_hours']);
         $currentData['is_previous_period'] = false;
         return $currentData;
+    }
+
+    /**
+     * Dedicated Page: Officer Performance & Community Rankings (/ranking).
+     */
+    public function rankingPage(Request $request)
+    {
+        $now = now();
+        $previousMonth = $now->copy()->subMonth();
+
+        // 1. duty_month: from getMonthlyLeaderboard(50) (including UX-06 fallback), only minutes > 0
+        $monthlyLeaderboard = $this->getMonthlyLeaderboard(50);
+        $dutyMonth = collect($monthlyLeaderboard['all_top'] ?? [])
+            ->filter(fn($item) => ($item['total_minutes'] ?? $item['total_hours_num']) > 0)
+            ->map(function ($item) {
+                return [
+                    'id' => $item['id'],
+                    'officer_name' => $item['officer_name'],
+                    'callsign' => $item['raw_callsign'] ?? $item['callsign'],
+                    'department' => $item['department'],
+                    'rank' => $item['officer_rank'] ?? '',
+                    'avatar_url' => $item['avatar_url'],
+                    'is_live' => (bool) ($item['is_live'] ?? false),
+                    'youtube_url' => $item['youtube_url'],
+                    'value' => (int) ($item['total_minutes'] ?? round(($item['total_hours_num'] ?? 0) * 60)),
+                    'value_label' => $item['total_hours'],
+                    'avg_shift' => $item['avg_shift'] ?? null,
+                    'percent' => $item['percent'] ?? 100,
+                    'badge' => $item['badge'] ?? 'RUNNER_UP',
+                ];
+            })
+            ->values()
+            ->all();
+
+        // 2. duty_last_month: previous_monthly_duty_minutes desc (> 0 only, max 50)
+        $lastMonthDays = $previousMonth->daysInMonth;
+        $dutyLastMonthOfficers = Officer::with(['rankRelation', 'activeStream'])
+            ->where('is_active', true)
+            ->where('previous_monthly_duty_minutes', '>', 0)
+            ->orderByDesc('previous_monthly_duty_minutes')
+            ->take(50)
+            ->get();
+
+        $topLastMonthMinutes = (int) ($dutyLastMonthOfficers->first()?->previous_monthly_duty_minutes ?? 0);
+        $dutyLastMonth = $dutyLastMonthOfficers->map(function ($officer, $index) use ($topLastMonthMinutes, $lastMonthDays) {
+            $mins = (int) $officer->previous_monthly_duty_minutes;
+            $hoursPart = floor($mins / 60);
+            $minsPart = $mins % 60;
+            $totalHoursStr = "{$hoursPart} Jam {$minsPart}m";
+
+            $totalHoursDecimal = round($mins / 60, 1);
+            $avgDaily = round($totalHoursDecimal / $lastMonthDays, 1);
+            $avgShiftStr = "{$avgDaily}j / hari";
+
+            $rank = $index + 1;
+            $percent = $topLastMonthMinutes > 0 ? min(100, round(($mins / $topLastMonthMinutes) * 100)) : 100;
+            $badge = match ($rank) {
+                1 => 'EMAS',
+                2 => 'SILVER',
+                3 => 'BRONZE',
+                default => 'RUNNER_UP',
+            };
+
+            return [
+                'id' => $officer->id,
+                'officer_name' => $officer->officer_name,
+                'callsign' => $officer->callsign,
+                'department' => $officer->department,
+                'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
+                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
+                'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
+                'value' => $mins,
+                'value_label' => $totalHoursStr,
+                'avg_shift' => $avgShiftStr,
+                'percent' => $percent,
+                'badge' => $badge,
+            ];
+        })->values()->all();
+
+        // 3. subscribers: subscriber_count desc (max 50)
+        $subscriberOfficers = Officer::with(['rankRelation', 'activeStream'])
+            ->where('is_active', true)
+            ->orderByDesc('subscriber_count')
+            ->take(50)
+            ->get();
+
+        $subscribers = $subscriberOfficers->map(function ($officer) {
+            $count = (int) ($officer->subscriber_count ?? 0);
+            return [
+                'id' => $officer->id,
+                'officer_name' => $officer->officer_name,
+                'callsign' => $officer->callsign,
+                'department' => $officer->department,
+                'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
+                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
+                'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
+                'value' => $count,
+                'value_label' => $this->formatSubscriberCount($count),
+            ];
+        })->values()->all();
+
+        // 4. road_to_1k: subscriber_count < 1000, desc (closest to 1K first, max 50)
+        $roadTo1kOfficers = Officer::with(['rankRelation', 'activeStream'])
+            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('subscriber_count')
+                  ->orWhere('subscriber_count', '<', 1000);
+            })
+            ->orderByDesc('subscriber_count')
+            ->take(50)
+            ->get();
+
+        $roadTo1k = $roadTo1kOfficers->map(function ($officer) {
+            $count = (int) ($officer->subscriber_count ?? 0);
+            return [
+                'id' => $officer->id,
+                'officer_name' => $officer->officer_name,
+                'callsign' => $officer->callsign,
+                'department' => $officer->department,
+                'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
+                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
+                'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
+                'value' => $count,
+                'value_label' => number_format($count, 0, ',', '.') . '/1.000',
+            ];
+        })->values()->all();
+
+        // 5. recently_on_duty: last_duty_at desc (not null, max 50)
+        $recentlyOnDutyOfficers = Officer::with(['rankRelation', 'activeStream'])
+            ->where('is_active', true)
+            ->whereNotNull('last_duty_at')
+            ->orderByDesc('last_duty_at')
+            ->take(50)
+            ->get();
+
+        $recentlyOnDuty = $recentlyOnDutyOfficers->map(function ($officer) {
+            return [
+                'id' => $officer->id,
+                'officer_name' => $officer->officer_name,
+                'callsign' => $officer->callsign,
+                'department' => $officer->department,
+                'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
+                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
+                'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
+                'value' => $officer->last_duty_at->toIso8601String(),
+                'value_label' => $officer->last_duty_at->locale('id')->diffForHumans(),
+            ];
+        })->values()->all();
+
+        $currentPeriodText = strtoupper($now->locale('id')->translatedFormat('F Y'));
+        $previousPeriodText = strtoupper($previousMonth->locale('id')->translatedFormat('F Y'));
+
+        return Inertia::render('Ranking', [
+            'ranking' => [
+                'duty_month' => $dutyMonth,
+                'duty_last_month' => $dutyLastMonth,
+                'subscribers' => $subscribers,
+                'road_to_1k' => $roadTo1k,
+                'recently_on_duty' => $recentlyOnDuty,
+            ],
+            'period_text' => [
+                'current' => $currentPeriodText,
+                'previous' => $previousPeriodText,
+            ],
+            'currentPeriodText' => $currentPeriodText,
+            'previousPeriodText' => $previousPeriodText,
+        ]);
+    }
+
+    /**
+     * Build canonical YouTube URL for an officer.
+     */
+    protected function buildOfficerYoutubeUrl(Officer $officer): string
+    {
+        $handle = trim($officer->handle ?? '');
+        if (!empty($handle)) {
+            $cleanHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
+            return "https://www.youtube.com/{$cleanHandle}";
+        } elseif (!empty($officer->channel_id) && !str_starts_with($officer->channel_id, 'UC_')) {
+            return "https://www.youtube.com/channel/{$officer->channel_id}";
+        }
+        return "https://youtube.com";
+    }
+
+    /**
+     * Format subscriber count to Indonesian shorthand (e.g. 12,3 rb, 1,2 jt).
+     */
+    protected function formatSubscriberCount(int $count): string
+    {
+        if ($count >= 1_000_000) {
+            $val = $count / 1_000_000;
+            return str_replace('.', ',', (string) round($val, 1)) . ' jt';
+        }
+        if ($count >= 1_000) {
+            $val = $count / 1_000;
+            return str_replace('.', ',', (string) round($val, 1)) . ' rb';
+        }
+        return (string) $count;
     }
 
     /**

@@ -89,6 +89,7 @@
     "dashboard": "Dashboard",
     "multiview": "Multiview",
     "directory": "Officer Directory",
+    "ranking": "Ranking",
     "clips": "TacClips",
     "updates": "Updates",
     "about": "About",
@@ -156,6 +157,7 @@
     "dashboard": "Home",
     "multiview": "Multiview",
     "directory": "Officer Directory",
+    "ranking": "Ranking",
     "clips": "TacClips",
     "updates": "Updates",
     "about": "About",
@@ -235,5 +237,40 @@
     "members_offline": "{count} squad members are currently offline.",
     "no_live_members": "All squad members are currently offline.",
     "not_found": "Squad not found or private."
+  },
+  "ranking": {
+    "title": "Officer Rankings",
+    "subtitle": "Leaderboards for operational achievements, patrol duty hours, and community support for San Andreas officers.",
+    "period": "Period: {period}",
+    "reset_cycle": "Reset Cycle: {days} Days Left",
+    "tabs": {
+      "duty_month": "This Month",
+      "duty_last_month": "Last Month",
+      "subscribers": "Top Subscribers",
+      "road_to_1k": "Road to 1K",
+      "recently_on_duty": "Recently On Duty"
+    },
+    "columns": {
+      "rank": "#",
+      "officer": "Officer",
+      "department": "Department",
+      "hours": "Total Hours",
+      "subscribers": "Subscribers",
+      "progress": "Target 1K",
+      "last_duty": "Last Duty",
+      "channel": "Channel"
+    },
+    "empty": {
+      "duty_month": "No patrol duty hours recorded for this month yet.",
+      "duty_last_month": "No patrol duty hours recorded for last month.",
+      "subscribers": "No officer subscriber data available.",
+      "road_to_1k": "No officers in the Road to 1K category.",
+      "recently_on_duty": "No recent duty activity recorded."
+    },
+    "podium": {
+      "rank_1": "Rank #1",
+      "rank_2": "Rank #2",
+      "rank_3": "Rank #3"
+    }
   }
 }
