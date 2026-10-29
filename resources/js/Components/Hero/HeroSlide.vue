@@ -7,7 +7,6 @@ import {
     DeptBadge,
     LiveBadge,
     OfficerAvatar,
-    PageContainer,
 } from "@/Components/tactical";
 import { ExternalLink, MonitorPlay } from "@lucide/vue";
 
@@ -81,9 +80,9 @@ const isHashUrl = (url) => typeof url === "string" && url.startsWith("#");
             class="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-background via-background/30 to-transparent"
         />
 
-        <!-- Slide Content (Contained inside PageContainer to align with grid) -->
+        <!-- Slide content: same left gutter as the catalog rows below. -->
         <!-- Text sits in the lower-left like a billboard, leaving the image to carry the frame. -->
-        <PageContainer class="relative z-20 flex h-full flex-col justify-end pb-16 pt-24 sm:pb-20 lg:pb-24">
+        <div class="relative z-20 flex h-full flex-col justify-end px-3 pb-16 pt-24 sm:px-6 sm:pb-20 lg:px-12 lg:pb-24">
             <div class="hero-copy max-w-xl space-y-4">
                     <!-- Top Badges / Live Spotlight Header -->
                     <div v-if="isLiveSpotlight" class="flex flex-wrap items-center gap-3">
@@ -196,7 +195,7 @@ const isHashUrl = (url) => typeof url === "string" && url.startsWith("#");
                         </Button>
                     </div>
                 </div>
-            </PageContainer>
+            </div>
     </div>
 </template>
 
