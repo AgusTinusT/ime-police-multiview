@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Head } from "@inertiajs/vue3";
-import TacticalLayout from "@/Layouts/TacticalLayout.vue";
+import AdminLayout from "@/Layouts/AdminLayout.vue";
 import axios from "axios";
 import { toast as sonnerToast } from "vue-sonner";
 import OfficerClaimsTab from "@/Components/Admin/OfficerClaimsTab.vue";
@@ -32,11 +32,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/ui/select";
-import {
-    Tabs,
-    TabsList,
-    TabsTrigger,
-} from "@/Components/ui/tabs";
 import {
     Table,
     TableBody,
@@ -483,8 +478,46 @@ const fetchOfficers = async () => {
     }
 };
 
-// Tabs State
-const activeTab = ref("officers"); // 'officers', 'agencies', 'certifications', 'announcements', 'users'
+// Tabs State & URL sync (UX-07)
+const VALID_TABS = [
+    "officers",
+    "agencies",
+    "certifications",
+    "announcements",
+    "users",
+    "claims",
+    "moderation",
+    "requests",
+    "hero",
+];
+
+const getTabFromUrl = () => {
+    if (typeof window === "undefined") return "officers";
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
+    return VALID_TABS.includes(tab) ? tab : "officers";
+};
+
+const activeTab = ref(getTabFromUrl());
+
+const setActiveTab = (tab) => {
+    if (!VALID_TABS.includes(tab)) return;
+    if (activeTab.value === tab) return;
+    activeTab.value = tab;
+    if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        if (tab === "officers") {
+            url.searchParams.delete("tab");
+        } else {
+            url.searchParams.set("tab", tab);
+        }
+        window.history.pushState({ tab }, "", url.toString());
+    }
+};
+
+const handlePopState = () => {
+    activeTab.value = getTabFromUrl();
+};
 
 // Modal & Form State: Agencies, Ranks, Divisions CRUD
 const showAgencyModal = ref(false);
@@ -1481,17 +1514,22 @@ const handleDeleteUser = (id, name) => {
 };
 
 onMounted(() => {
+    window.addEventListener("popstate", handlePopState);
     fetchAgencies();
     fetchOfficers();
     fetchAnnouncements();
     fetchUsers();
+});
+
+onUnmounted(() => {
+    window.removeEventListener("popstate", handlePopState);
 });
 </script>
 
 <template>
     <Head title="Admin Command Hub - Tactical Police Multiview" />
 
-    <TacticalLayout activeTab="admin">
+    <AdminLayout :current-tab="activeTab" @update:current-tab="setActiveTab">
         <PageContainer class="space-y-6">
             <PageHeader
                 eyebrow="DISPATCHER PORTAL"
@@ -1533,58 +1571,6 @@ onMounted(() => {
                 </div>
             </TacticalFrame>
 
-            <!-- ADMIN TABS (Horizontal scrollable TabsList untuk 9 modul admin) -->
-            <Tabs v-model="activeTab" class="w-full">
-                <div class="overflow-x-auto pb-1">
-                    <TabsList class="inline-flex h-auto min-w-max justify-start gap-1 p-1">
-                        <TabsTrigger value="officers" class="gap-1.5 text-xs font-mono">
-                            <Shield class="size-3.5 shrink-0" />
-                            <span>Officers Roster</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="agencies" class="gap-1.5 text-xs font-mono">
-                            <Building2 class="size-3.5 shrink-0" />
-                            <span>Agencies & Ranks Structure</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="certifications" class="gap-1.5 text-xs font-mono">
-                            <Award class="size-3.5 shrink-0" />
-                            <span>Tactical Certifications</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="announcements" class="gap-1.5 text-xs font-mono">
-                            <Megaphone class="size-3.5 shrink-0" />
-                            <span>Promotions & Alerts</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="users" class="gap-1.5 text-xs font-mono">
-                            <Users class="size-3.5 shrink-0" />
-                            <span>Member Accounts</span>
-                            <Badge variant="secondary" class="ml-1 font-mono text-xs px-1.5 py-0">
-                                {{ usersList.length }}
-                            </Badge>
-                        </TabsTrigger>
-                        <TabsTrigger value="claims" class="gap-1.5 text-xs font-mono">
-                            <FileCheck class="size-3.5 shrink-0" />
-                            <span>Klaim Perwira</span>
-                            <Badge
-                                :variant="stats.pending_claims > 0 ? 'warning' : 'secondary'"
-                                class="ml-1 font-mono text-xs px-1.5 py-0"
-                            >
-                                {{ stats.pending_claims }}
-                            </Badge>
-                        </TabsTrigger>
-                        <TabsTrigger value="moderation" class="gap-1.5 text-xs font-mono">
-                            <Lock class="size-3.5 shrink-0" />
-                            <span>Moderasi Bio-Link</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="requests" class="gap-1.5 text-xs font-mono">
-                            <GitPullRequest class="size-3.5 shrink-0" />
-                            <span>Pengajuan Mutasi</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="hero" class="gap-1.5 text-xs font-mono">
-                            <Images class="size-3.5 shrink-0" />
-                            <span>Hero Slides</span>
-                        </TabsTrigger>
-                    </TabsList>
-                </div>
-            </Tabs>
 
             <!-- TAB 1: OFFICERS -->
             <div v-if="activeTab === 'officers'" class="space-y-6">
@@ -3133,5 +3119,5 @@ onMounted(() => {
             @success="fetchOfficers"
             @toast="showToast"
         />
-    </TacticalLayout>
+    </AdminLayout>
 </template>
