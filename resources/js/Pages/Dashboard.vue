@@ -1,7 +1,8 @@
 <script setup>
 import { Head, Link } from "@inertiajs/vue3";
 import { ChevronRight, MonitorPlay } from "@lucide/vue";
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
+import axios from "axios";
 
 // Refactored Sub-Components
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
@@ -15,6 +16,7 @@ import TacticalFooter from "@/Components/TacticalFooter.vue";
 import TacticalMonthlyLeaderboard from "@/Components/TacticalMonthlyLeaderboard.vue";
 import CatalogCard from "@/Components/CatalogCard.vue";
 import CatalogRow from "@/Components/CatalogRow.vue";
+import ClipCatalogCard from "@/Components/ClipCatalogCard.vue";
 import SupportCatalogCard from "@/Components/SupportCatalogCard.vue";
 import OfficerDetailModal from "@/Components/OfficerDetailModal.vue";
 import TacticalSubSupportGrid from "@/Components/TacticalSubSupportGrid.vue";
@@ -256,6 +258,25 @@ const triggerManualSync = async () => {
     }
 };
 
+const communityClips = ref([]);
+
+const fetchCommunityClips = async () => {
+    try {
+        const response = await axios.get("/api/v1/tac-clips");
+        if (response.data && Array.isArray(response.data.data)) {
+            communityClips.value = response.data.data.slice(0, 12);
+        } else if (Array.isArray(response.data)) {
+            communityClips.value = response.data.slice(0, 12);
+        }
+    } catch {
+        // Gagal -> baris disembunyikan tanpa toast
+        communityClips.value = [];
+    }
+};
+
+onMounted(() => {
+    fetchCommunityClips();
+});
 </script>
 
 <template>
@@ -319,6 +340,22 @@ const triggerManualSync = async () => {
                         :in-tray="inTray(s.video_id)"
                         @toggle-tray="toggleTray"
                         @detail="detail = $event"
+                    />
+                </CatalogRow>
+
+                <CatalogRow
+                    v-if="communityClips.length"
+                    title="Momen aksi komunitas"
+                >
+                    <template #action>
+                        <Button as-child variant="link" size="sm" class="ml-auto shrink-0">
+                            <Link href="/action-clips">Lihat semua <ChevronRight /></Link>
+                        </Button>
+                    </template>
+                    <ClipCatalogCard
+                        v-for="c in communityClips"
+                        :key="`clip-${c.id}`"
+                        :clip="c"
                     />
                 </CatalogRow>
 
