@@ -204,11 +204,12 @@ onMounted(() => {
 </script>
 
 <template>
-    <div
-        v-if="show"
-        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 font-sans"
-    >
-        <div class="w-full max-w-lg bg-slate-900 border border-cyan-500/30 rounded-2xl p-6 shadow-2xl text-left space-y-4 max-h-[90vh] overflow-y-auto">
+    <Teleport to="body">
+        <div
+            v-if="show"
+            class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto font-sans"
+        >
+            <div class="w-full max-w-lg my-auto bg-slate-900 border border-cyan-500/30 rounded-2xl p-6 shadow-2xl text-left space-y-4 max-h-[90vh] overflow-y-auto">
             <!-- Header -->
             <div class="flex items-center justify-between border-b border-white/10 pb-3">
                 <div class="flex items-center gap-2">
@@ -479,5 +480,6 @@ onMounted(() => {
                 Memuat data perwira...
             </div>
         </div>
-    </div>
+        </div>
+    </Teleport>
 </template>
