@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { Head } from "@inertiajs/vue3";
 import Autoplay from "embla-carousel-autoplay";
+import Fade from "embla-carousel-fade";
 import {
     Carousel,
     CarouselContent,
@@ -41,11 +42,12 @@ let mediaQuery = null;
 
 const hasMultiple = computed(() => (props.slides?.length || 0) > 1);
 
+// Slides cross-fade instead of sliding; autoplay is skipped for previews and reduced motion.
 const autoplayPlugin = computed(() => {
-    if (props.preview || !hasMultiple.value || prefersReducedMotion.value) {
-        return [];
-    }
+    if (!hasMultiple.value) return [];
+    if (props.preview || prefersReducedMotion.value) return [Fade()];
     return [
+        Fade(),
         Autoplay({
             delay: props.interval,
             stopOnInteraction: false,

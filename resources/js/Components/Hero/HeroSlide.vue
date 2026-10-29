@@ -82,8 +82,9 @@ const isHashUrl = (url) => typeof url === "string" && url.startsWith("#");
         />
 
         <!-- Slide Content (Contained inside PageContainer to align with grid) -->
-        <PageContainer class="relative z-20 flex h-full flex-col justify-center py-10 sm:py-16">
-            <div class="max-w-2xl space-y-4">
+        <!-- Text sits in the lower-left like a billboard, leaving the image to carry the frame. -->
+        <PageContainer class="relative z-20 flex h-full flex-col justify-end pb-16 pt-24 sm:pb-20 lg:pb-24">
+            <div class="hero-copy max-w-xl space-y-4">
                     <!-- Top Badges / Live Spotlight Header -->
                     <div v-if="isLiveSpotlight" class="flex flex-wrap items-center gap-3">
                         <OfficerAvatar
@@ -112,7 +113,7 @@ const isHashUrl = (url) => typeof url === "string" && url.startsWith("#");
 
                     <!-- Heading & Subtitle -->
                     <h2
-                        class="font-heading text-4xl font-bold tracking-tight text-foreground lg:text-6xl line-clamp-2"
+                        class="font-heading text-4xl font-bold tracking-tight text-foreground lg:text-5xl line-clamp-2"
                     >
                         {{ slide.title || "SASP COMMAND CENTER" }}
                     </h2>
@@ -199,3 +200,25 @@ const isHashUrl = (url) => typeof url === "string" && url.startsWith("#");
     </div>
 </template>
 
+
+<style scoped>
+/* Cross-fade: the outgoing slide's text leaves quickly, the incoming text settles in after the image. */
+.hero-copy {
+    transition:
+        opacity 0.5s ease 0.35s,
+        transform 0.5s ease 0.35s;
+}
+[inert] .hero-copy {
+    opacity: 0;
+    transform: translateY(8px);
+    transition-duration: 0.15s;
+    transition-delay: 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+    .hero-copy,
+    [inert] .hero-copy {
+        transform: none;
+        transition: opacity 0.2s ease;
+    }
+}
+</style>
