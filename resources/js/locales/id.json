@@ -155,6 +155,7 @@
     "active_incident_subtitle": "Satu kejadian, setiap sudut",
     "watch_povs": "Tonton {count} POV",
     "top_10_patrols": "Top 10 patroli bulan ini",
+    "top_10_patrols_last_month": "Top 10 patroli bulan lalu",
     "dept_patrol": "Patroli {dept}",
     "recent_replays": "Rekaman terbaru",
     "pov_selected": "{count} POV dipilih",

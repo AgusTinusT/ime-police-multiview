@@ -331,7 +331,11 @@ const triggerManualSync = async () => {
                     />
                 </CatalogRow>
 
-                <CatalogRow v-if="top10.length" :title="$t('catalog.top_10_patrols')" :subtitle="monthlyLeaderboard?.period_text || ''">
+                <CatalogRow
+                    v-if="top10.length"
+                    :title="monthlyLeaderboard?.is_previous_period ? $t('catalog.top_10_patrols_last_month') : $t('catalog.top_10_patrols')"
+                    :subtitle="monthlyLeaderboard?.period_text || ''"
+                >
                     <a
                         v-for="o in top10"
                         :key="`top-${o.id}`"

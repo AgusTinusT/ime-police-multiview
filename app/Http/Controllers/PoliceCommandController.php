@@ -856,97 +856,143 @@ class PoliceCommandController extends Controller
 
     /**
      * Generate monthly leaderboard metrics for officers based on DB data & live status.
+     * Falls back to previous month if no officers have hours recorded in the current month.
      */
     public function getMonthlyLeaderboard(): array
     {
         $now = now();
-        $daysInMonth = $now->daysInMonth;
-        $daysLeft = max(1, $daysInMonth - $now->day);
-        $monthName = strtoupper($now->locale('id')->translatedFormat('F Y'));
-        $periodText = $monthName;
-        $resetCycleText = "Siklus Reset: {$daysLeft} Hari Lagi";
-
         $liveStreams = ActiveStream::where('status', 'LIVE')->get()->keyBy('channel_id');
         $officers = Officer::where('is_active', true)->get();
 
-        if ($officers->isEmpty()) {
+        $buildForMonth = function (\Carbon\CarbonInterface $date, bool $isCurrent) use ($officers, $liveStreams) {
+            $daysInMonth = $date->daysInMonth;
+            $daysLeft = max(1, $daysInMonth - $date->day);
+            $monthName = strtoupper($date->locale('id')->translatedFormat('F Y'));
+            $periodText = $monthName;
+            $resetCycleText = "Siklus Reset: {$daysLeft} Hari Lagi";
+
+            if ($officers->isEmpty()) {
+                return [
+                    'period_text' => $periodText,
+                    'reset_cycle_text' => $resetCycleText,
+                    'top_streamers' => [],
+                    'ranks_four_to_six' => [],
+                    'all_top' => [],
+                    'has_hours' => false,
+                ];
+            }
+
+            $mapped = $officers->map(function ($officer) use ($liveStreams, $date, $isCurrent) {
+                $isLive = $isCurrent && $liveStreams->has($officer->channel_id);
+                $liveStream = $isLive ? $liveStreams->get($officer->channel_id) : null;
+
+                $totalMinutesRaw = 0;
+                if ($isCurrent) {
+                    // For current month: count duty minutes if last_duty_at is in current month or null
+                    if (!$officer->last_duty_at || $officer->last_duty_at->isSameMonth($date)) {
+                        $totalMinutesRaw = (int) ($officer->monthly_duty_minutes ?? 0);
+                    }
+                } else {
+                    // For previous month: count duty minutes if last_duty_at matches previous month, or explicit previous minutes
+                    if ($officer->last_duty_at && $officer->last_duty_at->isSameMonth($date)) {
+                        $totalMinutesRaw = (int) ($officer->monthly_duty_minutes ?? 0);
+                    } elseif (isset($officer->previous_monthly_duty_minutes)) {
+                        $totalMinutesRaw = (int) $officer->previous_monthly_duty_minutes;
+                    } elseif (isset($officer->last_month_duty_minutes)) {
+                        $totalMinutesRaw = (int) $officer->last_month_duty_minutes;
+                    }
+                }
+
+                $totalHoursDecimal = round($totalMinutesRaw / 60, 1);
+                $hoursPart = floor($totalMinutesRaw / 60);
+                $minsPart = $totalMinutesRaw % 60;
+                $totalHoursStr = "{$hoursPart} Jam {$minsPart}m";
+
+                $divisor = $isCurrent ? max(1, $date->day) : $date->daysInMonth;
+                $avgDaily = round($totalHoursDecimal / $divisor, 1);
+                $avgShiftStr = "{$avgDaily}j / hari";
+
+                $handle = trim($officer->handle ?? '');
+                if (!empty($handle)) {
+                    $cleanHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
+                    $youtubeUrl = "https://www.youtube.com/{$cleanHandle}";
+                } elseif (!empty($officer->channel_id) && !str_starts_with($officer->channel_id, 'UC_')) {
+                    $youtubeUrl = "https://www.youtube.com/channel/{$officer->channel_id}";
+                } else {
+                    $youtubeUrl = "https://youtube.com";
+                }
+
+                return [
+                    'id' => $officer->id,
+                    'officer_name' => $officer->officer_name,
+                    'streamer_name' => $officer->streamer_name,
+                    'callsign' => $officer->department ? "{$officer->department} • {$officer->callsign}" : $officer->callsign,
+                    'department' => $officer->department,
+                    'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                    'total_hours' => $totalHoursStr,
+                    'total_hours_num' => $totalHoursDecimal,
+                    'avg_shift' => $avgShiftStr,
+                    'is_live' => $isLive,
+                    'live_viewers' => $liveStream ? ($liveStream->viewers_count ?? 0) : 0,
+                    'youtube_url' => $youtubeUrl,
+                ];
+            })->sortByDesc('total_hours_num')->values();
+
+            $hasHours = $mapped->contains(fn($item) => $item['total_hours_num'] > 0);
+            $topHours = $mapped->first()['total_hours_num'] ?? 184;
+
+            $leaderboard = $mapped->take(6)->map(function ($item, $index) use ($topHours) {
+                $rank = $index + 1;
+                $percent = $topHours > 0 ? min(100, round(($item['total_hours_num'] / $topHours) * 100)) : 100;
+
+                $badge = match ($rank) {
+                    1 => 'EMAS',
+                    2 => 'SILVER',
+                    3 => 'BRONZE',
+                    default => 'RUNNER_UP',
+                };
+
+                return array_merge($item, [
+                    'rank' => $rank,
+                    'badge' => $badge,
+                    'percent' => $percent,
+                    'role' => "{$item['department']} • {$item['total_hours']}",
+                ]);
+            });
+
             return [
                 'period_text' => $periodText,
                 'reset_cycle_text' => $resetCycleText,
-                'top_streamers' => [],
-                'ranks_four_to_six' => [],
-                'all_top' => [],
+                'top_streamers' => $leaderboard->slice(0, 3)->values()->all(),
+                'ranks_four_to_six' => $leaderboard->slice(3, 3)->values()->all(),
+                'all_top' => $leaderboard->values()->all(),
+                'has_hours' => $hasHours,
             ];
+        };
+
+        // 1. Try current month
+        $currentData = $buildForMonth($now, true);
+
+        if ($currentData['has_hours']) {
+            unset($currentData['has_hours']);
+            $currentData['is_previous_period'] = false;
+            return $currentData;
         }
 
-        $mapped = $officers->map(function ($officer) use ($liveStreams, $now) {
-            $isLive = $liveStreams->has($officer->channel_id);
-            $liveStream = $isLive ? $liveStreams->get($officer->channel_id) : null;
+        // 2. Fallback to previous month if any officer has hours recorded for that period
+        $previousMonth = $now->copy()->subMonth();
+        $previousData = $buildForMonth($previousMonth, false);
 
-            $totalMinutesRaw = (int) ($officer->monthly_duty_minutes ?? 0);
+        if ($previousData['has_hours']) {
+            unset($previousData['has_hours']);
+            $previousData['is_previous_period'] = true;
+            return $previousData;
+        }
 
-            $totalHoursDecimal = round($totalMinutesRaw / 60, 1);
-            $hoursPart = floor($totalMinutesRaw / 60);
-            $minsPart = $totalMinutesRaw % 60;
-            $totalHoursStr = "{$hoursPart} Jam {$minsPart}m";
-
-            $avgDaily = round($totalHoursDecimal / max(1, $now->day), 1);
-            $avgShiftStr = "{$avgDaily}j / hari";
-
-            $handle = trim($officer->handle ?? '');
-            if (!empty($handle)) {
-                $cleanHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
-                $youtubeUrl = "https://www.youtube.com/{$cleanHandle}";
-            } elseif (!empty($officer->channel_id) && !str_starts_with($officer->channel_id, 'UC_')) {
-                $youtubeUrl = "https://www.youtube.com/channel/{$officer->channel_id}";
-            } else {
-                $youtubeUrl = "https://youtube.com";
-            }
-
-            return [
-                'id' => $officer->id,
-                'officer_name' => $officer->officer_name,
-                'streamer_name' => $officer->streamer_name,
-                'callsign' => $officer->department ? "{$officer->department} • {$officer->callsign}" : $officer->callsign,
-                'department' => $officer->department,
-                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
-                'total_hours' => $totalHoursStr,
-                'total_hours_num' => $totalHoursDecimal,
-                'avg_shift' => $avgShiftStr,
-                'is_live' => $isLive,
-                'live_viewers' => $liveStream ? ($liveStream->viewers_count ?? 0) : 0,
-                'youtube_url' => $youtubeUrl,
-            ];
-        })->sortByDesc('total_hours_num')->values();
-
-        $topHours = $mapped->first()['total_hours_num'] ?? 184;
-
-        $leaderboard = $mapped->take(6)->map(function ($item, $index) use ($topHours) {
-            $rank = $index + 1;
-            $percent = $topHours > 0 ? min(100, round(($item['total_hours_num'] / $topHours) * 100)) : 100;
-
-            $badge = match ($rank) {
-                1 => 'EMAS',
-                2 => 'SILVER',
-                3 => 'BRONZE',
-                default => 'RUNNER_UP',
-            };
-
-            return array_merge($item, [
-                'rank' => $rank,
-                'badge' => $badge,
-                'percent' => $percent,
-                'role' => "{$item['department']} • {$item['total_hours']}",
-            ]);
-        });
-
-        return [
-            'period_text' => $periodText,
-            'reset_cycle_text' => $resetCycleText,
-            'top_streamers' => $leaderboard->slice(0, 3)->values()->all(),
-            'ranks_four_to_six' => $leaderboard->slice(3, 3)->values()->all(),
-            'all_top' => $leaderboard->values()->all(),
-        ];
+        // 3. Fallback when neither period has hours: keep current month with is_previous_period = false
+        unset($currentData['has_hours']);
+        $currentData['is_previous_period'] = false;
+        return $currentData;
     }
 
     /**

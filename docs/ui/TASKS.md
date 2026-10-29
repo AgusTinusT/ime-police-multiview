@@ -45,7 +45,7 @@ Tugas kecil lanjutan setelah katalog Dashboard (Claude, 31 Okt 2026). Satu brief
 | 21 | [UX-03](tasks/UX-03.md) | 🟢 P3 | Bersihkan peringatan ESLint header & footer | — | ⚪ Todo | | |
 | 22 | [UX-04](tasks/UX-04.md) | 🟡 P2 | Tombol chat tidak menutupi kontrol Multiview & tray di HP | — | ⚪ Todo | | |
 | 23 | [UX-05](tasks/UX-05.md) | 🟡 P2 | Baris katalog "Road to 1K" (pola dasar, poles oleh Claude) | — | ⚪ Todo | | |
-| 24 | [UX-06](tasks/UX-06.md) | 🟡 P2 | Top 10 fallback ke bulan lalu saat bulan ini kosong | — | ⚪ Todo | | |
+| 24 | [UX-06](tasks/UX-06.md) | 🟡 P2 | Top 10 fallback ke bulan lalu saat bulan ini kosong | — | 🟣 Ready for Review | getMonthlyLeaderboard() kini otomatis fallback ke bulan lalu dengan is_previous_period: true & period_text bulan lalu jika jam bulan ini kosong; baris katalog Dashboard menampilkan judul dinamis 'Top 10 patroli bulan lalu'/'Top 10 patroli bulan ini'. 110/110 test & build hijau. | |
 | 25 | [UX-07](tasks/UX-07.md) | 🟠 P1 | Panel Admin: layout sidebar (pola dasar, poles oleh Claude) | — | ⚪ Todo | | |
 
 **Cakupan:** 85 file `.vue` (≈6.000 kelas palet mentah, 630+ `text-[Npx]`) terbagi habis ke MIG-01…MIG-09; `Components/Base` dihapus di MIG-10.

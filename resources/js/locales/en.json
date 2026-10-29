@@ -170,6 +170,7 @@
     "active_incident_subtitle": "One incident, every angle",
     "watch_povs": "Watch {count} POVs",
     "top_10_patrols": "Top 10 patrols this month",
+    "top_10_patrols_last_month": "Top 10 patrols last month",
     "dept_patrol": "{dept} Patrol",
     "recent_replays": "Recent replays",
     "pov_selected": "{count} POVs selected",
