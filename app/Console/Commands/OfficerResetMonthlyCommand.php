@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Officer;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class OfficerResetMonthlyCommand extends Command
@@ -29,6 +30,7 @@ class OfficerResetMonthlyCommand extends Command
     {
         $count = Officer::count();
         Officer::query()->update([
+            'previous_monthly_duty_minutes' => DB::raw('monthly_duty_minutes'),
             'monthly_duty_minutes' => 0,
             'last_duty_at' => null,
         ]);

@@ -893,14 +893,8 @@ class PoliceCommandController extends Controller
                         $totalMinutesRaw = (int) ($officer->monthly_duty_minutes ?? 0);
                     }
                 } else {
-                    // For previous month: count duty minutes if last_duty_at matches previous month, or explicit previous minutes
-                    if ($officer->last_duty_at && $officer->last_duty_at->isSameMonth($date)) {
-                        $totalMinutesRaw = (int) ($officer->monthly_duty_minutes ?? 0);
-                    } elseif (isset($officer->previous_monthly_duty_minutes)) {
-                        $totalMinutesRaw = (int) $officer->previous_monthly_duty_minutes;
-                    } elseif (isset($officer->last_month_duty_minutes)) {
-                        $totalMinutesRaw = (int) $officer->last_month_duty_minutes;
-                    }
+                    // For previous month: use previous_monthly_duty_minutes column saved during reset
+                    $totalMinutesRaw = (int) ($officer->previous_monthly_duty_minutes ?? 0);
                 }
 
                 $totalHoursDecimal = round($totalMinutesRaw / 60, 1);

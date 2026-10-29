@@ -35,10 +35,10 @@ class LeaderboardFallbackTest extends TestCase
         $this->assertEquals(2.0, $leaderboard['all_top'][0]['total_hours_num']);
     }
 
-    public function test_leaderboard_falls_back_to_previous_month_when_current_month_is_empty(): void
+    public function test_leaderboard_falls_back_to_previous_month_after_artisan_reset_monthly(): void
     {
-        // Officer active last month with accumulated duty minutes
-        Officer::create([
+        // 1. Officer with accumulated duty minutes in current cycle
+        $officer = Officer::create([
             'channel_id' => 'UC_OFFICER_PREV',
             'handle' => 'officer_prev',
             'streamer_name' => 'Previous Streamer',
@@ -46,11 +46,11 @@ class LeaderboardFallbackTest extends TestCase
             'callsign' => '1-ADAM-02',
             'department' => 'BCSO',
             'monthly_duty_minutes' => 300,
-            'last_duty_at' => now()->subMonth(),
+            'last_duty_at' => now(),
             'is_active' => true,
         ]);
 
-        // Officer with 0 minutes this month
+        // Zero-hour officer
         Officer::create([
             'channel_id' => 'UC_OFFICER_ZERO',
             'handle' => 'officer_zero',
@@ -59,10 +59,20 @@ class LeaderboardFallbackTest extends TestCase
             'callsign' => '1-ADAM-03',
             'department' => 'LSPD',
             'monthly_duty_minutes' => 0,
-            'last_duty_at' => now(),
+            'last_duty_at' => null,
             'is_active' => true,
         ]);
 
+        // 2. Run the monthly reset console command
+        $this->artisan('officer:reset-monthly')->assertSuccessful();
+
+        // 3. Verify officer duty minutes were archived and current minutes zeroed
+        $officer->refresh();
+        $this->assertEquals(0, $officer->monthly_duty_minutes);
+        $this->assertNull($officer->last_duty_at);
+        $this->assertEquals(300, $officer->previous_monthly_duty_minutes);
+
+        // 4. Verify leaderboard falls back to previous month using previous_monthly_duty_minutes
         $controller = new PoliceCommandController();
         $leaderboard = $controller->getMonthlyLeaderboard();
 
@@ -76,7 +86,7 @@ class LeaderboardFallbackTest extends TestCase
         $this->assertEquals(5.0, $leaderboard['all_top'][0]['total_hours_num']);
     }
 
-    public function test_dashboard_inertia_receives_previous_period_flag_on_fallback(): void
+    public function test_dashboard_inertia_receives_previous_period_flag_after_monthly_reset(): void
     {
         Officer::create([
             'channel_id' => 'UC_OFFICER_PREV_2',
@@ -86,9 +96,12 @@ class LeaderboardFallbackTest extends TestCase
             'callsign' => '1-ADAM-04',
             'department' => 'SASP',
             'monthly_duty_minutes' => 180,
-            'last_duty_at' => now()->subMonth(),
+            'last_duty_at' => now(),
             'is_active' => true,
         ]);
+
+        // Run monthly reset command to archive minutes
+        $this->artisan('officer:reset-monthly')->assertSuccessful();
 
         $response = $this->get('/');
         $response->assertOk();
