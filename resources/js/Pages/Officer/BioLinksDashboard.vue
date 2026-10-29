@@ -26,6 +26,7 @@ import { Button } from "@/Components/ui/button";
 import { Card } from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
+import { NativeSelect, NativeSelectOption } from "@/Components/ui/native-select";
 import { Switch } from "@/Components/ui/switch";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import { Textarea } from "@/Components/ui/textarea";
@@ -42,6 +43,7 @@ import {
     MousePointerClick,
     Palette,
     Share2,
+    Smartphone,
     Star,
     Users,
     ArrowUp,
@@ -340,6 +342,38 @@ const LINK_TYPES = {
 };
 const linkTypeIcon = (type) => (LINK_TYPES[type] || LINK_TYPES.custom).icon;
 const linkTypeLabel = (type) => (LINK_TYPES[type] || LINK_TYPES.custom).label;
+
+// Audit actions look like "bio_link.created"; show them as plain sentences.
+const ACTION_LABELS = {
+    created: "Tautan ditambahkan",
+    updated: "Tautan diubah",
+    deleted: "Tautan dihapus",
+    toggled: "Visibilitas tautan diubah",
+    reordered: "Urutan tautan diubah",
+};
+const actionLabel = (action = "") => {
+    const verb = action.split(".").pop();
+    if (ACTION_LABELS[verb]) return ACTION_LABELS[verb];
+    const text = action.replace(/[._]/g, " ").trim();
+    return text.charAt(0).toUpperCase() + text.slice(1);
+};
+
+const rtf = new Intl.RelativeTimeFormat("id", { numeric: "auto" });
+const RELATIVE_UNITS = [
+    ["year", 31536000],
+    ["month", 2592000],
+    ["week", 604800],
+    ["day", 86400],
+    ["hour", 3600],
+    ["minute", 60],
+];
+const relativeTime = (iso) => {
+    const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
+    for (const [unit, size] of RELATIVE_UNITS) {
+        if (Math.abs(seconds) >= size) return rtf.format(Math.round(seconds / size), unit);
+    }
+    return rtf.format(seconds, "second");
+};
 </script>
 
 <template>
@@ -571,220 +605,196 @@ const linkTypeLabel = (type) => (LINK_TYPES[type] || LINK_TYPES.custom).label;
                 </div>
 
                 <!-- TAB 2: APPEARANCE & THEME CONFIG -->
-                <Card v-show="activeTab === 'appearance'" class="space-y-5 p-5 rounded-2xl bg-card border-border">
-                    <h3 class="text-sm font-bold font-mono uppercase text-foreground">
-                        Kustomisasi Tampilan Bio-Link
-                    </h3>
+                <div v-show="activeTab === 'appearance'" class="space-y-6">
+                    <Card class="gap-4 p-5">
+                        <div>
+                            <h3 class="text-base font-semibold text-foreground">Profil</h3>
+                            <p class="text-sm text-muted-foreground">Nama dan pesan singkat di bagian atas halaman Anda.</p>
+                        </div>
+                        <div class="space-y-1.5">
+                            <Label for="bio-display-title">Nama tampilan</Label>
+                            <Input id="bio-display-title" v-model="appearanceForm.display_title" type="text" placeholder="Contoh: Ofc. John Doe" />
+                        </div>
+                        <div class="space-y-1.5">
+                            <Label for="bio-tagline">Pesan singkat</Label>
+                            <Textarea
+                                id="bio-tagline"
+                                v-model="appearanceForm.bio_tagline"
+                                rows="2"
+                                class="resize-none"
+                                placeholder="Motto patroli atau jadwal streaming Anda"
+                            />
+                            <p class="text-right text-xs text-muted-foreground">{{ (appearanceForm.bio_tagline || "").length }}/255</p>
+                        </div>
+                    </Card>
 
-                    <!-- Display Title -->
-                    <div class="space-y-1.5 text-left">
-                        <Label class="text-xs font-mono text-muted-foreground uppercase">Judul Profil / Display Name</Label>
-                        <Input
-                            v-model="appearanceForm.display_title"
-                            type="text"
-                            class="text-xs font-mono"
-                            placeholder="Contoh: Ofc. John Doe"
-                        />
-                    </div>
+                    <Card class="gap-5 p-5">
+                        <div>
+                            <h3 class="text-base font-semibold text-foreground">Gaya</h3>
+                            <p class="text-sm text-muted-foreground">Perubahan langsung terlihat di pratinjau.</p>
+                        </div>
 
-                    <!-- Tagline -->
-                    <div class="space-y-1.5 text-left">
-                        <Label class="text-xs font-mono text-muted-foreground uppercase">Bio Tagline / Pesan Singkat (Maks. 255)</Label>
-                        <Textarea
-                            v-model="appearanceForm.bio_tagline"
-                            rows="2"
-                            class="text-xs font-sans resize-none"
-                            placeholder="Tuliskan motto patroli atau info jadwal streaming Anda..."
-                        />
-                    </div>
-
-                    <!-- Theme Presets Grid -->
-                    <div class="space-y-2 text-left">
-                        <Label class="text-xs font-mono text-muted-foreground uppercase">Preset Tema Departemen</Label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            <div
-                                v-for="(theme, key) in themes"
-                                :key="key"
-                                @click="appearanceForm.theme_preset = key; appearanceForm.accent_color = theme.accent"
-                                class="p-3 rounded-xl border cursor-pointer transition relative"
-                                :class="appearanceForm.theme_preset === key ? 'border-primary bg-primary/10 ring-1 ring-primary/50' : 'border-border bg-muted/40 hover:border-primary/40'"
-                            >
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="text-xs font-bold font-mono text-foreground">{{ theme.name }}</span>
-                                    <span class="w-3 h-3 rounded-full" :style="{ backgroundColor: theme.accent }"></span>
-                                </div>
-                                <p class="text-xs text-muted-foreground leading-snug">{{ theme.description }}</p>
+                        <div class="space-y-2">
+                            <Label>Tema</Label>
+                            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup">
+                                <button
+                                    v-for="(theme, key) in themes"
+                                    :key="key"
+                                    type="button"
+                                    role="radio"
+                                    :aria-checked="appearanceForm.theme_preset === key"
+                                    :class="[
+                                        'flex items-start gap-3 rounded-lg border p-3 text-left transition-colors',
+                                        appearanceForm.theme_preset === key
+                                            ? 'border-primary bg-primary/10'
+                                            : 'border-border hover:border-input hover:bg-accent/30',
+                                    ]"
+                                    @click="appearanceForm.theme_preset = key; appearanceForm.accent_color = theme.accent"
+                                >
+                                    <span class="mt-0.5 size-4 shrink-0 rounded-full ring-2 ring-border" :style="{ backgroundColor: theme.accent }" />
+                                    <span class="min-w-0">
+                                        <span class="block text-sm font-semibold text-foreground">{{ theme.name }}</span>
+                                        <span class="block text-xs leading-snug text-muted-foreground">{{ theme.description }}</span>
+                                    </span>
+                                    <Check v-if="appearanceForm.theme_preset === key" class="ml-auto size-4 shrink-0 text-primary" />
+                                </button>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Button Style -->
-                    <div class="space-y-1.5 text-left">
-                        <Label class="text-xs font-mono text-muted-foreground uppercase">Gaya Tombol (Button Style)</Label>
-                        <select
-                            v-model="appearanceForm.button_style"
-                            class="w-full px-3 py-2 rounded-xl bg-background border border-input text-xs font-mono text-foreground focus:border-primary outline-hidden"
-                        >
-                            <option v-for="style in buttonStyles" :key="style" :value="style">
-                                {{ style.replace('_', ' ').toUpperCase() }}
-                            </option>
-                        </select>
-                    </div>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="space-y-1.5">
+                                <Label for="bio-button-style">Gaya tombol</Label>
+                                <NativeSelect id="bio-button-style" v-model="appearanceForm.button_style" class="w-full">
+                                    <NativeSelectOption v-for="style in buttonStyles" :key="style" :value="style">
+                                        {{ style.replace("_", " ") }}
+                                    </NativeSelectOption>
+                                </NativeSelect>
+                            </div>
+                            <div class="space-y-1.5">
+                                <Label for="bio-accent">Warna aksen</Label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        id="bio-accent"
+                                        v-model="appearanceForm.accent_color"
+                                        type="color"
+                                        aria-label="Pilih warna aksen"
+                                        class="size-9 shrink-0 cursor-pointer rounded-md border border-input bg-transparent p-0.5"
+                                    />
+                                    <Input v-model="appearanceForm.accent_color" type="text" aria-label="Kode warna aksen" class="font-mono uppercase" />
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Accent Color Picker -->
-                    <div class="space-y-1.5 text-left">
-                        <Label class="text-xs font-mono text-muted-foreground uppercase">Warna Aksen Taktis (Hex)</Label>
-                        <div class="flex items-center gap-3">
-                            <input
-                                v-model="appearanceForm.accent_color"
-                                type="color"
-                                class="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0"
-                            />
-                            <Input
-                                v-model="appearanceForm.accent_color"
-                                type="text"
-                                class="w-36 text-xs font-mono uppercase"
+                        <div class="flex items-center justify-between gap-4 border-t border-border pt-4">
+                            <div>
+                                <p class="text-sm font-medium text-foreground">Banner patroli live</p>
+                                <p class="text-xs text-muted-foreground">Muncul otomatis saat siaran YouTube Anda sedang aktif.</p>
+                            </div>
+                            <Switch
+                                :model-value="appearanceForm.show_live_stream_banner"
+                                aria-label="Tampilkan banner patroli live"
+                                @update:model-value="(val) => (appearanceForm.show_live_stream_banner = val)"
                             />
                         </div>
-                    </div>
+                    </Card>
 
-                    <!-- Live Stream Banner Toggle -->
-                    <div class="flex items-center justify-between pt-2 border-t border-border">
-                        <div>
-                            <div class="text-xs font-bold font-mono text-foreground">Tampilkan Banner Patroli Live</div>
-                            <div class="text-xs text-muted-foreground">Muncul otomatis ketika siaran YouTube Anda sedang aktif.</div>
-                        </div>
-                        <Switch
-                            :model-value="appearanceForm.show_live_stream_banner"
-                            @update:model-value="(val) => (appearanceForm.show_live_stream_banner = val)"
-                        />
+                    <div class="flex justify-end">
+                        <Button :disabled="isSavingAppearance || profile.is_suspended" @click="saveAppearance">
+                            {{ isSavingAppearance ? "Menyimpan…" : "Simpan tampilan" }}
+                        </Button>
                     </div>
-
-                    <Button
-                        @click="saveAppearance"
-                        :disabled="isSavingAppearance || profile.is_suspended"
-                        class="w-full font-mono font-bold text-xs uppercase tracking-wider"
-                    >
-                        {{ isSavingAppearance ? "Menyimpan..." : "Simpan Tampilan Profil" }}
-                    </Button>
-                </Card>
+                </div>
 
                 <!-- TAB 3: AUDIT HISTORY -->
                 <div v-show="activeTab === 'history'" class="space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-mono uppercase text-muted-foreground">
-                            Log Perubahan Tautan & Profil Anda
-                        </span>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            @click="loadHistory"
-                            class="text-xs font-mono text-primary"
-                        >
-                            <RefreshCw class="w-3.5 h-3.5 mr-1" />
-                            Muat Ulang
+                        <span class="text-sm text-muted-foreground">Perubahan tautan dan profil Anda</span>
+                        <Button variant="ghost" size="sm" class="gap-1.5" :disabled="isLoadingHistory" @click="loadHistory">
+                            <RefreshCw :class="['size-4', isLoadingHistory && 'motion-safe:animate-spin']" /> Muat ulang
                         </Button>
                     </div>
 
-                    <div v-if="historyLogs.length > 0" class="space-y-2">
-                        <Card
-                            v-for="log in historyLogs"
-                            :key="log.id"
-                            class="p-3 rounded-xl bg-card border-border text-xs text-left font-mono"
-                        >
-                            <div class="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                                <span class="font-bold text-primary uppercase">{{ log.action }}</span>
-                                <span>{{ new Date(log.created_at).toLocaleString() }}</span>
+                    <Card v-if="historyLogs.length > 0" class="gap-0 divide-y divide-border overflow-hidden py-0">
+                        <div v-for="log in historyLogs" :key="log.id" class="flex items-start gap-3 px-4 py-3">
+                            <History class="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-baseline justify-between gap-3">
+                                    <p class="truncate text-sm font-medium text-foreground">{{ actionLabel(log.action) }}</p>
+                                    <time
+                                        :datetime="log.created_at"
+                                        :title="new Date(log.created_at).toLocaleString('id-ID')"
+                                        class="shrink-0 text-xs text-muted-foreground"
+                                    >{{ relativeTime(log.created_at) }}</time>
+                                </div>
+                                <p v-if="log.reason" class="mt-0.5 text-xs text-muted-foreground">{{ log.reason }}</p>
                             </div>
-                            <p class="text-foreground text-xs font-sans">
-                                {{ log.reason || "Perubahan sistem / konfigurasi." }}
-                            </p>
-                        </Card>
-                    </div>
+                        </div>
+                    </Card>
 
                     <EmptyState
                         v-else-if="!isLoadingHistory"
-                        title="Belum Ada Riwayat"
-                        description="Belum ada riwayat aktivitas yang tercatat."
+                        title="Belum ada riwayat"
+                        description="Setiap perubahan tautan atau tampilan akan tercatat di sini."
                     />
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN: INTERACTIVE REAL-TIME MOBILE PREVIEW FRAME (5 cols) -->
-            <div class="lg:col-span-5 flex flex-col items-center lg:sticky lg:top-24 lg:self-start">
-                <div class="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <span>📱 PRATINJAU LANGSUNG MOBILE (380px)</span>
-                </div>
+            <!-- RIGHT COLUMN: LIVE PHONE PREVIEW -->
+            <div class="flex flex-col items-center lg:sticky lg:top-24 lg:col-span-5 lg:self-start">
+                <p class="mb-3 flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Smartphone class="size-4" /> Pratinjau langsung
+                </p>
 
-                <!-- Realistic Smartphone Mockup -->
-                <div class="w-full max-w-[360px] h-[640px] rounded-[40px] bg-background border-[6px] border-border shadow-2xl relative overflow-hidden flex flex-col ring-1 ring-border">
-                    <!-- Notch / Speaker grill -->
-                    <div class="w-full h-6 bg-background flex items-center justify-center shrink-0 z-20">
-                        <div class="w-20 h-3.5 bg-card rounded-full flex items-center justify-end px-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary/80"></span>
-                        </div>
+                <div
+                    class="relative flex h-[600px] w-full max-w-[340px] flex-col overflow-hidden rounded-[36px] border-[6px] border-muted bg-background shadow-2xl"
+                    :style="{ '--preview-accent': appearanceForm.accent_color || 'var(--color-primary)' }"
+                >
+                    <div class="flex h-6 shrink-0 items-center justify-center">
+                        <div class="h-3.5 w-20 rounded-full bg-muted" />
                     </div>
 
-                    <!-- Scrollable Preview Viewport -->
-                    <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4 text-center scrollbar-none font-sans text-xs">
-                        <!-- Mini Hero -->
+                    <div class="scrollbar-none flex-1 space-y-4 overflow-y-auto px-4 py-4 text-center">
                         <div class="flex flex-col items-center">
                             <OfficerAvatar
                                 :src="officer.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=officer'"
                                 :name="officer.officer_name"
-                                :department="officer.department"
                                 size="lg"
                                 class="mb-2"
                             />
-                            <Badge variant="info" class="text-xs font-mono font-bold mb-1">
-                                🛡️ VERIFIED OFFICER
-                            </Badge>
-                            <h4 class="text-sm font-bold font-mono uppercase text-foreground leading-tight">
+                            <h4 class="text-base font-bold leading-tight text-foreground">
                                 {{ appearanceForm.display_title || officer.officer_name }}
                             </h4>
-                            <p class="text-xs text-primary font-mono">
-                                {{ officer.streamer_name }}
-                            </p>
-                            <p v-if="appearanceForm.bio_tagline" class="text-xs text-muted-foreground mt-1 max-w-[240px] leading-relaxed">
+                            <p class="text-xs font-medium" :style="{ color: 'var(--preview-accent)' }">{{ officer.streamer_name }}</p>
+                            <p v-if="appearanceForm.bio_tagline" class="mt-1.5 max-w-[240px] text-xs leading-relaxed text-muted-foreground">
                                 {{ appearanceForm.bio_tagline }}
                             </p>
                         </div>
 
-                        <!-- Mini Links List -->
-                        <div class="space-y-2 pt-2">
+                        <div class="space-y-2">
                             <div
                                 v-for="l in localLinks.filter((x) => x.is_active)"
                                 :key="l.id"
-                                class="p-2.5 rounded-xl bg-card border border-border flex items-center justify-between text-left shadow-xs"
+                                class="flex items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 text-left"
+                                :style="l.is_highlighted
+                                    ? { borderColor: 'var(--preview-accent)', backgroundColor: 'color-mix(in oklab, var(--preview-accent) 14%, transparent)' }
+                                    : { borderColor: 'var(--color-border)' }"
                             >
-                                <div class="flex items-center gap-2 min-w-0">
-                                    <span class="text-xs">
-                                        <span v-if="l.link_type === 'donation'">🪙</span>
-                                        <span v-else-if="l.link_type === 'officer_recommendation'">🚓</span>
-                                        <span v-else-if="l.link_type === 'discord'">💬</span>
-                                        <span v-else>🔗</span>
-                                    </span>
-                                    <div class="min-w-0">
-                                        <div class="text-xs font-bold font-mono text-foreground truncate">{{ l.title }}</div>
-                                        <div v-if="l.subtitle" class="text-xs text-muted-foreground truncate">{{ l.subtitle }}</div>
-                                    </div>
+                                <component :is="linkTypeIcon(l.link_type)" class="size-4 shrink-0 text-muted-foreground" />
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-semibold text-foreground">{{ l.title }}</p>
+                                    <p v-if="l.subtitle" class="truncate text-xs text-muted-foreground">{{ l.subtitle }}</p>
                                 </div>
-                                <span class="text-xs text-primary">→</span>
+                                <Badge v-if="l.badge_label" variant="secondary" class="shrink-0">{{ l.badge_label }}</Badge>
                             </div>
 
-                            <div v-if="localLinks.filter((x) => x.is_active).length === 0" class="py-8 text-xs text-muted-foreground font-mono">
-                                (Belum ada tautan aktif)
-                            </div>
-                        </div>
-
-                        <div class="text-xs text-muted-foreground font-mono pt-4 border-t border-border">
-                            Police Duty Multiview • policeduty.sasp-motionliferp.com
+                            <p v-if="localLinks.filter((x) => x.is_active).length === 0" class="py-8 text-xs text-muted-foreground">
+                                Belum ada tautan yang ditampilkan.
+                            </p>
                         </div>
                     </div>
 
-                    <!-- Home Bar -->
-                    <div class="w-full h-4 bg-background flex items-center justify-center shrink-0 z-20">
-                        <div class="w-24 h-1 bg-muted rounded-full"></div>
+                    <div class="flex h-5 shrink-0 items-center justify-center">
+                        <div class="h-1 w-24 rounded-full bg-muted" />
                     </div>
                 </div>
             </div>
@@ -792,113 +802,86 @@ const linkTypeLabel = (type) => (LINK_TYPES[type] || LINK_TYPES.custom).label;
 
         <!-- ADD / EDIT LINK MODAL -->
         <Dialog :open="isModalOpen" @update:open="(val) => (isModalOpen = val)">
-            <DialogContent class="sm:max-w-md bg-card border-border text-left space-y-4">
-                <DialogHeader class="border-b border-border pb-3">
-                    <DialogTitle class="text-sm font-bold font-mono uppercase text-foreground">
-                        {{ editingLinkId ? "Edit Tautan" : "Tambah Tautan Baru" }}
-                    </DialogTitle>
+            <DialogContent class="gap-5 sm:max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>{{ editingLinkId ? "Edit tautan" : "Tambah tautan" }}</DialogTitle>
+                    <DialogDescription>Tautan tampil sebagai tombol di halaman publik Anda.</DialogDescription>
                 </DialogHeader>
 
-                <!-- Link Type Selector -->
-                <div class="space-y-1 text-left">
-                    <Label class="text-xs font-mono text-muted-foreground uppercase">Tipe Tautan</Label>
-                    <select
-                        v-model="linkForm.link_type"
-                        class="w-full px-3 py-2 rounded-xl bg-background border border-input text-xs font-mono text-foreground focus:border-primary outline-hidden"
-                    >
-                        <option value="donation">🪙 Donasi (Saweria, Bagibagi, Trakteer, Sociabuzz)</option>
-                        <option value="discord">💬 Komunitas Discord</option>
-                        <option value="officer_recommendation">🚓 Rekan Patroli (Squad Officer)</option>
-                        <option value="social">▶️ Media Sosial (YouTube, TikTok, IG, X, Twitch)</option>
-                        <option value="custom">🌐 Tautan Kustom</option>
-                    </select>
+                <!-- Link type -->
+                <div class="space-y-2">
+                    <Label>Jenis tautan</Label>
+                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3" role="radiogroup">
+                        <button
+                            v-for="(meta, type) in LINK_TYPES"
+                            :key="type"
+                            type="button"
+                            role="radio"
+                            :aria-checked="linkForm.link_type === type"
+                            :class="[
+                                'flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors',
+                                linkForm.link_type === type
+                                    ? 'border-primary bg-primary/10 text-foreground'
+                                    : 'border-border text-muted-foreground hover:border-input hover:text-foreground',
+                            ]"
+                            @click="linkForm.link_type = type"
+                        >
+                            <component :is="meta.icon" class="size-4 shrink-0" />
+                            <span class="truncate">{{ meta.label }}</span>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Squad Partner Selector (If officer_recommendation) -->
-                <div v-if="linkForm.link_type === 'officer_recommendation'" class="space-y-1 text-left">
-                    <Label class="text-xs font-mono text-muted-foreground uppercase">Pilih Perwira Rekanan</Label>
-                    <select
-                        v-model="linkForm.recommended_officer_id"
-                        class="w-full px-3 py-2 rounded-xl bg-background border border-input text-xs font-mono text-foreground focus:border-primary outline-hidden"
-                    >
-                        <option value="">-- Pilih Perwira Patroli --</option>
-                        <option v-for="o in otherOfficers" :key="o.id" :value="o.id">
-                            {{ o.officer_name }} ({{ o.streamer_name }}) [{{ o.department }} #{{ o.callsign }}]
-                        </option>
-                    </select>
+                <!-- Patrol partner -->
+                <div v-if="linkForm.link_type === 'officer_recommendation'" class="space-y-1.5">
+                    <Label for="link-partner">Rekan patroli</Label>
+                    <NativeSelect id="link-partner" v-model="linkForm.recommended_officer_id" class="w-full">
+                        <NativeSelectOption value="">Pilih perwira</NativeSelectOption>
+                        <NativeSelectOption v-for="o in otherOfficers" :key="o.id" :value="o.id">
+                            {{ o.officer_name }} · {{ o.department }} {{ o.callsign }}
+                        </NativeSelectOption>
+                    </NativeSelect>
                 </div>
 
-                <!-- URL Input (If not officer_recommendation) -->
-                <div v-else class="space-y-1 text-left">
-                    <Label class="text-xs font-mono text-muted-foreground uppercase">URL Tautan (HTTPS)</Label>
-                    <Input
-                        v-model="linkForm.url"
-                        type="url"
-                        class="text-xs font-mono"
-                        placeholder="https://..."
-                    />
-                    <p class="text-xs text-primary font-mono leading-tight mt-1">
-                        {{ domainHint }}
-                    </p>
+                <!-- URL -->
+                <div v-else class="space-y-1.5">
+                    <Label for="link-url">URL</Label>
+                    <Input id="link-url" v-model="linkForm.url" type="url" class="font-mono" placeholder="https://" />
+                    <p class="text-xs text-muted-foreground">{{ domainHint }}</p>
                 </div>
 
-                <!-- Title -->
-                <div class="space-y-1 text-left">
-                    <Label class="text-xs font-mono text-muted-foreground uppercase">Judul Tombol</Label>
-                    <Input
-                        v-model="linkForm.title"
-                        type="text"
-                        class="text-xs font-mono"
-                        placeholder="Contoh: Saweria Donasi Taktis"
-                    />
+                <div class="space-y-1.5">
+                    <Label for="link-title">Judul tombol</Label>
+                    <Input id="link-title" v-model="linkForm.title" type="text" placeholder="Contoh: Dukung patroli via Saweria" />
                 </div>
 
-                <!-- Subtitle -->
-                <div class="space-y-1 text-left">
-                    <Label class="text-xs font-mono text-muted-foreground uppercase">Sub-Teks (Opsional)</Label>
-                    <Input
-                        v-model="linkForm.subtitle"
-                        type="text"
-                        class="text-xs font-mono"
-                        placeholder="Contoh: Min 10k TTS On / Komunitas Resmi"
-                    />
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="space-y-1.5">
+                        <Label for="link-subtitle">Keterangan <span class="font-normal text-muted-foreground">(opsional)</span></Label>
+                        <Input id="link-subtitle" v-model="linkForm.subtitle" type="text" placeholder="Contoh: Min. 10rb TTS on" />
+                    </div>
+                    <div class="space-y-1.5">
+                        <Label for="link-badge">Badge <span class="font-normal text-muted-foreground">(opsional)</span></Label>
+                        <Input id="link-badge" v-model="linkForm.badge_label" type="text" placeholder="Contoh: BARU" />
+                    </div>
                 </div>
 
-                <!-- Badge Label -->
-                <div class="space-y-1 text-left">
-                    <Label class="text-xs font-mono text-muted-foreground uppercase">Badge Promo (Opsional)</Label>
-                    <Input
-                        v-model="linkForm.badge_label"
-                        type="text"
-                        class="text-xs font-mono"
-                        placeholder="Contoh: NEW, REKOMENDASI, 24/7"
-                    />
-                </div>
-
-                <!-- Highlighted Toggle -->
-                <div class="flex items-center justify-between pt-1">
-                    <span class="text-xs font-mono text-foreground">Beri Efek Glowing / Highlight</span>
+                <div class="flex items-center justify-between gap-4 rounded-md border border-border px-3 py-2.5">
+                    <div>
+                        <p class="text-sm font-medium text-foreground">Sorot tautan ini</p>
+                        <p class="text-xs text-muted-foreground">Diberi warna aksen agar lebih menonjol.</p>
+                    </div>
                     <Switch
                         :model-value="linkForm.is_highlighted"
+                        aria-label="Sorot tautan ini"
                         @update:model-value="(val) => (linkForm.is_highlighted = val)"
                     />
                 </div>
 
-                <!-- Modal Actions -->
-                <DialogFooter class="pt-3 border-t border-border">
-                    <Button
-                        variant="outline"
-                        @click="isModalOpen = false"
-                        class="text-xs font-mono"
-                    >
-                        Batal
-                    </Button>
-                    <Button
-                        @click="saveLink"
-                        :disabled="isSavingLink"
-                        class="font-mono font-bold text-xs uppercase tracking-wider"
-                    >
-                        {{ isSavingLink ? "Menyimpan..." : "Simpan Tautan" }}
+                <DialogFooter>
+                    <Button variant="outline" @click="isModalOpen = false">Batal</Button>
+                    <Button :disabled="isSavingLink" @click="saveLink">
+                        {{ isSavingLink ? "Menyimpan…" : editingLinkId ? "Simpan perubahan" : "Tambah tautan" }}
                     </Button>
                 </DialogFooter>
             </DialogContent>
