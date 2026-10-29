@@ -197,7 +197,7 @@ class PublicBioLinkController extends Controller
                             'bio_slug' => $link->recommendedOfficer->bioProfile?->slug,
                         ] : null,
                     ];
-                }),
+                })->values()->all(),
                 'isSuspended' => false,
                 'isUnclaimed' => $isUnclaimed,
                 'meta' => [

@@ -778,7 +778,7 @@ const switchTab = (tab) => {
                     <Card
                         v-for="log in historyLogs"
                         :key="log.id"
-                        class="p-3.5 rounded-xl bg-card border-border text-xs font-mono flex items-start justify-between gap-4"
+                        class="p-3.5 rounded-xl bg-card border-border text-xs font-mono flex flex-row items-start justify-between gap-4"
                     >
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">

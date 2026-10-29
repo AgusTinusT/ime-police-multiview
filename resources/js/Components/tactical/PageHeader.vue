@@ -15,6 +15,10 @@ const props = defineProps({
         type: String,
         default: "",
     },
+    subtitle: {
+        type: String,
+        default: "",
+    },
     class: {
         type: [Boolean, null, String, Object, Array],
         default: "",
@@ -33,8 +37,8 @@ const props = defineProps({
             <h1 class="font-heading text-3xl font-bold tracking-tight text-foreground">
                 {{ title }}
             </h1>
-            <p v-if="description" class="max-w-2xl text-sm text-muted-foreground">
-                {{ description }}
+            <p v-if="description || subtitle" class="max-w-2xl text-sm text-muted-foreground">
+                {{ description || subtitle }}
             </p>
         </div>
         <div v-if="$slots.actions" class="flex shrink-0 flex-wrap items-center gap-2">
@@ -42,3 +46,4 @@ const props = defineProps({
         </div>
     </div>
 </template>
+

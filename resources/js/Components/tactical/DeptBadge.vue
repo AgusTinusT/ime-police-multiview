@@ -8,13 +8,21 @@ const props = defineProps({
         type: String,
         default: "",
     },
+    department: {
+        type: String,
+        default: "",
+    },
+    label: {
+        type: String,
+        default: "",
+    },
     class: {
         type: [Boolean, null, String, Object, Array],
         default: "",
     },
 });
 
-const normalizedDept = computed(() => (props.dept || "").trim().toUpperCase());
+const normalizedDept = computed(() => (props.dept || props.department || "").trim().toUpperCase());
 
 const deptClasses = computed(() => {
     switch (normalizedDept.value) {
@@ -38,6 +46,7 @@ const deptClasses = computed(() => {
         variant="outline"
         :class="cn('font-mono text-xs font-semibold uppercase tracking-wider', deptClasses, props.class)"
     >
-        <slot>{{ normalizedDept || "UNKNOWN" }}</slot>
+        <slot>{{ label || normalizedDept || "UNKNOWN" }}</slot>
     </Badge>
 </template>
+

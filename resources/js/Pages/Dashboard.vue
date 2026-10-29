@@ -540,7 +540,7 @@ const scrollToUnitsGrid = () => {
                     <TacticalFrame
                         variant="panel"
                         accent="primary"
-                        class="p-4 sm:p-5"
+                        inner-class="p-4 sm:p-5"
                     >
                         <div
                             class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"

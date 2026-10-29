@@ -1509,7 +1509,7 @@ onMounted(() => {
             </PageHeader>
 
             <!-- RINGKASAN STATTILE DENGAN 1 TACTICALFRAME (MAKS. 2 PER LAYAR) -->
-            <TacticalFrame variant="panel" accent="primary" class="p-4 sm:p-5">
+            <TacticalFrame variant="panel" accent="primary" inner-class="p-4 sm:p-5">
                 <div
                     class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4"
                 >

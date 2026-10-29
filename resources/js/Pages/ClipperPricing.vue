@@ -78,7 +78,8 @@
                     <TacticalFrame
                         variant="panel"
                         accent="primary"
-                        class="p-6 space-y-4 flex flex-col justify-between relative"
+                        class="relative"
+                        inner-class="p-6 space-y-4 flex flex-col justify-between"
                     >
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">

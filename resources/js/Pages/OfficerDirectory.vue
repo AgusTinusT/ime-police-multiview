@@ -1447,7 +1447,7 @@ const filteredOfficers = computed(() => {
                     class="p-6 overflow-y-auto space-y-6 flex-1 text-xs sm:text-sm font-sans"
                 >
                     <!-- Header Profile Avatar & Basic Info -->
-                    <Card class="flex items-start gap-4 p-4">
+                    <Card class="flex flex-row items-start gap-4 p-4">
                         <OfficerAvatar
                             :src="activeOfficer.avatar_url"
                             :name="activeOfficer.officer_name"

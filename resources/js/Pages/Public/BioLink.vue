@@ -35,7 +35,7 @@ const props = defineProps({
         required: true,
     },
     links: {
-        type: Array,
+        type: [Array, Object],
         default: () => [],
     },
     isSuspended: {
@@ -52,9 +52,13 @@ const props = defineProps({
     },
 });
 
+const initialLinks = Array.isArray(props.links)
+    ? props.links
+    : Object.values(props.links || {});
+
 // Reactive state for polling updates (T-09)
 const officerState = ref({ ...props.officer });
-const linksState = ref([...props.links]);
+const linksState = ref([...initialLinks]);
 
 // Polling live telemetry every 60 seconds without full reload
 let pollTimer = null;
@@ -477,7 +481,7 @@ const buttonStyleClass = computed(() => {
                             v-for="link in partnerLinks"
                             :key="link.id"
                             v-show="link.recommended_officer"
-                            class="p-3 rounded-2xl bg-card/80 border-border hover:border-primary/50 transition-all flex items-center justify-between gap-3 shadow-md backdrop-blur-md"
+                            class="p-3 rounded-2xl bg-card/80 border-border hover:border-primary/50 transition-all flex flex-row items-center justify-between gap-3 shadow-md backdrop-blur-md"
                         >
                             <div class="flex items-center gap-2.5 min-w-0">
                                 <OfficerAvatar
@@ -630,7 +634,7 @@ const buttonStyleClass = computed(() => {
 
                 <!-- EMPTY STATE -->
                 <EmptyState
-                    v-if="links.length === 0"
+                    v-if="linksState.length === 0"
                     title="Belum Ada Tautan Publik"
                     description="Perwira ini belum menambahkan tautan publik."
                 />

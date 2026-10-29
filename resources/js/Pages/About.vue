@@ -130,7 +130,8 @@ const techStack = [
                 <TacticalFrame
                     variant="panel"
                     accent="primary"
-                    class="lg:col-span-5 p-5 sm:p-6 space-y-5 bg-card border border-border rounded-xl"
+                    class="lg:col-span-5"
+                    inner-class="p-5 sm:p-6 space-y-5"
                 >
                     <div class="flex items-center justify-between border-b border-border pb-3">
                         <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">

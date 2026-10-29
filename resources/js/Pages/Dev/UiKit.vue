@@ -231,7 +231,7 @@ const frameAccents = ["primary", "info", "live"];
     <Head title="Tactical UI Kit — Katalog Desain" />
 
     <TacticalLayout>
-        <PageContainer class="py-8 lg:py-12 space-y-12">
+        <PageContainer class="py-8 lg:py-12 space-y-12 overflow-x-hidden">
             <PageHeader
                 eyebrow="DESIGN SYSTEM // DS-03"
                 title="Tactical UI Kit Catalog"
@@ -788,3 +788,4 @@ const frameAccents = ["primary", "info", "live"];
         </PageContainer>
     </TacticalLayout>
 </template>
+

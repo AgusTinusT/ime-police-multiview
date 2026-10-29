@@ -503,7 +503,7 @@ const domainHint = computed(() => {
                         <Card
                             v-for="(link, idx) in localLinks"
                             :key="link.id"
-                            class="p-3.5 rounded-2xl bg-card border-border hover:border-primary/40 transition flex items-center justify-between gap-3 shadow-md"
+                            class="p-3.5 rounded-2xl bg-card border-border hover:border-primary/40 transition flex flex-row items-center justify-between gap-3 shadow-md"
                             :class="{ 'opacity-60': !link.is_active }"
                         >
                             <div class="flex items-center gap-3 min-w-0">

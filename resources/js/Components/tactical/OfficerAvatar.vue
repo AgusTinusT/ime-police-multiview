@@ -39,6 +39,7 @@ const initials = computed(() => {
 const sizeClass = computed(() => {
     if (props.size === "sm") return "size-8 text-xs";
     if (props.size === "lg") return "size-14 text-base";
+    if (props.size === "xl") return "size-20 text-lg";
     return "size-10 text-sm";
 });
 </script>
@@ -59,3 +60,4 @@ const sizeClass = computed(() => {
         </AvatarFallback>
     </Avatar>
 </template>
+
