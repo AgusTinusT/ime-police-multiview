@@ -516,7 +516,8 @@ class PoliceCommandController extends Controller
             ->get();
         $liveOfficerIds = $activeStreams->pluck('officer_id')->filter()->toArray();
 
-        $allOfficers = Officer::where('is_active', true)
+        $allOfficers = Officer::with('rankRelation:id,rank_title,level')
+            ->where('is_active', true)
             ->orderBy('department')
             ->orderBy('rank')
             ->get()
@@ -533,7 +534,9 @@ class PoliceCommandController extends Controller
                     'callsign' => $officer->callsign,
                     'badge_number' => $officer->badge_number,
                     'department' => $officer->department,
-                    'rank' => $officer->rank,
+                    'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
+                    // Hierarchy level from the ranks table (10 = Chief); 0 when not linked yet.
+                    'rank_level' => (int) ($officer->rankRelation?->level ?? 0),
                     'patrol_zone' => $officer->patrol_zone,
                     'avatar_url' => $officer->avatar_url,
                     'subscriber_count' => $officer->subscriber_count ?? 0,

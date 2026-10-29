@@ -96,15 +96,16 @@ const getInitialSort = () => {
         const sortParam = params.get("sort");
         if (
             sortParam &&
-            ["status", "subs_desc", "subs_asc", "name"].includes(sortParam)
+            ["rank", "subs_desc", "subs_asc", "name"].includes(sortParam)
         ) {
             return sortParam;
         }
     }
-    return "status";
+    // Old links used ?sort=status; the directory now always defaults to rank order.
+    return "rank";
 };
 
-const sortBy = ref(getInitialSort()); // 'status', 'subs_desc', 'subs_asc', 'name'
+const sortBy = ref(getInitialSort()); // 'rank', 'subs_desc', 'subs_asc', 'name'
 const viewMode = ref("grid"); // 'grid' | 'table'
 
 // Drawer State
@@ -375,10 +376,13 @@ const filteredOfficers = computed(() => {
 
     // Sorting Logic
     return [...list].sort((a, b) => {
-        if (sortBy.value === "status") {
-            if (a.is_online && !b.is_online) return -1;
-            if (!a.is_online && b.is_online) return 1;
-            return (b.subscriber_count || 0) - (a.subscriber_count || 0);
+        if (sortBy.value === "rank") {
+            // Highest rank first (ranks.level, 10 = Chief); unlinked ranks (0) last.
+            return (
+                (b.rank_level || 0) - (a.rank_level || 0) ||
+                (a.department || "").localeCompare(b.department || "") ||
+                (a.officer_name || "").localeCompare(b.officer_name || "")
+            );
         } else if (sortBy.value === "subs_desc") {
             return (b.subscriber_count || 0) - (a.subscriber_count || 0);
         } else if (sortBy.value === "subs_asc") {
@@ -565,8 +569,8 @@ const filteredOfficers = computed(() => {
                                 v-model="sortBy"
                                 class="h-10 appearance-none bg-background border border-input rounded-md pl-3 py-2 pr-7 text-xs text-foreground focus:outline-hidden focus:border-ring cursor-pointer"
                             >
-                                <option value="status">
-                                    Terakhir Aktif (10-8 Live)
+                                <option value="rank">
+                                    Pangkat (tertinggi)
                                 </option>
                                 <option value="subs_desc">
                                     Subscribers Terbanyak
