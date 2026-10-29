@@ -8,7 +8,6 @@ import {
     LiveBadge,
     OfficerAvatar,
     PageContainer,
-    TacticalFrame,
 } from "@/Components/tactical";
 import { ExternalLink, MonitorPlay } from "@lucide/vue";
 
@@ -57,41 +56,34 @@ const isHashUrl = (url) => typeof url === "string" && url.startsWith("#");
 </script>
 
 <template>
-    <TacticalFrame
-        variant="hero"
-        :accent="resolvedAccent"
-        class="w-full"
-        inner-class="hud-corners relative overflow-hidden"
-    >
-        <!-- /* hero height token */ -->
-        <div class="relative h-[420px] sm:h-[460px] lg:h-[520px] w-full overflow-hidden bg-background">
-            <!-- Background Picture -->
-            <picture v-if="slide.image_desktop_url" class="pointer-events-none absolute inset-0 z-0 block size-full">
-                <source
-                    v-if="slide.image_mobile_url"
-                    media="(max-width: 640px)"
-                    :srcset="slide.image_mobile_url"
-                />
-                <img
-                    :src="slide.image_desktop_url"
-                    :alt="slide.image_alt || slide.title || 'Sorotan Komando'"
-                    :loading="index === 0 ? 'eager' : 'lazy'"
-                    :fetchpriority="index === 0 ? 'high' : 'auto'"
-                    class="size-full object-cover object-center"
-                />
-            </picture>
-
-            <!-- Readability Gradient Overlay -->
-            <div
-                class="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-background via-background/75 to-transparent"
+    <div class="relative h-[480px] sm:h-[540px] lg:h-[620px] w-full overflow-hidden bg-background">
+        <!-- Full-Width Background Picture -->
+        <picture v-if="slide.image_desktop_url" class="pointer-events-none absolute inset-0 z-0 block size-full">
+            <source
+                v-if="slide.image_mobile_url"
+                media="(max-width: 640px)"
+                :srcset="slide.image_mobile_url"
             />
-            <div
-                class="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-background/90 via-transparent to-background/20"
+            <img
+                :src="slide.image_desktop_url"
+                :alt="slide.image_alt || slide.title || 'Sorotan Komando'"
+                :loading="index === 0 ? 'eager' : 'lazy'"
+                :fetchpriority="index === 0 ? 'high' : 'auto'"
+                class="size-full object-cover object-center"
             />
+        </picture>
 
-            <!-- Slide Content -->
-            <PageContainer class="relative z-20 flex h-full flex-col justify-center py-8 sm:py-12">
-                <div class="max-w-2xl space-y-4">
+        <!-- Netflix-Style Seamless Cinematic Vignette Overlay -->
+        <div
+            class="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-background via-background/80 to-transparent"
+        />
+        <div
+            class="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-background via-background/30 to-transparent"
+        />
+
+        <!-- Slide Content (Contained inside PageContainer to align with grid) -->
+        <PageContainer class="relative z-20 flex h-full flex-col justify-center py-10 sm:py-16">
+            <div class="max-w-2xl space-y-4">
                     <!-- Top Badges / Live Spotlight Header -->
                     <div v-if="isLiveSpotlight" class="flex flex-wrap items-center gap-3">
                         <OfficerAvatar
@@ -204,7 +196,6 @@ const isHashUrl = (url) => typeof url === "string" && url.startsWith("#");
                     </div>
                 </div>
             </PageContainer>
-        </div>
-    </TacticalFrame>
+    </div>
 </template>
 

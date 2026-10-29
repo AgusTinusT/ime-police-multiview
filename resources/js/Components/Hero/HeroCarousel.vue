@@ -7,10 +7,7 @@ import {
     CarouselContent,
     CarouselItem,
 } from "@/Components/ui/carousel";
-import { Button } from "@/Components/ui/button";
-import { PageContainer } from "@/Components/tactical";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Pause, Play } from "@lucide/vue";
 import HeroSlide from "./HeroSlide.vue";
 
 const props = defineProps({
@@ -254,114 +251,64 @@ onUnmounted(() => {
         role="region"
         aria-roledescription="carousel"
         aria-label="Sorotan"
-        class="relative w-full bg-background py-4 sm:py-6"
+        class="relative w-full bg-background overflow-hidden"
         @mouseenter="handleMouseEnter"
         @mouseleave="handleMouseLeave"
         @focusin="handleFocusIn"
         @focusout="handleFocusOut"
     >
-        <PageContainer>
-            <Carousel
-                :opts="{
-                    loop: hasMultiple,
-                    duration: prefersReducedMotion ? 0 : 20,
-                }"
-                :plugins="autoplayPlugin"
-                class="w-full"
-                aria-label="Sorotan"
-                @init-api="onInitApi"
-            >
-                <CarouselContent>
-                    <CarouselItem
-                        v-for="(slide, idx) in slides"
-                        :key="slide.id || idx"
-                        role="group"
-                        aria-roledescription="slide"
-                        :aria-label="`${idx + 1} dari ${slides.length}`"
-                        :aria-hidden="idx !== currentIndex ? 'true' : undefined"
-                        :inert="idx !== currentIndex ? true : undefined"
-                        class="motion-safe:transition-opacity motion-safe:duration-200"
-                    >
-                        <HeroSlide
-                            :slide="slide"
-                            :index="idx"
-                            @cta-click="handleCtaClick(slide)"
-                        />
-                    </CarouselItem>
-                </CarouselContent>
-
-                <!-- Carousel Controls & Progress Bar (Only when > 1 slide) -->
-                <div
-                    v-if="hasMultiple"
-                    class="mt-3 flex flex-wrap items-center justify-between gap-4 px-1"
+        <Carousel
+            :opts="{
+                loop: hasMultiple,
+                duration: prefersReducedMotion ? 0 : 25,
+            }"
+            :plugins="autoplayPlugin"
+            class="w-full relative"
+            aria-label="Sorotan"
+            @init-api="onInitApi"
+        >
+            <CarouselContent class="-ml-0">
+                <CarouselItem
+                    v-for="(slide, idx) in slides"
+                    :key="slide.id || idx"
+                    role="group"
+                    aria-roledescription="slide"
+                    :aria-label="`${idx + 1} dari ${slides.length}`"
+                    :aria-hidden="idx !== currentIndex ? 'true' : undefined"
+                    :inert="idx !== currentIndex ? true : undefined"
+                    class="pl-0 basis-full min-w-0"
                 >
-                    <!-- Indicator Dots & Progress Bar -->
-                    <div class="flex items-center gap-2">
-                        <button
-                            v-for="(slide, idx) in slides"
-                            :key="`dot-${slide.id || idx}`"
-                            type="button"
-                            :aria-label="`Slide ${idx + 1} dari ${slides.length}`"
-                            :aria-current="idx === currentIndex ? 'true' : undefined"
-                            :class="
-                                cn(
-                                    'relative h-2.5 overflow-hidden rounded-full transition-all cursor-pointer',
-                                    idx === currentIndex
-                                        ? 'w-10 bg-primary/25 border border-primary/50'
-                                        : 'w-2.5 bg-muted-foreground/30 hover:bg-muted-foreground/60',
-                                )
-                            "
-                            @click="goToSlide(idx)"
-                        >
-                            <span
-                                v-if="idx === currentIndex"
-                                :class="
-                                    cn(
-                                        'block h-full w-full origin-left bg-primary rounded-full',
-                                        !isAutoplayPaused && 'motion-safe:animate-pulse',
-                                    )
-                                "
-                            />
-                        </button>
-                    </div>
+                    <HeroSlide
+                        :slide="slide"
+                        :index="idx"
+                        @cta-click="handleCtaClick(slide)"
+                    />
+                </CarouselItem>
+            </CarouselContent>
 
-                    <!-- Play/Pause & Prev/Next Buttons -->
-                    <div class="flex items-center gap-1.5">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            class="size-8 text-muted-foreground hover:text-foreground"
-                            :aria-label="userPaused ? 'Putar otomatis' : 'Jeda putar otomatis'"
-                            @click="toggleUserPause"
-                        >
-                            <Play v-if="userPaused" class="size-4" />
-                            <Pause v-else class="size-4" />
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            class="size-8 text-muted-foreground hover:text-foreground"
-                            aria-label="Slide sebelumnya"
-                            @click="goPrev"
-                        >
-                            <ChevronLeft class="size-4" />
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            class="size-8 text-muted-foreground hover:text-foreground"
-                            aria-label="Slide berikutnya"
-                            @click="goNext"
-                        >
-                            <ChevronRight class="size-4" />
-                        </Button>
-                    </div>
-                </div>
-            </Carousel>
-        </PageContainer>
+            <!-- Centered Circle Indicator Dots (Clean Netflix Style) -->
+            <div
+                v-if="hasMultiple"
+                class="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center justify-center gap-2.5"
+            >
+                <button
+                    v-for="(slide, idx) in slides"
+                    :key="`dot-${slide.id || idx}`"
+                    type="button"
+                    :aria-label="`Slide ${idx + 1} dari ${slides.length}`"
+                    :aria-current="idx === currentIndex ? 'true' : undefined"
+                    :class="
+                        cn(
+                            'transition-all duration-300 rounded-full cursor-pointer focus:outline-hidden',
+                            idx === currentIndex
+                                ? 'size-3 bg-primary ring-2 ring-primary/40 ring-offset-2 ring-offset-background scale-110 shadow-xs'
+                                : 'size-2.5 bg-foreground/30 hover:bg-foreground/60'
+                        )
+                    "
+                    @click="goToSlide(idx)"
+                />
+            </div>
+        </Carousel>
     </section>
 </template>
 
