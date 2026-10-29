@@ -958,7 +958,11 @@ onUnmounted(() => {
                         :streams="streams"
                         :current-id="selectedIds[0] || null"
                         :tac-channels="initialTacChannels"
-                        class="-mx-1.5 -mb-1.5 mt-1.5 sm:-mx-2 sm:-mb-2 sm:mt-2"
+                        :class="
+                            isCompactLandscape || isFullscreen
+                                ? '-mx-0.5 -mb-0.5 mt-0.5'
+                                : '-mx-1.5 -mb-1.5 mt-1.5 sm:-mx-2 sm:-mb-2 sm:mt-2'
+                        "
                         @select="switchSolo"
                     />
 
