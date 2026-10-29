@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import { Head, Link, usePage } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import axios from "axios";
 import {
     Dialog,
@@ -27,14 +27,23 @@ import { Card } from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Switch } from "@/Components/ui/switch";
+import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import { Textarea } from "@/Components/ui/textarea";
 import {
     OfficerAvatar,
-    StatTile,
     EmptyState,
 } from "@/Components/tactical";
 import {
-    ArrowLeft,
+    Coins,
+    Eye,
+    History,
+    Link2,
+    MessageCircle,
+    MousePointerClick,
+    Palette,
+    Share2,
+    Star,
+    Users,
     ArrowUp,
     ArrowDown,
     Check,
@@ -321,288 +330,243 @@ const domainHint = computed(() => {
     }
     return "Domain bebas (kecuali denylist terlarang). Gunakan https://";
 });
+
+const LINK_TYPES = {
+    donation: { label: "Donasi", icon: Coins },
+    discord: { label: "Discord", icon: MessageCircle },
+    social: { label: "Media sosial", icon: Share2 },
+    officer_recommendation: { label: "Rekan patroli", icon: Users },
+    custom: { label: "Tautan", icon: Link2 },
+};
+const linkTypeIcon = (type) => (LINK_TYPES[type] || LINK_TYPES.custom).icon;
+const linkTypeLabel = (type) => (LINK_TYPES[type] || LINK_TYPES.custom).label;
 </script>
 
 <template>
     <Head title="Kelola Tactical Bio-Link — Police Duty" />
 
     <div class="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground">
-        <!-- TOP HEADER BAR -->
-        <header class="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <Button as-child variant="ghost" size="sm" class="font-mono font-bold text-xs uppercase text-primary">
-                    <Link href="/" class="flex items-center gap-1.5">
-                        <ArrowLeft class="w-4 h-4" />
-                        <span>SASP Command</span>
-                    </Link>
-                </Button>
-                <span class="text-muted-foreground font-mono">/</span>
-                <span class="text-xs font-mono font-bold uppercase text-foreground tracking-wider">
-                    Tactical Bio-Link Hub
-                </span>
-            </div>
-
-            <!-- Officer Profile Seal -->
-            <div class="flex items-center gap-3">
-                <div class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-muted border border-border font-mono text-xs">
-                    <span class="w-2 h-2 rounded-full bg-success"></span>
-                    <span class="font-bold text-foreground">{{ officer.officer_name }}</span>
-                    <span class="text-muted-foreground">#{{ officer.callsign }}</span>
-                </div>
-
-                <Button as-child size="sm" class="font-mono font-bold text-xs uppercase tracking-wider">
-                    <a
-                        :href="`/@${profile.slug}`"
-                        target="_blank"
-                        class="flex items-center gap-1.5"
-                    >
-                        <span>Buka Bio</span>
-                        <ExternalLink class="w-3.5 h-3.5" />
-                    </a>
-                </Button>
-            </div>
-        </header>
+        <TacticalDashboardHeader />
 
         <!-- MAIN CONTENT WORKSPACE -->
-        <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <main class="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 gap-8 px-4 pb-16 pt-8 sm:px-6 lg:grid-cols-12">
             <!-- LEFT COLUMN: CONTROLS & TABS (7 cols) -->
-            <div class="lg:col-span-7 flex flex-col gap-6">
+            <div class="flex flex-col gap-6 lg:col-span-7">
+                <!-- Page title -->
+                <div class="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <h1 class="text-2xl font-bold tracking-tight text-foreground">Bio-link saya</h1>
+                        <p class="mt-1 text-sm text-muted-foreground">Atur tautan yang tampil di halaman publik Anda.</p>
+                    </div>
+                    <Button as-child variant="outline" size="sm" class="gap-1.5">
+                        <a :href="`/@${profile.slug}`" target="_blank" rel="noopener">
+                            <ExternalLink class="size-4" /> Lihat halaman
+                        </a>
+                    </Button>
+                </div>
+
                 <!-- STATUS NOTIFICATION BANNERS -->
-                <Alert v-if="statusMessage" class="p-3.5 border-success/40 bg-success/10 text-success text-xs font-mono flex items-center gap-2">
-                    <Check class="w-4 h-4 shrink-0" />
+                <Alert v-if="statusMessage" class="flex items-center gap-2 border-success/40 bg-success/10 p-3.5 text-sm text-success">
+                    <Check class="size-4 shrink-0" />
                     <AlertDescription>{{ statusMessage }}</AlertDescription>
                 </Alert>
-                <Alert v-if="errorMessage" variant="destructive" class="p-3.5 text-xs font-mono flex items-center gap-2">
-                    <AlertTriangle class="w-4 h-4 shrink-0" />
+                <Alert v-if="errorMessage" variant="destructive" class="flex items-center gap-2 p-3.5 text-sm">
+                    <AlertTriangle class="size-4 shrink-0" />
                     <AlertDescription>{{ errorMessage }}</AlertDescription>
                 </Alert>
 
                 <!-- SUSPENSION LOCKDOWN BANNER -->
-                <Alert
-                    v-if="profile.is_suspended"
-                    class="p-4 rounded-2xl bg-warning/15 border-2 border-warning/60 text-warning text-xs shadow-xl flex items-start gap-3"
-                >
-                    <AlertTriangle class="w-5 h-5 shrink-0 mt-0.5" />
+                <Alert v-if="profile.is_suspended" class="flex items-start gap-3 border-warning/60 bg-warning/15 p-4 text-warning">
+                    <AlertTriangle class="mt-0.5 size-5 shrink-0" />
                     <div class="space-y-1">
-                        <AlertTitle class="font-bold font-mono uppercase text-warning text-sm">
-                            HALAMAN BIO-LINK DINONAKTIFKAN SEMENTARA (SUSPENDED)
-                        </AlertTitle>
+                        <AlertTitle class="text-sm font-bold text-warning">Halaman bio-link dinonaktifkan sementara</AlertTitle>
                         <AlertDescription class="leading-relaxed text-foreground">
                             Alasan: <strong>{{ profile.suspension_reason || "Sedang dalam peninjauan moderasi Komando SASP." }}</strong>
                         </AlertDescription>
                         <p class="text-xs text-warning/90">
-                            Dasbor saat ini dalam mode read-only. Penambahan dan pengeditan tautan dikunci sampai pembekuan dicabut.
+                            Dasbor dalam mode baca saja. Penambahan dan pengeditan tautan dikunci sampai pembekuan dicabut.
                         </p>
                     </div>
                 </Alert>
 
-                <!-- HERO SUMMARY CARD -->
-                <Card class="p-5 rounded-2xl bg-card border-border shadow-xl flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4">
-                    <div class="flex items-center gap-4">
+                <!-- PROFILE SUMMARY -->
+                <Card class="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex min-w-0 items-center gap-4">
                         <OfficerAvatar
                             :src="officer.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=officer'"
                             :name="officer.officer_name"
-                            :department="officer.department"
                             size="lg"
+                            class="shrink-0"
                         />
-                        <div class="text-left">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <h2 class="text-base font-bold font-mono uppercase text-foreground">
-                                    {{ officer.officer_name }}
-                                </h2>
-                                <Badge variant="info" class="font-mono text-xs font-bold uppercase">
-                                    VERIFIED
-                                </Badge>
+                        <div class="min-w-0">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h2 class="truncate text-lg font-bold text-foreground">{{ officer.officer_name }}</h2>
+                                <Badge variant="info" class="gap-1"><ShieldCheck class="size-3" /> Terverifikasi</Badge>
                             </div>
-                            <p class="text-xs text-muted-foreground font-mono mt-0.5">
-                                {{ officer.department }} • {{ officer.rank }} • Callsign #{{ officer.callsign }}
+                            <p class="mt-0.5 text-sm text-muted-foreground">
+                                {{ [officer.department, officer.rank].filter(Boolean).join(" · ") }}
+                                <span class="font-mono">· {{ officer.callsign }}</span>
                             </p>
-                            <div class="mt-2 flex items-center gap-2">
-                                <code class="px-2 py-1 rounded-sm bg-muted border border-border text-primary font-mono text-xs select-all">
-                                    /@{{ profile.slug }}
-                                </code>
+                            <div class="mt-2 flex items-center gap-1">
+                                <a
+                                    :href="`/@${profile.slug}`"
+                                    target="_blank"
+                                    rel="noopener"
+                                    class="truncate font-mono text-sm text-primary hover:underline"
+                                >/@{{ profile.slug }}</a>
                                 <Button
-                                    variant="secondary"
-                                    size="sm"
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    :aria-label="copied ? 'URL tersalin' : 'Salin URL'"
+                                    :title="copied ? 'Tersalin' : 'Salin URL'"
                                     @click="copyPublicUrl"
-                                    class="h-7 text-xs font-mono"
                                 >
-                                    <Check v-if="copied" class="w-3.5 h-3.5 mr-1 text-success" />
-                                    <Copy v-else class="w-3.5 h-3.5 mr-1" />
-                                    {{ copied ? "Tersalin" : "Salin URL" }}
+                                    <Check v-if="copied" class="text-success" />
+                                    <Copy v-else />
                                 </Button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- STATS BADGES -->
-                    <div class="grid grid-cols-2 gap-2 text-center w-full sm:w-auto">
-                        <StatTile
-                            label="Tayangan"
-                            :value="stats.total_views"
-                        />
-                        <StatTile
-                            label="Klik Tautan"
-                            :value="stats.total_clicks"
-                        />
+                    <div class="flex shrink-0 gap-6 border-t border-border pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+                        <div>
+                            <p class="flex items-center gap-1 text-xs text-muted-foreground"><Eye class="size-3.5" /> Tayangan</p>
+                            <p class="mt-0.5 font-mono text-xl font-bold text-foreground">{{ stats.total_views }}</p>
+                        </div>
+                        <div>
+                            <p class="flex items-center gap-1 text-xs text-muted-foreground"><MousePointerClick class="size-3.5" /> Klik</p>
+                            <p class="mt-0.5 font-mono text-xl font-bold text-foreground">{{ stats.total_clicks }}</p>
+                        </div>
                     </div>
                 </Card>
 
                 <!-- NAVIGATION TABS -->
-                <div class="flex items-center gap-2 border-b border-border pb-2 font-mono text-xs font-bold">
-                    <Button
-                        :variant="activeTab === 'links' ? 'default' : 'ghost'"
-                        size="sm"
-                        @click="onTabChange('links')"
-                        class="rounded-xl flex items-center gap-2"
+                <div class="flex items-center gap-6 border-b border-border" role="tablist">
+                    <button
+                        v-for="tab in [
+                            { key: 'links', label: 'Tautan', icon: Link2, count: localLinks.length },
+                            { key: 'appearance', label: 'Tampilan & tema', icon: Palette },
+                            { key: 'history', label: 'Riwayat', icon: History },
+                        ]"
+                        :key="tab.key"
+                        type="button"
+                        role="tab"
+                        :aria-selected="activeTab === tab.key"
+                        :class="[
+                            '-mb-px flex items-center gap-1.5 border-b-2 pb-2 text-sm font-semibold transition-colors',
+                            activeTab === tab.key
+                                ? 'border-foreground text-foreground'
+                                : 'border-transparent text-muted-foreground hover:text-foreground',
+                        ]"
+                        @click="onTabChange(tab.key)"
                     >
-                        <span>🔗 Daftar Tautan</span>
-                        <Badge :variant="activeTab === 'links' ? 'secondary' : 'outline'" class="text-xs">
-                            {{ localLinks.length }}
-                        </Badge>
-                    </Button>
-
-                    <Button
-                        :variant="activeTab === 'appearance' ? 'default' : 'ghost'"
-                        size="sm"
-                        @click="onTabChange('appearance')"
-                        class="rounded-xl flex items-center gap-2"
-                    >
-                        <span>🎨 Tampilan & Tema</span>
-                    </Button>
-
-                    <Button
-                        :variant="activeTab === 'history' ? 'default' : 'ghost'"
-                        size="sm"
-                        @click="onTabChange('history')"
-                        class="rounded-xl flex items-center gap-2"
-                    >
-                        <span>📜 Riwayat Audit</span>
-                    </Button>
+                        <component :is="tab.icon" class="size-4" />
+                        {{ tab.label }}
+                        <span v-if="tab.count !== undefined" class="text-xs font-normal text-muted-foreground">{{ tab.count }}</span>
+                    </button>
                 </div>
 
                 <!-- TAB 1: LINKS MANAGEMENT -->
-                <div v-show="activeTab === 'links'" class="space-y-4">
+                <div v-show="activeTab === 'links'" class="space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-mono uppercase text-muted-foreground">
-                            Kelola Tautan (Maks. 30)
-                        </span>
-                        <Button
-                            v-if="!profile.is_suspended"
-                            size="sm"
-                            @click="openAddModal"
-                            class="font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-1.5"
-                        >
-                            <Plus class="w-4 h-4" />
-                            <span>Tambah Tautan</span>
+                        <span class="text-sm text-muted-foreground">{{ localLinks.length }} dari 30 tautan</span>
+                        <Button v-if="!profile.is_suspended" size="sm" class="gap-1.5" @click="openAddModal">
+                            <Plus class="size-4" /> Tambah tautan
                         </Button>
                     </div>
 
                     <!-- LINKS LIST -->
-                    <div v-if="localLinks.length > 0" class="space-y-2.5">
-                        <Card
+                    <Card v-if="localLinks.length > 0" class="gap-0 divide-y divide-border overflow-hidden py-0">
+                        <div
                             v-for="(link, idx) in localLinks"
                             :key="link.id"
-                            class="p-3.5 rounded-2xl bg-card border-border hover:border-primary/40 transition flex flex-row items-center justify-between gap-3 shadow-md"
-                            :class="{ 'opacity-60': !link.is_active }"
+                            class="group flex items-center gap-3 px-3 py-3 transition-colors hover:bg-accent/30 sm:px-4"
                         >
-                            <div class="flex items-center gap-3 min-w-0">
-                                <!-- Reorder Buttons -->
-                                <div class="flex flex-col gap-0.5 shrink-0">
-                                    <Button
-                                        variant="outline"
-                                        size="icon-sm"
-                                        aria-label="Naikkan urutan tautan"
-                                        @click="moveLink(idx, -1)"
-                                        :disabled="idx === 0 || profile.is_suspended"
-                                        class="w-6 h-5 rounded-sm p-0"
-                                    >
-                                        <ArrowUp class="w-3 h-3" />
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="icon-sm"
-                                        aria-label="Turunkan urutan tautan"
-                                        @click="moveLink(idx, 1)"
-                                        :disabled="idx === localLinks.length - 1 || profile.is_suspended"
-                                        class="w-6 h-5 rounded-sm p-0"
-                                    >
-                                        <ArrowDown class="w-3 h-3" />
-                                    </Button>
-                                </div>
+                            <!-- Reorder -->
+                            <div class="flex shrink-0 flex-col">
+                                <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    aria-label="Naikkan urutan tautan"
+                                    :disabled="idx === 0 || profile.is_suspended"
+                                    class="h-5"
+                                    @click="moveLink(idx, -1)"
+                                >
+                                    <ArrowUp />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    aria-label="Turunkan urutan tautan"
+                                    :disabled="idx === localLinks.length - 1 || profile.is_suspended"
+                                    class="h-5"
+                                    @click="moveLink(idx, 1)"
+                                >
+                                    <ArrowDown />
+                                </Button>
+                            </div>
 
-                                <!-- Icon & Type -->
-                                <div class="w-9 h-9 rounded-xl bg-muted border border-border flex items-center justify-center text-base shrink-0">
-                                    <span v-if="link.link_type === 'donation'">🪙</span>
-                                    <span v-else-if="link.link_type === 'officer_recommendation'">🚓</span>
-                                    <span v-else-if="link.link_type === 'discord'">💬</span>
-                                    <span v-else-if="link.link_type === 'social'">▶️</span>
-                                    <span v-else>🔗</span>
-                                </div>
+                            <!-- Type icon -->
+                            <div
+                                :class="[
+                                    'flex size-9 shrink-0 items-center justify-center rounded-md',
+                                    link.link_type === 'donation' ? 'bg-warning/15 text-warning' : 'bg-muted text-muted-foreground',
+                                ]"
+                            >
+                                <component :is="linkTypeIcon(link.link_type)" class="size-4" />
+                            </div>
 
-                                <!-- Details -->
-                                <div class="min-w-0 text-left">
-                                    <div class="flex items-center gap-2">
-                                        <h4 class="text-xs font-bold font-mono text-foreground truncate">
-                                            {{ link.title }}
-                                        </h4>
-                                        <Badge
-                                            :variant="link.link_type === 'donation' ? 'warning' : 'secondary'"
-                                            class="text-xs font-mono font-bold uppercase"
-                                        >
-                                            {{ link.link_type }}
-                                        </Badge>
-                                    </div>
-                                    <p class="text-xs text-muted-foreground font-mono truncate mt-0.5">
-                                        {{ link.subtitle || link.url || 'Rekan patroli' }}
-                                    </p>
+                            <!-- Details -->
+                            <div :class="['min-w-0 flex-1', !link.is_active && 'opacity-50']">
+                                <div class="flex items-center gap-1.5">
+                                    <p class="truncate text-sm font-semibold text-foreground">{{ link.title }}</p>
+                                    <Star v-if="link.is_highlighted" class="size-3.5 shrink-0 fill-warning text-warning" aria-label="Disorot" />
+                                    <Badge v-if="link.badge_label" variant="secondary" class="shrink-0">{{ link.badge_label }}</Badge>
                                 </div>
+                                <p class="mt-0.5 truncate text-xs text-muted-foreground">
+                                    {{ linkTypeLabel(link.link_type) }} · {{ link.subtitle || link.url_host || link.url || "Rekan patroli" }}
+                                </p>
                             </div>
 
                             <!-- Actions -->
-                            <div class="flex items-center gap-2 shrink-0">
-                                <!-- Active Toggle -->
-                                <Button
-                                    :variant="link.is_active ? 'outline' : 'secondary'"
-                                    size="sm"
-                                    @click="toggleLink(link)"
+                            <div class="flex shrink-0 items-center gap-1">
+                                <Switch
+                                    :model-value="!!link.is_active"
                                     :disabled="profile.is_suspended"
-                                    class="text-xs font-mono font-bold"
-                                    :class="link.is_active ? 'border-success/40 text-success bg-success/10' : 'text-muted-foreground'"
-                                    :title="link.is_active ? 'Tautan Aktif' : 'Tautan Disembunyikan'"
-                                >
-                                    {{ link.is_active ? "Aktif" : "Mati" }}
-                                </Button>
-
+                                    :aria-label="link.is_active ? 'Sembunyikan tautan' : 'Tampilkan tautan'"
+                                    :title="link.is_active ? 'Tampil' : 'Disembunyikan'"
+                                    class="mr-1"
+                                    @update:model-value="toggleLink(link)"
+                                />
                                 <Button
                                     v-if="!profile.is_suspended"
-                                    variant="outline"
+                                    variant="ghost"
                                     size="icon-sm"
                                     aria-label="Edit tautan"
+                                    title="Edit tautan"
                                     @click="openEditModal(link)"
-                                    title="Edit Tautan"
                                 >
-                                    <Pencil class="w-3.5 h-3.5" />
+                                    <Pencil />
                                 </Button>
-
                                 <Button
                                     v-if="!profile.is_suspended"
-                                    variant="destructive"
+                                    variant="ghost"
                                     size="icon-sm"
                                     aria-label="Hapus tautan"
+                                    title="Hapus tautan"
+                                    class="text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
                                     @click="promptDeleteLink(link)"
-                                    title="Hapus Tautan"
                                 >
-                                    <Trash2 class="w-3.5 h-3.5" />
+                                    <Trash2 />
                                 </Button>
                             </div>
-                        </Card>
-                    </div>
+                        </div>
+                    </Card>
 
                     <EmptyState
                         v-else
-                        title="Belum Ada Tautan"
-                        description="Klik '+ Tambah Tautan' untuk menambahkan Saweria, Discord, atau rekan patroli."
+                        title="Belum ada tautan"
+                        description="Tambahkan Saweria, Discord, media sosial, atau rekan patroli Anda."
                     />
                 </div>
 
@@ -747,7 +711,7 @@ const domainHint = computed(() => {
             </div>
 
             <!-- RIGHT COLUMN: INTERACTIVE REAL-TIME MOBILE PREVIEW FRAME (5 cols) -->
-            <div class="lg:col-span-5 flex flex-col items-center sticky top-20">
+            <div class="lg:col-span-5 flex flex-col items-center lg:sticky lg:top-24 lg:self-start">
                 <div class="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <span>📱 PRATINJAU LANGSUNG MOBILE (380px)</span>
                 </div>
