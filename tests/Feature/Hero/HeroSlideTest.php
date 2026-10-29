@@ -396,4 +396,114 @@ class HeroSlideTest extends TestCase
         $this->postJson("/api/v1/hero-slides/{$inactiveSlide->id}/event", ['type' => 'impression'])
             ->assertNotFound();
     }
+
+    public function test_end_to_end_dashboard_inertia_props_and_admin_7d_stats(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $member = User::factory()->create(['role' => 'viewer']);
+        $officerUser = User::factory()->create(['role' => 'viewer']);
+
+        $officer = Officer::create([
+            'user_id' => $officerUser->id,
+            'channel_id' => 'UC_E2E_OFFICER',
+            'handle' => '@E2EOfficer',
+            'streamer_name' => 'E2E Streamer',
+            'officer_name' => 'Lt. E2E',
+            'callsign' => '105',
+            'badge_number' => '#105',
+            'department' => 'SASP',
+            'rank' => 'Lieutenant',
+            'is_active' => true,
+        ]);
+
+        ActiveStream::create([
+            'officer_id' => $officer->id,
+            'channel_id' => $officer->channel_id,
+            'video_id' => 'vid_e2e',
+            'title' => 'Patroli Malam E2E',
+            'thumbnail_url' => 'https://i.ytimg.com/vi/vid_e2e/maxresdefault.jpg',
+            'status' => 'LIVE',
+            'viewers_count' => 920,
+        ]);
+
+        // 1. Scheduled feature slide (active today, audience: all)
+        $resFeature = $this->actingAs($admin)->postJson('/api/v1/admin/hero-slides', [
+            'slide_type' => 'feature',
+            'title' => 'Fitur Baru Hari Ini',
+            'accent' => 'primary',
+            'audience' => 'all',
+            'image_alt' => 'Fitur',
+            'image_desktop' => UploadedFile::fake()->image('f.jpg', 1600, 600),
+            'starts_at' => now()->subHour()->toIso8601String(),
+            'ends_at' => now()->addDay()->toIso8601String(),
+            'is_active' => true,
+        ])->assertCreated();
+        $featureId = $resFeature->json('slide.id');
+
+        // 2. Officer-only event slide
+        $this->actingAs($admin)->postJson('/api/v1/admin/hero-slides', [
+            'slide_type' => 'event',
+            'title' => 'Briefing Khusus Perwira',
+            'accent' => 'dept-sasp',
+            'audience' => 'officer',
+            'image_alt' => 'Briefing',
+            'image_desktop' => UploadedFile::fake()->image('e.jpg', 1600, 600),
+            'is_active' => true,
+        ])->assertCreated();
+
+        // 3. CTA slide for guest
+        $this->actingAs($admin)->postJson('/api/v1/admin/hero-slides', [
+            'slide_type' => 'cta',
+            'title' => 'Gabung Komunitas',
+            'accent' => 'info',
+            'audience' => 'guest',
+            'image_alt' => 'CTA',
+            'image_desktop' => UploadedFile::fake()->image('c.jpg', 1600, 600),
+            'cta_primary_label' => 'Daftar',
+            'cta_primary_url' => '/register',
+            'is_active' => true,
+        ])->assertCreated();
+
+        // 4. Live spotlight slide
+        $this->actingAs($admin)->postJson('/api/v1/admin/hero-slides', [
+            'slide_type' => 'live_spotlight',
+            'accent' => 'primary',
+            'audience' => 'all',
+            'is_active' => true,
+        ])->assertCreated();
+
+        // Check dashboard prop for Guest (sees: feature, cta, live_spotlight = 3 slides)
+        $this->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Dashboard')
+                ->has('heroSlides', 3)
+            );
+
+        // Check dashboard prop for Member (sees: feature, live_spotlight = 2 slides)
+        $this->actingAs($member)->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Dashboard')
+                ->has('heroSlides', 2)
+            );
+
+        // Check dashboard prop for Officer (sees: feature, officer event, live_spotlight = 3 slides)
+        $this->actingAs($officerUser)->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Dashboard')
+                ->has('heroSlides', 3)
+            );
+
+        // Record impression & click on feature slide and verify admin index 7-day stats
+        $this->postJson("/api/v1/hero-slides/{$featureId}/event", ['type' => 'impression'])->assertNoContent();
+        $this->postJson("/api/v1/hero-slides/{$featureId}/event", ['type' => 'click'])->assertNoContent();
+
+        $indexRes = $this->actingAs($admin)->getJson('/api/v1/admin/hero-slides')->assertOk();
+        $slidesList = collect($indexRes->json('slides'));
+        $featureRow = $slidesList->firstWhere('id', $featureId);
+        $this->assertEquals(1, $featureRow['impressions_7d']);
+        $this->assertEquals(1, $featureRow['clicks_7d']);
+    }
 }
