@@ -39,6 +39,8 @@ Route::get('/admin', function () {
 })->name('admin');
 
 // Dedicated Standalone Admin Command Hub (Protected by Auth & Admin Role)
+Route::middleware(['auth', 'admin'])->get('/dev/ui-kit', fn () => Inertia::render('Dev/UiKit'))->name('dev.ui-kit');
+
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/officers', [OfficerManagementController::class, 'adminPage'])->name('admin.officers');
     Route::post('/api/sync-streams', [OfficerManagementController::class, 'syncStreams'])->name('admin.sync-streams');

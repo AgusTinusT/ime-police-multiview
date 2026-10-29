@@ -23,6 +23,10 @@ class EnsureIsAdmin
                 ], 403);
             }
 
+            if ($request->is('dev/*')) {
+                abort(403, 'Akses ditolak. Halaman ini hanya untuk Admin.');
+            }
+
             return redirect()->route('dashboard')->with('error', 'Akses ditolak. Anda tidak memiliki izin untuk membuka halaman Admin.');
         }
 
