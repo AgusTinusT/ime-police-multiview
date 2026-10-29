@@ -4,15 +4,12 @@ import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 
 const { toggleOfficerStatus, getOfficerKey } = useOfficerFilter();
 
-// SVG Icon Assets & Branding Logos
 import iconLspd from "@/Components/Icons/LSPD_HD.svg";
 import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
 import iconSasp from "@/Components/Icons/SASP_HD.svg";
 import iconSapr from "@/Components/Icons/ranger_logo.svg";
 import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
-import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
 import iconRadio from "@/Components/Icons/radio-tac-svgrepo-com.svg";
-import iconChat from "@/Components/Icons/chat-svgrepo-com.svg";
 import iconClock from "@/Components/Icons/time-svgrepo-com.svg";
 
 import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
@@ -20,9 +17,13 @@ import TacChannelToolbar from "@/Components/TacChannelToolbar.vue";
 import FocusModePlayer from "@/Components/FocusModePlayer.vue";
 import TacticalStreamCard from "@/Components/TacticalStreamCard.vue";
 import TacticalDockControlBar from "@/Components/TacticalDockControlBar.vue";
+import { EmptyState } from "@/Components/tactical";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
+import { MessageSquare, RefreshCw, X } from "@lucide/vue";
 
 const props = defineProps({
-    mode: { type: String, default: "gmeet" }, // 'gmeet' (Multiview Grid) or 'netflix' (Dashboard Swimlane Discovery)
+    mode: { type: String, default: "gmeet" },
     selectedDepartment: { type: String, required: true },
     selectedLayout: { type: String, default: "auto" },
     searchFilter: { type: String, default: "" },
@@ -116,7 +117,6 @@ const selectedLayoutLabel = computed(() => {
     return "Auto Grid";
 });
 
-// Stopped / Closed Video Feeds State (Mode Stop Feed)
 const stoppedVideoIds = ref([]);
 
 const isStreamStopped = (videoId) => {
@@ -143,7 +143,6 @@ const toggleStopFeed = (videoId) => {
     if (!videoId) return;
     const playing = isVideoPlaying(videoId);
     if (playing) {
-        // Currently playing -> Stop / Close video feed (Return to poster thumbnail)
         if (!stoppedVideoIds.value.includes(videoId)) {
             stoppedVideoIds.value.push(videoId);
         }
@@ -163,7 +162,6 @@ const toggleStopFeed = (videoId) => {
             emit("toggle-audio", videoId);
         }
     } else {
-        // Currently stopped / showing poster thumbnail -> Resume / Start video feed
         const idx = stoppedVideoIds.value.indexOf(videoId);
         if (idx !== -1) {
             stoppedVideoIds.value.splice(idx, 1);
@@ -196,7 +194,6 @@ const handleSetFocusStream = (videoId) => {
     emit("set-focus-stream", videoId);
 };
 
-// Focus Mode Right-Column Live Chat State
 const isRightChatOpen = ref(true);
 const fetchedDescriptions = ref({});
 
@@ -223,7 +220,6 @@ const getStreamDescription = (stream) => {
     return stream.description || "";
 };
 
-// Computed Primary & Secondary Streams for Focus Layout
 const primaryFocusedStream = computed(() => {
     if (props.focusStream) return props.focusStream;
     return props.visibleStreams.length > 0 ? props.visibleStreams[0] : null;
@@ -243,7 +239,6 @@ const displayedGridStreams = computed(() => {
         : props.visibleStreams;
 });
 
-// Dynamic Grid Layout CSS Class (Google Meet Viewport Responsive Grid)
 const layoutGridClass = computed(() => {
     const layout = props.selectedLayout;
     const count = displayedGridStreams.value.length;
@@ -257,7 +252,6 @@ const layoutGridClass = computed(() => {
     if (layout === "grid-4x4")
         return "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3";
 
-    // Auto GMeet Mode scaling based on stream count
     if (count <= 1) return "grid grid-cols-1 gap-3 sm:gap-4";
     if (count <= 2) return "grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4";
     if (count <= 4) return "grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4";
@@ -266,11 +260,6 @@ const layoutGridClass = computed(() => {
     return "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3";
 });
 
-// Horizontal Scroll Helper for Netflix Swimlanes
-
-// Department Badge Class Mapper
-
-// Department Icon Mapper
 const getDeptIcon = (dept) => {
     const d = (dept || "").toUpperCase();
     if (d.includes("LSPD")) return iconLspd;
@@ -280,22 +269,15 @@ const getDeptIcon = (dept) => {
     return iconAllUnits;
 };
 
-// Relative Time Label Helper
-
-// YouTube Link Helper
-
-// TAC Department Check Helper
 const isTacDepartment = (deptId) => {
     return typeof deptId === "string" && deptId.startsWith("TAC_");
 };
 
-// TAC Remaining Seconds Helper
 const getTacRemainingSeconds = (tacCode) => {
     const ch = props.tacChannels.find((c) => c.code === tacCode);
     return ch ? ch.remaining_seconds || 0 : 0;
 };
 
-// Check if Channel/Handle is pinned to personal watchlist
 const isPersonalStream = (channelOrHandle) => {
     if (!channelOrHandle) return false;
     const target = String(channelOrHandle).trim().toLowerCase();
@@ -372,55 +354,40 @@ const getCustomOrderRank = (item) => {
         />
 
         <!-- Department Standby Banner when visibleStreams.length === 0 -->
-        <div
+        <EmptyState
             v-if="visibleStreams.length === 0"
-            class="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 p-8 text-center flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200"
+            :title="`TIDAK ADA SIARAN AKTIF (10-8) DI KATEGORI ${selectedDepartment.replace('_', ' ')}`"
+            :description="`Saat ini belum ada siaran langsung untuk kesatuan ${selectedDepartment.replace('_', ' ')}. Anda dapat menyinkronkan data terbaru atau menampilkan seluruh unit.`"
         >
-            <div
-                class="w-14 h-14 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-blue-400 mb-1"
-            >
-                <img
-                    :src="getDeptIcon(selectedDepartment)"
-                    class="w-7 h-7 invert opacity-80"
-                    alt=""
-                />
-            </div>
-            <h3
-                class="text-lg font-bold text-slate-100 uppercase tracking-wider"
-            >
-                TIDAK ADA SIARAN AKTIF (10-8) DI KATEGORI
-                {{ selectedDepartment.replace("_", " ") }}
-            </h3>
-            <p class="text-xs text-slate-400 max-w-md">
-                Saat ini belum ada siaran langsung untuk kesatuan
-                {{ selectedDepartment.replace("_", " ") }}. Anda dapat
-                menyinkronkan data terbaru atau menampilkan seluruh unit.
-            </p>
-            <div class="flex items-center gap-2 mt-2 flex-wrap justify-center">
-                <button
-                    @click="emit('trigger-manual-sync')"
-                    :disabled="isSyncingFeeds"
-                    class="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition flex items-center gap-2"
-                >
-                    <img
-                        :src="iconRefresh"
-                        class="w-3.5 h-3.5 invert"
-                        :class="{ 'animate-spin': isSyncingFeeds }"
-                    />
-                    <span>{{
-                        isSyncingFeeds
-                            ? "Menyinkronkan..."
-                            : "Cek Live Sekarang"
-                    }}</span>
-                </button>
-                <button
-                    @click="emit('update:selectedDepartment', 'ALL')"
-                    class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold rounded-lg border border-slate-700 transition"
-                >
-                    Tampilkan Seluruh Unit
-                </button>
-            </div>
-        </div>
+            <template #action>
+                <div class="flex items-center gap-2 flex-wrap justify-center">
+                    <Button
+                        type="button"
+                        size="sm"
+                        :disabled="isSyncingFeeds"
+                        @click="emit('trigger-manual-sync')"
+                    >
+                        <RefreshCw
+                            class="size-3.5"
+                            :class="{ 'animate-spin': isSyncingFeeds }"
+                        />
+                        <span>{{
+                            isSyncingFeeds
+                                ? "Menyinkronkan..."
+                                : "Cek Live Sekarang"
+                        }}</span>
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        @click="emit('update:selectedDepartment', 'ALL')"
+                    >
+                        Tampilkan Seluruh Unit
+                    </Button>
+                </div>
+            </template>
+        </EmptyState>
 
         <!-- FOCUS LAYOUT MODE (1 Lead Screen + Supporting Unit Grid Below / Side) -->
         <div
@@ -505,38 +472,39 @@ const getCustomOrderRank = (item) => {
 
                 <!-- RIGHT COLUMN: LIVE CHAT & SUPPORTING UNITS -->
                 <div class="lg:col-span-4 xl:col-span-3 flex flex-col gap-3">
-                    <div
+                    <Card
                         v-if="isRightChatOpen && primaryFocusedStream"
-                        class="hidden lg:flex bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex-col animate-in fade-in zoom-in-95 duration-200"
+                        class="hidden lg:flex overflow-hidden flex-col py-0 gap-0 animate-in fade-in zoom-in-95 duration-200"
                     >
                         <div
-                            class="bg-slate-900/95 px-3 py-1.5 flex items-center justify-between border-b border-slate-800 text-xs"
+                            class="bg-card px-3 py-1.5 flex items-center justify-between border-b border-border text-xs"
                         >
                             <div
-                                class="flex items-center space-x-1.5 text-blue-300 font-bold truncate"
+                                class="flex items-center space-x-1.5 text-primary font-bold truncate"
                             >
-                                <img
-                                    :src="iconChat"
-                                    class="w-3.5 h-3.5 invert opacity-90"
-                                    alt=""
-                                />
-                                <span class="truncate"
-                                    >Live Chat:
+                                <MessageSquare class="size-3.5 shrink-0" />
+                                <span class="truncate">
+                                    Live Chat:
                                     {{
                                         primaryFocusedStream.officer
                                             ?.officer_name
-                                    }}</span
-                                >
+                                    }}
+                                </span>
                             </div>
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                class="h-6 px-2 text-xs font-mono text-muted-foreground hover:text-foreground"
+                                aria-label="Tutup live chat"
                                 @click="isRightChatOpen = false"
-                                class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-1.5 py-0.2 rounded-sm"
                             >
-                                ✕ Close
-                            </button>
+                                <X class="size-3" />
+                                <span>Close</span>
+                            </Button>
                         </div>
                         <div
-                            class="w-full h-[350px] sm:h-[520px] bg-slate-900 relative"
+                            class="w-full h-[350px] sm:h-[520px] bg-card relative"
                         >
                             <iframe
                                 :key="`chat-lead-${primaryFocusedStream.video_id}`"
@@ -545,7 +513,7 @@ const getCustomOrderRank = (item) => {
                                 allow="autoplay"
                             ></iframe>
                         </div>
-                    </div>
+                    </Card>
 
                     <!-- SUPPORTING UNITS FEED LIST -->
                     <div class="space-y-3">
@@ -616,38 +584,37 @@ const getCustomOrderRank = (item) => {
                     v-if="activeGridChatStream"
                     class="lg:col-span-4 xl:col-span-3 space-y-3 animate-in fade-in zoom-in-95 duration-200"
                 >
-                    <div
-                        class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 flex flex-col"
-                    >
+                    <Card class="overflow-hidden flex flex-col py-0 gap-0">
                         <div
-                            class="bg-slate-900/95 px-3.5 py-2 flex items-center justify-between border-b border-slate-800 text-xs"
+                            class="bg-card px-3.5 py-2 flex items-center justify-between border-b border-border text-xs"
                         >
                             <div
-                                class="flex items-center space-x-2 text-blue-300 font-bold truncate"
+                                class="flex items-center space-x-2 text-primary font-bold truncate"
                             >
-                                <img
-                                    :src="iconChat"
-                                    class="w-3.5 h-3.5 invert opacity-90"
-                                    alt=""
-                                />
-                                <span class="truncate"
-                                    >Live Chat:
+                                <MessageSquare class="size-3.5 shrink-0" />
+                                <span class="truncate">
+                                    Live Chat:
                                     {{
                                         activeGridChatStream.officer
                                             ?.officer_name ||
                                         activeGridChatStream.title
-                                    }}</span
-                                >
+                                    }}
+                                </span>
                             </div>
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                class="h-6 px-2 text-xs font-mono text-muted-foreground hover:text-foreground"
+                                aria-label="Tutup live chat"
                                 @click="emit('update:activeChatVideoId', null)"
-                                class="text-slate-400 hover:text-white text-[11px] font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded-sm transition"
                             >
-                                ✕ Close
-                            </button>
+                                <X class="size-3" />
+                                <span>Close</span>
+                            </Button>
                         </div>
                         <div
-                            class="w-full h-[260px] sm:h-[580px] bg-slate-900 relative"
+                            class="w-full h-[260px] sm:h-[580px] bg-card relative"
                         >
                             <iframe
                                 :key="`chat-grid-${activeGridChatStream.video_id}`"
@@ -656,12 +623,12 @@ const getCustomOrderRank = (item) => {
                                 allow="autoplay"
                             ></iframe>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
         </div>
 
-        <!-- GOOGLE MEET BOTTOM STICKY CONTROL BAR (Refactored Level 3) -->
+        <!-- GOOGLE MEET BOTTOM STICKY CONTROL BAR -->
         <TacticalDockControlBar
             :selectedDepartment="selectedDepartment"
             :selectedLayout="selectedLayout"

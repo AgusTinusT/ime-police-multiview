@@ -2,6 +2,18 @@
 import { computed } from "vue";
 import { Link } from "@inertiajs/vue3";
 import { useI18n } from "vue-i18n";
+import { DeptBadge, OfficerAvatar } from "@/Components/tactical";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
+import {
+    ArrowRight,
+    ClipboardList,
+    Heart,
+    Play,
+    ShieldCheck,
+    Sparkles,
+} from "@lucide/vue";
 
 const { t } = useI18n();
 
@@ -27,24 +39,6 @@ const displaySubtitle = computed(
     () => props.subtitle || t("sub_support.subtitle"),
 );
 
-// Standardized Department Color Badges Function
-const getDeptBadgeClass = (dept) => {
-    switch (dept) {
-        case "LSPD":
-            return "bg-blue-950/80 text-blue-400 border-blue-500/30";
-        case "BCSO":
-            return "bg-amber-950/80 text-amber-400 border-amber-500/30";
-        case "SASP":
-            return "bg-cyan-950/80 text-cyan-400 border-cyan-500/30";
-        case "SAPR":
-        case "PARK RANGER":
-            return "bg-emerald-950/80 text-emerald-400 border-emerald-500/30";
-        default:
-            return "bg-slate-900 text-slate-300 border-slate-700";
-    }
-};
-
-// Default Data for Active Officers (< 1k Subs) as fallback
 const defaultSupportOfficers = [
     {
         id: 1,
@@ -147,7 +141,6 @@ const defaultSupportOfficers = [
     },
 ];
 
-// Displaying Officers in Left 8/12 Panel
 const displayedOfficers = computed(() => {
     if (props.officers && props.officers.length > 0) {
         return props.officers;
@@ -174,44 +167,32 @@ const openChannel = (url) => {
 
 <template>
     <section class="relative w-full font-sans">
-        <!-- 2-COLUMN LAYOUT (LEFT 8/12: WIDE 3-COLUMN MATRIX, RIGHT 4/12: COMPACT SIDEBAR) -->
         <div
             class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start relative z-10"
         >
             <!-- LEFT COLUMN (8/12): EXPANDED MONITORING PANEL WITH 3-COLUMN OFFICERS MATRIX -->
             <div class="lg:col-span-8 order-2 lg:order-1">
-                <div
-                    class="rounded-xl bg-slate-900 border border-slate-800 p-5 space-y-4"
-                >
+                <Card class="p-5 space-y-4">
                     <!-- HUD Card Header -->
                     <div
-                        class="flex items-center justify-between pb-3 border-b border-slate-800"
+                        class="flex items-center justify-between pb-3 border-b border-border"
                     >
                         <div class="flex items-center gap-2">
-                            <svg
-                                class="w-4 h-4 text-blue-400 shrink-0 hidden sm:block"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                                />
-                            </svg>
+                            <ShieldCheck
+                                class="size-4 text-primary shrink-0 hidden sm:block"
+                            />
                             <h3
-                                class="text-xs font-mono font-semibold text-slate-200 uppercase tracking-wider"
+                                class="text-xs font-mono font-semibold text-foreground uppercase tracking-wider"
                             >
                                 {{ $t("sub_support.active_list_title") }}
                             </h3>
                         </div>
-                        <span
-                            class="hidden sm:inline-block text-[11px] font-mono text-blue-400 bg-blue-950/70 px-2 py-0.5 rounded-sm border border-blue-800/80 font-medium"
+                        <Badge
+                            variant="info"
+                            class="hidden sm:inline-flex font-mono text-xs"
                         >
                             {{ $t("sub_support.live_3_days") }}
-                        </span>
+                        </Badge>
                     </div>
 
                     <!-- 3-Column Officers Matrix -->
@@ -221,49 +202,38 @@ const openChannel = (url) => {
                         <div
                             v-for="officer in displayedOfficers"
                             :key="officer.id"
-                            class="p-2.5 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 transition-colors flex items-center justify-between gap-2.5 group"
+                            class="p-2.5 rounded-lg bg-background hover:border-input border border-border transition-colors flex items-center justify-between gap-2.5 group"
                         >
                             <!-- Profile Photo & Officer Name -->
                             <div class="flex items-center space-x-2.5 min-w-0">
                                 <div
-                                    class="relative shrink-0 cursor-pointer"
+                                    class="shrink-0 cursor-pointer"
                                     @click="openChannel(officer.youtube_url)"
                                 >
-                                    <img
+                                    <OfficerAvatar
                                         :src="officer.avatar_url"
-                                        :alt="officer.officer_name"
-                                        class="w-9 h-9 rounded-md object-cover border border-slate-800 group-hover:border-slate-700 transition-colors"
+                                        :name="officer.officer_name"
+                                        :live="officer.is_live_now"
+                                        size="md"
                                     />
-                                    <span
-                                        v-if="officer.is_live_now"
-                                        class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-600 border-2 border-slate-950 rounded-full"
-                                        title="Status Live"
-                                    ></span>
                                 </div>
                                 <div class="min-w-0">
                                     <div class="flex items-center gap-1.5">
                                         <h4
+                                            class="font-semibold text-xs text-foreground leading-tight truncate cursor-pointer hover:text-primary transition-colors"
                                             @click="
                                                 openChannel(officer.youtube_url)
                                             "
-                                            class="font-semibold text-xs text-slate-100 leading-tight truncate cursor-pointer hover:text-blue-400 transition-colors"
                                         >
                                             {{ officer.officer_name }}
                                         </h4>
                                     </div>
                                     <div class="flex items-center gap-1 mt-0.5">
+                                        <DeptBadge
+                                            :dept="officer.department || 'SASP'"
+                                        />
                                         <span
-                                            :class="[
-                                                'px-1.5 py-0.2 rounded-sm text-[8px] font-mono font-bold border shrink-0',
-                                                getDeptBadgeClass(
-                                                    officer.department,
-                                                ),
-                                            ]"
-                                        >
-                                            {{ officer.department }}
-                                        </span>
-                                        <span
-                                            class="text-[9px] text-blue-400 font-mono truncate"
+                                            class="text-xs text-primary font-mono truncate"
                                         >
                                             @{{ officer.streamer_name }}
                                         </span>
@@ -272,89 +242,79 @@ const openChannel = (url) => {
                             </div>
 
                             <!-- Right CTA Button (YouTube Support) -->
-                            <button
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                class="h-7 px-2.5 text-xs font-mono gap-1 shrink-0"
                                 @click="openChannel(officer.youtube_url)"
-                                class="px-2.5 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-md text-[10px] font-medium font-mono transition-colors flex items-center gap-1 cursor-pointer shrink-0"
                             >
-                                <svg
-                                    class="w-3 h-3 fill-current shrink-0"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-                                    />
-                                </svg>
+                                <Play class="size-3 fill-current shrink-0" />
                                 <span>{{ $t("sub_support.support_btn") }}</span>
-                            </button>
+                            </Button>
                         </div>
                     </div>
 
                     <!-- Bottom HUD Card Footer -->
                     <div
-                        class="pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono"
+                        class="pt-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono"
                     >
-                        <span class="text-slate-400 flex items-center gap-1.5">
-                            <svg
-                                class="w-3.5 h-3.5 text-slate-400 inline"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                                />
-                            </svg>
+                        <span
+                            class="text-muted-foreground flex items-center gap-1.5"
+                        >
+                            <ClipboardList
+                                class="size-3.5 text-muted-foreground inline"
+                            />
                             <span>{{
                                 $t("sub_support.showing_officers", {
                                     count: displayedOfficers.length,
                                 })
                             }}</span>
                         </span>
-                        <Link
-                            href="/officers?sort=subs_asc"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-xs transition-colors group"
-                        >
-                            <span>{{
-                                $t("sub_support.view_all_officers")
-                            }}</span>
-                            <span
-                                class="group-hover:translate-x-1 transition-transform"
-                                >→</span
+                        <Button as-child variant="outline" size="sm">
+                            <Link
+                                href="/officers?sort=subs_asc"
+                                class="font-mono text-xs gap-1.5 group"
                             >
-                        </Link>
+                                <span>{{
+                                    $t("sub_support.view_all_officers")
+                                }}</span>
+                                <ArrowRight
+                                    class="size-3.5 group-hover:translate-x-1 transition-transform"
+                                />
+                            </Link>
+                        </Button>
                     </div>
-                </div>
+                </Card>
             </div>
 
             <!-- RIGHT COLUMN (4/12): COMPACT VERTICAL TACTICAL SIDEBAR -->
             <div class="lg:col-span-4 order-1 lg:order-2">
                 <div class="space-y-4 sticky top-20">
                     <!-- Top Badge Pill -->
-                    <div
-                        class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-blue-950/70 border border-blue-800/80 text-xs font-mono text-blue-300"
+                    <Badge
+                        variant="outline"
+                        class="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-mono text-primary bg-card"
                     >
                         <span
-                            class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"
+                            class="w-2 h-2 rounded-full bg-primary motion-safe:animate-pulse"
                         ></span>
                         <span>SUPPORT BOOST // ROAD TO 1K</span>
-                    </div>
+                    </Badge>
 
                     <!-- Compact Section Header -->
                     <div class="space-y-1.5">
                         <h2
-                            class="text-xl font-bold text-slate-100 tracking-tight uppercase leading-tight"
+                            class="text-xl font-bold text-foreground tracking-tight uppercase leading-tight"
                         >
                             IME POLICE OFFICER <br />
-                            <span class="text-blue-500">{{
+                            <span class="text-primary">{{
                                 displayTitle
                             }}</span>
                         </h2>
 
                         <p
-                            class="text-slate-400 text-xs leading-relaxed font-sans font-normal"
+                            class="text-muted-foreground text-xs leading-relaxed font-sans font-normal"
                         >
                             {{ displaySubtitle }}
                         </p>
@@ -363,24 +323,12 @@ const openChannel = (url) => {
                     <!-- Information Feature Pills & Action Button -->
                     <div class="space-y-2.5 font-mono text-xs">
                         <div
-                            class="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-950 border border-slate-800"
+                            class="flex items-center gap-2.5 p-2.5 rounded-lg bg-background border border-border"
                         >
-                            <svg
-                                class="w-4 h-4 text-blue-400 shrink-0"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0-6v3m0 14v3m9-10h-3M6 12H3m15.364-6.364l-2.121 2.121M7.757 16.243l-2.121 2.121m12.728 0l-2.121-2.121M7.757 7.757L5.636 5.636"
-                                />
-                            </svg>
+                            <Sparkles class="size-4 text-primary shrink-0" />
                             <div>
                                 <strong
-                                    class="text-slate-200 block font-sans text-xs"
+                                    class="text-foreground block font-sans text-xs"
                                     >{{
                                         $t(
                                             "sub_support.feature_active_officers",
@@ -388,7 +336,7 @@ const openChannel = (url) => {
                                     }}</strong
                                 >
                                 <span
-                                    class="text-slate-400 text-[10px] font-sans font-normal"
+                                    class="text-muted-foreground text-xs font-sans font-normal"
                                     >{{
                                         $t(
                                             "sub_support.feature_active_officers_desc",
@@ -399,24 +347,12 @@ const openChannel = (url) => {
                         </div>
 
                         <div
-                            class="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-950 border border-slate-800"
+                            class="flex items-center gap-2.5 p-2.5 rounded-lg bg-background border border-border"
                         >
-                            <svg
-                                class="w-4 h-4 text-emerald-400 shrink-0"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.684a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                />
-                            </svg>
+                            <Heart class="size-4 text-success shrink-0" />
                             <div>
                                 <strong
-                                    class="text-slate-200 block font-sans text-xs"
+                                    class="text-foreground block font-sans text-xs"
                                     >{{
                                         $t(
                                             "sub_support.feature_community_support",
@@ -424,7 +360,7 @@ const openChannel = (url) => {
                                     }}</strong
                                 >
                                 <span
-                                    class="text-slate-400 text-[10px] font-sans font-normal"
+                                    class="text-muted-foreground text-xs font-sans font-normal"
                                     >{{
                                         $t(
                                             "sub_support.feature_community_support_desc",

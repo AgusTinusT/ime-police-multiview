@@ -1,6 +1,19 @@
 <script setup>
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import { LiveBadge, OfficerAvatar } from "@/Components/tactical";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/Components/ui/table";
+import { Clock, Crown, Info, Medal, Play } from "@lucide/vue";
 
 const { t } = useI18n();
 
@@ -20,7 +33,9 @@ const props = defineProps({
 });
 
 const displayTitle = computed(() => props.title || t("leaderboard.title"));
-const displaySubtitle = computed(() => props.subtitle || t("leaderboard.subtitle"));
+const displaySubtitle = computed(
+    () => props.subtitle || t("leaderboard.subtitle"),
+);
 
 const defaultTopStreamers = [
     {
@@ -181,18 +196,19 @@ const openChannel = (url) => {
         id="officerLeaderboard"
         class="w-full space-y-6 font-sans relative"
     >
-        <!-- Section Header (Frameless, Centered Large Title) -->
+        <!-- Section Header -->
         <div
             class="text-center py-2 mb-5 sm:mb-12 space-y-2 font-sans max-w-4xl mx-auto"
         >
-            <div
-                class="inline-flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-center"
+            <Badge
+                variant="warning"
+                class="font-mono text-xs font-semibold uppercase tracking-wider"
             >
-                <span>{{ periodText }}</span>
-            </div>
+                {{ periodText }}
+            </Badge>
 
             <h2
-                class="text-xl sm:text-3xl lg:text-4xl font-bold text-slate-100 tracking-tight uppercase leading-tight"
+                class="text-xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight uppercase leading-tight"
             >
                 {{ displayTitle }}
             </h2>
@@ -204,475 +220,447 @@ const openChannel = (url) => {
             id="podiumLeaderboard"
         >
             <!-- Rank 2: Silver Officer -->
-            <div
-                class="order-2 md:order-1 bg-slate-900 rounded-xl p-3.5 sm:p-5 border border-slate-800 relative hover:border-slate-700 transition-colors"
+            <Card
+                class="order-2 md:order-1 p-3.5 sm:p-5 relative hover:border-input transition-colors gap-0"
             >
-                <div
-                    class="absolute -top-3 left-4 sm:left-5 px-2.5 py-0.5 rounded-md bg-slate-200 text-slate-950 font-mono font-bold text-[9px] sm:text-[10px] uppercase flex items-center gap-1 shrink-0"
+                <Badge
+                    variant="secondary"
+                    class="absolute -top-3 left-4 sm:left-5 font-mono font-bold text-xs uppercase gap-1"
                 >
-                    <svg
-                        class="w-3 h-3 text-slate-950 shrink-0"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"
-                        />
-                    </svg>
+                    <Medal class="size-3 shrink-0 text-warning" />
                     <span>RANK #2 SILVER</span>
-                </div>
+                </Badge>
 
                 <div
                     class="flex items-center gap-3 sm:gap-3.5 mb-3 sm:mb-4 mt-1"
                 >
-                    <div class="relative shrink-0">
-                        <img
-                            :src="topStreamers[1].avatar_url"
-                            class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover border border-slate-700"
-                        />
-                        <span
-                            :class="
-                                topStreamers[1].is_live
-                                    ? 'bg-red-500'
-                                    : 'bg-slate-600'
-                            "
-                            class="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-slate-900"
-                            :title="
-                                topStreamers[1].is_live
-                                    ? '10-8 Sedang Patroli Live'
-                                    : '10-7 Standby / Offline'
-                            "
-                        ></span>
-                    </div>
+                    <OfficerAvatar
+                        :src="topStreamers[1].avatar_url"
+                        :name="topStreamers[1].officer_name"
+                        :live="topStreamers[1].is_live"
+                        size="lg"
+                    />
                     <div class="min-w-0 flex-1">
                         <h3
-                            class="font-bold text-xs sm:text-sm text-slate-100 truncate"
+                            class="font-bold text-xs sm:text-sm text-foreground truncate"
                         >
                             {{ topStreamers[1].officer_name }}
                         </h3>
                         <p
-                            class="text-[11px] sm:text-xs text-slate-400 font-mono truncate"
+                            class="text-xs text-muted-foreground font-mono truncate"
                         >
                             {{ topStreamers[1].callsign }}
                         </p>
-                        <span
-                            v-if="topStreamers[1].is_live"
-                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-red-400 bg-red-950/60 px-1.5 sm:px-2 py-0.5 rounded-sm border border-red-900/80"
-                        >
-                            10-8 LIVE STREAMING
-                        </span>
-                        <span
-                            v-else
-                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 px-1.5 sm:px-2 py-0.5 rounded-sm border border-slate-800"
-                        >
-                            10-7 STANDBY
-                        </span>
+                        <div class="mt-1">
+                            <LiveBadge
+                                v-if="topStreamers[1].is_live"
+                                label="10-8 LIVE STREAMING"
+                            />
+                            <Badge
+                                v-else
+                                variant="outline"
+                                class="font-mono text-xs"
+                            >
+                                10-7 STANDBY
+                            </Badge>
+                        </div>
                     </div>
                 </div>
 
                 <div
-                    class="space-y-1.5 sm:space-y-2 py-2.5 sm:py-3 border-y border-slate-800"
+                    class="space-y-1.5 sm:space-y-2 py-2.5 sm:py-3 border-y border-border"
                 >
                     <div class="flex justify-between items-baseline font-mono">
-                        <span class="text-[11px] sm:text-xs text-slate-400"
+                        <span class="text-xs text-muted-foreground"
                             >Total Durasi Patroli:</span
                         >
                         <strong
-                            class="text-xs sm:text-sm font-semibold text-slate-100 font-mono"
+                            class="text-xs sm:text-sm font-semibold text-foreground font-mono"
                         >
                             {{ topStreamers[1].total_hours }}
                         </strong>
                     </div>
                     <div
-                        class="w-full bg-slate-950 h-1.5 sm:h-2 rounded-full overflow-hidden border border-slate-800 hidden sm:block"
+                        class="w-full bg-background h-1.5 sm:h-2 rounded-full overflow-hidden border border-border hidden sm:block"
                     >
                         <div
-                            class="bg-blue-600 h-full rounded-full"
+                            class="bg-primary h-full rounded-full"
                             :style="{ width: topStreamers[1].percent + '%' }"
                         ></div>
                     </div>
                     <div
-                        class="text-[10px] sm:text-[11px] text-slate-400 flex justify-between font-mono"
+                        class="text-xs text-muted-foreground flex justify-between font-mono"
                     >
                         <span>Rata-rata: {{ topStreamers[1].avg_shift }}</span>
-                        <span class="text-blue-400"
+                        <span class="text-primary"
                             >{{ topStreamers[1].percent }}% dari #1</span
                         >
                     </div>
                 </div>
 
                 <div class="mt-3 sm:mt-4 flex gap-2">
-                    <button
-                        @click="openChannel(topStreamers[1].youtube_url)"
-                        :class="
-                            topStreamers[1].is_live
-                                ? 'bg-red-600 hover:bg-red-500 text-white'
-                                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                    <Button
+                        type="button"
+                        :variant="
+                            topStreamers[1].is_live ? 'destructive' : 'secondary'
                         "
-                        class="flex-1 py-1.5 sm:py-2 rounded-md font-medium text-[11px] sm:text-xs transition-colors flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
+                        size="sm"
+                        class="flex-1 text-xs font-medium gap-1.5"
                         :title="
                             topStreamers[1].is_live
                                 ? 'Tonton Siaran Live'
                                 : 'Kunjungi Kanal YouTube'
                         "
+                        @click="openChannel(topStreamers[1].youtube_url)"
                     >
-                        <svg
-                            class="w-3.5 h-3.5 fill-current shrink-0"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-                            />
-                        </svg>
+                        <Play class="size-3.5 fill-current shrink-0" />
                         <span>{{
                             topStreamers[1].is_live
                                 ? "Tonton Siaran"
                                 : "Kanal YouTube"
                         }}</span>
-                    </button>
+                    </Button>
                 </div>
-            </div>
+            </Card>
 
             <!-- Rank 1: Gold Champion Officer -->
-            <div
-                class="order-1 md:order-2 bg-slate-900 rounded-xl p-4 sm:p-5 border border-amber-500/40 relative hover:border-amber-400 transition-colors"
+            <Card
+                class="order-1 md:order-2 p-4 sm:p-5 border-warning/40 relative hover:border-warning transition-colors gap-0"
             >
-                <div
-                    class="absolute -top-3 left-1/2 -translate-x-1/2 px-2.5 sm:px-3 py-0.5 rounded-md bg-amber-400 text-slate-950 font-mono font-bold text-[9px] sm:text-[10px] uppercase flex items-center gap-1 sm:gap-1.5 whitespace-nowrap"
+                <Badge
+                    variant="warning"
+                    class="absolute -top-3 left-1/2 -translate-x-1/2 font-mono font-bold text-xs uppercase gap-1.5 whitespace-nowrap"
                 >
-                    <svg
-                        class="w-3.5 h-3.5 text-slate-950 shrink-0"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"
-                        />
-                    </svg>
+                    <Crown class="size-3.5 shrink-0" />
                     <span>#1 CHIEF OF ON-AIR</span>
-                </div>
+                </Badge>
 
                 <div
                     class="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-0 mt-1 mb-3 sm:mb-4"
                 >
                     <div class="relative sm:mb-2 shrink-0">
-                        <img
+                        <OfficerAvatar
                             :src="topStreamers[0].avatar_url"
-                            class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover border-2 border-amber-400"
+                            :name="topStreamers[0].officer_name"
+                            :live="topStreamers[0].is_live"
+                            size="lg"
                         />
-                        <span
-                            class="absolute -bottom-1 -right-1 px-1 sm:px-1.5 py-0.2 rounded-sm bg-amber-400 text-slate-950 text-[8px] sm:text-[9px] font-bold font-mono"
+                        <Badge
+                            variant="warning"
+                            class="absolute -bottom-1 -right-1 px-1.5 py-0 text-xs font-bold font-mono"
                         >
                             EMAS
-                        </span>
+                        </Badge>
                     </div>
                     <div class="min-w-0 flex-1 sm:flex-initial">
                         <h3
-                            class="font-bold text-sm sm:text-base text-slate-100 truncate"
+                            class="font-bold text-sm sm:text-base text-foreground truncate"
                         >
                             {{ topStreamers[0].officer_name }}
                         </h3>
                         <p
-                            class="text-[11px] sm:text-xs text-slate-400 font-mono truncate"
+                            class="text-xs text-muted-foreground font-mono truncate"
                         >
                             {{ topStreamers[0].callsign }}
                         </p>
-                        <span
-                            v-if="topStreamers[0].is_live"
-                            class="mt-1 sm:mt-2 text-[9px] sm:text-[10px] font-mono font-semibold text-red-400 bg-red-950/60 px-2 py-0.5 rounded-sm border border-red-900/80 inline-flex items-center gap-1.5"
-                        >
-                            10-8 LIVE PATROLI ({{
-                                topStreamers[0].live_viewers
-                            }})
-                        </span>
-                        <span
-                            v-else
-                            class="mt-1 sm:mt-2 text-[9px] sm:text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 px-2 py-0.5 rounded-sm border border-slate-800 inline-flex items-center gap-1.5"
-                        >
-                            10-7 STANDBY
-                        </span>
+                        <div class="mt-1 sm:mt-2">
+                            <LiveBadge
+                                v-if="topStreamers[0].is_live"
+                                label="10-8 LIVE PATROLI"
+                                :viewers="topStreamers[0].live_viewers"
+                            />
+                            <Badge
+                                v-else
+                                variant="outline"
+                                class="font-mono text-xs"
+                            >
+                                10-7 STANDBY
+                            </Badge>
+                        </div>
                     </div>
                 </div>
 
                 <div
-                    class="space-y-1.5 sm:space-y-2 py-2.5 sm:py-3 border-y border-slate-800"
+                    class="space-y-1.5 sm:space-y-2 py-2.5 sm:py-3 border-y border-border"
                 >
                     <div class="flex justify-between items-baseline font-mono">
-                        <span class="text-[11px] sm:text-xs text-slate-400"
+                        <span class="text-xs text-muted-foreground"
                             >Rekor Jam Siaran:</span
                         >
                         <strong
-                            class="text-xs sm:text-sm font-semibold text-slate-100 font-mono"
+                            class="text-xs sm:text-sm font-semibold text-warning font-mono"
                         >
                             {{ topStreamers[0].total_hours }}
                         </strong>
                     </div>
                     <div
-                        class="w-full bg-slate-950 h-1.5 sm:h-2 rounded-full overflow-hidden border border-slate-800 hidden sm:block"
+                        class="w-full bg-background h-1.5 sm:h-2 rounded-full overflow-hidden border border-border hidden sm:block"
                     >
                         <div
-                            class="bg-blue-600 h-full rounded-full w-full"
+                            class="bg-primary h-full rounded-full w-full"
                         ></div>
                     </div>
                     <div
-                        class="text-[10px] sm:text-[11px] text-slate-400 flex justify-between font-mono"
+                        class="text-xs text-muted-foreground flex justify-between font-mono"
                     >
                         <span>Rata-rata: {{ topStreamers[0].avg_shift }}</span>
-                        <span class="text-blue-400 font-bold">100% Puncak</span>
+                        <span class="text-primary font-bold">100% Puncak</span>
                     </div>
                 </div>
 
                 <div class="mt-3 sm:mt-4 flex gap-2">
-                    <button
-                        @click="openChannel(topStreamers[0].youtube_url)"
-                        :class="
-                            topStreamers[0].is_live
-                                ? 'bg-red-600 hover:bg-red-500 text-white'
-                                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                    <Button
+                        type="button"
+                        :variant="
+                            topStreamers[0].is_live ? 'destructive' : 'secondary'
                         "
-                        class="flex-1 py-1.5 sm:py-2 rounded-md font-medium text-[11px] sm:text-xs transition-colors flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
+                        size="sm"
+                        class="flex-1 text-xs font-medium gap-1.5"
                         :title="
                             topStreamers[0].is_live
                                 ? 'Tonton Siaran Juara'
                                 : 'Kunjungi Kanal YouTube'
                         "
+                        @click="openChannel(topStreamers[0].youtube_url)"
                     >
-                        <svg
-                            class="w-3.5 h-3.5 fill-current shrink-0"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-                            />
-                        </svg>
+                        <Play class="size-3.5 fill-current shrink-0" />
                         <span>{{
                             topStreamers[0].is_live
                                 ? "Tonton Siaran"
                                 : "Kanal YouTube"
                         }}</span>
-                    </button>
+                    </Button>
                 </div>
-            </div>
+            </Card>
 
             <!-- Rank 3: Bronze Officer -->
-            <div
-                class="order-3 bg-slate-900 rounded-xl p-3.5 sm:p-5 border border-slate-800 relative hover:border-slate-700 transition-colors"
+            <Card
+                class="order-3 p-3.5 sm:p-5 relative hover:border-input transition-colors gap-0"
             >
-                <div
-                    class="absolute -top-3 left-4 sm:left-5 px-2.5 py-0.5 rounded-md bg-amber-800 text-amber-100 font-mono font-bold text-[9px] sm:text-[10px] uppercase flex items-center gap-1 shrink-0"
+                <Badge
+                    variant="warning"
+                    class="absolute -top-3 left-4 sm:left-5 font-mono font-bold text-xs uppercase gap-1"
                 >
-                    <svg
-                        class="w-3 h-3 text-amber-100 shrink-0"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"
-                        />
-                    </svg>
+                    <Medal class="size-3 shrink-0" />
                     <span>RANK #3 BRONZE</span>
-                </div>
+                </Badge>
 
                 <div
                     class="flex items-center gap-3 sm:gap-3.5 mb-3 sm:mb-4 mt-1"
                 >
-                    <div class="relative shrink-0">
-                        <img
-                            :src="topStreamers[2].avatar_url"
-                            class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover border border-slate-700"
-                        />
-                        <span
-                            :class="
-                                topStreamers[2].is_live
-                                    ? 'bg-red-500'
-                                    : 'bg-slate-600'
-                            "
-                            class="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-slate-900"
-                            :title="
-                                topStreamers[2].is_live
-                                    ? '10-8 Sedang Patroli Live'
-                                    : '10-7 Standby / Offline'
-                            "
-                        ></span>
-                    </div>
+                    <OfficerAvatar
+                        :src="topStreamers[2].avatar_url"
+                        :name="topStreamers[2].officer_name"
+                        :live="topStreamers[2].is_live"
+                        size="lg"
+                    />
                     <div class="min-w-0 flex-1">
                         <h3
-                            class="font-bold text-xs sm:text-sm text-slate-100 truncate"
+                            class="font-bold text-xs sm:text-sm text-foreground truncate"
                         >
                             {{ topStreamers[2].officer_name }}
                         </h3>
                         <p
-                            class="text-[11px] sm:text-xs text-slate-400 font-mono truncate"
+                            class="text-xs text-muted-foreground font-mono truncate"
                         >
                             {{ topStreamers[2].callsign }}
                         </p>
-                        <span
-                            v-if="topStreamers[2].is_live"
-                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-red-400 bg-red-950/60 px-1.5 sm:px-2 py-0.5 rounded-sm border border-red-900/80"
-                        >
-                            10-8 LIVE STREAMING
-                        </span>
-                        <span
-                            v-else
-                            class="inline-flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-mono font-semibold text-slate-400 bg-slate-950 px-1.5 sm:px-2 py-0.5 rounded-sm border border-slate-800"
-                        >
-                            10-7 STANDBY
-                        </span>
+                        <div class="mt-1">
+                            <LiveBadge
+                                v-if="topStreamers[2].is_live"
+                                label="10-8 LIVE STREAMING"
+                            />
+                            <Badge
+                                v-else
+                                variant="outline"
+                                class="font-mono text-xs"
+                            >
+                                10-7 STANDBY
+                            </Badge>
+                        </div>
                     </div>
                 </div>
 
                 <div
-                    class="space-y-1.5 sm:space-y-2 py-2.5 sm:py-3 border-y border-slate-800"
+                    class="space-y-1.5 sm:space-y-2 py-2.5 sm:py-3 border-y border-border"
                 >
                     <div class="flex justify-between items-baseline font-mono">
-                        <span class="text-[11px] sm:text-xs text-slate-400"
+                        <span class="text-xs text-muted-foreground"
                             >Total Durasi Patroli:</span
                         >
                         <strong
-                            class="text-xs sm:text-sm font-semibold text-slate-100 font-mono"
+                            class="text-xs sm:text-sm font-semibold text-foreground font-mono"
                         >
                             {{ topStreamers[2].total_hours }}
                         </strong>
                     </div>
                     <div
-                        class="w-full bg-slate-950 h-1.5 sm:h-2 rounded-full overflow-hidden border border-slate-800 hidden sm:block"
+                        class="w-full bg-background h-1.5 sm:h-2 rounded-full overflow-hidden border border-border hidden sm:block"
                     >
                         <div
-                            class="bg-blue-600 h-full rounded-full"
+                            class="bg-primary h-full rounded-full"
                             :style="{ width: topStreamers[2].percent + '%' }"
                         ></div>
                     </div>
                     <div
-                        class="text-[10px] sm:text-[11px] text-slate-400 flex justify-between font-mono"
+                        class="text-xs text-muted-foreground flex justify-between font-mono"
                     >
                         <span>Rata-rata: {{ topStreamers[2].avg_shift }}</span>
-                        <span class="text-blue-400"
+                        <span class="text-primary"
                             >{{ topStreamers[2].percent }}% dari #1</span
                         >
                     </div>
                 </div>
 
                 <div class="mt-3 sm:mt-4 flex gap-2">
-                    <button
-                        @click="openChannel(topStreamers[2].youtube_url)"
-                        :class="
-                            topStreamers[2].is_live
-                                ? 'bg-red-600 hover:bg-red-500 text-white'
-                                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                    <Button
+                        type="button"
+                        :variant="
+                            topStreamers[2].is_live ? 'destructive' : 'secondary'
                         "
-                        class="flex-1 py-1.5 sm:py-2 rounded-md font-medium text-[11px] sm:text-xs transition-colors flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
+                        size="sm"
+                        class="flex-1 text-xs font-medium gap-1.5"
                         :title="
                             topStreamers[2].is_live
                                 ? 'Tonton Siaran Live'
                                 : 'Kunjungi Kanal YouTube'
                         "
+                        @click="openChannel(topStreamers[2].youtube_url)"
                     >
-                        <svg
-                            class="w-3.5 h-3.5 fill-current shrink-0"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-                            />
-                        </svg>
+                        <Play class="size-3.5 fill-current shrink-0" />
                         <span>{{
                             topStreamers[2].is_live
                                 ? "Tonton Siaran"
                                 : "Kanal YouTube"
                         }}</span>
-                    </button>
+                    </Button>
                 </div>
-            </div>
+            </Card>
         </div>
 
-        <!-- Ranks 4 - 6 Compact Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3 pt-1">
-            <div
+        <!-- Ranks 4 - 6: Desktop Table & Mobile Card List -->
+        <Card class="hidden md:block p-0 overflow-hidden">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead class="w-20 font-mono text-xs">
+                            PERINGKAT
+                        </TableHead>
+                        <TableHead class="font-mono text-xs">PERWIRA</TableHead>
+                        <TableHead class="font-mono text-xs">
+                            DIVISI & DURASI
+                        </TableHead>
+                        <TableHead class="text-right font-mono text-xs">
+                            KANAL
+                        </TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    <TableRow v-for="item in ranksFourToSix" :key="item.rank">
+                        <TableCell
+                            class="font-mono font-bold text-muted-foreground text-xs"
+                        >
+                            #{{ item.rank }}
+                        </TableCell>
+                        <TableCell>
+                            <div class="flex items-center gap-2.5">
+                                <OfficerAvatar
+                                    :src="item.avatar_url"
+                                    :name="item.officer_name"
+                                    size="sm"
+                                />
+                                <span
+                                    class="text-xs font-semibold text-foreground"
+                                >
+                                    {{ item.officer_name }}
+                                </span>
+                            </div>
+                        </TableCell>
+                        <TableCell
+                            class="text-xs text-muted-foreground font-mono"
+                        >
+                            {{ item.role }}
+                        </TableCell>
+                        <TableCell class="text-right">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                class="h-7 px-2.5 text-xs gap-1.5"
+                                title="Buka Channel YouTube"
+                                @click="openChannel(item.youtube_url)"
+                            >
+                                <Play class="size-3 fill-current" />
+                                <span>YouTube</span>
+                            </Button>
+                        </TableCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+        </Card>
+
+        <!-- Mobile Card List (md:hidden) -->
+        <div class="grid grid-cols-1 gap-2.5 md:hidden pt-1">
+            <Card
                 v-for="item in ranksFourToSix"
                 :key="item.rank"
-                class="p-2.5 sm:p-3 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between gap-2.5 sm:gap-3 hover:border-slate-700 transition-colors"
+                class="p-2.5 flex-row items-center justify-between gap-2.5 hover:border-input transition-colors"
             >
-                <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                <div class="flex items-center gap-2.5 min-w-0">
                     <span
-                        class="text-[11px] sm:text-xs font-mono font-bold text-slate-400 w-4 sm:w-5 shrink-0"
+                        class="text-xs font-mono font-bold text-muted-foreground w-5 shrink-0"
                     >
                         #{{ item.rank }}
                     </span>
-                    <img
+                    <OfficerAvatar
                         :src="item.avatar_url"
-                        class="w-8 h-8 sm:w-9 sm:h-9 rounded-md object-cover shrink-0 border border-slate-700"
+                        :name="item.officer_name"
+                        size="sm"
                     />
                     <div class="min-w-0">
                         <h4
-                            class="text-[11px] sm:text-xs font-semibold text-slate-100 truncate"
+                            class="text-xs font-semibold text-foreground truncate"
                         >
                             {{ item.officer_name }}
                         </h4>
                         <p
-                            class="text-[9px] sm:text-[10px] text-slate-400 font-mono truncate"
+                            class="text-xs text-muted-foreground font-mono truncate"
                         >
                             {{ item.role }}
                         </p>
                     </div>
                 </div>
-                <button
-                    @click="openChannel(item.youtube_url)"
-                    class="p-1.5 sm:p-2 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    class="size-8 shrink-0"
+                    aria-label="Buka Channel YouTube"
                     title="Buka Channel YouTube"
+                    @click="openChannel(item.youtube_url)"
                 >
-                    <svg
-                        class="w-3.5 h-3.5 fill-current shrink-0"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-                        />
-                    </svg>
-                </button>
-            </div>
+                    <Play class="size-3.5 fill-current" />
+                </Button>
+            </Card>
         </div>
 
         <!-- Additional Leaderboard Info & Cycle Reset -->
-        <div
-            class="mt-4 sm:mt-6 p-3.5 sm:p-4 rounded-lg bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-[11px] sm:text-xs font-sans"
+        <Card
+            class="mt-4 sm:mt-6 p-3.5 sm:p-4 flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs font-sans"
         >
             <div class="flex items-start gap-2.5 sm:gap-3 max-w-3xl">
-                <svg
-                    class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                </svg>
-                <p class="text-slate-400 leading-relaxed font-normal">
+                <Info class="size-4 text-primary shrink-0 mt-0.5" />
+                <p class="text-muted-foreground leading-relaxed font-normal">
                     {{ displaySubtitle }}
                 </p>
             </div>
 
             <div
-                class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-950 border border-slate-800 text-slate-300 font-mono text-[11px] sm:text-xs shrink-0 w-full sm:w-auto justify-center"
+                class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-background border border-border text-foreground/80 font-mono text-xs shrink-0 w-full sm:w-auto justify-center"
             >
-                <svg
-                    class="w-3.5 h-3.5 text-cyan-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                </svg>
+                <Clock class="size-3.5 text-info" />
                 <span>{{ resetCycleText }}</span>
             </div>
-        </div>
+        </Card>
     </section>
 </template>

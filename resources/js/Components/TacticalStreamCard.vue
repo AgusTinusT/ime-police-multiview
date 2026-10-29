@@ -1,24 +1,28 @@
 <script setup>
-/**
- * ==============================================================================
- * TACTICAL STREAM CARD - COMPONENT EXTRACTION (LEVEL 1 REFACTORING)
- * ==============================================================================
- * 
- * Sub-komponen independen untuk menampilkan 1 kartu perwira patroli (stream).
- * Digunakan baik di Multiview Grid Utama maupun di Supporting Units (Focus Mode).
- */
+import {
+    DeptBadge,
+    LiveBadge,
+    OfficerAvatar,
+} from "@/Components/tactical";
+import { AspectRatio } from "@/Components/ui/aspect-ratio";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
+import { cn } from "@/lib/utils";
+import {
+    Crosshair,
+    ExternalLink,
+    EyeOff,
+    MessageSquare,
+    MessageSquareOff,
+    Pause,
+    Play,
+    Volume2,
+    VolumeX,
+    X,
+} from "@lucide/vue";
 
-// SVG Icon Assets
-import iconPlayAll from "@/Components/Icons/play-full-svgrepo-com.svg";
-import iconPause from "@/Components/Icons/controller-paus-svgrepo-com.svg";
-import iconMute from "@/Components/Icons/audio-off-svgrepo-com.svg";
-import iconUnmute from "@/Components/Icons/audio-svgrepo-com.svg";
-import iconFocus from "@/Components/Icons/focus-point-round-844-svgrepo-com.svg";
-import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
-import iconChat from "@/Components/Icons/chat-svgrepo-com.svg";
-import iconChatRemove from "@/Components/Icons/chat-remove-svgrepo-com.svg";
-
-const props = defineProps({
+defineProps({
     stream: { type: Object, required: true },
     activeAudioVideoId: { type: [String, Number], default: null },
     activeChatVideoId: { type: [String, Number], default: null },
@@ -35,255 +39,257 @@ const emit = defineEmits([
     "toggle-officer-status",
     "update:selectedLayout",
 ]);
-
-const getDeptBadgeClass = (dept) => {
-    const d = (dept || "").toUpperCase();
-    if (d.includes("LSPD"))
-        return "bg-blue-900/60 text-blue-200 border-blue-700/80";
-    if (d.includes("BCSO") || d.includes("LSCSD"))
-        return "bg-amber-900/60 text-amber-200 border-amber-700/80";
-    if (d.includes("SASP"))
-        return "bg-teal-900/60 text-teal-200 border-teal-700/80";
-    if (d.includes("SAPR") || d.includes("RANGER"))
-        return "bg-emerald-900/60 text-emerald-200 border-emerald-700/80";
-    return "bg-slate-800 text-slate-300 border-slate-700";
-};
 </script>
 
 <template>
-    <div
-        :class="[
-            customOrderRank > 0
-                ? 'border-amber-500/40 shadow-md shadow-amber-950/20'
-                : 'border-slate-800/80 hover:border-slate-700',
-            activeChatVideoId === stream.video_id
-                ? 'border-amber-500/60 shadow-md shadow-amber-950/30'
-                : '',
-        ]"
-        class="bg-slate-950 rounded-xl overflow-hidden border transition flex flex-col relative group"
+    <Card
+        :class="
+            cn(
+                'overflow-hidden border transition flex flex-col relative group py-0 gap-0 bg-background',
+                customOrderRank > 0
+                    ? 'border-warning/40'
+                    : 'border-border hover:border-input',
+                activeChatVideoId === stream.video_id ? 'border-warning/60' : '',
+            )
+        "
     >
         <!-- HEADER HUD -->
         <div
-            class="bg-slate-900 px-3 py-1.5 flex items-center justify-between border-b border-slate-800 z-10"
+            class="bg-card px-3 py-1.5 flex items-center justify-between border-b border-border z-10"
         >
             <div class="flex items-center space-x-2 min-w-0">
+                <DeptBadge :dept="stream.officer?.department || 'SASP'" />
+                <OfficerAvatar
+                    :src="stream.officer?.avatar_url"
+                    :name="stream.officer?.officer_name"
+                    size="sm"
+                    class="size-5 shrink-0"
+                />
                 <span
-                    class="px-1.5 py-0.5 text-[11px] font-black rounded-sm border tracking-wider shrink-0 opacity-90"
-                    :class="getDeptBadgeClass(stream.officer?.department)"
-                >
-                    {{ stream.officer?.department || "UNIT" }}
-                </span>
-                <span
-                    class="text-xs font-semibold text-slate-200 block truncate opacity-90"
+                    class="text-xs font-semibold text-foreground block truncate"
                 >
                     {{ stream.officer?.officer_name }}
                 </span>
             </div>
             <div class="flex items-center space-x-1 shrink-0">
                 <!-- Audio Switch Button -->
-                <button
-                    @click="emit('toggle-audio', stream.video_id)"
-                    :class="
+                <Button
+                    type="button"
+                    :variant="
                         activeAudioVideoId === stream.video_id
-                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40 font-bold'
-                            : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border-slate-800'
+                            ? 'default'
+                            : 'outline'
                     "
-                    class="px-2 py-1 rounded-md transition font-mono border text-[10px] flex items-center gap-1.5 cursor-pointer"
+                    size="sm"
+                    class="h-6 px-2 text-xs font-mono gap-1.5"
                     :title="
                         activeAudioVideoId === stream.video_id
                             ? 'Mute Audio'
                             : 'Play Audio'
                     "
+                    @click="emit('toggle-audio', stream.video_id)"
                 >
-                    <img
-                        :src="
-                            activeAudioVideoId === stream.video_id
-                                ? iconUnmute
-                                : iconMute
-                        "
-                        class="w-3 h-3 invert opacity-80"
+                    <Volume2
+                        v-if="activeAudioVideoId === stream.video_id"
+                        class="size-3"
                     />
+                    <VolumeX v-else class="size-3" />
                     <span>{{
                         activeAudioVideoId === stream.video_id
                             ? "Mute"
                             : "Audio"
                     }}</span>
-                </button>
+                </Button>
             </div>
         </div>
 
         <!-- VIDEO DISPLAY: IFRAME OR POSTER THUMBNAIL -->
-        <div
-            class="relative w-full aspect-video bg-black overflow-hidden flex-1 group/thumb"
-        >
-            <template v-if="isVideoPlaying">
-                <iframe
-                    :key="`grid-iframe-${stream.video_id}`"
-                    :id="`yt-bodycam-${stream.video_id}`"
-                    class="w-full h-full border-0 pointer-events-auto"
-                    :src="`https://www.youtube.com/embed/${stream.video_id}?enablejsapi=1&autoplay=1&mute=1&controls=1&rel=0&playsinline=1&vq=small&origin=${originUrl}`"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowfullscreen
-                ></iframe>
-                <button
-                    @click="emit('toggle-stop-feed', stream.video_id)"
-                    class="absolute top-2 left-2 bg-black/80 hover:bg-red-900/80 text-white text-[10px] px-2 py-0.5 rounded-sm border border-white/20 z-20 font-mono cursor-pointer"
-                    title="Tutup Video / Stop Feed"
-                >
-                    ✕ Stop Feed
-                </button>
-            </template>
-            <template v-else>
-                <img
-                    :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`"
-                    :alt="stream.title"
-                    class="w-full h-full object-cover opacity-85 group-hover/thumb:opacity-100 transition duration-300 cursor-pointer"
-                    loading="lazy"
-                    @click="emit('set-focus-stream', stream.video_id)"
-                />
+        <div class="relative w-full bg-background overflow-hidden flex-1 group/thumb">
+            <AspectRatio :ratio="16 / 9">
+                <template v-if="isVideoPlaying">
+                    <iframe
+                        :key="`grid-iframe-${stream.video_id}`"
+                        :id="`yt-bodycam-${stream.video_id}`"
+                        class="w-full h-full border-0 pointer-events-auto"
+                        :src="`https://www.youtube.com/embed/${stream.video_id}?enablejsapi=1&autoplay=1&mute=1&controls=1&rel=0&playsinline=1&vq=small&origin=${originUrl}`"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen
+                    ></iframe>
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        class="absolute top-2 left-2 h-6 px-2 text-xs font-mono z-20 gap-1"
+                        title="Tutup Video / Stop Feed"
+                        @click="emit('toggle-stop-feed', stream.video_id)"
+                    >
+                        <X class="size-3" />
+                        <span>Stop Feed</span>
+                    </Button>
+                </template>
+                <template v-else>
+                    <img
+                        :src="`https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`"
+                        :alt="stream.title"
+                        class="w-full h-full object-cover opacity-85 group-hover/thumb:opacity-100 transition duration-300 cursor-pointer"
+                        loading="lazy"
+                        @click="emit('set-focus-stream', stream.video_id)"
+                    />
+                    <div
+                        class="absolute inset-0 bg-background/70 flex flex-col items-center justify-center p-3 pointer-events-none"
+                    >
+                        <div class="absolute top-2 left-2">
+                            <LiveBadge :viewers="stream.viewers_count" />
+                        </div>
+
+                        <!-- Desktop Hover Overlay Controls (Hidden on Mobile) -->
+                        <div
+                            class="hidden sm:flex items-center space-x-2 opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-200 pointer-events-auto"
+                        >
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                class="text-xs font-bold gap-1.5"
+                                @click.stop="
+                                    emit('toggle-stop-feed', stream.video_id)
+                                "
+                            >
+                                <Pause v-if="isVideoPlaying" class="size-3.5" />
+                                <Play v-else class="size-3.5" />
+                                <span>{{
+                                    isVideoPlaying ? "Stop" : "Play"
+                                }}</span>
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="default"
+                                size="sm"
+                                class="text-xs font-bold gap-1.5"
+                                @click.stop="
+                                    emit('set-focus-stream', stream.video_id)
+                                "
+                            >
+                                <Crosshair class="size-3.5" />
+                                <span>Focus</span>
+                            </Button>
+                        </div>
+
+                        <!-- Mobile Direct Tap Focus Badge (< sm) -->
+                        <Button
+                            type="button"
+                            size="sm"
+                            class="sm:hidden rounded-full font-bold text-xs gap-1.5 pointer-events-auto motion-safe:animate-pulse"
+                            @click.stop="
+                                emit('set-focus-stream', stream.video_id)
+                            "
+                        >
+                            <Crosshair class="size-3.5" />
+                            <span>Ketuk untuk Fokus</span>
+                        </Button>
+                    </div>
+                </template>
+
+                <!-- Desktop Floating Hover Overlay Bar (Hidden on mobile) -->
                 <div
-                    class="absolute inset-0 bg-slate-950/70 flex flex-col items-center justify-center p-3 pointer-events-none"
+                    class="hidden sm:flex absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-200 bg-card/95 px-2.5 py-1.5 rounded-md border border-border items-center justify-between z-20 pointer-events-auto text-xs text-foreground/80 gap-1.5"
                 >
                     <div
-                        class="absolute top-2 left-2 flex items-center space-x-1 font-mono text-[9px] text-red-400 bg-slate-900 px-1.5 py-0.5 rounded-sm border border-slate-800"
+                        class="flex items-center space-x-1.5 min-w-0 flex-1 truncate"
                     >
+                        <Badge
+                            v-if="stream.officer?.callsign"
+                            variant="secondary"
+                            class="font-mono text-xs shrink-0"
+                        >
+                            {{ stream.officer.callsign }}
+                        </Badge>
                         <span
-                            class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"
-                        ></span>
-                        <span>10-8 LIVE</span>
+                            v-if="stream.officer?.rank"
+                            class="font-mono text-xs text-foreground/80 truncate"
+                        >
+                            {{ stream.officer.rank }}
+                        </span>
                     </div>
-
-                    <!-- Desktop Hover Overlay Controls (Hidden on Mobile) -->
-                    <div
-                        class="hidden sm:flex items-center space-x-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-300 transform scale-95 group-hover/thumb:scale-100 pointer-events-auto"
-                    >
-                        <button
-                            @click.stop="emit('toggle-stop-feed', stream.video_id)"
-                            :class="
-                                isVideoPlaying
-                                    ? 'text-amber-400 border-slate-700'
-                                    : 'text-emerald-400 border-slate-700'
+                    <div class="flex items-center space-x-1 shrink-0">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            class="h-6 px-2 text-xs font-mono gap-1"
+                            title="Sembunyikan perwira ini dari grid"
+                            @click.stop="emit('toggle-officer-status', stream)"
+                        >
+                            <EyeOff class="size-3" />
+                            <span>Sembunyikan</span>
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            class="size-6"
+                            aria-label="Focus stream"
+                            title="Focus"
+                            @click="
+                                emit('update:selectedLayout', 'focus');
+                                emit('set-focus-stream', stream.video_id);
                             "
-                            class="bg-slate-800 hover:bg-slate-700 border px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
                         >
-                            <img
-                                :src="isVideoPlaying ? iconPause : iconPlayAll"
-                                class="w-3.5 h-3.5 invert opacity-90"
-                            />
-                            <span>{{ isVideoPlaying ? "Stop" : "Play" }}</span>
-                        </button>
-                        <button
-                            @click.stop="emit('set-focus-stream', stream.video_id)"
-                            class="bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
-                        >
-                            <img
-                                :src="iconFocus"
-                                class="w-3.5 h-3.5 invert opacity-90"
-                            />
-                            <span>Focus</span>
-                        </button>
-                    </div>
-
-                    <!-- Mobile Direct Tap Focus Badge (< sm) -->
-                    <div
-                        @click.stop="emit('set-focus-stream', stream.video_id)"
-                        class="sm:hidden flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-600/90 hover:bg-blue-500 text-white font-bold text-xs shadow-xl border border-blue-400/40 cursor-pointer pointer-events-auto animate-pulse"
-                    >
-                        <img
-                            :src="iconFocus"
-                            class="w-3.5 h-3.5 invert"
-                            alt=""
-                        />
-                        <span>Ketuk untuk Fokus</span>
-                    </div>
-                </div>
-            </template>
-
-            <!-- Desktop Floating Hover Overlay Bar (Hidden on mobile) -->
-            <div
-                class="hidden sm:flex absolute bottom-2 left-2 right-2 opacity-0 group-hover/thumb:opacity-100 transition-all duration-200 bg-slate-900 px-2.5 py-1.5 rounded-md border border-slate-800 items-center justify-between z-20 pointer-events-auto text-[11px] text-slate-300 gap-1.5"
-            >
-                <div
-                    class="flex items-center space-x-1.5 min-w-0 flex-1 truncate"
-                >
-                    <span
-                        v-if="stream.officer?.callsign"
-                        class="hidden sm:inline-block px-1.5 py-0.5 rounded-sm bg-slate-800/90 text-slate-300 border border-slate-700/60 font-mono text-[9px] font-semibold tracking-wider shrink-0"
-                    >
-                        {{ stream.officer.callsign }}
-                    </span>
-                    <span
-                        v-if="stream.officer?.rank"
-                        class="font-mono text-[10px] text-slate-300 truncate"
-                    >
-                        {{ stream.officer.rank }}
-                    </span>
-                </div>
-                <div class="flex items-center space-x-1 shrink-0">
-                    <button
-                        @click.stop="emit('toggle-officer-status', stream)"
-                        class="px-2 py-0.5 bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 rounded-md text-[10px] font-mono font-semibold transition shrink-0 cursor-pointer flex items-center gap-1"
-                        title="Sembunyikan perwira ini dari grid"
-                    >
-                        <span>Sembunyikan</span>
-                    </button>
-                    <button
-                        @click="
-                            emit('update:selectedLayout', 'focus');
-                            emit('set-focus-stream', stream.video_id);
-                        "
-                        class="p-1 hover:text-blue-400 text-slate-300 rounded-sm hover:bg-slate-800 transition cursor-pointer"
-                        title="Focus"
-                    >
-                        <img
-                            :src="iconFocus"
-                            class="w-3.5 h-3.5 invert opacity-80 hover:opacity-100"
-                        />
-                    </button>
-                    <button
-                        @click="emit('handle-chat-click', stream.video_id)"
-                        :class="
-                            activeChatVideoId === stream.video_id
-                                ? 'bg-slate-800 text-blue-400 border border-slate-700'
-                                : 'text-slate-300 hover:text-blue-400 hover:bg-slate-800'
-                        "
-                        class="p-1 rounded-sm transition flex items-center justify-center cursor-pointer"
-                    >
-                        <img
-                            :src="
+                            <Crosshair class="size-3.5" />
+                        </Button>
+                        <Button
+                            type="button"
+                            :variant="
                                 activeChatVideoId === stream.video_id
-                                    ? iconChatRemove
-                                    : iconChat
+                                    ? 'secondary'
+                                    : 'ghost'
                             "
-                            class="w-3.5 h-3.5 invert opacity-90"
-                        />
-                    </button>
-                    <a
-                        :href="`https://www.youtube.com/watch?v=${stream.video_id}`"
-                        target="_blank"
-                        class="p-1 hover:text-white text-slate-300 rounded-sm hover:bg-slate-800 transition"
-                    >
-                        <img
-                            :src="iconExternal"
-                            class="w-3.5 h-3.5 invert opacity-80 hover:opacity-100"
-                        />
-                    </a>
+                            size="icon"
+                            class="size-6"
+                            aria-label="Toggle Live Chat"
+                            title="Live Chat"
+                            @click="emit('handle-chat-click', stream.video_id)"
+                        >
+                            <MessageSquareOff
+                                v-if="activeChatVideoId === stream.video_id"
+                                class="size-3.5"
+                            />
+                            <MessageSquare v-else class="size-3.5" />
+                        </Button>
+                        <Button
+                            as-child
+                            variant="ghost"
+                            size="icon"
+                            class="size-6"
+                            aria-label="Buka di YouTube"
+                            title="Buka di YouTube"
+                        >
+                            <a
+                                :href="`https://www.youtube.com/watch?v=${stream.video_id}`"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <ExternalLink class="size-3.5" />
+                            </a>
+                        </Button>
+                    </div>
                 </div>
-            </div>
+            </AspectRatio>
         </div>
 
-        <!-- PERMANENT MOBILE ACTION CARD FOOTER (sm:hidden) - OPTION 1 -->
+        <!-- PERMANENT MOBILE ACTION CARD FOOTER (sm:hidden) -->
         <div
-            class="sm:hidden bg-slate-900 border-t border-slate-800/80 px-3 py-2 flex items-center justify-between gap-2 z-10"
+            class="sm:hidden bg-card border-t border-border px-3 py-2 flex items-center justify-between gap-2 z-10"
         >
             <div class="flex items-center space-x-1.5 min-w-0 flex-1">
-                <span
+                <Badge
                     v-if="stream.officer?.callsign"
-                    class="px-1.5 py-0.5 rounded-sm bg-slate-800 text-slate-300 border border-slate-700/60 font-mono text-[10px] font-semibold shrink-0"
+                    variant="secondary"
+                    class="font-mono text-xs shrink-0"
                 >
                     {{ stream.officer.callsign }}
-                </span>
-                <span class="font-mono text-xs text-slate-300 truncate">
+                </Badge>
+                <span class="font-mono text-xs text-foreground/80 truncate">
                     {{
                         stream.officer?.rank ||
                         stream.officer?.officer_name ||
@@ -293,45 +299,46 @@ const getDeptBadgeClass = (dept) => {
             </div>
             <div class="flex items-center space-x-1.5 shrink-0">
                 <!-- Play / Stop Toggle Button -->
-                <button
+                <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    class="h-7 px-2.5 text-xs font-bold gap-1"
                     @click.stop="emit('toggle-stop-feed', stream.video_id)"
-                    :class="
-                        isVideoPlaying
-                            ? 'text-amber-400 border-slate-700'
-                            : 'text-emerald-400 border-slate-700'
-                    "
-                    class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border rounded-md text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
                 >
-                    <img
-                        :src="isVideoPlaying ? iconPause : iconPlayAll"
-                        class="w-3 h-3 invert"
-                    />
+                    <Pause v-if="isVideoPlaying" class="size-3" />
+                    <Play v-else class="size-3" />
                     <span>{{ isVideoPlaying ? "Stop" : "Play" }}</span>
-                </button>
+                </Button>
 
                 <!-- Focus Button -->
-                <button
+                <Button
+                    type="button"
+                    size="sm"
+                    class="h-7 px-2.5 text-xs font-bold gap-1"
                     @click.stop="emit('set-focus-stream', stream.video_id)"
-                    class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95 shadow-xs"
                 >
-                    <img :src="iconFocus" class="w-3.5 h-3.5 invert" />
+                    <Crosshair class="size-3.5" />
                     <span>Fokus</span>
-                </button>
+                </Button>
 
                 <!-- Chat Button -->
-                <button
-                    @click.stop="emit('handle-chat-click', stream.video_id)"
-                    :class="
+                <Button
+                    type="button"
+                    :variant="
                         activeChatVideoId === stream.video_id
-                            ? 'bg-amber-600 text-white border-amber-500'
-                            : 'bg-slate-800 text-slate-300 border-slate-700'
+                            ? 'default'
+                            : 'outline'
                     "
-                    class="p-1.5 rounded-md border transition flex items-center justify-center cursor-pointer active:scale-95"
+                    size="icon"
+                    class="size-7"
+                    aria-label="Live Chat"
                     title="Live Chat"
+                    @click.stop="emit('handle-chat-click', stream.video_id)"
                 >
-                    <img :src="iconChat" class="w-3.5 h-3.5 invert" />
-                </button>
+                    <MessageSquare class="size-3.5" />
+                </Button>
             </div>
         </div>
-    </div>
+    </Card>
 </template>

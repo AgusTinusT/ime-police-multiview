@@ -1,12 +1,25 @@
 <script setup>
 import { ref, computed } from "vue";
 import { router } from "@inertiajs/vue3";
-import { useI18n } from "vue-i18n";
-import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
-import iconExternal from "@/Components/Icons/link-external-svgrepo-com.svg";
+import {
+    DeptBadge,
+    EmptyState,
+    LiveBadge,
+    OfficerAvatar,
+    SectionHeader,
+} from "@/Components/tactical";
+import { AspectRatio } from "@/Components/ui/aspect-ratio";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
 import { parseRelativeTimeToSeconds } from "@/Utils/timeHelpers";
-
-const { t } = useI18n();
+import {
+    ChevronLeft,
+    ChevronRight,
+    ExternalLink,
+    Radio,
+    RefreshCw,
+} from "@lucide/vue";
 
 const props = defineProps({
     allActiveStreams: { type: Array, default: () => [] },
@@ -21,7 +34,6 @@ const emit = defineEmits(["play-stream-in-focus", "trigger-manual-sync"]);
 // Filter tabs state: 'ALL' | 'LIVE' | 'REPLAY'
 const activeFilter = ref("ALL");
 
-// Combine Live & Recent Replays into a single array (Replays sorted newest first)
 const combinedStreams = computed(() => {
     const liveItems = (props.allActiveStreams || []).map((s) => ({
         ...s,
@@ -45,7 +57,6 @@ const combinedStreams = computed(() => {
     if (activeFilter.value === "LIVE") return liveItems;
     if (activeFilter.value === "REPLAY") return replayItems;
 
-    // Show Live streams first, then Replay streams
     return [...liveItems, ...replayItems];
 });
 
@@ -78,7 +89,6 @@ const handleStreamCardClick = (stream) => {
     }
 };
 
-// Horizontal Scroll Helper
 const scrollRow = (rowId, direction = "right") => {
     const el = document.getElementById(rowId);
     if (!el) return;
@@ -86,27 +96,11 @@ const scrollRow = (rowId, direction = "right") => {
     el.scrollBy({ left: scrollAmount, behavior: "smooth" });
 };
 
-// Standardized Department Color Badges Function
-const getDeptBadgeClass = (dept) => {
-    const d = (dept || "").toUpperCase();
-    if (d.includes("LSPD"))
-        return "bg-blue-950/90 text-blue-300 border-blue-500/40";
-    if (d.includes("BCSO") || d.includes("LSCSD"))
-        return "bg-amber-950/90 text-amber-300 border-amber-500/40";
-    if (d.includes("SASP"))
-        return "bg-cyan-950/90 text-cyan-300 border-cyan-500/40";
-    if (d.includes("SAPR") || d.includes("RANGER"))
-        return "bg-emerald-950/90 text-emerald-300 border-emerald-500/40";
-    return "bg-slate-900 text-slate-300 border-slate-700";
-};
-
-// Relative Time Label Helper
 const formatRelativeTimeLabel = (dateStr) => {
     if (!dateStr) return "REPLAY";
     return String(dateStr);
 };
 
-// YouTube Link Helper
 const getStreamYoutubeUrl = (stream) => {
     if (!stream) return "#";
     if (
@@ -122,7 +116,6 @@ const getStreamYoutubeUrl = (stream) => {
     return `https://www.youtube.com/watch?v=${stream.video_id}`;
 };
 
-// TAC Department Check Helper
 const getStreamTac = (videoId) => {
     if (!videoId) return null;
     const targetId = String(videoId).trim();
@@ -140,81 +133,90 @@ const getStreamTac = (videoId) => {
 
 <template>
     <div class="w-full space-y-4 font-sans">
-        <!-- Section Header Bar (Clean Flat Title & Filter Tabs) -->
-        <div
-            class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3.5 border-b border-slate-800"
-        >
-            <div class="space-y-1">
-                <div class="flex items-center gap-2.5">
-                    <span
-                        class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"
-                    ></span>
-                    <h2
-                        class="text-base sm:text-lg font-bold text-slate-100 tracking-tight uppercase"
-                    >
-                        {{ $t("stream_slimles.dispatch_feed_title") }}
-                    </h2>
-                </div>
-                <p class="text-xs text-slate-400 font-normal hidden md:block">
-                    {{ $t("stream_slimles.dispatch_feed_subtitle") }}
-                </p>
-            </div>
+        <!-- Section Header Bar -->
+        <div class="pb-3.5 border-b border-border">
+            <SectionHeader
+                :title="$t('stream_slimles.dispatch_feed_title')"
+                :description="$t('stream_slimles.dispatch_feed_subtitle')"
+                :count="liveCount + replayCount"
+            >
+                <template #actions>
+                    <div class="hidden md:flex flex-wrap items-center gap-2">
+                        <!-- Filter Pills -->
+                        <div
+                            class="inline-flex p-1 rounded-md bg-card border border-border text-xs font-mono gap-1"
+                        >
+                            <Button
+                                type="button"
+                                :variant="
+                                    activeFilter === 'ALL' ? 'default' : 'ghost'
+                                "
+                                size="sm"
+                                class="h-7 px-3 text-xs font-medium"
+                                @click="activeFilter = 'ALL'"
+                            >
+                                {{
+                                    $t("stream_slimles.all_filter", {
+                                        count: liveCount + replayCount,
+                                    })
+                                }}
+                            </Button>
+                            <Button
+                                type="button"
+                                :variant="
+                                    activeFilter === 'LIVE'
+                                        ? 'destructive'
+                                        : 'ghost'
+                                "
+                                size="sm"
+                                class="h-7 px-3 text-xs font-medium"
+                                @click="activeFilter = 'LIVE'"
+                            >
+                                {{
+                                    $t("stream_slimles.live_filter", {
+                                        count: liveCount,
+                                    })
+                                }}
+                            </Button>
+                            <Button
+                                type="button"
+                                :variant="
+                                    activeFilter === 'REPLAY'
+                                        ? 'secondary'
+                                        : 'ghost'
+                                "
+                                size="sm"
+                                class="h-7 px-3 text-xs font-medium"
+                                @click="activeFilter = 'REPLAY'"
+                            >
+                                {{
+                                    $t("stream_slimles.replay_filter", {
+                                        count: replayCount,
+                                    })
+                                }}
+                            </Button>
+                        </div>
 
-            <!-- Filter Pills & Sync Button (Flat Styling) -->
-            <div class="hidden md:flex flex-wrap items-center gap-2">
-                <!-- Filter Pills -->
-                <div
-                    class="inline-flex p-1 rounded-md bg-slate-900 border border-slate-800 text-xs font-mono"
-                >
-                    <button
-                        @click="activeFilter = 'ALL'"
-                        :class="[
-                            'px-3 py-1 rounded-md transition-colors cursor-pointer font-medium',
-                            activeFilter === 'ALL'
-                                ? 'bg-blue-600 text-white'
-                                : 'text-slate-400 hover:text-slate-200',
-                        ]"
-                    >
-                        {{ $t("stream_slimles.all_filter", { count: liveCount + replayCount }) }}
-                    </button>
-                    <button
-                        @click="activeFilter = 'LIVE'"
-                        :class="[
-                            'px-3 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 font-medium',
-                            activeFilter === 'LIVE'
-                                ? 'bg-red-600 text-white'
-                                : 'text-slate-400 hover:text-slate-200',
-                        ]"
-                    >
-                        <span>{{ $t("stream_slimles.live_filter", { count: liveCount }) }}</span>
-                    </button>
-                    <button
-                        @click="activeFilter = 'REPLAY'"
-                        :class="[
-                            'px-3 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 font-medium',
-                            activeFilter === 'REPLAY'
-                                ? 'bg-slate-800 text-slate-200 border border-slate-700'
-                                : 'text-slate-400 hover:text-slate-200',
-                        ]"
-                    >
-                        <span>{{ $t("stream_slimles.replay_filter", { count: replayCount }) }}</span>
-                    </button>
-                </div>
-
-                <!-- Sync Live Button -->
-                <button
-                    @click="emit('trigger-manual-sync')"
-                    :disabled="isSyncingFeeds"
-                    class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-mono rounded-md border border-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
-                >
-                    <img
-                        :src="iconRefresh"
-                        class="w-3.5 h-3.5 invert opacity-80"
-                        :class="{ 'animate-spin': isSyncingFeeds }"
-                    />
-                    <span>{{ isSyncingFeeds ? $t("common.syncing") : "Sync" }}</span>
-                </button>
-            </div>
+                        <!-- Sync Live Button -->
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            :disabled="isSyncingFeeds"
+                            class="text-xs font-mono gap-2"
+                            @click="emit('trigger-manual-sync')"
+                        >
+                            <RefreshCw
+                                class="size-3.5"
+                                :class="{ 'animate-spin': isSyncingFeeds }"
+                            />
+                            <span>{{
+                                isSyncingFeeds ? $t("common.syncing") : "Sync"
+                            }}</span>
+                        </Button>
+                    </div>
+                </template>
+            </SectionHeader>
         </div>
 
         <!-- SINGLE UNIFIED HORIZONTAL SLIDER ROW -->
@@ -222,85 +224,51 @@ const getStreamTac = (videoId) => {
             <!-- Row Slider Controls & Counter -->
             <div class="flex items-center justify-between px-0.5">
                 <span
-                    class="text-xs font-mono text-slate-400 uppercase tracking-wider"
+                    class="text-xs font-mono text-muted-foreground uppercase tracking-wider"
                 >
-                    {{ $t("stream_slimles.showing_count", { count: combinedStreams.length }) }}
+                    {{
+                        $t("stream_slimles.showing_count", {
+                            count: combinedStreams.length,
+                        })
+                    }}
                 </span>
 
                 <div
                     v-if="combinedStreams.length > 0"
                     class="flex items-center space-x-1 shrink-0"
                 >
-                    <button
-                        @click="scrollRow('row-unified-dispatch', 'left')"
-                        class="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors flex items-center justify-center cursor-pointer"
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        class="size-7"
+                        aria-label="Geser Kiri"
                         title="Geser Kiri"
+                        @click="scrollRow('row-unified-dispatch', 'left')"
                     >
-                        <svg
-                            class="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M15 19l-7-7 7-7"
-                            />
-                        </svg>
-                    </button>
-                    <button
-                        @click="scrollRow('row-unified-dispatch', 'right')"
-                        class="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors flex items-center justify-center cursor-pointer"
+                        <ChevronLeft class="size-4" />
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        class="size-7"
+                        aria-label="Geser Kanan"
                         title="Geser Kanan"
+                        @click="scrollRow('row-unified-dispatch', 'right')"
                     >
-                        <svg
-                            class="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 5l7 7-7 7"
-                            />
-                        </svg>
-                    </button>
+                        <ChevronRight class="size-4" />
+                    </Button>
                 </div>
             </div>
 
             <!-- Empty State -->
-            <div
+            <EmptyState
                 v-if="combinedStreams.length === 0"
-                class="p-8 rounded-xl bg-slate-900 border border-slate-800 text-center flex flex-col items-center justify-center gap-2 text-slate-400"
-            >
-                <div
-                    class="p-3 rounded-full bg-slate-950 border border-slate-800 text-blue-400 mb-1"
-                >
-                    <svg
-                        class="w-6 h-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8.111 16.404a5.5 5.5 0 010-7.778M12 20a9.99 9.99 0 000-16m3.889 3.596a5.5 5.5 0 010 7.778M12 12h.01"
-                        />
-                    </svg>
-                </div>
-                <p class="text-xs font-mono font-semibold text-slate-200">
-                    {{ $t("stream_slimles.empty_title") }}
-                </p>
-                <p class="text-[11px] text-slate-400">
-                    {{ $t("stream_slimles.empty_subtitle") }}
-                </p>
-            </div>
+                :icon="Radio"
+                :title="$t('stream_slimles.empty_title')"
+                :description="$t('stream_slimles.empty_subtitle')"
+            />
 
             <!-- UNIFIED SINGLE ROW SLIDER -->
             <div
@@ -308,124 +276,129 @@ const getStreamTac = (videoId) => {
                 id="row-unified-dispatch"
                 class="flex gap-4 overflow-x-auto scroll-smooth snap-x scrollbar-none py-1 focus:outline-hidden"
             >
-                <div
+                <Card
                     v-for="stream in combinedStreams"
                     :key="`dispatch-${stream.video_id}`"
-                    class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer"
+                    class="w-[280px] sm:w-[320px] md:w-[350px] shrink-0 snap-start group flex flex-col cursor-pointer py-0 gap-0 overflow-hidden border-border hover:border-input transition-colors"
                     @click="handleStreamCardClick(stream)"
                 >
-                    <div
-                        class="aspect-video bg-slate-900 rounded-xl overflow-hidden relative border border-slate-800 transition-colors flex flex-col justify-between p-3"
-                        :class="[
-                            stream.status === 'LIVE' || stream.is_live_item
-                                ? 'group-hover:border-red-600/80'
-                                : 'group-hover:border-blue-600/80',
-                        ]"
+                    <AspectRatio
+                        :ratio="16 / 9"
+                        class="bg-card relative overflow-hidden"
                     >
                         <img
                             :src="
                                 stream.thumbnail ||
                                 `https://i.ytimg.com/vi/${stream.video_id}/hqdefault.jpg`
                             "
-                            class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
+                            :alt="
+                                stream.officer?.officer_name ||
+                                stream.title ||
+                                'Officer Stream'
+                            "
+                            class="absolute inset-0 w-full h-full object-cover pointer-events-none"
                             loading="lazy"
                         />
                         <div
-                            class="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/40 to-slate-950/60 pointer-events-none"
+                            class="absolute inset-0 bg-linear-to-t from-background via-background/40 to-background/60 pointer-events-none"
                         ></div>
 
-                        <!-- Card Top Badges -->
                         <div
-                            class="relative z-10 flex items-center justify-between gap-1.5 pointer-events-auto"
+                            class="relative z-10 h-full flex flex-col justify-between p-3"
                         >
-                            <!-- Live vs Replay Badge -->
-                            <span
-                                v-if="
-                                    stream.status === 'LIVE' ||
-                                    stream.is_live_item
-                                "
-                                class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-red-600 text-white font-mono text-[10px] font-semibold tracking-wider"
+                            <!-- Card Top Badges -->
+                            <div
+                                class="flex items-center justify-between gap-1.5 pointer-events-auto"
                             >
-                                <span>LIVE</span>
-                                <span v-if="stream.viewers_count"
-                                    >({{ stream.viewers_count }})</span
-                                >
-                            </span>
-                            <span
-                                v-else
-                                class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-900 text-slate-300 font-mono text-[10px] border border-slate-800 tracking-wider"
-                            >
-                                <span>{{
-                                    formatRelativeTimeLabel(stream.streamed_at)
-                                }}</span>
-                            </span>
-
-                            <!-- TAC & Department Badges -->
-                            <div class="flex items-center gap-1">
-                                <span
-                                    v-if="getStreamTac(stream.video_id)"
-                                    class="px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500 text-slate-950"
-                                >
-                                    {{
-                                        getStreamTac(stream.video_id).replace(
-                                            "_",
-                                            " ",
-                                        )
-                                    }}
-                                </span>
-                                <span
-                                    class="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium border"
-                                    :class="
-                                        getDeptBadgeClass(
-                                            stream.officer?.department,
-                                        )
+                                <!-- Live vs Replay Badge -->
+                                <LiveBadge
+                                    v-if="
+                                        stream.status === 'LIVE' ||
+                                        stream.is_live_item
                                     "
-                                >
-                                    {{ stream.officer?.department || "UNIT" }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Card Bottom Officer Name & YouTube Button -->
-                        <div
-                            class="relative z-10 flex items-center justify-between gap-2 pointer-events-auto"
-                        >
-                            <div class="flex items-center gap-2 min-w-0">
-                                <img
-                                    v-if="stream.officer?.avatar_url"
-                                    :src="stream.officer.avatar_url"
-                                    class="w-6 h-6 rounded-full object-cover border border-slate-700 shrink-0"
+                                    :viewers="stream.viewers_count"
                                 />
-                                <span
-                                    class="text-xs font-semibold text-slate-100 truncate"
+                                <Badge
+                                    v-else
+                                    variant="secondary"
+                                    class="font-mono text-xs tracking-wider"
                                 >
                                     {{
-                                        stream.officer?.officer_name ||
-                                        "Officer"
+                                        formatRelativeTimeLabel(
+                                            stream.streamed_at,
+                                        )
                                     }}
-                                </span>
+                                </Badge>
+
+                                <!-- TAC & Department Badges -->
+                                <div class="flex items-center gap-1">
+                                    <Badge
+                                        v-if="getStreamTac(stream.video_id)"
+                                        variant="warning"
+                                        class="font-mono font-bold text-xs"
+                                    >
+                                        {{
+                                            getStreamTac(
+                                                stream.video_id,
+                                            ).replace("_", " ")
+                                        }}
+                                    </Badge>
+                                    <DeptBadge
+                                        :dept="
+                                            stream.officer?.department || 'SASP'
+                                        "
+                                    />
+                                </div>
                             </div>
-                            <a
-                                :href="getStreamYoutubeUrl(stream)"
-                                target="_blank"
-                                class="p-1.5 text-slate-400 hover:text-slate-100 bg-slate-900/90 rounded-md border border-slate-800 transition-colors shrink-0"
-                                :class="[
-                                    stream.status === 'LIVE' ||
-                                    stream.is_live_item
-                                        ? 'hover:bg-red-600 hover:border-red-600'
-                                        : 'hover:bg-blue-600 hover:border-blue-600',
-                                ]"
-                                title="Buka di YouTube"
-                                @click.stop
+
+                            <!-- Card Bottom Officer Name & YouTube Button -->
+                            <div
+                                class="flex items-center justify-between gap-2 pointer-events-auto"
                             >
-                                <img
-                                    :src="iconExternal"
-                                    class="w-3.5 h-3.5 invert opacity-80"
-                                />
-                            </a>
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <OfficerAvatar
+                                        :src="stream.officer?.avatar_url"
+                                        :name="
+                                            stream.officer?.officer_name ||
+                                            'Officer'
+                                        "
+                                        :live="
+                                            stream.status === 'LIVE' ||
+                                            stream.is_live_item
+                                        "
+                                        size="sm"
+                                        class="size-6 shrink-0"
+                                    />
+                                    <span
+                                        class="text-xs font-semibold text-foreground truncate"
+                                    >
+                                        {{
+                                            stream.officer?.officer_name ||
+                                            "Officer"
+                                        }}
+                                    </span>
+                                </div>
+                                <Button
+                                    as-child
+                                    variant="secondary"
+                                    size="icon"
+                                    class="size-7 shrink-0"
+                                    aria-label="Buka di YouTube"
+                                    title="Buka di YouTube"
+                                    @click.stop
+                                >
+                                    <a
+                                        :href="getStreamYoutubeUrl(stream)"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <ExternalLink class="size-3.5" />
+                                    </a>
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </AspectRatio>
+                </Card>
             </div>
         </div>
     </div>
