@@ -3,11 +3,100 @@ import { ref, computed, onMounted } from "vue";
 import { Head } from "@inertiajs/vue3";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import axios from "axios";
+import { toast as sonnerToast } from "vue-sonner";
 import OfficerClaimsTab from "@/Components/Admin/OfficerClaimsTab.vue";
 import BioModerationTab from "@/Components/Admin/BioModerationTab.vue";
 import AdminChangeRequestsTab from "@/Components/Admin/AdminChangeRequestsTab.vue";
 import HeroSlidesTab from "@/Components/Admin/HeroSlidesTab.vue";
 import OfficerBindingModal from "@/Components/Admin/OfficerBindingModal.vue";
+import {
+    PageContainer,
+    PageHeader,
+    TacticalFrame,
+    StatTile,
+    DeptBadge,
+    OfficerAvatar,
+    EmptyState,
+} from "@/Components/tactical";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Textarea } from "@/Components/ui/textarea";
+import { Checkbox } from "@/Components/ui/checkbox";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/Components/ui/select";
+import {
+    Tabs,
+    TabsList,
+    TabsTrigger,
+} from "@/Components/ui/tabs";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/Components/ui/table";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/Components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
+import {
+    Shield,
+    Building2,
+    Award,
+    Megaphone,
+    Users,
+    FileCheck,
+    Lock,
+    GitPullRequest,
+    Images,
+    Search,
+    X,
+    Plus,
+    RefreshCw,
+    Clock,
+    Pencil,
+    Trash2,
+    ExternalLink,
+    MoreHorizontal,
+    UserCheck,
+    UserX,
+    Link2,
+    ShieldAlert,
+    Ban,
+    Star,
+} from "@lucide/vue";
 
 const props = defineProps({
     stats: {
@@ -129,18 +218,15 @@ const isSyncingSubs = ref(false);
 const isCheckingChannel = ref(false);
 const isSavingOfficer = ref(false);
 
-// Toast Notification
-const toast = ref({
-    show: false,
-    message: "",
-    type: "success", // 'success', 'error', 'info'
-});
-
+// Toast Notification via Sonner
 const showToast = (message, type = "success") => {
-    toast.value = { show: true, message, type };
-    setTimeout(() => {
-        toast.value.show = false;
-    }, 4500);
+    if (type === "error") {
+        sonnerToast.error(message);
+    } else if (type === "info") {
+        sonnerToast.info(message);
+    } else {
+        sonnerToast.success(message);
+    }
 };
 
 // Modal State: Officer
@@ -1273,355 +1359,102 @@ onMounted(() => {
     <Head title="Admin Command Hub - Tactical Police Multiview" />
 
     <TacticalLayout activeTab="admin">
-        <!-- MAIN CONTENT AREA -->
-        <div
-            class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6"
-        >
-            <!-- PAGE HEADER CARD -->
-            <div
-                class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center justify-between gap-4"
+        <PageContainer class="space-y-6">
+            <PageHeader
+                eyebrow="DISPATCHER PORTAL"
+                title="Tactical Admin Hub"
+                subtitle="Police Unit Roster Management, Master Agencies, Ranks & YouTube Stream Synchronization"
             >
-                <div class="flex items-center space-x-3.5">
-                    <div
-                        class="w-10 h-10 rounded-md bg-blue-600 flex items-center justify-center text-white shrink-0"
-                    >
-                        <svg
-                            class="w-5 h-5 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                            />
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <h1
-                                class="text-base sm:text-lg font-black tracking-wider text-white font-mono uppercase"
-                            >
-                                Tactical Admin Hub
-                            </h1>
-                            <span
-                                class="px-2 py-0.5 rounded-md text-[10px] font-bold font-mono uppercase bg-slate-950 text-blue-400 border border-slate-800"
-                            >
-                                Dispatcher Portal
-                            </span>
-                        </div>
-                        <p
-                            class="text-xs text-slate-400 font-sans hidden sm:block"
-                        >
-                            Police Unit Roster Management, Master Agencies,
-                            Ranks & YouTube Stream Synchronization
-                        </p>
-                    </div>
-                </div>
-
-                <div
-                    class="flex items-center space-x-2 text-xs font-mono text-slate-400"
-                >
-                    <span
-                        class="px-3 py-1 bg-slate-950 border border-slate-800 rounded-md text-slate-300"
-                    >
+                <template #actions>
+                    <Badge variant="outline" class="font-mono text-xs px-3 py-1">
                         Logged in as:
-                        <strong class="text-blue-400 font-bold">{{
+                        <strong class="text-primary font-bold ml-1">{{
                             auth.user?.name || "Admin"
                         }}</strong>
-                    </span>
-                </div>
-            </div>
+                    </Badge>
+                </template>
+            </PageHeader>
 
-            <!-- ADMIN TABS -->
-            <div
-                class="flex items-center space-x-2 border-b border-slate-800 pb-2 overflow-x-auto"
-            >
-                <button
-                    @click="activeTab = 'officers'"
-                    :class="[
-                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
-                        activeTab === 'officers'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                    ]"
-                >
-                    <svg
-                        class="w-4 h-4 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                        />
-                    </svg>
-                    <span>Officers Roster</span>
-                </button>
-                <button
-                    @click="activeTab = 'agencies'"
-                    :class="[
-                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
-                        activeTab === 'agencies'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                    ]"
-                >
-                    <svg
-                        class="w-4 h-4 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0h4m-4 0H9m4 0V7m0 0h-4"
-                        />
-                    </svg>
-                    <span>Agencies & Ranks Structure</span>
-                </button>
-                <button
-                    @click="activeTab = 'certifications'"
-                    :class="[
-                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
-                        activeTab === 'certifications'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                    ]"
-                >
-                    <svg
-                        class="w-4 h-4 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M5 3v4M3 5h4m6 12v4m-2-2h4m4-14v4m-2-2h4M5 15h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2z"
-                        />
-                    </svg>
-                    <span>Tactical Certifications</span>
-                </button>
-                <button
-                    @click="activeTab = 'announcements'"
-                    :class="[
-                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
-                        activeTab === 'announcements'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                    ]"
-                >
-                    <svg
-                        class="w-4 h-4 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.684A1.761 1.761 0 013 12c0-.624.324-1.173.816-1.494l5.436-3.649 font-mono"
-                        />
-                    </svg>
-                    <span>Promotions & Alerts</span>
-                </button>
-                <button
-                    @click="activeTab = 'users'"
-                    :class="[
-                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
-                        activeTab === 'users'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                    ]"
-                >
-                    <svg
-                        class="w-4 h-4 shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
-                    </svg>
-                    <span>Member Accounts</span>
-                    <span
-                        class="px-1.5 py-0.2 text-[10px] bg-slate-900 text-slate-200 rounded-md font-mono border border-slate-800"
-                        >{{ usersList.length }}</span
-                    >
-                </button>
-                <button
-                    @click="activeTab = 'claims'"
-                    :class="[
-                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
-                        activeTab === 'claims'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                    ]"
-                >
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>Klaim Perwira</span>
-                    <span
-                        v-if="stats.pending_claims > 0"
-                        class="px-1.5 py-0.2 text-[10px] bg-amber-500/20 text-amber-300 rounded-md font-mono border border-amber-500/40 animate-pulse font-bold"
-                    >
-                        {{ stats.pending_claims }}
-                    </span>
-                    <span
-                        v-else
-                        class="px-1.5 py-0.2 text-[10px] bg-slate-900 text-slate-400 rounded-md font-mono border border-slate-800"
-                    >
-                        0
-                    </span>
-                </button>
-                <button
-                    @click="activeTab = 'moderation'"
-                    :class="[
-                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
-                        activeTab === 'moderation'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                    ]"
-                >
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    <span>Moderasi Bio-Link</span>
-                </button>
-
-                <button
-                    @click="activeTab = 'requests'"
-                    :class="[
-                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
-                        activeTab === 'requests'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900',
-                    ]"
-                >
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>Pengajuan Mutasi</span>
-                </button>
-
-                <button
-                    @click="activeTab = 'hero'"
-                    :class="[
-                        'px-4 py-2 rounded-md text-xs font-bold font-mono tracking-wide transition whitespace-nowrap flex items-center gap-1.5',
-                        activeTab === 'hero'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-background border border-border text-muted-foreground hover:text-foreground hover:bg-card',
-                    ]"
-                >
-                    <span>Hero Slides</span>
-                </button>
-            </div>
-
-            <!-- TAB 1: OFFICERS -->
-            <div v-if="activeTab === 'officers'" class="space-y-6">
-                <!-- STATS CARDS -->
+            <!-- RINGKASAN STATTILE DENGAN 1 TACTICALFRAME (MAKS. 2 PER LAYAR) -->
+            <TacticalFrame variant="panel" accent="primary" class="p-4 sm:p-5">
                 <div
                     class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4"
                 >
-                    <div
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
-                    >
-                        <span
-                            class="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider"
-                            >Total Units</span
-                        >
-                        <div class="text-2xl font-black text-white mt-1">
-                            {{ deptCounts.ALL }}
-                        </div>
-                    </div>
-
-                    <div
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
-                    >
-                        <span
-                            class="text-[11px] font-mono font-bold text-emerald-400 uppercase tracking-wider"
-                            >Active Units</span
-                        >
-                        <div class="text-2xl font-black text-emerald-400 mt-1">
-                            {{ deptCounts.active }}
-                        </div>
-                    </div>
-
-                    <div
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
-                    >
-                        <span
-                            class="text-[11px] font-mono font-bold text-blue-400 uppercase tracking-wider"
-                            >LSPD</span
-                        >
-                        <div class="text-2xl font-black text-blue-400 mt-1">
-                            {{ deptCounts.LSPD }}
-                        </div>
-                    </div>
-
-                    <div
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
-                    >
-                        <span
-                            class="text-[11px] font-mono font-bold text-amber-400 uppercase tracking-wider"
-                            >BCSO</span
-                        >
-                        <div class="text-2xl font-black text-amber-400 mt-1">
-                            {{ deptCounts.BCSO }}
-                        </div>
-                    </div>
-
-                    <div
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
-                    >
-                        <span
-                            class="text-[11px] font-mono font-bold text-teal-300 uppercase tracking-wider"
-                            >SASP</span
-                        >
-                        <div class="text-2xl font-black text-teal-300 mt-1">
-                            {{ deptCounts.SASP }}
-                        </div>
-                    </div>
-
-                    <div
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
-                    >
-                        <span
-                            class="text-[11px] font-mono font-bold text-emerald-400 uppercase tracking-wider"
-                            >SAPR</span
-                        >
-                        <div class="text-2xl font-black text-emerald-400 mt-1">
-                            {{ deptCounts.SAPR }}
-                        </div>
-                    </div>
-
-                    <div
-                        class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
-                    >
-                        <span
-                            class="text-[11px] font-mono font-bold text-rose-400 uppercase tracking-wider"
-                            >Disabled</span
-                        >
-                        <div class="text-2xl font-black text-rose-400 mt-1">
-                            {{ deptCounts.inactive }}
-                        </div>
-                    </div>
+                    <StatTile label="Total Units" :value="deptCounts.ALL" />
+                    <StatTile
+                        label="Active Units"
+                        :value="deptCounts.active"
+                        delta="Online Roster"
+                        delta-type="up"
+                    />
+                    <StatTile label="LSPD" :value="deptCounts.LSPD" />
+                    <StatTile label="BCSO" :value="deptCounts.BCSO" />
+                    <StatTile label="SASP" :value="deptCounts.SASP" />
+                    <StatTile label="SAPR" :value="deptCounts.SAPR" />
+                    <StatTile
+                        label="Disabled"
+                        :value="deptCounts.inactive"
+                        delta="Off Roster"
+                        delta-type="down"
+                    />
                 </div>
+            </TacticalFrame>
+
+            <!-- ADMIN TABS (Horizontal scrollable TabsList untuk 9 modul admin) -->
+            <Tabs v-model="activeTab" class="w-full">
+                <div class="overflow-x-auto pb-1">
+                    <TabsList class="inline-flex h-auto min-w-max justify-start gap-1 p-1">
+                        <TabsTrigger value="officers" class="gap-1.5 text-xs font-mono">
+                            <Shield class="size-3.5 shrink-0" />
+                            <span>Officers Roster</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="agencies" class="gap-1.5 text-xs font-mono">
+                            <Building2 class="size-3.5 shrink-0" />
+                            <span>Agencies & Ranks Structure</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="certifications" class="gap-1.5 text-xs font-mono">
+                            <Award class="size-3.5 shrink-0" />
+                            <span>Tactical Certifications</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="announcements" class="gap-1.5 text-xs font-mono">
+                            <Megaphone class="size-3.5 shrink-0" />
+                            <span>Promotions & Alerts</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="users" class="gap-1.5 text-xs font-mono">
+                            <Users class="size-3.5 shrink-0" />
+                            <span>Member Accounts</span>
+                            <Badge variant="secondary" class="ml-1 font-mono text-xs px-1.5 py-0">
+                                {{ usersList.length }}
+                            </Badge>
+                        </TabsTrigger>
+                        <TabsTrigger value="claims" class="gap-1.5 text-xs font-mono">
+                            <FileCheck class="size-3.5 shrink-0" />
+                            <span>Klaim Perwira</span>
+                            <Badge
+                                :variant="stats.pending_claims > 0 ? 'warning' : 'secondary'"
+                                class="ml-1 font-mono text-xs px-1.5 py-0"
+                            >
+                                {{ stats.pending_claims }}
+                            </Badge>
+                        </TabsTrigger>
+                        <TabsTrigger value="moderation" class="gap-1.5 text-xs font-mono">
+                            <Lock class="size-3.5 shrink-0" />
+                            <span>Moderasi Bio-Link</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="requests" class="gap-1.5 text-xs font-mono">
+                            <GitPullRequest class="size-3.5 shrink-0" />
+                            <span>Pengajuan Mutasi</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="hero" class="gap-1.5 text-xs font-mono">
+                            <Images class="size-3.5 shrink-0" />
+                            <span>Hero Slides</span>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+            </Tabs>
+
+            <!-- TAB 1: OFFICERS -->
+            <div v-if="activeTab === 'officers'" class="space-y-6">
 
                 <!-- ACTION CONTROL BAR -->
                 <div
@@ -2672,7 +2505,7 @@ onMounted(() => {
             <div v-if="activeTab === 'hero'">
                 <HeroSlidesTab @toast="showToast" />
             </div>
-        </div>
+        </PageContainer>
 
         <!-- MODAL: ADD / EDIT OFFICER (With Cascading Agency Dropdown) -->
         <div
@@ -3353,42 +3186,6 @@ onMounted(() => {
                 </div>
             </div>
         </div>
-
-        <!-- TOAST NOTIFICATION POPUP -->
-        <transition
-            enter-active-class="transform transition ease-out duration-300"
-            enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
-            enter-to-class="translate-y-0 opacity-100 sm:translate-x-0"
-            leave-active-class="transition ease-in duration-200"
-            leave-from-class="opacity-100"
-            leave-to-class="opacity-0"
-        >
-            <div
-                v-if="toast.show"
-                class="fixed bottom-5 right-5 z-50 max-w-sm rounded-md p-4 border flex items-center space-x-3 font-mono text-xs"
-                :class="{
-                    'bg-slate-900 text-emerald-300 border-emerald-800':
-                        toast.type === 'success',
-                    'bg-slate-900 text-rose-300 border-rose-800':
-                        toast.type === 'error',
-                    'bg-slate-900 text-blue-300 border-blue-800':
-                        toast.type === 'info',
-                }"
-            >
-                <span v-if="toast.type === 'success'" class="text-base">✓</span>
-                <span v-else-if="toast.type === 'error'" class="text-base"
-                    >✕</span
-                >
-                <span v-else class="text-base">ℹ</span>
-                <div class="flex-1">{{ toast.message }}</div>
-                <button
-                    @click="toast.show = false"
-                    class="text-slate-400 hover:text-white"
-                >
-                    ✕
-                </button>
-            </div>
-        </transition>
 
         <!-- USER WATCHLIST DETAIL MODAL -->
         <Teleport to="body">
