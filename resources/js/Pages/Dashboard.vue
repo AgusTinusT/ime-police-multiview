@@ -4,12 +4,12 @@ import { computed, ref } from "vue";
 
 // Refactored Sub-Components
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
+import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
+import HeroFeatureSpotlight from "@/Components/Hero/HeroFeatureSpotlight.vue";
 import {
     DeptBadge,
     PageContainer,
-    StatTile,
-    TacticalFrame,
 } from "@/Components/tactical";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import TacticalClipperBetaBanner from "@/Components/TacticalClipperBetaBanner.vue";
@@ -23,7 +23,7 @@ import { Button } from "@/Components/ui/button";
 import { Toaster } from "@/Components/ui/sonner";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
 import { parseRelativeTimeToSeconds } from "@/Utils/timeHelpers";
-import { Eye, Film, Radio, RefreshCw, Shield, Users, Video } from "@lucide/vue";
+import { RefreshCw, Scissors, Users, Video } from "@lucide/vue";
 
 const props = defineProps({
     heroSlides: {
@@ -70,6 +70,7 @@ const offlineOfficers = ref(props.initialOfflineOfficers);
 const recentReplays = ref(props.initialReplays || []);
 const isSyncingFeeds = ref(false);
 const showClipperClaimModal = ref(false);
+const showOfficerClaimModal = ref(false);
 
 // Computed All Active & Catalog Streams
 const allActiveStreams = computed(() => streams.value);
@@ -246,18 +247,17 @@ const scrollToUnitsGrid = () => {
                         <div class="lg:col-span-7 space-y-5">
                             <Badge
                                 variant="outline"
-                                class="hidden sm:inline-flex items-center gap-2 py-1 px-3 font-mono text-xs bg-card/80"
+                                class="hidden sm:inline-flex items-center gap-2 py-1 px-3 font-mono text-xs bg-card/80 border-primary/30"
                             >
                                 <span
                                     class="w-2 h-2 rounded-full bg-primary motion-safe:animate-pulse shrink-0"
                                 ></span>
                                 <span>
                                     SERVER: IME ROLEPLAY // LIVE MULTIVIEW
-                                    STREAMING
                                 </span>
                                 <span class="text-border">|</span>
-                                <span class="text-muted-foreground">
-                                    SAN ANDREAS STATE
+                                <span class="text-info font-bold">
+                                    ✨ CLIPS STUDIO V2 BETA
                                 </span>
                             </Badge>
 
@@ -280,7 +280,8 @@ const scrollToUnitsGrid = () => {
                             <div class="flex flex-wrap items-center gap-2 pt-1">
                                 <Badge
                                     variant="secondary"
-                                    class="gap-2 py-1 px-2.5 font-mono text-xs"
+                                    class="gap-2 py-1 px-2.5 font-mono text-xs cursor-pointer hover:opacity-85 transition-opacity"
+                                    @click="scrollToUnitsGrid"
                                 >
                                     <span
                                         class="w-2 h-2 rounded-full bg-success shrink-0"
@@ -290,27 +291,51 @@ const scrollToUnitsGrid = () => {
                                     </span>
                                 </Badge>
 
-                                <DeptBadge
-                                    dept="LSPD"
-                                    :label="`LSPD METRO (${lspdCatalogStreams.length})`"
-                                />
-                                <DeptBadge
-                                    dept="BCSO"
-                                    :label="`BCSO SHERIFF (${bcsoCatalogStreams.length})`"
-                                />
-                                <DeptBadge
-                                    dept="SASP"
-                                    :label="`SASP STATE (${saspCatalogStreams.length})`"
-                                />
-                                <DeptBadge
-                                    dept="SAPR"
-                                    :label="`PARK RANGER (${saprCatalogStreams.length})`"
-                                />
+                                <button
+                                    type="button"
+                                    class="cursor-pointer hover:opacity-85 transition-opacity"
+                                    @click="scrollToUnitsGrid"
+                                >
+                                    <DeptBadge
+                                        dept="LSPD"
+                                        :label="`LSPD METRO (${lspdCatalogStreams.length})`"
+                                    />
+                                </button>
+                                <button
+                                    type="button"
+                                    class="cursor-pointer hover:opacity-85 transition-opacity"
+                                    @click="scrollToUnitsGrid"
+                                >
+                                    <DeptBadge
+                                        dept="BCSO"
+                                        :label="`BCSO SHERIFF (${bcsoCatalogStreams.length})`"
+                                    />
+                                </button>
+                                <button
+                                    type="button"
+                                    class="cursor-pointer hover:opacity-85 transition-opacity"
+                                    @click="scrollToUnitsGrid"
+                                >
+                                    <DeptBadge
+                                        dept="SASP"
+                                        :label="`SASP STATE (${saspCatalogStreams.length})`"
+                                    />
+                                </button>
+                                <button
+                                    type="button"
+                                    class="cursor-pointer hover:opacity-85 transition-opacity"
+                                    @click="scrollToUnitsGrid"
+                                >
+                                    <DeptBadge
+                                        dept="SAPR"
+                                        :label="`PARK RANGER (${saprCatalogStreams.length})`"
+                                    />
+                                </button>
                             </div>
 
                             <!-- Hero Action Links -->
                             <div class="flex flex-wrap items-center gap-3 pt-2">
-                                <Button as-child size="default">
+                                <Button as-child size="default" class="font-mono font-bold">
                                     <Link href="/multiview">
                                         <Video class="size-4" />
                                         <span>{{
@@ -322,12 +347,25 @@ const scrollToUnitsGrid = () => {
                                 </Button>
 
                                 <Button
+                                    as-child
+                                    variant="secondary"
+                                    size="default"
+                                    class="font-mono text-xs font-bold gap-2"
+                                >
+                                    <Link href="/clips">
+                                        <Scissors class="size-4 text-info" />
+                                        <span>Clips Studio Beta</span>
+                                    </Link>
+                                </Button>
+
+                                <Button
                                     type="button"
                                     variant="outline"
                                     size="default"
+                                    class="font-mono text-xs text-muted-foreground"
                                     @click="scrollToUnitsGrid"
                                 >
-                                    <Users class="size-4 text-muted-foreground" />
+                                    <Users class="size-4" />
                                     <span>{{
                                         $t("dashboard.btn_explore_feeds")
                                     }}</span>
@@ -335,196 +373,12 @@ const scrollToUnitsGrid = () => {
                             </div>
                         </div>
 
-                        <!-- Right Tactical Live HUD Card -->
+                        <!-- Right Hero: Tactical Feature Spotlight Suite -->
                         <div class="lg:col-span-5">
-                            <div
-                                class="rounded-xl bg-card border border-border p-5 space-y-4"
-                            >
-                                <!-- HUD Accent Header -->
-                                <div
-                                    class="flex items-center justify-between pb-3 border-b border-border"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            class="w-2 h-2 rounded-full bg-info"
-                                        ></span>
-                                        <span
-                                            class="text-xs font-mono font-semibold tracking-wider text-foreground uppercase"
-                                        >
-                                            {{ $t("dashboard.grid_monitor") }}
-                                        </span>
-                                    </div>
-                                    <Badge
-                                        variant="success"
-                                        class="font-mono text-xs"
-                                    >
-                                        {{ $t("dashboard.live_metrics") }}
-                                    </Badge>
-                                </div>
-
-                                <!-- Stats Matrix Grid (2x2) -->
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div
-                                        class="p-3 rounded-lg bg-background border border-border space-y-1"
-                                    >
-                                        <span
-                                            class="text-xs font-mono text-muted-foreground block uppercase"
-                                        >
-                                            {{ $t("dashboard.on_duty_feeds") }}
-                                        </span>
-                                        <div class="flex items-baseline gap-2">
-                                            <span
-                                                class="text-xl font-mono font-bold text-info"
-                                            >
-                                                {{ allActiveStreams.length }}
-                                            </span>
-                                            <span
-                                                class="text-xs text-muted-foreground font-mono"
-                                            >
-                                                {{ $t("dashboard.active") }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        class="p-3 rounded-lg bg-background border border-border space-y-1"
-                                    >
-                                        <span
-                                            class="text-xs font-mono text-muted-foreground block uppercase"
-                                        >
-                                            {{ $t("common.departments") }}
-                                        </span>
-                                        <div class="flex items-baseline gap-2">
-                                            <span
-                                                class="text-xl font-mono font-bold text-success"
-                                            >
-                                                4
-                                            </span>
-                                            <span
-                                                class="text-xs text-muted-foreground font-mono"
-                                            >
-                                                {{ $t("dashboard.divisions") }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        class="p-3 rounded-lg bg-background border border-border space-y-1"
-                                    >
-                                        <span
-                                            class="text-xs font-mono text-muted-foreground block uppercase"
-                                        >
-                                            {{ $t("dashboard.total_officers") }}
-                                        </span>
-                                        <div class="flex items-baseline gap-2">
-                                            <span
-                                                class="text-xl font-mono font-bold text-warning"
-                                            >
-                                                {{
-                                                    allActiveStreams.length +
-                                                    offlineOfficers.length
-                                                }}
-                                            </span>
-                                            <span
-                                                class="text-xs text-muted-foreground font-mono"
-                                            >
-                                                {{
-                                                    $t(
-                                                        "dashboard.officers_unit",
-                                                    )
-                                                }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        class="p-3 rounded-lg bg-background border border-border space-y-1"
-                                    >
-                                        <span
-                                            class="text-xs font-mono text-muted-foreground block uppercase"
-                                        >
-                                            {{ $t("dashboard.replay_archive") }}
-                                        </span>
-                                        <div class="flex items-baseline gap-2">
-                                            <span
-                                                class="text-xl font-mono font-bold text-primary"
-                                            >
-                                                {{ recentReplays.length }}
-                                            </span>
-                                            <span
-                                                class="text-xs text-muted-foreground font-mono"
-                                            >
-                                                {{
-                                                    $t("dashboard.videos_unit")
-                                                }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Live Stream Transmission Info Box -->
-                                <div
-                                    class="bg-background rounded-lg p-3 border border-border space-y-2"
-                                >
-                                    <div
-                                        class="flex items-center justify-between text-xs font-mono"
-                                    >
-                                        <span
-                                            class="text-muted-foreground flex items-center gap-1.5"
-                                        >
-                                            <Video
-                                                class="size-3.5 text-primary"
-                                            />
-                                            {{
-                                                $t(
-                                                    "dashboard.transmission_feed",
-                                                )
-                                            }}
-                                        </span>
-                                        <span class="text-info text-xs">
-                                            YOUTUBE LIVE
-                                        </span>
-                                    </div>
-                                    <p
-                                        class="text-xs font-mono text-muted-foreground bg-card p-2 rounded-sm border border-border leading-relaxed"
-                                    >
-                                        {{ $t("dashboard.transmission_log") }}
-                                    </p>
-                                    <div
-                                        class="flex items-center justify-between pt-1"
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="link"
-                                            size="sm"
-                                            :disabled="isSyncingFeeds"
-                                            class="h-auto p-0 text-xs font-mono text-primary hover:text-primary/80 gap-1.5"
-                                            @click="triggerManualSync"
-                                        >
-                                            <RefreshCw
-                                                :class="[
-                                                    'size-3',
-                                                    isSyncingFeeds
-                                                        ? 'animate-spin'
-                                                        : '',
-                                                ]"
-                                            />
-                                            <span>{{
-                                                isSyncingFeeds
-                                                    ? $t("common.syncing")
-                                                    : $t(
-                                                          "common.sync_live_feeds",
-                                                      )
-                                            }}</span>
-                                        </Button>
-                                        <span
-                                            class="text-xs text-muted-foreground font-mono"
-                                        >
-                                            Feeds: LSPD / BCSO / SASP / SAPR
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            <HeroFeatureSpotlight
+                                @open-clipper-claim="showClipperClaimModal = true"
+                                @open-officer-claim="showOfficerClaimModal = true"
+                            />
                         </div>
                     </div>
                 </PageContainer>
@@ -534,100 +388,17 @@ const scrollToUnitsGrid = () => {
             <section
                 id="units-grid"
                 v-reveal
-                class="w-full bg-card/40 pt-10 sm:pt-14 pb-12 sm:pb-16 scroll-mt-6 relative z-10"
+                class="w-full bg-card/40 pt-8 sm:pt-12 pb-12 sm:pb-16 scroll-mt-6 relative z-10"
             >
-                <PageContainer class="space-y-8">
-                    <!-- Ringkasan Telemetri Taktis (Unified Clean Ribbon) -->
-                    <div class="rounded-xl border border-border/70 bg-card/60 backdrop-blur-md overflow-hidden shadow-xs">
-                        <div class="grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
-                            <!-- 1. On Duty Streams -->
-                            <div class="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
-                                <div class="space-y-1">
-                                    <span class="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground block">
-                                        {{ $t('dashboard.on_duty_feeds') }}
-                                    </span>
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="font-mono text-2xl font-bold text-info tabular-nums">
-                                            {{ allActiveStreams.length }}
-                                        </span>
-                                        <span class="text-xs font-mono text-muted-foreground">
-                                            {{ $t('dashboard.active') }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="size-10 rounded-lg bg-info/10 text-info border border-info/20 grid place-items-center shrink-0">
-                                    <Radio class="size-5" />
-                                </div>
-                            </div>
-
-                            <!-- 2. Live Viewers -->
-                            <div class="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
-                                <div class="space-y-1">
-                                    <span class="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground block">
-                                        Total Penonton Live
-                                    </span>
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="font-mono text-2xl font-bold text-live tabular-nums">
-                                            {{ totalLiveViewers }}
-                                        </span>
-                                        <span class="text-xs font-mono text-muted-foreground">
-                                            Penonton
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="size-10 rounded-lg bg-live/10 text-live border border-live/20 grid place-items-center shrink-0">
-                                    <Eye class="size-5" />
-                                </div>
-                            </div>
-
-                            <!-- 3. Total Officers -->
-                            <div class="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
-                                <div class="space-y-1">
-                                    <span class="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground block">
-                                        {{ $t('dashboard.total_officers') }}
-                                    </span>
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="font-mono text-2xl font-bold text-foreground tabular-nums">
-                                            {{ allActiveStreams.length + offlineOfficers.length }}
-                                        </span>
-                                        <span class="text-xs font-mono text-muted-foreground">
-                                            {{ $t('dashboard.officers_unit') }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="size-10 rounded-lg bg-muted text-muted-foreground border border-border grid place-items-center shrink-0">
-                                    <Shield class="size-5" />
-                                </div>
-                            </div>
-
-                            <!-- 4. Patrol Replays -->
-                            <div class="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
-                                <div class="space-y-1">
-                                    <span class="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground block">
-                                        {{ $t('dashboard.replay_archive') }}
-                                    </span>
-                                    <div class="flex items-baseline gap-2">
-                                        <span class="font-mono text-2xl font-bold text-primary tabular-nums">
-                                            {{ recentReplays.length }}
-                                        </span>
-                                        <span class="text-xs font-mono text-muted-foreground">
-                                            {{ $t('dashboard.videos_unit') }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="size-10 rounded-lg bg-primary/10 text-primary border border-primary/20 grid place-items-center shrink-0">
-                                    <Film class="size-5" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                <PageContainer>
                     <TacticalStreamSlimles
                         :is-syncing-feeds="isSyncingFeeds"
                         :all-active-streams="allActiveStreams"
                         :trending-streams="trendingStreams"
                         :recent-replay-streams="recentReplayStreams"
                         :tac-channels="tacChannels"
+                        :total-live-viewers="totalLiveViewers"
+                        :total-officers="allActiveStreams.length + offlineOfficers.length"
                         @play-stream-in-focus="playStreamInFocus"
                         @trigger-manual-sync="triggerManualSync"
                     />
@@ -674,6 +445,12 @@ const scrollToUnitsGrid = () => {
         <ClipperClaimModal
             :show="showClipperClaimModal"
             @close="showClipperClaimModal = false"
+        />
+
+        <!-- Officer Profile Claim Modal -->
+        <OfficerClaimModal
+            :show="showOfficerClaimModal"
+            @close="showOfficerClaimModal = false"
         />
 
         <Toaster rich-colors position="top-right" />

@@ -27,6 +27,8 @@ const props = defineProps({
     recentReplayStreams: { type: Array, default: () => [] },
     isSyncingFeeds: { type: Boolean, default: false },
     tacChannels: { type: Array, default: () => [] },
+    totalLiveViewers: { type: Number, default: 0 },
+    totalOfficers: { type: Number, default: 0 },
 });
 
 const emit = defineEmits(["play-stream-in-focus", "trigger-manual-sync"]);
@@ -142,6 +144,15 @@ const getStreamTac = (videoId) => {
             >
                 <template #actions>
                     <div class="hidden md:flex flex-wrap items-center gap-2">
+                        <!-- Live Telemetry Status Badge -->
+                        <div
+                            v-if="totalLiveViewers > 0"
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-live/10 text-live border border-live/25 font-mono text-xs font-semibold"
+                        >
+                            <span class="size-1.5 rounded-full bg-live motion-safe:animate-ping" />
+                            <span>{{ Number(totalLiveViewers).toLocaleString() }} Watching</span>
+                        </div>
+
                         <!-- Filter Pills -->
                         <div
                             class="inline-flex p-1 rounded-md bg-card border border-border text-xs font-mono gap-1"
