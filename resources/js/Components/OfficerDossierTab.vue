@@ -1,5 +1,31 @@
 <script setup>
 import { ref, computed, nextTick } from "vue";
+import { Trash2 } from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Card } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
+import { Separator } from "@/Components/ui/separator";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/Components/ui/table";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
+import { DeptBadge } from "@/Components/tactical";
 
 const props = defineProps({
     officer: {
@@ -11,6 +37,12 @@ const props = defineProps({
         default: () => ({}),
     },
 });
+
+const certifications = [
+    { code: "CERT-HPD", title: "High Pursuit Driver", status: "Aktif" },
+    { code: "CERT-ASL", title: "Air Support Lead", status: "Aktif" },
+    { code: "CERT-NEG", title: "Negotiator", status: "Aktif" },
+];
 
 // Mock initial impressions list (YouTube comment style)
 const impressions = ref([
@@ -71,7 +103,9 @@ const focusCommentInput = () => {
     isCommentInputFocused.value = true;
     nextTick(() => {
         if (commentTextareaRef.value) {
-            commentTextareaRef.value.focus();
+            const el =
+                commentTextareaRef.value.$el || commentTextareaRef.value;
+            if (el && typeof el.focus === "function") el.focus();
         }
     });
 };
@@ -96,7 +130,6 @@ const submitComment = () => {
         created_at: "Baru saja",
     });
 
-    // Reset & Collapse
     newCommentContent.value = "";
     isCommentInputFocused.value = false;
     sortOrder.value = "newest";
@@ -106,9 +139,18 @@ defineExpose({
     focusCommentInput,
 });
 
+const pendingDeleteId = ref(null);
+
 const deleteImpression = (id) => {
-    if (confirm("Apakah Anda yakin ingin menghapus catatan kesan ini?")) {
-        impressions.value = impressions.value.filter((i) => i.id !== id);
+    pendingDeleteId.value = id;
+};
+
+const confirmDeleteImpression = () => {
+    if (pendingDeleteId.value !== null) {
+        impressions.value = impressions.value.filter(
+            (i) => i.id !== pendingDeleteId.value,
+        );
+        pendingDeleteId.value = null;
     }
 };
 </script>
@@ -116,15 +158,13 @@ const deleteImpression = (id) => {
 <template>
     <div class="space-y-5 font-sans">
         <!-- TACTICAL DOSSIER HEADER CARD -->
-        <div
-            class="bg-slate-900 rounded-xl border border-slate-800 p-5 space-y-4"
-        >
+        <Card class="p-5 space-y-4">
             <div
                 class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
             >
                 <div class="flex items-center space-x-3.5">
                     <div
-                        class="w-12 h-12 rounded-sm bg-slate-950 border border-slate-800 flex items-center justify-center font-bold text-base text-slate-300 font-mono shrink-0"
+                        class="w-12 h-12 rounded-sm bg-background border border-border flex items-center justify-center font-bold text-base text-foreground font-mono shrink-0"
                     >
                         {{
                             officer?.callsign ||
@@ -134,16 +174,16 @@ const deleteImpression = (id) => {
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <span
-                                class="px-2 py-0.5 rounded-sm text-[10px] font-mono bg-slate-950 text-slate-300 border border-slate-800"
-                            >
-                                {{
+                            <DeptBadge
+                                :dept="
                                     officer?.department ||
                                     stream?.officer?.department ||
-                                    "SASP"
-                                }}
-                            </span>
-                            <span class="text-xs font-mono text-slate-400">
+                                    'SASP'
+                                "
+                            />
+                            <span
+                                class="text-xs font-mono text-muted-foreground"
+                            >
                                 Badge #{{
                                     officer?.badge_number ||
                                     stream?.officer?.badge_number ||
@@ -151,14 +191,18 @@ const deleteImpression = (id) => {
                                 }}
                             </span>
                         </div>
-                        <h2 class="text-base font-semibold text-slate-100 mt-1">
+                        <h2
+                            class="text-base font-semibold text-foreground mt-1"
+                        >
                             {{
                                 officer?.officer_name ||
                                 stream?.officer?.officer_name ||
                                 "Senior Lead Officer"
                             }}
                         </h2>
-                        <p class="text-xs text-slate-400 font-mono mt-0.5">
+                        <p
+                            class="text-xs text-muted-foreground font-mono mt-0.5"
+                        >
                             {{
                                 officer?.rank ||
                                 stream?.officer?.rank ||
@@ -173,108 +217,134 @@ const deleteImpression = (id) => {
                     class="grid grid-cols-2 gap-2 w-full md:w-auto font-mono text-center text-xs"
                 >
                     <div
-                        class="bg-slate-950 border border-slate-800 p-2.5 rounded-md"
+                        class="bg-background border border-border p-2.5 rounded-md"
                     >
-                        <span class="block text-[10px] text-slate-500"
+                        <span class="block text-xs text-muted-foreground"
                             >STATUS PATROLI</span
                         >
                         <span
-                            class="text-xs font-medium text-slate-300 mt-0.5 block"
+                            class="text-xs font-medium text-foreground mt-0.5 block"
                             >10-8 ACTIVE</span
                         >
                     </div>
                     <div
-                        class="bg-slate-950 border border-slate-800 p-2.5 rounded-md"
+                        class="bg-background border border-border p-2.5 rounded-md"
                     >
-                        <span class="block text-[10px] text-slate-500"
+                        <span class="block text-xs text-muted-foreground"
                             >CATATAN KOMUNITAS</span
                         >
                         <span
-                            class="text-xs font-medium text-slate-300 mt-0.5 block"
+                            class="text-xs font-medium text-foreground mt-0.5 block"
                             >{{ impressions.length }} Entri</span
                         >
                     </div>
                 </div>
             </div>
 
-            <!-- CERTIFICATIONS -->
-            <div
-                class="pt-3 border-t border-slate-800 flex items-center justify-between flex-wrap gap-2 text-xs font-mono"
-            >
-                <div class="flex items-center space-x-2 text-slate-400">
-                    <span class="text-slate-300 font-medium">Sertifikasi:</span>
-                    <span
-                        class="px-2 py-0.5 rounded-sm bg-slate-950 text-slate-300 border border-slate-800"
-                        >High Pursuit Driver</span
-                    >
-                    <span
-                        class="px-2 py-0.5 rounded-sm bg-slate-950 text-slate-300 border border-slate-800"
-                        >Air Support Lead</span
-                    >
-                    <span
-                        class="px-2 py-0.5 rounded-sm bg-slate-950 text-slate-300 border border-slate-800"
-                        >Negotiator</span
-                    >
+            <Separator />
+
+            <!-- CERTIFICATIONS TABLE -->
+            <div class="space-y-2 font-mono text-xs">
+                <span class="text-foreground font-medium block"
+                    >Sertifikasi Taktis:</span
+                >
+                <div class="rounded-md border border-border overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            <TableRow class="bg-muted/40">
+                                <TableHead class="h-8 py-1 px-3 text-xs"
+                                    >Kode</TableHead
+                                >
+                                <TableHead class="h-8 py-1 px-3 text-xs"
+                                    >Sertifikasi</TableHead
+                                >
+                                <TableHead
+                                    class="h-8 py-1 px-3 text-right text-xs"
+                                    >Status</TableHead
+                                >
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow
+                                v-for="cert in certifications"
+                                :key="cert.code"
+                            >
+                                <TableCell
+                                    class="py-1.5 px-3 text-xs text-muted-foreground"
+                                    >{{ cert.code }}</TableCell
+                                >
+                                <TableCell
+                                    class="py-1.5 px-3 text-xs font-medium text-foreground"
+                                    >{{ cert.title }}</TableCell
+                                >
+                                <TableCell
+                                    class="py-1.5 px-3 text-right text-xs"
+                                >
+                                    <Badge
+                                        variant="success"
+                                        class="text-xs px-1.5 py-0"
+                                        >{{ cert.status }}</Badge
+                                    >
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
-        </div>
+        </Card>
 
         <!-- COMMUNITY IMPRESSIONS FEED SECTION -->
         <div class="space-y-4">
             <!-- SECTION TITLE & SORT FILTER -->
             <div
-                class="flex items-center justify-between flex-wrap gap-3 border-b border-slate-800 pb-3"
+                class="flex items-center justify-between flex-wrap gap-3 border-b border-border pb-3"
             >
                 <div class="flex items-center space-x-2">
                     <h3
-                        class="text-xs font-medium text-slate-200 uppercase tracking-tight font-mono flex items-center gap-2"
+                        class="text-xs font-medium text-foreground uppercase tracking-tight font-mono flex items-center gap-2"
                     >
                         <span>Kesan & Lore Komunitas</span>
-                        <span
-                            class="px-2 py-0.5 rounded-sm bg-slate-950 text-slate-400 border border-slate-800 font-mono text-[10px]"
-                        >
+                        <Badge variant="outline" class="font-mono text-xs">
                             {{ impressions.length }}
-                        </span>
+                        </Badge>
                     </h3>
                 </div>
 
                 <!-- SORT FILTER (Terbaru / Terlama) -->
                 <div class="flex items-center space-x-1 text-xs font-mono">
-                    <span class="text-slate-400 mr-1.5 text-[11px]"
+                    <span class="text-muted-foreground mr-1.5 text-xs"
                         >Urutkan:</span
                     >
-                    <button
-                        @click="sortOrder = 'newest'"
-                        :class="
-                            sortOrder === 'newest'
-                                ? 'bg-slate-800 text-slate-100 border-slate-700 font-medium'
-                                : 'bg-slate-950 text-slate-400 hover:text-slate-200 border-slate-800'
+                    <Button
+                        type="button"
+                        size="sm"
+                        :variant="
+                            sortOrder === 'newest' ? 'secondary' : 'outline'
                         "
-                        class="px-2.5 py-1 rounded-md border transition-colors cursor-pointer"
+                        @click="sortOrder = 'newest'"
+                        class="h-7 px-2.5 text-xs"
                     >
                         Terbaru
-                    </button>
-                    <button
-                        @click="sortOrder = 'oldest'"
-                        :class="
-                            sortOrder === 'oldest'
-                                ? 'bg-slate-800 text-slate-100 border-slate-700 font-medium'
-                                : 'bg-slate-950 text-slate-400 hover:text-slate-200 border-slate-800'
+                    </Button>
+                    <Button
+                        type="button"
+                        size="sm"
+                        :variant="
+                            sortOrder === 'oldest' ? 'secondary' : 'outline'
                         "
-                        class="px-2.5 py-1 rounded-md border transition-colors cursor-pointer"
+                        @click="sortOrder = 'oldest'"
+                        class="h-7 px-2.5 text-xs"
                     >
                         Terlama
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             <!-- YOUTUBE-STYLE INLINE COMMENT POSTING BOX -->
-            <div
-                class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-3"
-            >
+            <Card class="p-3.5 space-y-3">
                 <div class="flex items-start space-x-3">
                     <div
-                        class="w-8 h-8 rounded-sm bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-medium text-xs text-slate-400 shrink-0 mt-0.5"
+                        class="w-8 h-8 rounded-sm bg-background border border-border flex items-center justify-center font-mono font-medium text-xs text-muted-foreground shrink-0 mt-0.5"
                     >
                         {{
                             newCommentAuthor
@@ -288,7 +358,7 @@ const deleteImpression = (id) => {
                         <div
                             v-if="!isCommentInputFocused"
                             @click="focusCommentInput"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-2 text-slate-400 text-xs cursor-text font-mono hover:border-slate-700 transition-colors"
+                            class="w-full bg-background border border-border rounded-md px-3 py-2 text-muted-foreground text-xs cursor-text font-mono hover:border-primary/40 transition-colors"
                         >
                             Buat catatan kesan tentang perwira ini...
                         </div>
@@ -297,13 +367,13 @@ const deleteImpression = (id) => {
                             v-else
                             class="space-y-3 animate-in fade-in duration-150"
                         >
-                            <textarea
+                            <Textarea
                                 ref="commentTextareaRef"
                                 v-model="newCommentContent"
                                 rows="3"
                                 placeholder="Buat catatan kesan atau rekap RP perwira ini..."
-                                class="w-full bg-slate-950 border border-slate-800 focus:border-slate-700 rounded-md p-2.5 text-slate-100 text-xs font-mono outline-hidden resize-none leading-relaxed"
-                            ></textarea>
+                                class="text-xs font-mono resize-none leading-relaxed"
+                            />
 
                             <div
                                 class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1"
@@ -311,114 +381,131 @@ const deleteImpression = (id) => {
                                 <div
                                     class="flex items-center space-x-2 text-xs font-mono"
                                 >
-                                    <input
+                                    <Input
                                         v-model="newCommentAuthor"
                                         type="text"
                                         placeholder="Panggilan Anda (Opsional)"
-                                        class="bg-slate-950 border border-slate-800 rounded-md px-2.5 py-1 text-slate-200 text-xs outline-hidden focus:border-slate-700 w-48"
+                                        class="h-8 text-xs w-48"
                                     />
                                 </div>
 
-                                <!-- ACTION BUTTONS (YouTube Style Bottom Right) -->
+                                <!-- ACTION BUTTONS -->
                                 <div
                                     class="flex items-center space-x-2 justify-end"
                                 >
-                                    <button
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
                                         @click="cancelComment"
-                                        class="px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                                        class="h-8 text-xs"
                                     >
                                         Batal
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
                                         @click="submitComment"
                                         :disabled="!newCommentContent.trim()"
-                                        :class="
-                                            newCommentContent.trim()
-                                                ? 'bg-blue-600 hover:bg-blue-500 text-white font-medium'
-                                                : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                                        "
-                                        class="px-3.5 py-1.5 rounded-md text-xs transition-colors"
+                                        class="h-8 text-xs"
                                     >
                                         Kirim Kesan
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </Card>
 
             <!-- IMPRESSIONS FEED LIST -->
             <div class="space-y-3">
-                <div
+                <Card
                     v-for="item in sortedImpressions"
                     :key="item.id"
-                    class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3"
+                    class="p-4 space-y-3"
                 >
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center space-x-2.5">
                             <div
-                                class="w-7 h-7 rounded-sm bg-slate-950 border border-slate-800 flex items-center justify-center font-mono font-medium text-xs text-slate-300"
+                                class="w-7 h-7 rounded-sm bg-background border border-border flex items-center justify-center font-mono font-medium text-xs text-foreground"
                             >
                                 {{ item.author_name.charAt(0) }}
                             </div>
                             <div>
                                 <div class="flex items-center space-x-2">
                                     <span
-                                        class="text-xs font-medium text-slate-200 font-mono"
+                                        class="text-xs font-medium text-foreground font-mono"
                                         >{{ item.author_name }}</span
                                     >
-                                    <span
-                                        class="text-[10px] px-1.5 py-0.2 rounded-sm bg-slate-950 text-slate-400 border border-slate-800 font-mono"
+                                    <Badge
+                                        variant="outline"
+                                        class="text-xs px-1.5 py-0 font-mono text-muted-foreground"
                                     >
                                         {{ item.author_role }}
-                                    </span>
+                                    </Badge>
                                 </div>
                                 <span
-                                    class="text-[10px] font-mono text-slate-500 block"
+                                    class="text-xs font-mono text-muted-foreground block"
                                     >{{ item.created_at }}</span
                                 >
                             </div>
                         </div>
 
                         <!-- ADMIN ACTION: DELETE COMMENT -->
-                        <button
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
                             @click="deleteImpression(item.id)"
-                            class="px-2 py-1 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-red-400 border border-slate-800 hover:border-slate-700 rounded-sm text-[10px] font-mono transition-colors flex items-center gap-1 cursor-pointer"
+                            class="h-7 px-2 text-muted-foreground hover:text-destructive text-xs font-mono gap-1"
                             title="Hapus Komentar (Akses Admin)"
                         >
-                            <svg
-                                class="w-3 h-3"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
-                            </svg>
+                            <Trash2 class="w-3 h-3" />
                             <span>Hapus</span>
-                        </button>
+                        </Button>
                     </div>
 
                     <!-- IMPRESSION CONTENT TEXT -->
                     <p
-                        class="text-xs text-slate-300 font-mono leading-relaxed bg-slate-950 p-3 rounded-md border border-slate-800"
+                        class="text-xs text-foreground font-mono leading-relaxed bg-background p-3 rounded-md border border-border"
                     >
                         "{{ item.content }}"
                     </p>
-                </div>
+                </Card>
 
-                <div
+                <Card
                     v-if="sortedImpressions.length === 0"
-                    class="p-8 text-center bg-slate-900 rounded-xl border border-slate-800 text-slate-400 text-xs font-mono"
+                    class="p-8 text-center text-muted-foreground text-xs font-mono"
                 >
                     Belum ada kesan untuk perwira ini.
-                </div>
+                </Card>
             </div>
         </div>
+
+        <AlertDialog
+            :open="pendingDeleteId !== null"
+            @update:open="(val) => { if (!val) pendingDeleteId = null; }"
+        >
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Hapus Catatan Kesan?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Apakah Anda yakin ingin menghapus catatan kesan ini? Tindakan ini tidak dapat dibatalkan.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel @click="pendingDeleteId = null">
+                        Batal
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        @click="confirmDeleteImpression"
+                    >
+                        Hapus
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
 </template>

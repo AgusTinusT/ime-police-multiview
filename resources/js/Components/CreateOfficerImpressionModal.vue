@@ -1,5 +1,18 @@
 <script setup>
 import { ref } from "vue";
+import { toast } from "vue-sonner";
+import { SquarePen } from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/Components/ui/dialog";
 
 const props = defineProps({
     isOpen: { type: Boolean, default: false },
@@ -15,7 +28,7 @@ const content = ref("");
 
 const handleSubmit = () => {
     if (!content.value.trim()) {
-        alert("Harap tuliskan catatan kesan atau pengalaman Anda!");
+        toast.warning("Harap tuliskan catatan kesan atau pengalaman Anda!");
         return;
     }
 
@@ -31,69 +44,98 @@ const handleSubmit = () => {
 </script>
 
 <template>
-    <div v-if="isOpen" class="fixed inset-0 z-50 bg-slate-950/80 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-5 space-y-4">
-            <!-- HEADER -->
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                    <div>
-                        <h3 class="text-xs font-semibold text-slate-100 font-mono">Tulis Kesan & Catatan Perwira</h3>
-                        <p class="text-[10px] text-slate-400 font-mono">
-                            Perwira: {{ officer?.officer_name || stream?.officer?.officer_name || "Trooper" }}
-                        </p>
-                    </div>
-                </div>
-                <button @click="emit('close')" class="text-slate-400 hover:text-white text-xs font-mono px-2 py-1 rounded-sm bg-slate-800">✕</button>
-            </div>
+    <Dialog
+        :open="isOpen"
+        @update:open="
+            (val) => {
+                if (!val) emit('close');
+            }
+        "
+    >
+        <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle class="flex items-center gap-2 font-mono text-sm">
+                    <SquarePen class="w-4 h-4 text-primary" />
+                    <span>Tulis Kesan & Catatan Perwira</span>
+                </DialogTitle>
+                <DialogDescription class="font-mono text-xs">
+                    Perwira:
+                    {{
+                        officer?.officer_name ||
+                        stream?.officer?.officer_name ||
+                        "Trooper"
+                    }}
+                </DialogDescription>
+            </DialogHeader>
 
             <!-- FORM BODY -->
             <div class="space-y-3.5 font-mono text-xs">
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Tipe Kesan / Catatan</label>
+                    <label class="block text-foreground font-medium mb-1"
+                        >Tipe Kesan / Catatan</label
+                    >
                     <select
                         v-model="impressionType"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs cursor-pointer"
+                        class="w-full h-9 bg-background border border-input rounded-md px-3 py-1.5 text-foreground focus:border-ring outline-hidden text-xs cursor-pointer"
                     >
-                        <option value="COMMUNITY_NOTE">Catatan Komunitas & Rekap RP</option>
-                        <option value="TACTICAL_RATING">Rating & Ulasan Gaya Taktis / Pursuit</option>
+                        <option value="COMMUNITY_NOTE">
+                            Catatan Komunitas & Rekap RP
+                        </option>
+                        <option value="TACTICAL_RATING">
+                            Rating & Ulasan Gaya Taktis / Pursuit
+                        </option>
                         <option value="FUNNY_MOMENT">Momen Lucu</option>
-                        <option value="REPUTATION">Catatan Reputasi & Integritas RP</option>
+                        <option value="REPUTATION">
+                            Catatan Reputasi & Integritas RP
+                        </option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Nama Penulis / Panggilan Anda</label>
-                    <input
+                    <label class="block text-foreground font-medium mb-1"
+                        >Nama Penulis / Panggilan Anda</label
+                    >
+                    <Input
                         v-model="authorName"
                         type="text"
                         placeholder="Contoh: Citizen_V"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3 py-1.5 text-slate-100 focus:border-blue-500 outline-hidden text-xs"
+                        class="h-9 text-xs"
                     />
                 </div>
 
                 <div>
-                    <label class="block text-slate-300 font-medium mb-1">Isi Kesan & Catatan Lore *</label>
-                    <textarea
+                    <label class="block text-foreground font-medium mb-1"
+                        >Isi Kesan & Catatan Lore *</label
+                    >
+                    <Textarea
                         v-model="content"
                         rows="4"
                         placeholder="Bagikan ulasan atau rekap gaya patroli perwira ini..."
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md p-3 text-slate-100 focus:border-blue-500 outline-hidden text-xs leading-relaxed resize-none"
-                    ></textarea>
+                        class="text-xs leading-relaxed resize-none"
+                    />
                 </div>
             </div>
 
             <!-- FOOTER -->
-            <div class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-2">
-                <button @click="emit('close')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono font-medium rounded-md transition-colors">
+            <DialogFooter class="pt-3 border-t border-border">
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    @click="emit('close')"
+                    class="text-xs font-mono"
+                >
                     Batal
-                </button>
-                <button @click="handleSubmit" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-semibold rounded-md transition-colors cursor-pointer">
+                </Button>
+                <Button
+                    type="button"
+                    size="sm"
+                    @click="handleSubmit"
+                    class="text-xs font-mono font-semibold"
+                >
                     Kirim Catatan
-                </button>
-            </div>
-        </div>
-    </div>
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>
