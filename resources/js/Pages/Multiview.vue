@@ -1,11 +1,43 @@
 <script setup>
 import { Head } from "@inertiajs/vue3";
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import {
+    computed,
+    nextTick,
+    onMounted,
+    onUnmounted,
+    reactive,
+    ref,
+    watch,
+} from "vue";
+import { toast as sonnerToast } from "vue-sonner";
 
 import MultiviewStreamPicker from "@/Components/MultiviewStreamPicker.vue";
+import { DeptBadge, LiveBadge } from "@/Components/tactical";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Toaster } from "@/Components/ui/sonner";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/Components/ui/tooltip";
 import { useAnalytics } from "@/Composables/useAnalytics";
+import {
+    LayoutGrid,
+    Link2,
+    Maximize,
+    MessageSquare,
+    Minimize,
+    PanelRight,
+    Plus,
+    Trash2,
+    Volume2,
+    VolumeX,
+    X,
+} from "@lucide/vue";
 
 const props = defineProps({
     initialStreams: { type: Array, required: true },
@@ -31,10 +63,9 @@ const VIDEO_ID_RE = /^[\w-]{11}$/;
 const streams = ref(props.initialStreams);
 const offlineOfficers = ref(props.initialOfflineOfficers);
 
-// Remember every stream we have seen so a tile keeps its label after the
-// officer goes offline mid-session.
 const streamCache = reactive({});
-const cacheStreams = (list) => list.forEach((s) => (streamCache[s.video_id] = s));
+const cacheStreams = (list) =>
+    list.forEach((s) => (streamCache[s.video_id] = s));
 cacheStreams(streams.value);
 
 const liveIds = computed(() => new Set(streams.value.map((s) => s.video_id)));
@@ -43,14 +74,17 @@ const infoOf = (id) => streamCache[id] || null;
 const refreshStreams = async () => {
     if (document.hidden) return;
     try {
-        const res = await fetch("/api/v1/streams", { headers: { Accept: "application/json" } });
+        const res = await fetch("/api/v1/streams", {
+            headers: { Accept: "application/json" },
+        });
         if (!res.ok) return;
         const json = await res.json();
         if (Array.isArray(json.data)) {
             streams.value = json.data;
             cacheStreams(json.data);
         }
-        if (Array.isArray(json.offline_officers)) offlineOfficers.value = json.offline_officers;
+        if (Array.isArray(json.offline_officers))
+            offlineOfficers.value = json.offline_officers;
     } catch {
         // Network hiccup: keep the current list until the next poll.
     }
@@ -69,11 +103,15 @@ const updateViewport = () => {
 };
 
 const isDesktop = computed(() => viewport.w >= 1024);
-// Phone held upright: the page scrolls and tiles stack instead of fitting the screen.
-const isNarrow = computed(() => viewport.w < 768 && viewport.h > viewport.w && !isFullscreen.value);
-// Phone held sideways: hide the chrome so the video grid gets the whole screen.
-const isCompactLandscape = computed(() => viewport.h < 500 && viewport.w > viewport.h);
-const showChrome = computed(() => !isCompactLandscape.value && !isFullscreen.value);
+const isNarrow = computed(
+    () => viewport.w < 768 && viewport.h > viewport.w && !isFullscreen.value,
+);
+const isCompactLandscape = computed(
+    () => viewport.h < 500 && viewport.w > viewport.h,
+);
+const showChrome = computed(
+    () => !isCompactLandscape.value && !isFullscreen.value,
+);
 
 const maxTiles = computed(() => {
     if (viewport.w < 768) return 4;
@@ -106,7 +144,6 @@ const readInitialSelection = () => {
         // Corrupt or blocked storage falls through to the default pick.
     }
 
-    // First visit: open with the most-watched POVs so the page is never empty.
     return [...streams.value]
         .sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0))
         .slice(0, viewport.w < 768 ? 2 : 4)
@@ -131,7 +168,8 @@ const removeStream = (id) => {
 };
 
 const toggleStream = (stream) => {
-    if (selectedIds.value.includes(stream.video_id)) removeStream(stream.video_id);
+    if (selectedIds.value.includes(stream.video_id))
+        removeStream(stream.video_id);
     else addStream(stream.video_id);
 };
 
@@ -162,7 +200,6 @@ watch(
         const url = new URL(window.location.href);
         if (ids.length) url.searchParams.set("v", ids.join(","));
         else url.searchParams.delete("v");
-        // Keep Inertia's history state intact; this is just a shareable address.
         window.history.replaceState(window.history.state, "", url);
     },
     { deep: true },
@@ -202,7 +239,6 @@ const applyAudio = (id) => {
 };
 
 const onIframeLoad = (id) => {
-    // The player inside the iframe boots a moment after the load event.
     setTimeout(() => applyAudio(id), 800);
     setTimeout(() => applyAudio(id), 2500);
 };
@@ -219,8 +255,6 @@ const muteAll = () => {
 
 // ---------------------------------------------------------------------------
 // Layout engine
-// Every tile is absolutely positioned and never moves in the DOM, so switching
-// layout or focus re-flows the grid without reloading any iframe.
 // ---------------------------------------------------------------------------
 const stageBox = ref(null);
 const stageSize = reactive({ w: 0, h: 0 });
@@ -238,7 +272,14 @@ const placeRow = (rects, indices, y, tw, th, W) => {
 
 const gridRects = (order, W, cols, tw, th, y0, rects) => {
     for (let r = 0; r * cols < order.length; r++) {
-        placeRow(rects, order.slice(r * cols, r * cols + cols), y0 + r * (th + GAP), tw, th, W);
+        placeRow(
+            rects,
+            order.slice(r * cols, r * cols + cols),
+            y0 + r * (th + GAP),
+            tw,
+            th,
+            W,
+        );
     }
 };
 
@@ -258,7 +299,10 @@ const computeLayout = (n, W, H, mode, fi, narrow) => {
             const th = hOf(tw);
             gridRects(others, W, 2, tw, th, mainH + GAP, rects);
             const rows = Math.ceil(others.length / 2);
-            return { rects, height: mainH + GAP + rows * th + (rows - 1) * GAP };
+            return {
+                rects,
+                height: mainH + GAP + rows * th + (rows - 1) * GAP,
+            };
         }
         const cols = n === 1 ? 1 : 2;
         const tw = (W - GAP * (cols - 1)) / cols;
@@ -270,7 +314,10 @@ const computeLayout = (n, W, H, mode, fi, narrow) => {
 
     if (useFocus) {
         const sc = others.length > 4 ? 2 : 1;
-        const sideW = Math.min(Math.max(W * (sc === 1 ? 0.24 : 0.34), 180), 480);
+        const sideW = Math.min(
+            Math.max(W * (sc === 1 ? 0.24 : 0.34), 180),
+            480,
+        );
         const mainW = Math.min(W - sideW - GAP, H * RATIO);
         const mainH = hOf(mainW);
 
@@ -290,16 +337,23 @@ const computeLayout = (n, W, H, mode, fi, narrow) => {
         const sx = x0 + mainW + GAP;
         const sy = (H - colH) / 2;
         others.forEach((i, k) => {
-            rects[i] = { x: sx + (k % sc) * (tw + GAP), y: sy + Math.floor(k / sc) * (th + GAP), w: tw, h: th };
+            rects[i] = {
+                x: sx + (k % sc) * (tw + GAP),
+                y: sy + Math.floor(k / sc) * (th + GAP),
+                w: tw,
+                h: th,
+            };
         });
         return { rects, height: H };
     }
 
-    // Grid: pick the column count that gives the biggest 16:9 tiles.
     let best = { cols: 1, w: 0 };
     for (let cols = 1; cols <= n; cols++) {
         const rows = Math.ceil(n / cols);
-        const w = Math.min((W - GAP * (cols - 1)) / cols, ((H - GAP * (rows - 1)) / rows) * RATIO);
+        const w = Math.min(
+            (W - GAP * (cols - 1)) / cols,
+            ((H - GAP * (rows - 1)) / rows) * RATIO,
+        );
         if (w > best.w) best = { cols, w };
     }
     const th = hOf(best.w);
@@ -323,7 +377,12 @@ const layout = computed(() =>
 const tileStyle = (i) => {
     const r = layout.value.rects[i];
     if (!r) return { display: "none" };
-    return { left: `${r.x}px`, top: `${r.y}px`, width: `${r.w}px`, height: `${r.h}px` };
+    return {
+        left: `${r.x}px`,
+        top: `${r.y}px`,
+        width: `${r.w}px`,
+        height: `${r.h}px`,
+    };
 };
 
 const isThumb = (i) => {
@@ -347,12 +406,17 @@ const openPicker = (tab = "pov") => {
 };
 
 const toggleSidebar = () => {
-    if (isDesktop.value && showChrome.value) sidebarOpen.value = !sidebarOpen.value;
+    if (isDesktop.value && showChrome.value)
+        sidebarOpen.value = !sidebarOpen.value;
     else sheetOpen.value = !sheetOpen.value;
 };
 
-const chatTargetId = computed(() => audioId.value || focusId.value || selectedIds.value[0] || null);
-const chatTarget = computed(() => (chatTargetId.value ? infoOf(chatTargetId.value) : null));
+const chatTargetId = computed(
+    () => audioId.value || focusId.value || selectedIds.value[0] || null,
+);
+const chatTarget = computed(() =>
+    chatTargetId.value ? infoOf(chatTargetId.value) : null,
+);
 const chatSrc = computed(() => {
     if (!chatTargetId.value) return "";
     return (
@@ -365,13 +429,9 @@ const chatSrc = computed(() => {
 // Misc actions
 // ---------------------------------------------------------------------------
 const stageWrap = ref(null);
-const toast = ref("");
-let toastTimer = null;
 
 const showToast = (msg) => {
-    toast.value = msg;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => (toast.value = ""), 2200);
+    sonnerToast(msg);
 };
 
 const shareLink = async () => {
@@ -420,13 +480,6 @@ const deptOf = (info) => {
     return d === "PARK RANGER" ? "SAPR" : d;
 };
 
-const deptColor = {
-    LSPD: "bg-blue-600",
-    BCSO: "bg-amber-600",
-    SASP: "bg-slate-500",
-    SAPR: "bg-emerald-600",
-};
-
 const totalLive = computed(() => streams.value.length);
 
 let pollTimer = null;
@@ -438,7 +491,12 @@ onMounted(() => {
 
     try {
         const savedLayout = localStorage.getItem(LAYOUT_KEY);
-        layoutMode.value = savedLayout === "focus" || savedLayout === "grid" ? savedLayout : isNarrow.value ? "focus" : "grid";
+        layoutMode.value =
+            savedLayout === "focus" || savedLayout === "grid"
+                ? savedLayout
+                : isNarrow.value
+                  ? "focus"
+                  : "grid";
     } catch {
         layoutMode.value = isNarrow.value ? "focus" : "grid";
     }
@@ -466,333 +524,602 @@ onUnmounted(() => {
     window.removeEventListener("keydown", onKeydown);
     document.removeEventListener("fullscreenchange", onFullscreenChange);
     clearInterval(pollTimer);
-    clearTimeout(toastTimer);
 });
-
-const btn =
-    "inline-flex items-center justify-center gap-1.5 h-9 px-2.5 sm:px-3 rounded-lg border text-xs font-bold transition shrink-0";
-const btnIdle = "bg-tactical-panel border-tactical-border text-slate-300 hover:text-white hover:border-tactical-border-light";
-const btnActive = "bg-blue-600 border-blue-500 text-white";
 </script>
 
 <template>
     <Head title="Multiview — Pantau Banyak POV Sekaligus" />
 
-    <div
-        class="bg-[#070b12] text-slate-100 font-sans antialiased flex flex-col"
-        :class="isNarrow ? 'min-h-dvh pb-20' : 'h-dvh overflow-hidden'"
-    >
-        <TacticalDashboardHeader v-if="showChrome" />
-
-        <!-- Toolbar -->
+    <TooltipProvider :delay-duration="200">
         <div
-            v-if="showChrome"
-            class="flex items-center gap-2 px-2 sm:px-4 py-2 border-b border-tactical-border bg-tactical-base/80"
+            class="bg-background text-foreground font-sans antialiased flex flex-col"
+            :class="isNarrow ? 'min-h-dvh pb-20' : 'h-dvh overflow-hidden'"
         >
-            <div class="flex items-center gap-2 min-w-0 mr-auto">
-                <h1 class="font-heading text-base sm:text-xl font-bold tracking-wide leading-none">MULTIVIEW</h1>
-                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm bg-red-600/15 border border-red-500/30 text-[10px] font-bold text-red-400 whitespace-nowrap">
-                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                    {{ totalLive }} LIVE
-                </span>
-                <span class="hidden sm:inline text-xs text-slate-500">{{ selectedIds.length }}/{{ maxTiles }} POV</span>
-            </div>
+            <TacticalDashboardHeader v-if="showChrome" />
 
-            <div class="flex items-center gap-1 sm:gap-1.5">
-                <!-- Layout switch -->
-                <div class="flex p-0.5 rounded-lg bg-tactical-panel border border-tactical-border shrink-0">
-                    <button
-                        type="button"
-                        class="h-8 px-2 rounded-md text-xs font-bold flex items-center gap-1"
-                        :class="layoutMode === 'grid' ? 'bg-slate-100 text-slate-900' : 'text-slate-400'"
-                        title="Grid (G)"
-                        @click="layoutMode = 'grid'"
+            <!-- Toolbar -->
+            <div
+                v-if="showChrome"
+                class="flex items-center gap-2 px-2 sm:px-4 py-2 border-b border-border bg-background/80"
+            >
+                <div class="flex items-center gap-2 min-w-0 mr-auto">
+                    <h1
+                        class="font-heading text-base sm:text-xl font-bold tracking-wide leading-none"
                     >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7.5" height="7.5" rx="1" /><rect x="13.5" y="3" width="7.5" height="7.5" rx="1" /><rect x="3" y="13.5" width="7.5" height="7.5" rx="1" /><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1" /></svg>
-                        <span class="hidden md:inline">Grid</span>
-                    </button>
-                    <button
-                        type="button"
-                        class="h-8 px-2 rounded-md text-xs font-bold flex items-center gap-1"
-                        :class="layoutMode === 'focus' ? 'bg-slate-100 text-slate-900' : 'text-slate-400'"
-                        title="Fokus (G)"
-                        @click="layoutMode = 'focus'"
-                    >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="13" height="18" rx="1" /><rect x="18.5" y="3" width="2.5" height="5" rx=".5" /><rect x="18.5" y="10" width="2.5" height="5" rx=".5" /><rect x="18.5" y="17" width="2.5" height="4" rx=".5" /></svg>
-                        <span class="hidden md:inline">Fokus</span>
-                    </button>
+                        MULTIVIEW
+                    </h1>
+                    <LiveBadge :label="`${totalLive} LIVE`" />
+                    <span class="hidden sm:inline text-xs text-muted-foreground">
+                        {{ selectedIds.length }}/{{ maxTiles }} POV
+                    </span>
                 </div>
 
-                <button type="button" :class="[btn, btnActive]" @click="openPicker('pov')">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M12 5v14M5 12h14" /></svg>
-                    <span class="hidden sm:inline">Tambah POV</span>
-                </button>
+                <div class="flex items-center gap-1 sm:gap-1.5">
+                    <!-- Layout switch -->
+                    <div
+                        class="flex p-0.5 rounded-lg bg-card border border-border shrink-0 gap-0.5"
+                    >
+                        <Button
+                            type="button"
+                            :variant="
+                                layoutMode === 'grid' ? 'default' : 'ghost'
+                            "
+                            size="sm"
+                            class="h-8 px-2 text-xs font-bold gap-1"
+                            title="Grid (G)"
+                            @click="layoutMode = 'grid'"
+                        >
+                            <LayoutGrid class="size-4" />
+                            <span class="hidden md:inline">Grid</span>
+                        </Button>
+                        <Button
+                            type="button"
+                            :variant="
+                                layoutMode === 'focus' ? 'default' : 'ghost'
+                            "
+                            size="sm"
+                            class="h-8 px-2 text-xs font-bold gap-1"
+                            title="Fokus (G)"
+                            @click="layoutMode = 'focus'"
+                        >
+                            <PanelRight class="size-4" />
+                            <span class="hidden md:inline">Fokus</span>
+                        </Button>
+                    </div>
 
-                <button type="button" :class="[btn, btnIdle, 'max-sm:hidden']" title="Live chat" @click="openPicker('chat')">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m-9 6 2.5-3H19a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2" /></svg>
-                </button>
+                    <Button
+                        type="button"
+                        size="sm"
+                        class="h-9 px-2.5 sm:px-3 text-xs font-bold gap-1.5"
+                        @click="openPicker('pov')"
+                    >
+                        <Plus class="size-4" />
+                        <span class="hidden sm:inline">Tambah POV</span>
+                    </Button>
 
-                <button v-if="audioId" type="button" :class="[btn, btnIdle]" title="Bisukan semua (M)" @click="muteAll">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5 6 9H3v6h3l5 4V5Zm11 4-6 6m0-6 6 6" /></svg>
-                </button>
+                    <Tooltip>
+                        <TooltipTrigger as-child>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                class="size-9 max-sm:hidden"
+                                aria-label="Live chat"
+                                @click="openPicker('chat')"
+                            >
+                                <MessageSquare class="size-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Live chat</TooltipContent>
+                    </Tooltip>
 
-                <button type="button" :class="[btn, btnIdle]" title="Bagikan link multiview" :disabled="!selectedIds.length" @click="shareLink">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1m1.99 3.66a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" /></svg>
-                </button>
+                    <Tooltip v-if="audioId">
+                        <TooltipTrigger as-child>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                class="size-9"
+                                aria-label="Bisukan semua (M)"
+                                @click="muteAll"
+                            >
+                                <VolumeX class="size-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Bisukan semua (M)</TooltipContent>
+                    </Tooltip>
 
-                <button v-if="canFullscreen" type="button" :class="[btn, btnIdle]" title="Layar penuh" @click="toggleFullscreen">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
-                </button>
+                    <Tooltip>
+                        <TooltipTrigger as-child>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                class="size-9"
+                                aria-label="Bagikan link multiview"
+                                :disabled="!selectedIds.length"
+                                @click="shareLink"
+                            >
+                                <Link2 class="size-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Bagikan link multiview</TooltipContent>
+                    </Tooltip>
 
-                <button v-if="selectedIds.length" type="button" :class="[btn, btnIdle, 'max-sm:hidden']" title="Kosongkan semua" @click="clearAll">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
-                </button>
+                    <Tooltip v-if="canFullscreen">
+                        <TooltipTrigger as-child>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                class="size-9"
+                                aria-label="Layar penuh"
+                                @click="toggleFullscreen"
+                            >
+                                <Maximize class="size-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Layar penuh</TooltipContent>
+                    </Tooltip>
 
-                <button
-                    v-if="isDesktop"
-                    type="button"
-                    :class="[btn, sidebarOpen ? btnActive : btnIdle]"
-                    title="Tampilkan / sembunyikan panel"
-                    @click="toggleSidebar"
-                >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M15 4v16" /></svg>
-                </button>
+                    <Tooltip v-if="selectedIds.length">
+                        <TooltipTrigger as-child>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                class="size-9 max-sm:hidden"
+                                aria-label="Kosongkan semua"
+                                @click="clearAll"
+                            >
+                                <Trash2 class="size-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Kosongkan semua</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip v-if="isDesktop">
+                        <TooltipTrigger as-child>
+                            <Button
+                                type="button"
+                                :variant="sidebarOpen ? 'default' : 'outline'"
+                                size="icon"
+                                class="size-9"
+                                aria-label="Tampilkan / sembunyikan panel"
+                                @click="toggleSidebar"
+                            >
+                                <PanelRight class="size-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            Tampilkan / sembunyikan panel
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
             </div>
-        </div>
 
-        <!-- Body -->
-        <div class="flex-1 min-h-0 flex">
-            <!-- Stage -->
-            <section
-                ref="stageWrap"
-                class="relative flex-1 min-w-0 bg-black"
-                :class="isCompactLandscape || isFullscreen ? 'p-0.5' : 'p-1.5 sm:p-2'"
-            >
-                <div
-                    ref="stageBox"
-                    class="relative w-full"
-                    :class="isNarrow ? '' : 'h-full'"
-                    :style="isNarrow ? { height: `${layout.height}px` } : {}"
+            <!-- Body -->
+            <div class="flex-1 min-h-0 flex">
+                <!-- Stage -->
+                <section
+                    ref="stageWrap"
+                    class="relative flex-1 min-w-0 bg-background"
+                    :class="
+                        isCompactLandscape || isFullscreen
+                            ? 'p-0.5'
+                            : 'p-1.5 sm:p-2'
+                    "
                 >
                     <div
-                        v-for="(id, i) in selectedIds"
-                        :key="id"
-                        class="tile absolute group"
-                        :style="tileStyle(i)"
+                        ref="stageBox"
+                        class="relative w-full"
+                        :class="isNarrow ? '' : 'h-full'"
+                        :style="
+                            isNarrow ? { height: `${layout.height}px` } : {}
+                        "
                     >
                         <div
-                            class="relative w-full h-full rounded-md overflow-hidden bg-slate-900 ring-2 transition-colors"
-                            :class="audioId === id ? 'ring-blue-500' : 'ring-transparent'"
+                            v-for="(id, i) in selectedIds"
+                            :key="id"
+                            class="tile absolute group"
+                            :style="tileStyle(i)"
                         >
-                            <iframe
-                                :ref="(el) => el && (iframes[id] = el)"
-                                :src="embedSrc(id)"
-                                :title="infoOf(id)?.title || 'YouTube POV'"
-                                class="absolute inset-0 w-full h-full"
-                                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                                allowfullscreen
-                                @load="onIframeLoad(id)"
-                            />
+                            <div
+                                class="relative w-full h-full rounded-md overflow-hidden bg-card ring-2 transition-colors"
+                                :class="
+                                    audioId === id
+                                        ? 'ring-primary'
+                                        : 'ring-transparent'
+                                "
+                            >
+                                <iframe
+                                    :ref="(el) => el && (iframes[id] = el)"
+                                    :src="embedSrc(id)"
+                                    :title="infoOf(id)?.title || 'YouTube POV'"
+                                    class="absolute inset-0 w-full h-full"
+                                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                                    allowfullscreen
+                                    @load="onIframeLoad(id)"
+                                />
 
-                            <!-- Label -->
-                            <div class="tile-controls absolute top-0 inset-x-0 flex items-start gap-1 p-1 bg-linear-to-b from-black/80 to-transparent pointer-events-none">
-                                <span class="shrink-0 w-5 h-5 rounded-sm bg-black/70 text-[10px] font-mono font-bold flex items-center justify-center text-slate-300">{{ i + 1 }}</span>
-                                <div class="min-w-0 flex-1 leading-tight" :class="isThumb(i) ? 'hidden' : ''">
-                                    <p class="text-xs font-bold text-white truncate drop-shadow-sm">
-                                        {{ infoOf(id)?.officer?.officer_name || infoOf(id)?.title || id }}
-                                    </p>
-                                    <p class="flex items-center gap-1 text-[10px] text-slate-300 truncate">
+                                <!-- Label -->
+                                <div
+                                    class="tile-controls absolute top-0 inset-x-0 flex items-start gap-1 p-1 bg-linear-to-b from-background/80 to-transparent pointer-events-none"
+                                >
+                                    <span
+                                        class="shrink-0 w-5 h-5 rounded-sm bg-background/70 text-xs font-mono font-bold flex items-center justify-center text-foreground/80"
+                                    >
+                                        {{ i + 1 }}
+                                    </span>
+                                    <div
+                                        class="min-w-0 flex-1 leading-tight"
+                                        :class="isThumb(i) ? 'hidden' : ''"
+                                    >
+                                        <p
+                                            class="text-xs font-bold text-foreground truncate drop-shadow-sm"
+                                        >
+                                            {{
+                                                infoOf(id)?.officer
+                                                    ?.officer_name ||
+                                                infoOf(id)?.title ||
+                                                id
+                                            }}
+                                        </p>
+                                        <div
+                                            class="flex items-center gap-1 text-xs text-foreground/80 truncate mt-0.5"
+                                        >
+                                            <DeptBadge
+                                                v-if="deptOf(infoOf(id))"
+                                                :dept="deptOf(infoOf(id))"
+                                            />
+                                            <span class="font-mono">{{
+                                                infoOf(id)?.officer?.callsign
+                                            }}</span>
+                                            <Badge
+                                                v-if="!liveIds.has(id)"
+                                                variant="secondary"
+                                                class="px-1 py-0 text-xs font-bold"
+                                            >
+                                                OFFLINE
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div
+                                    class="tile-controls absolute top-1 right-1 flex gap-1"
+                                >
+                                    <button
+                                        v-if="
+                                            layoutMode !== 'focus' ||
+                                            focusId !== id
+                                        "
+                                        type="button"
+                                        class="tile-btn"
+                                        aria-label="Jadikan utama"
+                                        title="Jadikan utama"
+                                        @click="setFocus(id)"
+                                    >
+                                        <Maximize class="size-3.5" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="tile-btn hover:bg-destructive!"
+                                        aria-label="Tutup POV"
+                                        title="Tutup POV"
+                                        @click="removeStream(id)"
+                                    >
+                                        <X class="size-3.5" />
+                                    </button>
+                                </div>
+
+                                <!-- Audio toggle -->
+                                <button
+                                    type="button"
+                                    class="absolute right-1.5 tile-btn w-8! h-8!"
+                                    :class="[
+                                        isThumb(i)
+                                            ? 'bottom-1.5'
+                                            : 'bottom-10',
+                                        audioId === id
+                                            ? 'bg-primary! opacity-100!'
+                                            : 'tile-controls',
+                                    ]"
+                                    :aria-label="
+                                        audioId === id
+                                            ? 'Bisukan'
+                                            : 'Dengarkan POV ini'
+                                    "
+                                    :title="
+                                        audioId === id
+                                            ? 'Bisukan'
+                                            : 'Dengarkan POV ini'
+                                    "
+                                    @click="toggleAudio(id)"
+                                >
+                                    <Volume2
+                                        v-if="audioId === id"
+                                        class="size-4"
+                                    />
+                                    <VolumeX v-else class="size-4" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div
+                        v-if="!selectedIds.length"
+                        class="flex flex-col items-center justify-center text-center px-6"
+                        :class="isNarrow ? 'py-20' : 'absolute inset-0'"
+                    >
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-card border border-border flex items-center justify-center mb-4"
+                        >
+                            <LayoutGrid class="size-7 text-primary" />
+                        </div>
+                        <h2 class="font-heading text-2xl font-bold">
+                            Belum ada POV dipilih
+                        </h2>
+                        <p class="mt-1 max-w-sm text-sm text-muted-foreground">
+                            <template v-if="totalLive">
+                                Pilih hingga {{ maxTiles }} siaran live untuk
+                                ditonton bersamaan.
+                            </template>
+                            <template v-else>
+                                Belum ada officer yang live (10-8) saat ini.
+                                Coba lagi nanti.
+                            </template>
+                        </p>
+                        <Button
+                            v-if="totalLive"
+                            type="button"
+                            class="mt-5 font-bold gap-2"
+                            @click="openPicker('pov')"
+                        >
+                            <Plus class="size-4" />
+                            <span>Pilih POV</span>
+                        </Button>
+                    </div>
+
+                    <!-- Floating controls when the toolbar is hidden (phone landscape / fullscreen) -->
+                    <div
+                        v-if="!showChrome"
+                        class="absolute bottom-2 right-2 z-20 flex gap-1.5 opacity-70 hover:opacity-100"
+                    >
+                        <button
+                            type="button"
+                            class="float-btn"
+                            aria-label="Tambah POV"
+                            title="Tambah POV"
+                            @click="
+                                sheetOpen = true;
+                                panelTab = 'pov';
+                            "
+                        >
+                            <Plus class="size-4" />
+                        </button>
+                        <button
+                            type="button"
+                            class="float-btn"
+                            aria-label="Ganti layout"
+                            title="Ganti layout"
+                            @click="
+                                layoutMode =
+                                    layoutMode === 'grid' ? 'focus' : 'grid'
+                            "
+                        >
+                            <LayoutGrid class="size-4" />
+                        </button>
+                        <button
+                            v-if="isFullscreen"
+                            type="button"
+                            class="float-btn"
+                            aria-label="Keluar layar penuh"
+                            title="Keluar layar penuh"
+                            @click="toggleFullscreen"
+                        >
+                            <Minimize class="size-4" />
+                        </button>
+                    </div>
+
+                    <!-- Bottom sheet / drawer for tablets, phones & fullscreen -->
+                    <Transition name="sheet">
+                        <div
+                            v-if="sheetOpen"
+                            class="fixed inset-0 z-50 flex"
+                            :class="
+                                isNarrow ? 'items-end' : 'justify-end'
+                            "
+                        >
+                            <div
+                                class="absolute inset-0 bg-background/60"
+                                @click="sheetOpen = false"
+                            />
+                            <div
+                                class="sheet-panel relative flex flex-col bg-card border-border"
+                                :class="
+                                    isNarrow
+                                        ? 'w-full h-[78dvh] rounded-t-2xl border-t pb-[env(safe-area-inset-bottom)]'
+                                        : 'sheet-side w-[min(22rem,90vw)] h-full border-l'
+                                "
+                            >
+                                <div
+                                    v-if="isNarrow"
+                                    class="pt-2 flex justify-center"
+                                >
+                                    <span
+                                        class="w-10 h-1 rounded-full bg-muted"
+                                    />
+                                </div>
+                                <div
+                                    class="flex items-center gap-1 px-3 pt-2 pb-1"
+                                >
+                                    <Button
+                                        v-for="t in [
+                                            { key: 'pov', label: 'Daftar POV' },
+                                            { key: 'chat', label: 'Live Chat' },
+                                        ]"
+                                        :key="t.key"
+                                        type="button"
+                                        :variant="
+                                            panelTab === t.key
+                                                ? 'secondary'
+                                                : 'ghost'
+                                        "
+                                        size="sm"
+                                        class="text-sm font-bold"
+                                        @click="panelTab = t.key"
+                                    >
+                                        {{ t.label }}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        class="ml-auto size-9"
+                                        aria-label="Tutup panel"
+                                        title="Tutup"
+                                        @click="sheetOpen = false"
+                                    >
+                                        <X class="size-5" />
+                                    </Button>
+                                </div>
+                                <MultiviewStreamPicker
+                                    v-if="panelTab === 'pov'"
+                                    class="flex-1 min-h-0"
+                                    :streams="streams"
+                                    :offline-officers="offlineOfficers"
+                                    :selected-ids="selectedIds"
+                                    :max-tiles="maxTiles"
+                                    @toggle="toggleStream"
+                                />
+                                <div
+                                    v-else
+                                    class="flex-1 min-h-0 flex flex-col"
+                                >
+                                    <p
+                                        v-if="chatTarget"
+                                        class="px-3 py-1.5 text-xs text-muted-foreground truncate"
+                                    >
+                                        Chat:
                                         <span
-                                            v-if="deptOf(infoOf(id))"
-                                            class="px-1 rounded-xs font-bold text-white"
-                                            :class="deptColor[deptOf(infoOf(id))] || 'bg-slate-600'"
-                                        >{{ deptOf(infoOf(id)) }}</span>
-                                        <span class="font-mono">{{ infoOf(id)?.officer?.callsign }}</span>
-                                        <span v-if="!liveIds.has(id)" class="px-1 rounded-xs bg-slate-700 font-bold">OFFLINE</span>
+                                            class="text-foreground font-semibold"
+                                        >
+                                            {{
+                                                chatTarget.officer
+                                                    ?.officer_name ||
+                                                chatTarget.title
+                                            }}
+                                        </span>
+                                    </p>
+                                    <iframe
+                                        v-if="chatSrc"
+                                        :key="chatSrc"
+                                        :src="chatSrc"
+                                        class="flex-1 w-full bg-background"
+                                        title="YouTube live chat"
+                                    />
+                                    <p
+                                        v-else
+                                        class="p-6 text-center text-sm text-muted-foreground"
+                                    >
+                                        Pilih POV terlebih dahulu.
                                     </p>
                                 </div>
                             </div>
-
-                            <!-- Actions -->
-                            <div class="tile-controls absolute top-1 right-1 flex gap-1">
-                                <button
-                                    v-if="layoutMode !== 'focus' || focusId !== id"
-                                    type="button"
-                                    class="tile-btn"
-                                    title="Jadikan utama"
-                                    @click="setFocus(id)"
-                                >
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
-                                </button>
-                                <button type="button" class="tile-btn hover:bg-red-600!" title="Tutup POV" @click="removeStream(id)">
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18" /></svg>
-                                </button>
-                            </div>
-
-                            <!-- Audio toggle: always visible so the active sound source is obvious -->
-                            <button
-                                type="button"
-                                class="absolute right-1.5 tile-btn w-8! h-8!"
-                                :class="[
-                                    isThumb(i) ? 'bottom-1.5' : 'bottom-10',
-                                    audioId === id ? 'bg-blue-600! opacity-100!' : 'tile-controls',
-                                ]"
-                                :title="audioId === id ? 'Bisukan' : 'Dengarkan POV ini'"
-                                @click="toggleAudio(id)"
-                            >
-                                <svg v-if="audioId === id" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5 6 9H3v6h3l5 4V5Zm4.5 3.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" /></svg>
-                                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5 6 9H3v6h3l5 4V5Zm11 4-6 6m0-6 6 6" /></svg>
-                            </button>
                         </div>
-                    </div>
-                </div>
+                    </Transition>
+                </section>
 
-                <!-- Empty state -->
-                <div
-                    v-if="!selectedIds.length"
-                    class="flex flex-col items-center justify-center text-center px-6"
-                    :class="isNarrow ? 'py-20' : 'absolute inset-0'"
+                <!-- Desktop sidebar -->
+                <aside
+                    v-if="isDesktop && showChrome && sidebarOpen"
+                    class="w-80 xl:w-96 shrink-0 flex flex-col border-l border-border bg-card"
                 >
-                    <div class="w-14 h-14 rounded-2xl bg-tactical-panel border border-tactical-border flex items-center justify-center mb-4">
-                        <svg class="w-7 h-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7.5" height="7.5" rx="1" /><rect x="13.5" y="3" width="7.5" height="7.5" rx="1" /><rect x="3" y="13.5" width="7.5" height="7.5" rx="1" /><path stroke-linecap="round" d="M17.25 14v6.5M14 17.25h6.5" /></svg>
-                    </div>
-                    <h2 class="font-heading text-2xl font-bold">Belum ada POV dipilih</h2>
-                    <p class="mt-1 max-w-sm text-sm text-slate-400">
-                        <template v-if="totalLive">Pilih hingga {{ maxTiles }} siaran live untuk ditonton bersamaan.</template>
-                        <template v-else>Belum ada officer yang live (10-8) saat ini. Coba lagi nanti.</template>
-                    </p>
-                    <button
-                        v-if="totalLive"
-                        type="button"
-                        class="mt-5 inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm font-bold"
-                        @click="openPicker('pov')"
-                    >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M12 5v14M5 12h14" /></svg>
-                        Pilih POV
-                    </button>
-                </div>
-
-                <!-- Floating controls when the toolbar is hidden (phone landscape / fullscreen) -->
-                <div v-if="!showChrome" class="absolute bottom-2 right-2 z-20 flex gap-1.5 opacity-70 hover:opacity-100">
-                    <button type="button" class="float-btn" title="Tambah POV" @click="sheetOpen = true; panelTab = 'pov'">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M12 5v14M5 12h14" /></svg>
-                    </button>
-                    <button type="button" class="float-btn" title="Ganti layout" @click="layoutMode = layoutMode === 'grid' ? 'focus' : 'grid'">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7.5" height="7.5" rx="1" /><rect x="13.5" y="3" width="7.5" height="7.5" rx="1" /><rect x="3" y="13.5" width="7.5" height="7.5" rx="1" /><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1" /></svg>
-                    </button>
-                    <button v-if="isFullscreen" type="button" class="float-btn" title="Keluar layar penuh" @click="toggleFullscreen">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /></svg>
-                    </button>
-                </div>
-
-                <!-- Bottom sheet / drawer for tablets, phones & fullscreen -->
-                <Transition name="sheet">
-                    <div v-if="sheetOpen" class="fixed inset-0 z-50 flex" :class="isNarrow ? 'items-end' : 'justify-end'">
-                        <div class="absolute inset-0 bg-black/60" @click="sheetOpen = false" />
-                        <div
-                            class="sheet-panel relative flex flex-col bg-tactical-panel border-tactical-border shadow-2xl"
-                            :class="isNarrow
-                                ? 'w-full h-[78dvh] rounded-t-2xl border-t pb-[env(safe-area-inset-bottom)]'
-                                : 'sheet-side w-[min(22rem,90vw)] h-full border-l'"
+                    <div class="flex gap-1 px-3 pt-3">
+                        <Button
+                            v-for="t in [
+                                { key: 'pov', label: 'Daftar POV' },
+                                { key: 'chat', label: 'Live Chat' },
+                            ]"
+                            :key="t.key"
+                            type="button"
+                            :variant="
+                                panelTab === t.key ? 'secondary' : 'ghost'
+                            "
+                            size="sm"
+                            class="text-sm font-bold"
+                            @click="panelTab = t.key"
                         >
-                            <div v-if="isNarrow" class="pt-2 flex justify-center">
-                                <span class="w-10 h-1 rounded-full bg-slate-600" />
-                            </div>
-                            <div class="flex items-center gap-1 px-3 pt-2 pb-1">
-                                <button
-                                    v-for="t in [{ key: 'pov', label: 'Daftar POV' }, { key: 'chat', label: 'Live Chat' }]"
-                                    :key="t.key"
-                                    type="button"
-                                    class="px-3 py-1.5 rounded-md text-sm font-bold"
-                                    :class="panelTab === t.key ? 'text-white bg-tactical-surface' : 'text-slate-400'"
-                                    @click="panelTab = t.key"
-                                >
-                                    {{ t.label }}
-                                </button>
-                                <button type="button" class="ml-auto w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-white" title="Tutup" @click="sheetOpen = false">
-                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18" /></svg>
-                                </button>
-                            </div>
-                            <MultiviewStreamPicker
-                                v-if="panelTab === 'pov'"
-                                class="flex-1 min-h-0"
-                                :streams="streams"
-                                :offline-officers="offlineOfficers"
-                                :selected-ids="selectedIds"
-                                :max-tiles="maxTiles"
-                                @toggle="toggleStream"
-                            />
-                            <div v-else class="flex-1 min-h-0 flex flex-col">
-                                <p v-if="chatTarget" class="px-3 py-1.5 text-xs text-slate-400 truncate">
-                                    Chat: <span class="text-slate-200 font-semibold">{{ chatTarget.officer?.officer_name || chatTarget.title }}</span>
-                                </p>
-                                <iframe v-if="chatSrc" :key="chatSrc" :src="chatSrc" class="flex-1 w-full bg-white" title="YouTube live chat" />
-                                <p v-else class="p-6 text-center text-sm text-slate-500">Pilih POV terlebih dahulu.</p>
-                            </div>
-                        </div>
+                            {{ t.label }}
+                        </Button>
                     </div>
-                </Transition>
-            </section>
-
-            <!-- Desktop sidebar -->
-            <aside
-                v-if="isDesktop && showChrome && sidebarOpen"
-                class="w-80 xl:w-96 shrink-0 flex flex-col border-l border-tactical-border bg-tactical-panel"
-            >
-                <div class="flex gap-1 px-3 pt-3">
-                    <button
-                        v-for="t in [{ key: 'pov', label: 'Daftar POV' }, { key: 'chat', label: 'Live Chat' }]"
-                        :key="t.key"
-                        type="button"
-                        class="px-3 py-1.5 rounded-md text-sm font-bold"
-                        :class="panelTab === t.key ? 'text-white bg-tactical-surface' : 'text-slate-400 hover:text-slate-200'"
-                        @click="panelTab = t.key"
+                    <MultiviewStreamPicker
+                        v-show="panelTab === 'pov'"
+                        class="flex-1 min-h-0"
+                        :streams="streams"
+                        :offline-officers="offlineOfficers"
+                        :selected-ids="selectedIds"
+                        :max-tiles="maxTiles"
+                        @toggle="toggleStream"
+                    />
+                    <div
+                        v-if="panelTab === 'chat'"
+                        class="flex-1 min-h-0 flex flex-col"
                     >
-                        {{ t.label }}
-                    </button>
-                </div>
-                <MultiviewStreamPicker
-                    v-show="panelTab === 'pov'"
-                    class="flex-1 min-h-0"
-                    :streams="streams"
-                    :offline-officers="offlineOfficers"
-                    :selected-ids="selectedIds"
-                    :max-tiles="maxTiles"
-                    @toggle="toggleStream"
-                />
-                <div v-if="panelTab === 'chat'" class="flex-1 min-h-0 flex flex-col">
-                    <p v-if="chatTarget" class="px-3 py-2 text-xs text-slate-400 truncate">
-                        Chat: <span class="text-slate-200 font-semibold">{{ chatTarget.officer?.officer_name || chatTarget.title }}</span>
-                        <span class="text-slate-500"> · ikut POV yang bersuara</span>
+                        <p
+                            v-if="chatTarget"
+                            class="px-3 py-2 text-xs text-muted-foreground truncate"
+                        >
+                            Chat:
+                            <span class="text-foreground font-semibold">
+                                {{
+                                    chatTarget.officer?.officer_name ||
+                                    chatTarget.title
+                                }}
+                            </span>
+                            <span class="text-muted-foreground">
+                                · ikut POV yang bersuara
+                            </span>
+                        </p>
+                        <iframe
+                            v-if="chatSrc"
+                            :key="chatSrc"
+                            :src="chatSrc"
+                            class="flex-1 w-full"
+                            title="YouTube live chat"
+                        />
+                        <p
+                            v-else
+                            class="p-6 text-center text-sm text-muted-foreground"
+                        >
+                            Pilih POV terlebih dahulu.
+                        </p>
+                    </div>
+                    <p
+                        class="px-3 py-2 border-t border-border text-xs text-muted-foreground leading-relaxed"
+                    >
+                        Pintasan: <kbd>1</kbd>–<kbd>9</kbd> pilih suara ·
+                        <kbd>M</kbd> bisukan · <kbd>G</kbd> ganti layout
                     </p>
-                    <iframe v-if="chatSrc" :key="chatSrc" :src="chatSrc" class="flex-1 w-full" title="YouTube live chat" />
-                    <p v-else class="p-6 text-center text-sm text-slate-500">Pilih POV terlebih dahulu.</p>
-                </div>
-                <p class="px-3 py-2 border-t border-tactical-border text-[11px] text-slate-500 leading-relaxed">
-                    Pintasan: <kbd>1</kbd>–<kbd>9</kbd> pilih suara · <kbd>M</kbd> bisukan · <kbd>G</kbd> ganti layout
-                </p>
-            </aside>
-        </div>
-
-        <!-- Hint for first-time sound -->
-        <p
-            v-if="isNarrow && selectedIds.length && !audioId"
-            class="px-3 pt-2 text-center text-[11px] text-slate-500"
-        >
-            Semua POV dimulai tanpa suara — ketuk ikon speaker untuk mendengarkan satu POV.
-        </p>
-
-        <Transition name="fade">
-            <div
-                v-if="toast"
-                class="fixed left-1/2 -translate-x-1/2 bottom-24 md:bottom-6 z-60 px-4 py-2 rounded-lg bg-slate-100 text-slate-900 text-sm font-semibold shadow-xl"
-            >
-                {{ toast }}
+                </aside>
             </div>
-        </Transition>
 
-        <TacticalMobileBottomNav v-if="isNarrow" />
-    </div>
+            <!-- Hint for first-time sound -->
+            <p
+                v-if="isNarrow && selectedIds.length && !audioId"
+                class="px-3 pt-2 text-center text-xs text-muted-foreground"
+            >
+                Semua POV dimulai tanpa suara — ketuk ikon speaker untuk
+                mendengarkan satu POV.
+            </p>
+
+            <TacticalMobileBottomNav v-if="isNarrow" />
+            <Toaster rich-colors position="top-right" />
+        </div>
+    </TooltipProvider>
 </template>
 
 <style scoped>
@@ -811,16 +1138,15 @@ const btnActive = "bg-blue-600 border-blue-500 text-white";
     width: 1.75rem;
     height: 1.75rem;
     border-radius: 0.375rem;
-    background: rgb(0 0 0 / 0.7);
-    color: #fff;
+    background: color-mix(in oklab, var(--background) 75%, transparent);
+    color: var(--foreground);
     backdrop-filter: blur(4px);
     transition: background-color 0.15s;
 }
 .tile-btn:hover {
-    background: rgb(37 99 235);
+    background: var(--primary);
 }
 
-/* Mouse users get the controls on hover; touch screens always see them. */
 @media (hover: hover) {
     .tile-controls {
         opacity: 0;
@@ -838,18 +1164,18 @@ const btnActive = "bg-blue-600 border-blue-500 text-white";
     width: 2.25rem;
     height: 2.25rem;
     border-radius: 9999px;
-    background: rgb(15 23 42 / 0.85);
-    border: 1px solid rgb(51 65 85);
-    color: #fff;
+    background: color-mix(in oklab, var(--card) 85%, transparent);
+    border: 1px solid var(--border);
+    color: var(--foreground);
 }
 
 kbd {
     padding: 0 0.25rem;
     border-radius: 0.25rem;
-    border: 1px solid rgb(51 65 85);
+    border: 1px solid var(--border);
     font-family: ui-monospace, monospace;
-    font-size: 10px;
-    color: rgb(203 213 225);
+    font-size: 0.75rem;
+    color: var(--foreground);
 }
 
 .sheet-enter-active,
@@ -871,14 +1197,5 @@ kbd {
 .sheet-enter-from .sheet-side,
 .sheet-leave-to .sheet-side {
     transform: translateX(100%);
-}
-
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.2s;
-}
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
 }
 </style>

@@ -1,5 +1,10 @@
 <script setup>
 import { computed } from 'vue';
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { cn } from '@/lib/utils';
+import { Check, Clock, Flame, Radio, TriangleAlert } from '@lucide/vue';
 
 const props = defineProps({
     selectedDepartment: {
@@ -41,77 +46,87 @@ const departmentTitle = computed(() => {
 <template>
     <div class="mb-4 space-y-2.5 font-sans">
         <!-- Main Channel HUD Toolbar -->
-        <div class="bg-linear-to-r from-amber-950/70 via-slate-900/95 to-slate-950 border border-amber-500/40 rounded-xl p-3 shadow-xl backdrop-blur-sm flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
-                    <img v-if="iconRadio" :src="iconRadio" class="w-5 h-5 brightness-0 invert opacity-90" alt="Radio" />
-                    <span v-else>📻</span>
+        <Alert class="block bg-warning/10 border-warning/40 rounded-xl p-3 backdrop-blur-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-lg bg-warning/15 border border-warning/40 flex items-center justify-center text-warning shrink-0">
+                        <Radio class="size-5" />
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                            <AlertTitle class="text-sm font-bold text-warning font-mono tracking-wide uppercase">
+                                KANAL RADIO TAKTIS: {{ departmentTitle }}
+                            </AlertTitle>
+                            <Badge variant="warning" class="gap-1.5 font-mono font-bold text-xs rounded-full">
+                                <span class="w-1.5 h-1.5 rounded-full bg-live motion-safe:animate-pulse"></span>
+                                <span>{{ visibleStreamsCount }} UNIT TERHUBUNG</span>
+                            </Badge>
+                        </div>
+                        <AlertDescription class="text-xs text-muted-foreground mt-0.5 font-mono">
+                            Kanal radio taktis aktif untuk pemantauan POV bersama.
+                        </AlertDescription>
+                    </div>
                 </div>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <h3 class="text-sm font-bold text-amber-300 font-mono tracking-wide uppercase">
-                            KANAL RADIO TAKTIS: {{ departmentTitle }}
-                        </h3>
-                        <span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full">
-                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                            {{ visibleStreamsCount }} UNIT TERHUBUNG
+
+                <!-- Timer Countdown Badge -->
+                <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-1.5 bg-background/80 border border-warning/30 px-3 py-1.5 rounded-lg font-mono">
+                        <Clock class="size-3.5 text-warning" />
+                        <span class="text-xs text-muted-foreground uppercase">Sisa Waktu:</span>
+                        <span
+                            :class="cn('text-xs font-bold', remainingSeconds <= 60 ? 'text-destructive motion-safe:animate-pulse' : 'text-warning')"
+                        >
+                            {{ formatRemainingTime(remainingSeconds) }}
                         </span>
                     </div>
-                    <p class="text-[11px] text-slate-400 mt-0.5 font-mono">
-                        Kanal radio taktis aktif untuk pemantauan POV bersama.
-                    </p>
                 </div>
             </div>
-
-            <!-- Timer Countdown Badge -->
-            <div class="flex items-center space-x-2">
-                <div class="flex items-center space-x-1.5 bg-black/60 border border-amber-500/30 px-3 py-1.5 rounded-lg font-mono">
-                    <img v-if="iconClock" :src="iconClock" class="w-3.5 h-3.5 brightness-0 invert opacity-80" alt="Timer" />
-                    <span v-else>⏱️</span>
-                    <span class="text-[10px] text-slate-400 uppercase">Sisa Waktu:</span>
-                    <span 
-                        class="text-xs font-bold" 
-                        :class="remainingSeconds <= 60 ? 'text-red-400 animate-pulse' : 'text-amber-300'"
-                    >
-                        {{ formatRemainingTime(remainingSeconds) }}
-                    </span>
-                </div>
-            </div>
-        </div>
+        </Alert>
 
         <!-- Expiration Alert Banner (Triggers in last 60 seconds) -->
-        <div 
+        <Alert
             v-if="remainingSeconds > 0 && remainingSeconds <= 60"
-            class="bg-red-950/95 border-2 border-red-500 rounded-xl p-3.5 shadow-2xl backdrop-blur-sm flex flex-wrap items-center justify-between gap-3 animate-pulse"
+            variant="destructive"
+            class="block bg-destructive/15 border-2 border-destructive rounded-xl p-3.5 backdrop-blur-sm motion-safe:animate-pulse"
         >
-            <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 rounded-full bg-red-500/30 border border-red-400 flex items-center justify-center text-red-300 text-base font-bold shrink-0">
-                    ⚠️
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-destructive/20 border border-destructive flex items-center justify-center text-destructive shrink-0">
+                        <TriangleAlert class="size-4" />
+                    </div>
+                    <div>
+                        <AlertTitle class="text-xs font-bold text-destructive font-mono tracking-wide uppercase">
+                            KONFIRMASI SITUASI: WAKTU {{ departmentTitle }} TERSISA {{ formatRemainingTime(remainingSeconds) }}!
+                        </AlertTitle>
+                        <AlertDescription class="text-xs text-foreground/80 mt-0.5">
+                            Apakah kanal radio ini masih aktif digunakan, atau telah selesai?
+                        </AlertDescription>
+                    </div>
                 </div>
-                <div>
-                    <h4 class="text-xs font-bold text-red-200 font-mono tracking-wide uppercase">
-                        KONFIRMASI SITUASI: WAKTU {{ departmentTitle }} TERSISA {{ formatRemainingTime(remainingSeconds) }}!
-                    </h4>
-                    <p class="text-[11px] text-red-300/80 mt-0.5">
-                        Apakah kanal radio ini masih aktif digunakan, atau telah selesai?
-                    </p>
+
+                <div class="flex items-center space-x-2">
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        class="font-bold text-xs font-mono gap-1.5"
+                        @click="emit('extendTimer', selectedDepartment, 20)"
+                    >
+                        <Flame class="size-3.5" />
+                        <span>Ya, Lanjutkan (+20 Menit)</span>
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        class="font-bold text-xs font-mono gap-1.5"
+                        @click="emit('disbandChannel', selectedDepartment)"
+                    >
+                        <Check class="size-3.5" />
+                        <span>Situasi Selesai (Bubarkan)</span>
+                    </Button>
                 </div>
             </div>
-            
-            <div class="flex items-center space-x-2">
-                <button 
-                    @click="emit('extendTimer', selectedDepartment, 20)"
-                    class="px-3.5 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-lg shadow-lg transition flex items-center gap-1.5 font-mono transform hover:scale-105"
-                >
-                    <span>🔥 Ya, Lanjutkan (+20 Menit)</span>
-                </button>
-                <button 
-                    @click="emit('disbandChannel', selectedDepartment)"
-                    class="px-3 py-1.5 bg-black/60 hover:bg-black/90 text-slate-200 font-bold text-xs rounded-lg border border-slate-600 transition flex items-center gap-1.5 font-mono"
-                >
-                    <span>✓ Situasi Selesai (Bubarkan)</span>
-                </button>
-            </div>
-        </div>
+        </Alert>
     </div>
 </template>

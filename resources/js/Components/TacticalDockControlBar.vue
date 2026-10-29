@@ -7,15 +7,35 @@ import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
 import iconSasp from "@/Components/Icons/SASP_HD.svg";
 import iconSapr from "@/Components/Icons/ranger_logo.svg";
 import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
-import iconPersonal from "@/Components/Icons/star-svgrepo-com.svg";
-import iconSaver from "@/Components/Icons/gauge-low-svgrepo-com.svg";
-import iconMute from "@/Components/Icons/audio-off-svgrepo-com.svg";
-import iconUnmute from "@/Components/Icons/audio-svgrepo-com.svg";
-import iconRefresh from "@/Components/Icons/refresh-cw-svgrepo-com.svg";
-import iconRadio from "@/Components/Icons/radio-tac-svgrepo-com.svg";
-import iconFullscreen from "@/Components/Icons/full-screen-svgrepo-com.svg";
-import iconGrid4 from "@/Components/Icons/grid-4-svgrepo-com.svg";
-import iconTheater from "@/Components/Icons/rectangle-o-svgrepo-com.svg";
+
+import { Badge } from "@/Components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/Components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import {
+    Check,
+    ChevronDown,
+    Gauge,
+    House,
+    LayoutGrid,
+    Maximize,
+    Monitor,
+    Radio,
+    RefreshCw,
+    Search,
+    Settings,
+    Star,
+    Volume2,
+    VolumeX,
+    X,
+} from "@lucide/vue";
 
 const props = defineProps({
     selectedDepartment: { type: String, required: true },
@@ -45,7 +65,6 @@ const emit = defineEmits([
     "open-officer-visibility",
 ]);
 
-// Popover Toggle States
 const isDockCategoryOpen = ref(false);
 const isDockLayoutOpen = ref(false);
 const isDockSearchOpen = ref(false);
@@ -85,593 +104,549 @@ const getDeptIcon = (dept) => {
 </script>
 
 <template>
-    <div
-        v-if="selectedLayout !== 'focus'"
-        class="fixed bottom-0 inset-x-0 z-50 flex flex-col items-center pointer-events-none"
-    >
-        <!-- Popover 1: Department & Category Selector Menu -->
+    <TooltipProvider :delay-duration="200">
         <div
-            v-if="isDockCategoryOpen"
-            class="hidden sm:block pointer-events-auto mb-2.5 w-80 sm:w-96 max-h-[70vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs space-y-3 animate-in fade-in zoom-in-95 font-sans scrollbar-thin scrollbar-thumb-slate-700"
-            @click.stop
+            v-if="selectedLayout !== 'focus'"
+            class="fixed bottom-0 inset-x-0 z-50 flex flex-col items-center pointer-events-none"
         >
-            <div
-                class="flex items-center justify-between pb-2 border-b border-slate-800 text-slate-300 font-bold font-mono"
+            <!-- Popover 1: Department & Category Selector Menu -->
+            <Card
+                v-if="isDockCategoryOpen"
+                class="hidden sm:block pointer-events-auto mb-2.5 w-80 sm:w-96 max-h-[70vh] overflow-y-auto p-3 text-xs space-y-3 animate-in fade-in zoom-in-95 font-sans"
+                @click.stop
             >
-                <span class="flex items-center gap-1.5 text-blue-400">
-                    <img
-                        :src="iconAllUnits"
-                        class="w-4 h-4 invert opacity-90"
-                    />
-                    <span>PILIH KATEGORI / DEPARTEMEN</span>
-                </span>
-                <button
-                    @click="isDockCategoryOpen = false"
-                    class="text-slate-500 hover:text-white p-1"
-                >
-                    ✕
-                </button>
-            </div>
-
-            <!-- Main Departments Grid -->
-            <div class="grid grid-cols-2 gap-1.5">
-                <button
-                    @click="
-                        emit('update:selectedDepartment', 'ALL');
-                        isDockCategoryOpen = false;
-                    "
-                    :class="[
-                        'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
-                        selectedDepartment === 'ALL'
-                            ? 'bg-blue-600 text-white border-blue-500 font-bold'
-                            : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
-                    ]"
-                >
-                    <div class="flex items-center gap-2">
-                        <img
-                            :src="iconAllUnits"
-                            class="w-4 h-4 invert opacity-90"
-                        />
-                        <span>All units</span>
-                    </div>
-                    <span
-                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
-                        >{{ getDeptCount("ALL") }}</span
-                    >
-                </button>
-
-                <button
-                    @click="
-                        emit('update:selectedDepartment', 'LSPD');
-                        isDockCategoryOpen = false;
-                    "
-                    :class="[
-                        'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
-                        selectedDepartment === 'LSPD'
-                            ? 'bg-blue-600 text-white border-blue-500 font-bold'
-                            : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
-                    ]"
-                >
-                    <div class="flex items-center gap-2">
-                        <img
-                            :src="iconLspd"
-                            class="w-4 h-4 object-contain brightness-0 invert opacity-90"
-                        />
-                        <span>LSPD Metro</span>
-                    </div>
-                    <span
-                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
-                        >{{ getDeptCount("LSPD") }}</span
-                    >
-                </button>
-
-                <button
-                    @click="
-                        emit('update:selectedDepartment', 'BCSO');
-                        isDockCategoryOpen = false;
-                    "
-                    :class="[
-                        'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
-                        selectedDepartment === 'BCSO'
-                            ? 'bg-blue-600 text-white border-blue-500 font-bold'
-                            : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
-                    ]"
-                >
-                    <div class="flex items-center gap-2">
-                        <img
-                            :src="iconBcso"
-                            class="w-4 h-4 object-contain brightness-0 invert opacity-90"
-                        />
-                        <span>BCSO Sheriff</span>
-                    </div>
-                    <span
-                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
-                        >{{ getDeptCount("BCSO") }}</span
-                    >
-                </button>
-
-                <button
-                    @click="
-                        emit('update:selectedDepartment', 'SASP');
-                        isDockCategoryOpen = false;
-                    "
-                    :class="[
-                        'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
-                        selectedDepartment === 'SASP'
-                            ? 'bg-blue-600 text-white border-blue-500 font-bold'
-                            : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
-                    ]"
-                >
-                    <div class="flex items-center gap-2">
-                        <img
-                            :src="iconSasp"
-                            class="w-4 h-4 object-contain brightness-0 invert opacity-90"
-                        />
-                        <span>SASP State</span>
-                    </div>
-                    <span
-                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
-                        >{{ getDeptCount("SASP") }}</span
-                    >
-                </button>
-
-                <button
-                    @click="
-                        emit('update:selectedDepartment', 'SAPR');
-                        isDockCategoryOpen = false;
-                    "
-                    :class="[
-                        'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
-                        selectedDepartment === 'SAPR'
-                            ? 'bg-blue-600 text-white border-blue-500 font-bold'
-                            : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
-                    ]"
-                >
-                    <div class="flex items-center gap-2">
-                        <img
-                            :src="iconSapr"
-                            class="w-4 h-4 object-contain brightness-0 invert opacity-90"
-                        />
-                        <span>SAPR Ranger</span>
-                    </div>
-                    <span
-                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
-                        >{{ getDeptCount("SAPR") }}</span
-                    >
-                </button>
-
-                <button
-                    @click="
-                        emit('update:selectedDepartment', 'PERSONAL');
-                        isDockCategoryOpen = false;
-                    "
-                    :class="[
-                        'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
-                        selectedDepartment === 'PERSONAL'
-                            ? 'bg-blue-600 text-white border-blue-500 font-bold'
-                            : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
-                    ]"
-                >
-                    <div class="flex items-center gap-2">
-                        <img
-                            :src="iconPersonal"
-                            class="w-4 h-4 invert opacity-90"
-                        />
-                        <span>Watchlist</span>
-                    </div>
-                    <span
-                        class="px-1.5 py-0.5 rounded-sm text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-300 font-bold"
-                        >{{ getDeptCount("PERSONAL") }}</span
-                    >
-                </button>
-            </div>
-
-            <!-- TAC Channels Section -->
-            <div class="pt-2 border-t border-slate-800 space-y-1.5">
                 <div
-                    class="text-[11px] font-mono font-bold text-amber-400 flex items-center gap-1.5"
+                    class="flex items-center justify-between pb-2 border-b border-border text-foreground/80 font-bold font-mono"
                 >
-                    <img
-                        :src="iconRadio"
-                        class="w-3.5 h-3.5 invert opacity-90"
-                    />
-                    <span>KANAL RADIO OPERASIONAL (TAC)</span>
+                    <span class="flex items-center gap-1.5 text-primary">
+                        <LayoutGrid class="size-4" />
+                        <span>PILIH KATEGORI / DEPARTEMEN</span>
+                    </span>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        class="size-6"
+                        aria-label="Tutup pemilih kategori"
+                        @click="isDockCategoryOpen = false"
+                    >
+                        <X class="size-3.5" />
+                    </Button>
                 </div>
-                <div class="grid grid-cols-5 gap-1">
+
+                <!-- Main Departments Grid -->
+                <div class="grid grid-cols-2 gap-1.5">
                     <button
-                        v-for="i in 10"
-                        :key="`tac-${i}`"
+                        v-for="dItem in [
+                            {
+                                id: 'ALL',
+                                label: 'All units',
+                                icon: iconAllUnits,
+                            },
+                            {
+                                id: 'LSPD',
+                                label: 'LSPD Metro',
+                                icon: iconLspd,
+                            },
+                            {
+                                id: 'BCSO',
+                                label: 'BCSO Sheriff',
+                                icon: iconBcso,
+                            },
+                            {
+                                id: 'SASP',
+                                label: 'SASP State',
+                                icon: iconSasp,
+                            },
+                            {
+                                id: 'SAPR',
+                                label: 'SAPR Ranger',
+                                icon: iconSapr,
+                            },
+                        ]"
+                        :key="dItem.id"
+                        type="button"
+                        :class="
+                            cn(
+                                'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
+                                selectedDepartment === dItem.id
+                                    ? 'bg-primary text-primary-foreground border-primary font-bold'
+                                    : 'bg-background hover:bg-accent text-foreground/80 border-border',
+                            )
+                        "
                         @click="
-                            emit('update:selectedDepartment', `TAC_${i}`);
+                            emit('update:selectedDepartment', dItem.id);
                             isDockCategoryOpen = false;
                         "
-                        :class="[
-                            'p-1.5 rounded-md border text-center transition flex flex-col items-center justify-center gap-0.5 cursor-pointer',
-                            selectedDepartment === `TAC_${i}`
-                                ? 'bg-blue-600 text-white border-blue-500 font-bold'
-                                : getDeptCount(`TAC_${i}`) > 0
-                                  ? 'bg-amber-950/40 text-amber-300 border-amber-800/50 font-semibold'
-                                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800',
-                        ]"
                     >
-                        <span class="text-[10px] font-mono"
-                            >TAC {{ i }}</span
+                        <div class="flex items-center gap-2">
+                            <img
+                                :src="dItem.icon"
+                                class="w-4 h-4 object-contain brightness-0 invert opacity-90"
+                                alt=""
+                            />
+                            <span>{{ dItem.label }}</span>
+                        </div>
+                        <Badge
+                            variant="secondary"
+                            class="px-1.5 py-0 text-xs font-mono font-bold"
                         >
-                        <span
-                            class="text-[9px] px-1 rounded-sm font-mono"
-                            :class="
-                                getDeptCount(`TAC_${i}`) > 0
-                                    ? 'bg-amber-400 text-black font-bold'
-                                    : 'bg-slate-900 text-slate-500'
-                            "
+                            {{ getDeptCount(dItem.id) }}
+                        </Badge>
+                    </button>
+
+                    <button
+                        type="button"
+                        :class="
+                            cn(
+                                'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
+                                selectedDepartment === 'PERSONAL'
+                                    ? 'bg-primary text-primary-foreground border-primary font-bold'
+                                    : 'bg-background hover:bg-accent text-foreground/80 border-border',
+                            )
+                        "
+                        @click="
+                            emit('update:selectedDepartment', 'PERSONAL');
+                            isDockCategoryOpen = false;
+                        "
+                    >
+                        <div class="flex items-center gap-2">
+                            <Star class="size-4" />
+                            <span>Watchlist</span>
+                        </div>
+                        <Badge
+                            variant="secondary"
+                            class="px-1.5 py-0 text-xs font-mono font-bold"
                         >
-                            {{ getDeptCount(`TAC_${i}`) }}
-                        </span>
+                            {{ getDeptCount("PERSONAL") }}
+                        </Badge>
                     </button>
                 </div>
-            </div>
-        </div>
 
-        <!-- Popover 2: Grid Layout Selector Menu -->
-        <div
-            v-if="isDockLayoutOpen"
-            class="hidden sm:block pointer-events-auto mb-2.5 w-64 bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs space-y-2 animate-in fade-in zoom-in-95 font-sans"
-            @click.stop
-        >
-            <div
-                class="flex items-center justify-between pb-2 border-b border-slate-800 text-slate-300 font-bold font-mono"
-            >
-                <span>TATA LETAK GRID (LAYOUT)</span>
-                <button
-                    @click="isDockLayoutOpen = false"
-                    class="text-slate-500 hover:text-white p-1"
-                >
-                    ✕
-                </button>
-            </div>
-            <div class="space-y-1">
-                <button
-                    v-for="l in [
-                        {
-                            id: 'auto',
-                            name: 'Auto Grid',
-                            desc: 'Adaptif sesuai jumlah stream',
-                        },
-                        {
-                            id: 'grid-1x2',
-                            name: '1 x 2 Grid',
-                            desc: '2 Kamera bersampingan',
-                        },
-                        {
-                            id: 'grid-2x2',
-                            name: '2 x 2 Grid',
-                            desc: '4 Kamera Quad Matrix',
-                        },
-                        {
-                            id: 'grid-3x3',
-                            name: '3 x 3 Grid',
-                            desc: '9 Kamera Matrix',
-                        },
-                        {
-                            id: 'grid-4x4',
-                            name: '4 x 4 Grid',
-                            desc: '16 Kamera Matrix',
-                        },
-                    ]"
-                    :key="l.id"
-                    @click="
-                        emit('update:selectedLayout', l.id);
-                        isDockLayoutOpen = false;
-                    "
-                    :class="[
-                        'w-full p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
-                        selectedLayout === l.id
-                            ? 'bg-blue-600 text-white border-blue-500 font-bold'
-                            : 'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800',
-                    ]"
-                >
-                    <div>
-                        <div class="font-bold text-xs">
-                            {{ l.name }}
-                        </div>
-                        <div class="text-[10px] text-slate-400 font-light">
-                            {{ l.desc }}
-                        </div>
-                    </div>
-                    <span v-if="selectedLayout === l.id" class="text-xs"
-                        >✓</span
+                <!-- TAC Channels Section -->
+                <div class="pt-2 border-t border-border space-y-1.5">
+                    <div
+                        class="text-xs font-mono font-bold text-warning flex items-center gap-1.5"
                     >
-                </button>
-            </div>
-        </div>
+                        <Radio class="size-3.5" />
+                        <span>KANAL RADIO OPERASIONAL (TAC)</span>
+                    </div>
+                    <div class="grid grid-cols-5 gap-1">
+                        <button
+                            v-for="i in 10"
+                            :key="`tac-${i}`"
+                            type="button"
+                            :class="
+                                cn(
+                                    'p-1.5 rounded-md border text-center transition flex flex-col items-center justify-center gap-0.5 cursor-pointer',
+                                    selectedDepartment === `TAC_${i}`
+                                        ? 'bg-primary text-primary-foreground border-primary font-bold'
+                                        : getDeptCount(`TAC_${i}`) > 0
+                                          ? 'bg-warning/15 text-warning border-warning/40 font-semibold'
+                                          : 'bg-background text-muted-foreground border-border hover:bg-accent',
+                                )
+                            "
+                            @click="
+                                emit('update:selectedDepartment', `TAC_${i}`);
+                                isDockCategoryOpen = false;
+                            "
+                        >
+                            <span class="text-xs font-mono">TAC {{ i }}</span>
+                            <span
+                                :class="
+                                    cn(
+                                        'text-xs px-1 rounded-sm font-mono',
+                                        getDeptCount(`TAC_${i}`) > 0
+                                            ? 'bg-warning text-warning-foreground font-bold'
+                                            : 'bg-card text-muted-foreground',
+                                    )
+                                "
+                            >
+                                {{ getDeptCount(`TAC_${i}`) }}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </Card>
 
-        <!-- Popover 3: Quick Search Filter Input Bar -->
-        <div
-            v-if="isDockSearchOpen"
-            class="pointer-events-auto mb-2.5 w-72 sm:w-80 bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs animate-in fade-in zoom-in-95 font-sans"
-            @click.stop
-        >
-            <div class="relative flex items-center">
-                <input
-                    type="text"
-                    :value="searchFilter"
-                    @input="
-                        emit('update:searchFilter', $event.target.value)
+            <!-- Popover 2: Grid Layout Selector Menu -->
+            <Card
+                v-if="isDockLayoutOpen"
+                class="hidden sm:block pointer-events-auto mb-2.5 w-64 p-3 text-xs space-y-2 animate-in fade-in zoom-in-95 font-sans"
+                @click.stop
+            >
+                <div
+                    class="flex items-center justify-between pb-2 border-b border-border text-foreground/80 font-bold font-mono"
+                >
+                    <span>TATA LETAK GRID (LAYOUT)</span>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        class="size-6"
+                        aria-label="Tutup pemilih layout"
+                        @click="isDockLayoutOpen = false"
+                    >
+                        <X class="size-3.5" />
+                    </Button>
+                </div>
+                <div class="space-y-1">
+                    <button
+                        v-for="l in [
+                            {
+                                id: 'auto',
+                                name: 'Auto Grid',
+                                desc: 'Adaptif sesuai jumlah stream',
+                            },
+                            {
+                                id: 'grid-1x2',
+                                name: '1 x 2 Grid',
+                                desc: '2 Kamera bersampingan',
+                            },
+                            {
+                                id: 'grid-2x2',
+                                name: '2 x 2 Grid',
+                                desc: '4 Kamera Quad Matrix',
+                            },
+                            {
+                                id: 'grid-3x3',
+                                name: '3 x 3 Grid',
+                                desc: '9 Kamera Matrix',
+                            },
+                            {
+                                id: 'grid-4x4',
+                                name: '4 x 4 Grid',
+                                desc: '16 Kamera Matrix',
+                            },
+                        ]"
+                        :key="l.id"
+                        type="button"
+                        :class="
+                            cn(
+                                'w-full p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
+                                selectedLayout === l.id
+                                    ? 'bg-primary text-primary-foreground border-primary font-bold'
+                                    : 'bg-background hover:bg-accent text-foreground/80 border-border',
+                            )
+                        "
+                        @click="
+                            emit('update:selectedLayout', l.id);
+                            isDockLayoutOpen = false;
+                        "
+                    >
+                        <div>
+                            <div class="font-bold text-xs">
+                                {{ l.name }}
+                            </div>
+                            <div class="text-xs text-muted-foreground font-light">
+                                {{ l.desc }}
+                            </div>
+                        </div>
+                        <Check
+                            v-if="selectedLayout === l.id"
+                            class="size-3.5"
+                        />
+                    </button>
+                </div>
+            </Card>
+
+            <!-- Popover 3: Quick Search Filter Input Bar -->
+            <Card
+                v-if="isDockSearchOpen"
+                class="pointer-events-auto mb-2.5 w-72 sm:w-80 p-2.5 text-xs animate-in fade-in zoom-in-95 font-sans"
+                @click.stop
+            >
+                <div class="relative flex items-center">
+                    <Input
+                        type="text"
+                        :model-value="searchFilter"
+                        placeholder="Cari perwira, callsign, divisi, judul..."
+                        class="w-full bg-background text-foreground text-xs pr-8 h-9"
+                        @update:model-value="
+                            emit('update:searchFilter', $event)
+                        "
+                    />
+                    <Button
+                        v-if="searchFilter"
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        class="absolute right-1.5 size-6 text-muted-foreground hover:text-foreground"
+                        aria-label="Hapus pencarian"
+                        @click="emit('update:searchFilter', '')"
+                    >
+                        <X class="size-3.5" />
+                    </Button>
+                </div>
+            </Card>
+
+            <!-- BOTTOM STICKY CONTROL BAR (DESKTOP ONLY) -->
+            <div
+                class="hidden sm:flex pointer-events-auto w-full bg-background border-t border-border px-4 py-2.5 items-center justify-center gap-3 text-xs text-foreground overflow-x-auto scrollbar-none"
+                @click.stop
+            >
+                <!-- Home / Beranda Button -->
+                <Button as-child variant="outline" size="sm">
+                    <Link
+                        href="/"
+                        class="text-xs font-mono font-bold gap-1.5 shrink-0"
+                        title="Kembali ke Dashboard Utama"
+                    >
+                        <House class="size-3.5 text-muted-foreground shrink-0" />
+                        <span>Home</span>
+                    </Link>
+                </Button>
+
+                <!-- Category Selector Button -->
+                <Button
+                    type="button"
+                    :variant="isDockCategoryOpen ? 'secondary' : 'outline'"
+                    size="sm"
+                    class="hidden sm:flex text-xs font-bold gap-1.5 shrink-0"
+                    title="Pilih Kategori / Departemen Kesatuan"
+                    @click="toggleDockCategory"
+                >
+                    <img
+                        :src="getDeptIcon(selectedDepartment)"
+                        class="w-3.5 h-3.5 invert opacity-90 shrink-0"
+                        alt=""
+                    />
+                    <span class="font-mono text-xs">{{
+                        selectedDeptLabel
+                    }}</span>
+                    <Badge
+                        variant="outline"
+                        class="px-1.5 py-0 text-primary text-xs font-mono font-bold"
+                    >
+                        {{ visibleStreamsCount }}
+                    </Badge>
+                    <ChevronDown class="size-3 text-muted-foreground" />
+                </Button>
+
+                <div
+                    class="hidden sm:block h-4 w-px bg-border shrink-0"
+                ></div>
+
+                <!-- Layout Selector Button -->
+                <Button
+                    type="button"
+                    :variant="isDockLayoutOpen ? 'secondary' : 'outline'"
+                    size="sm"
+                    class="hidden sm:flex text-xs font-bold gap-1.5 shrink-0"
+                    title="Pilih Tata Letak Kamera (Grid Layout)"
+                    @click="toggleDockLayout"
+                >
+                    <LayoutGrid class="size-3.5 shrink-0" />
+                    <span class="font-mono text-xs">{{
+                        selectedLayoutLabel
+                    }}</span>
+                    <ChevronDown class="size-3 text-muted-foreground" />
+                </Button>
+
+                <div
+                    class="hidden sm:block h-4 w-px bg-border shrink-0"
+                ></div>
+
+                <!-- Quick Search Filter Button -->
+                <Tooltip>
+                    <TooltipTrigger as-child>
+                        <Button
+                            type="button"
+                            :variant="
+                                isDockSearchOpen || searchFilter
+                                    ? 'secondary'
+                                    : 'outline'
+                            "
+                            size="icon"
+                            class="size-8 relative shrink-0"
+                            aria-label="Cari Petugas / Stream"
+                            @click="toggleDockSearch"
+                        >
+                            <Search class="size-3.5" />
+                            <span
+                                v-if="searchFilter"
+                                class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full"
+                            ></span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Cari Petugas / Stream</TooltipContent>
+                </Tooltip>
+
+                <!-- Officer Visibility Bottom Sheet Button -->
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    class="text-xs font-mono font-bold gap-1.5 shrink-0"
+                    title="Kelola Tampilan / Enable Disable Perwira"
+                    @click="emit('open-officer-visibility')"
+                >
+                    <Settings class="size-3.5 text-muted-foreground shrink-0" />
+                    <span>Kelola</span>
+                </Button>
+
+                <!-- Sync / Refresh Feeds Button -->
+                <Tooltip>
+                    <TooltipTrigger as-child>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            class="size-8 shrink-0"
+                            :disabled="isSyncingFeeds"
+                            aria-label="Sinkronkan Feeds Live Terbaru"
+                            @click="emit('trigger-manual-sync')"
+                        >
+                            <RefreshCw
+                                class="size-3.5"
+                                :class="{ 'animate-spin': isSyncingFeeds }"
+                            />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Sinkronkan Feeds Live Terbaru
+                    </TooltipContent>
+                </Tooltip>
+
+                <!-- Data Saver Toggle Button -->
+                <Button
+                    type="button"
+                    :variant="isDataSaverEnabled ? 'secondary' : 'outline'"
+                    size="sm"
+                    :class="
+                        cn(
+                            'text-xs font-mono font-bold gap-1.5 shrink-0',
+                            isDataSaverEnabled ? 'text-warning' : '',
+                        )
                     "
-                    placeholder="Cari perwira, callsign, divisi, judul..."
-                    class="w-full bg-slate-950 text-white placeholder-slate-500 text-xs px-3 py-2 pr-8 rounded-md border border-slate-800 focus:outline-hidden focus:border-blue-500 font-sans"
-                />
-                <button
-                    v-if="searchFilter"
-                    @click="emit('update:searchFilter', '')"
-                    class="absolute right-2.5 text-slate-400 hover:text-white text-xs font-bold p-0.5 rounded-sm"
+                    :title="
+                        isDataSaverEnabled
+                            ? 'Hemat Data Aktif (Tutup untuk otomatis play)'
+                            : 'Aktifkan Hemat Data'
+                    "
+                    @click="
+                        isDataSaverEnabled
+                            ? emit('disable-data-saver')
+                            : emit('enable-data-saver')
+                    "
                 >
-                    ✕
-                </button>
-            </div>
-        </div>
+                    <Gauge class="size-3.5" />
+                    <span>{{
+                        isDataSaverEnabled ? "Saver ON" : "Saver OFF"
+                    }}</span>
+                </Button>
 
-        <!-- BOTTOM STICKY CONTROL BAR (DESKTOP ONLY) -->
-        <div
-            class="hidden sm:flex pointer-events-auto w-full bg-slate-950 border-t border-slate-800 px-4 py-2.5 items-center justify-center gap-3 text-xs text-slate-200 overflow-x-auto scrollbar-none"
-            @click.stop
-        >
-            <!-- Home / Beranda Button -->
-            <Link
-                href="/"
-                class="px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition flex items-center gap-1.5 shrink-0 cursor-pointer"
-                title="Kembali ke Dashboard Utama"
-            >
-                <svg
-                    class="w-3.5 h-3.5 text-slate-400 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                <div
+                    class="hidden sm:block h-4 w-px bg-border shrink-0"
+                ></div>
+
+                <!-- Theater / Bioskop Mode Toggle -->
+                <Button
+                    type="button"
+                    :variant="isTheaterMode ? 'secondary' : 'outline'"
+                    size="sm"
+                    :class="
+                        cn(
+                            'hidden sm:flex text-xs font-mono font-bold gap-1.5 shrink-0',
+                            isTheaterMode ? 'text-primary' : '',
+                        )
+                    "
+                    :title="
+                        isTheaterMode
+                            ? 'Mode Bioskop Aktif (100% Lebar Layar)'
+                            : 'Mode Bioskop (Perluas Layar 100% Full Width)'
+                    "
+                    @click="emit('toggle-theater-mode')"
                 >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                    />
-                </svg>
-                <span>Home</span>
-            </Link>
+                    <Monitor class="size-3.5 shrink-0" />
+                    <span>Bioskop</span>
+                </Button>
 
-            <!-- Category Selector Button -->
-            <button
-                @click="toggleDockCategory"
-                :class="[
-                    'hidden sm:flex px-3 py-1.5 rounded-md text-xs font-bold border transition items-center gap-1.5 shrink-0 cursor-pointer',
-                    isDockCategoryOpen
-                        ? 'bg-slate-800 text-blue-400 border-slate-700'
-                        : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800',
-                ]"
-                title="Pilih Kategori / Departemen Kesatuan"
-            >
-                <img
-                    :src="getDeptIcon(selectedDepartment)"
-                    class="w-3.5 h-3.5 invert opacity-90 shrink-0"
-                />
-                <span class="font-mono text-[11px]">{{
-                    selectedDeptLabel
-                }}</span>
-                <span
-                    class="px-1.5 py-0.2 rounded-sm bg-slate-950 border border-slate-800 text-blue-400 text-[10px] font-mono font-bold"
-                    >{{ visibleStreamsCount }}</span
-                >
-                <span class="text-[10px] text-slate-400">▾</span>
-            </button>
-
-            <div
-                class="hidden sm:block h-4 w-px bg-slate-800 shrink-0"
-            ></div>
-
-            <!-- Layout Selector Button -->
-            <button
-                @click="toggleDockLayout"
-                :class="[
-                    'hidden sm:flex px-3 py-1.5 rounded-md text-xs font-bold border transition items-center gap-1.5 shrink-0 cursor-pointer',
-                    isDockLayoutOpen
-                        ? 'bg-slate-800 text-blue-400 border-slate-700'
-                        : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800',
-                ]"
-                title="Pilih Tata Letak Kamera (Grid Layout)"
-            >
-                <img
-                    :src="iconGrid4"
-                    class="w-3.5 h-3.5 invert opacity-90 shrink-0"
-                    alt="Grid Layout"
-                />
-                <span class="font-mono text-[11px]">{{
-                    selectedLayoutLabel
-                }}</span>
-                <span class="text-[10px] text-slate-400">▾</span>
-            </button>
-
-            <div
-                class="hidden sm:block h-4 w-px bg-slate-800 shrink-0"
-            ></div>
-
-            <!-- Quick Search Filter Button -->
-            <button
-                @click="toggleDockSearch"
-                :class="[
-                    'flex p-2 rounded-md border transition shrink-0 relative cursor-pointer',
-                    isDockSearchOpen || searchFilter
-                        ? 'bg-slate-800 text-blue-400 border-slate-700'
-                        : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800',
-                ]"
-                title="Cari Petugas / Stream"
-            >
-                <svg
-                    class="w-3.5 h-3.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                </svg>
-                <span
-                    v-if="searchFilter"
-                    class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-400 rounded-full"
-                ></span>
-            </button>
-
-            <!-- Officer Visibility Bottom Sheet Button ([⚙️ Kelola]) -->
-            <button
-                @click="emit('open-officer-visibility')"
-                class="flex px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition items-center gap-1.5 shrink-0 cursor-pointer"
-                title="Kelola Tampilan / Enable Disable Perwira (Bottom Sheet)"
-            >
-                <svg
-                    class="w-3.5 h-3.5 text-slate-400 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                    />
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                </svg>
-                <span>Kelola</span>
-            </button>
-
-            <!-- Sync / Refresh Feeds Button -->
-            <button
-                @click="emit('trigger-manual-sync')"
-                :disabled="isSyncingFeeds"
-                class="p-2 rounded-md bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-slate-300 border border-slate-800 transition shrink-0 cursor-pointer"
-                title="Sinkronkan Feeds Live Terbaru"
-            >
-                <img
-                    :src="iconRefresh"
-                    class="w-3.5 h-3.5 invert opacity-90"
-                    :class="{ 'animate-spin': isSyncingFeeds }"
-                />
-            </button>
-
-            <!-- Data Saver Toggle Button -->
-            <button
-                @click="
-                    isDataSaverEnabled
-                        ? emit('disable-data-saver')
-                        : emit('enable-data-saver')
-                "
-                :class="[
-                    'px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer',
-                    isDataSaverEnabled
-                        ? 'bg-slate-800 text-amber-400 border-slate-700'
-                        : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800',
-                ]"
-                :title="
-                    isDataSaverEnabled
-                        ? 'Hemat Data Aktif (Tutup untuk otomatis play)'
-                        : 'Aktifkan Hemat Data'
-                "
-            >
-                <img
-                    :src="iconSaver"
-                    class="w-3.5 h-3.5 invert opacity-90"
-                />
-                <span>{{
-                    isDataSaverEnabled ? "Saver ON" : "Saver OFF"
-                }}</span>
-            </button>
-
-            <div
-                class="hidden sm:block h-4 w-px bg-slate-800 shrink-0"
-            ></div>
-
-            <!-- Theater / Bioskop Mode Toggle -->
-            <button
-                @click="emit('toggle-theater-mode')"
-                class="hidden sm:flex px-3 py-1.5 rounded-md text-[11px] font-mono font-bold border transition items-center gap-1.5 shrink-0 cursor-pointer"
-                :class="
-                    isTheaterMode
-                        ? 'bg-slate-800 text-blue-400 border-slate-700'
-                        : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
-                "
-                :title="
-                    isTheaterMode
-                        ? 'Mode Bioskop Aktif (100% Lebar Layar). Klik untuk kembali ke Ukuran 2XL Standar'
-                        : 'Mode Bioskop (Perluas Layar 100% Full Width tanpa Margin)'
-                "
-            >
-                <img
-                    :src="iconTheater"
-                    class="w-3.5 h-3.5 invert opacity-90 shrink-0"
-                    alt="Bioskop"
-                />
-                <span>Bioskop</span>
-            </button>
-
-            <!-- Audio Switch Button -->
-            <button
-                @click="
-                    emit(
-                        'toggle-audio',
-                        selectedLayout === 'focus' && primaryFocusedStream
-                            ? primaryFocusedStream.video_id
-                            : (activeAudioVideoId || null),
-                    )
-                "
-                class="px-2.5 py-1.5 rounded-md text-[11px] font-mono font-bold border transition flex items-center gap-1.5 shrink-0 cursor-pointer"
-                :class="
-                    (selectedLayout === 'focus' && primaryFocusedStream && activeAudioVideoId === primaryFocusedStream.video_id) ||
-                    (selectedLayout !== 'focus' && activeAudioVideoId)
-                        ? 'bg-slate-800 text-emerald-400 border-slate-700'
-                        : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
-                "
-                :title="
-                    (selectedLayout === 'focus' && primaryFocusedStream && activeAudioVideoId === primaryFocusedStream.video_id) ||
-                    (selectedLayout !== 'focus' && activeAudioVideoId)
-                        ? 'Suara Aktif (Klik untuk Mute)'
-                        : 'Aktivasi Suara Feed'
-                "
-            >
-                <img
-                    :src="
-                        (selectedLayout === 'focus' && primaryFocusedStream && activeAudioVideoId === primaryFocusedStream.video_id) ||
+                <!-- Audio Switch Button -->
+                <Button
+                    type="button"
+                    :variant="
+                        (selectedLayout === 'focus' &&
+                            primaryFocusedStream &&
+                            activeAudioVideoId ===
+                                primaryFocusedStream.video_id) ||
                         (selectedLayout !== 'focus' && activeAudioVideoId)
-                            ? iconUnmute
-                            : iconMute
+                            ? 'secondary'
+                            : 'outline'
                     "
-                    class="w-3.5 h-3.5 invert opacity-90"
-                />
-                <span>{{
-                    (selectedLayout === 'focus' && primaryFocusedStream && activeAudioVideoId === primaryFocusedStream.video_id) ||
-                    (selectedLayout !== 'focus' && activeAudioVideoId)
-                        ? "Audio ON"
-                        : "Audio OFF"
-                }}</span>
-            </button>
+                    size="sm"
+                    :class="
+                        cn(
+                            'text-xs font-mono font-bold gap-1.5 shrink-0',
+                            (selectedLayout === 'focus' &&
+                                primaryFocusedStream &&
+                                activeAudioVideoId ===
+                                    primaryFocusedStream.video_id) ||
+                                (selectedLayout !== 'focus' &&
+                                    activeAudioVideoId)
+                                ? 'text-success'
+                                : '',
+                        )
+                    "
+                    :title="
+                        (selectedLayout === 'focus' &&
+                            primaryFocusedStream &&
+                            activeAudioVideoId ===
+                                primaryFocusedStream.video_id) ||
+                        (selectedLayout !== 'focus' && activeAudioVideoId)
+                            ? 'Suara Aktif (Klik untuk Mute)'
+                            : 'Aktivasi Suara Feed'
+                    "
+                    @click="
+                        emit(
+                            'toggle-audio',
+                            selectedLayout === 'focus' && primaryFocusedStream
+                                ? primaryFocusedStream.video_id
+                                : activeAudioVideoId || null,
+                        )
+                    "
+                >
+                    <Volume2
+                        v-if="
+                            (selectedLayout === 'focus' &&
+                                primaryFocusedStream &&
+                                activeAudioVideoId ===
+                                    primaryFocusedStream.video_id) ||
+                            (selectedLayout !== 'focus' && activeAudioVideoId)
+                        "
+                        class="size-3.5"
+                    />
+                    <VolumeX v-else class="size-3.5" />
+                    <span>{{
+                        (selectedLayout === "focus" &&
+                            primaryFocusedStream &&
+                            activeAudioVideoId ===
+                                primaryFocusedStream.video_id) ||
+                        (selectedLayout !== "focus" && activeAudioVideoId)
+                            ? "Audio ON"
+                            : "Audio OFF"
+                    }}</span>
+                </Button>
 
-            <!-- Fullscreen Toggle -->
-            <button
-                @click="emit('toggle-fullscreen')"
-                class="hidden sm:flex p-2 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition shrink-0 cursor-pointer"
-                title="Toggle Layar Penuh (Fullscreen)"
-            >
-                <img
-                    :src="iconFullscreen"
-                    class="w-3.5 h-3.5 invert opacity-90"
-                />
-            </button>
+                <!-- Fullscreen Toggle -->
+                <Tooltip>
+                    <TooltipTrigger as-child>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            class="hidden sm:flex size-8 shrink-0"
+                            aria-label="Toggle Layar Penuh (Fullscreen)"
+                            @click="emit('toggle-fullscreen')"
+                        >
+                            <Maximize class="size-3.5" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        Toggle Layar Penuh (Fullscreen)
+                    </TooltipContent>
+                </Tooltip>
+            </div>
         </div>
-    </div>
+    </TooltipProvider>
 </template>
