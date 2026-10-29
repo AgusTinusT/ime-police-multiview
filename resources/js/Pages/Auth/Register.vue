@@ -1,17 +1,22 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
+import { Head, Link, useForm } from "@inertiajs/vue3";
+import { ArrowLeft } from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Card, CardContent } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
 
 const form = useForm({
-    name: '',
-    email: '',
-    password: '',
-    password_confirmation: '',
+    name: "",
+    email: "",
+    password: "",
+    password_confirmation: "",
 });
 
 const submit = () => {
-    form.post(route('register'), {
-        onFinish: () => form.reset('password', 'password_confirmation'),
+    form.post(route("register"), {
+        onFinish: () => form.reset("password", "password_confirmation"),
     });
 };
 </script>
@@ -19,122 +24,124 @@ const submit = () => {
 <template>
     <Head title="Register - SASP Police Multiview" />
 
-    <div class="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-blue-500 selection:text-white font-sans text-slate-100">
+    <div class="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
         <div class="w-full max-w-sm space-y-6">
-            <!-- Plain Logo & Header -->
+            <!-- Logo & Header -->
             <div class="text-center space-y-2.5">
                 <Link href="/" class="inline-block">
-                    <img :src="logoSaspColor" class="w-14 h-14 rounded-full mx-auto" alt="SASP Logo" />
+                    <img :src="logoSaspColor" class="size-14 rounded-full mx-auto border border-border" alt="SASP Logo" />
                 </Link>
                 <div>
-                    <h1 class="text-base font-bold text-white font-mono tracking-wider uppercase">
+                    <h1 class="text-base font-bold text-foreground font-mono tracking-wider uppercase">
                         SASP POLICE MULTIVIEW
                     </h1>
-                    <p class="text-xs text-slate-400 mt-0.5">
+                    <p class="text-xs text-muted-foreground mt-0.5">
                         IME Roleplay Community
                     </p>
                 </div>
             </div>
 
             <!-- Card Container -->
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-5">
-                <!-- Tab Switcher -->
-                <div class="flex border-b border-slate-800 pb-3">
-                    <Link href="/login" class="flex-1 py-1.5 text-xs font-mono text-center font-medium text-slate-400 hover:text-slate-200 transition">
-                        SIGN IN
-                    </Link>
-                    <span class="flex-1 py-1.5 text-xs font-mono text-center font-bold text-blue-400 border-b-2 border-blue-500">
-                        REGISTER
-                    </span>
-                </div>
-
-                <form @submit.prevent="submit" class="space-y-4 text-xs">
-                    <div class="space-y-1">
-                        <label for="name" class="block text-slate-300 font-medium">Nama Lengkap</label>
-                        <input
-                            id="name"
-                            type="text"
-                            v-model="form.name"
-                            required
-                            autofocus
-                            placeholder="John Doe"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
-                        />
-                        <div v-if="form.errors.name" class="text-red-400 text-[11px] mt-1">
-                            {{ form.errors.name }}
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label for="email" class="block text-slate-300 font-medium">Email Address</label>
-                        <input
-                            id="email"
-                            type="email"
-                            v-model="form.email"
-                            required
-                            placeholder="nama@email.com"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
-                        />
-                        <div v-if="form.errors.email" class="text-red-400 text-[11px] mt-1">
-                            {{ form.errors.email }}
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label for="password" class="block text-slate-300 font-medium">Password</label>
-                        <input
-                            id="password"
-                            type="password"
-                            v-model="form.password"
-                            required
-                            placeholder="Minimal 8 karakter"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
-                        />
-                        <div v-if="form.errors.password" class="text-red-400 text-[11px] mt-1">
-                            {{ form.errors.password }}
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label for="password_confirmation" class="block text-slate-300 font-medium">Confirm Password</label>
-                        <input
-                            id="password_confirmation"
-                            type="password"
-                            v-model="form.password_confirmation"
-                            required
-                            placeholder="Ulangi password"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
-                        />
-                        <div v-if="form.errors.password_confirmation" class="text-red-400 text-[11px] mt-1">
-                            {{ form.errors.password_confirmation }}
-                        </div>
-                    </div>
-
-                    <div class="pt-2">
-                        <button
-                            type="submit"
-                            :disabled="form.processing"
-                            class="w-full py-2.5 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs transition"
+            <Card>
+                <CardContent class="p-6 space-y-5">
+                    <!-- Tab Switcher -->
+                    <div class="flex border-b border-border pb-3">
+                        <Link
+                            href="/login"
+                            class="flex-1 py-1.5 text-xs font-mono text-center font-medium text-muted-foreground hover:text-foreground transition"
                         >
-                            {{ form.processing ? 'Creating Account...' : 'Register' }}
-                        </button>
-                    </div>
-                </form>
-
-                <div class="pt-3 border-t border-slate-800 text-center">
-                    <p class="text-xs text-slate-400">
-                        Sudah memiliki akun?
-                        <Link href="/login" class="text-blue-400 hover:text-blue-300 font-semibold ml-1">
-                            Masuk di sini
+                            SIGN IN
                         </Link>
-                    </p>
-                </div>
-            </div>
+                        <span class="flex-1 py-1.5 text-xs font-mono text-center font-bold text-primary border-b-2 border-primary">
+                            REGISTER
+                        </span>
+                    </div>
+
+                    <form class="space-y-4 text-xs" @submit.prevent="submit">
+                        <div class="space-y-1.5">
+                            <Label for="name">Nama Lengkap</Label>
+                            <Input
+                                id="name"
+                                v-model="form.name"
+                                type="text"
+                                required
+                                autofocus
+                                placeholder="John Doe"
+                            />
+                            <p v-if="form.errors.name" class="text-xs text-destructive">
+                                {{ form.errors.name }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <Label for="email">Email Address</Label>
+                            <Input
+                                id="email"
+                                v-model="form.email"
+                                type="email"
+                                required
+                                placeholder="nama@email.com"
+                            />
+                            <p v-if="form.errors.email" class="text-xs text-destructive">
+                                {{ form.errors.email }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <Label for="password">Password</Label>
+                            <Input
+                                id="password"
+                                v-model="form.password"
+                                type="password"
+                                required
+                                placeholder="Minimal 8 karakter"
+                            />
+                            <p v-if="form.errors.password" class="text-xs text-destructive">
+                                {{ form.errors.password }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <Label for="password_confirmation">Confirm Password</Label>
+                            <Input
+                                id="password_confirmation"
+                                v-model="form.password_confirmation"
+                                type="password"
+                                required
+                                placeholder="Ulangi password"
+                            />
+                            <p v-if="form.errors.password_confirmation" class="text-xs text-destructive">
+                                {{ form.errors.password_confirmation }}
+                            </p>
+                        </div>
+
+                        <div class="pt-2">
+                            <Button
+                                type="submit"
+                                class="w-full font-bold text-xs"
+                                :disabled="form.processing"
+                            >
+                                {{ form.processing ? "Creating Account..." : "Register" }}
+                            </Button>
+                        </div>
+                    </form>
+
+                    <div class="pt-3 border-t border-border text-center">
+                        <p class="text-xs text-muted-foreground">
+                            Sudah memiliki akun?
+                            <Link href="/login" class="text-primary hover:underline font-semibold ml-1">
+                                Masuk di sini
+                            </Link>
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
 
             <!-- Minimalist Back Link -->
             <div class="text-center">
-                <Link href="/" class="text-xs text-slate-400 hover:text-slate-200 transition">
-                    ← Kembali ke Dashboard
+                <Link href="/" class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition">
+                    <ArrowLeft class="size-3.5" />
+                    <span>Kembali ke Dashboard</span>
                 </Link>
             </div>
         </div>

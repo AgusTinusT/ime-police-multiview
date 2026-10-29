@@ -1,5 +1,9 @@
 <script setup>
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from "@inertiajs/vue3";
+import { Check } from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
 
 defineProps({
     mustVerifyEmail: {
@@ -21,59 +25,57 @@ const form = useForm({
 <template>
     <section class="space-y-6">
         <header class="space-y-1">
-            <h2 class="text-base font-bold text-white font-mono uppercase tracking-wider">
+            <h2 class="text-base font-bold text-foreground font-mono uppercase tracking-wider">
                 Informasi Profil Akun
             </h2>
-            <p class="text-xs text-slate-400">
+            <p class="text-xs text-muted-foreground">
                 Perbarui nama tampilan akun dan alamat email terdaftar Anda.
             </p>
         </header>
 
         <form
-            @submit.prevent="form.patch(route('profile.update'))"
             class="space-y-4 text-xs"
+            @submit.prevent="form.patch(route('profile.update'))"
         >
-            <div class="space-y-1">
-                <label for="name" class="block text-slate-300 font-medium">Nama Tampilan Akun</label>
-                <input
+            <div class="space-y-1.5">
+                <Label for="name">Nama Tampilan Akun</Label>
+                <Input
                     id="name"
-                    type="text"
                     v-model="form.name"
+                    type="text"
                     required
                     autofocus
                     autocomplete="name"
                     placeholder="Nama Lengkap / Callsign"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                 />
-                <div v-if="form.errors.name" class="text-red-400 text-[11px] mt-1">
+                <p v-if="form.errors.name" class="text-xs text-destructive">
                     {{ form.errors.name }}
-                </div>
+                </p>
             </div>
 
-            <div class="space-y-1">
-                <label for="email" class="block text-slate-300 font-medium">Alamat Email</label>
-                <input
+            <div class="space-y-1.5">
+                <Label for="email">Alamat Email</Label>
+                <Input
                     id="email"
-                    type="email"
                     v-model="form.email"
+                    type="email"
                     required
                     autocomplete="username"
                     placeholder="nama@email.com"
-                    class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-blue-500 transition"
                 />
-                <div v-if="form.errors.email" class="text-red-400 text-[11px] mt-1">
+                <p v-if="form.errors.email" class="text-xs text-destructive">
                     {{ form.errors.email }}
-                </div>
+                </p>
             </div>
 
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
-                <p class="mt-2 text-xs text-amber-300">
+                <p class="mt-2 text-xs text-warning">
                     Alamat email Anda belum diverifikasi.
                     <Link
                         :href="route('verification.send')"
                         method="post"
                         as="button"
-                        class="text-xs text-blue-400 underline hover:text-blue-300 font-semibold ml-1"
+                        class="text-xs text-primary underline hover:text-primary/80 font-semibold ml-1"
                     >
                         Kirim ulang email verifikasi.
                     </Link>
@@ -81,20 +83,19 @@ const form = useForm({
 
                 <div
                     v-show="status === 'verification-link-sent'"
-                    class="mt-2 text-xs font-medium text-emerald-400"
+                    class="mt-2 text-xs font-medium text-success"
                 >
                     Link verifikasi baru telah dikirimkan ke email Anda.
                 </div>
             </div>
 
             <div class="flex items-center gap-4 pt-2">
-                <button
+                <Button
                     type="submit"
                     :disabled="form.processing"
-                    class="px-5 py-2 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs transition"
                 >
-                    {{ form.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}
-                </button>
+                    {{ form.processing ? "Menyimpan..." : "Simpan Perubahan" }}
+                </Button>
 
                 <Transition
                     enter-active-class="transition ease-in-out"
@@ -104,9 +105,10 @@ const form = useForm({
                 >
                     <p
                         v-if="form.recentlySuccessful"
-                        class="text-xs font-semibold text-emerald-400 flex items-center gap-1"
+                        class="text-xs font-semibold text-success flex items-center gap-1"
                     >
-                        ✓ Profil berhasil diperbarui.
+                        <Check class="size-3.5" />
+                        <span>Profil berhasil diperbarui.</span>
                     </p>
                 </Transition>
             </div>

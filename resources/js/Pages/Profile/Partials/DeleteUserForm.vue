@@ -1,25 +1,41 @@
 <script setup>
-import Modal from '@/Components/Modal.vue';
-import { useForm } from '@inertiajs/vue3';
-import { nextTick, ref } from 'vue';
+import { useForm } from "@inertiajs/vue3";
+import { nextTick, ref } from "vue";
+import { AlertTriangle } from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
 
 const confirmingUserDeletion = ref(false);
 const passwordInput = ref(null);
 
 const form = useForm({
-    password: '',
+    password: "",
 });
+
+const focusPasswordInput = () => {
+    const el = passwordInput.value?.$el || passwordInput.value;
+    el?.focus?.();
+};
 
 const confirmUserDeletion = () => {
     confirmingUserDeletion.value = true;
-    nextTick(() => passwordInput.value?.focus());
+    nextTick(() => focusPasswordInput());
 };
 
 const deleteUser = () => {
-    form.delete(route('profile.destroy'), {
+    form.delete(route("profile.destroy"), {
         preserveScroll: true,
         onSuccess: () => closeModal(),
-        onError: () => passwordInput.value?.focus(),
+        onError: () => focusPasswordInput(),
         onFinish: () => form.reset(),
     });
 };
@@ -34,73 +50,68 @@ const closeModal = () => {
 <template>
     <section class="space-y-4">
         <header class="space-y-1">
-            <h2 class="text-base font-bold text-red-400 font-mono uppercase tracking-wider flex items-center gap-1.5">
-                <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+            <h2 class="text-base font-bold text-destructive font-mono uppercase tracking-wider flex items-center gap-1.5">
+                <AlertTriangle class="size-4 text-destructive shrink-0" />
                 <span>Hapus Akun Permanen</span>
             </h2>
-            <p class="text-xs text-slate-400">
+            <p class="text-xs text-muted-foreground">
                 Setelah akun Anda dihapus, seluruh data dan preferensi tersimpan akan dihapus secara permanen.
             </p>
         </header>
 
         <div class="pt-1">
-            <button
+            <Button
+                variant="destructive"
                 @click="confirmUserDeletion"
-                class="px-4 py-2 rounded-md bg-red-950 hover:bg-red-900 text-red-300 hover:text-white border border-red-800/60 font-bold text-xs transition"
             >
                 Hapus Akun Pengguna
-            </button>
+            </Button>
         </div>
 
-        <!-- Danger Confirmation Modal -->
-        <Modal :show="confirmingUserDeletion" @close="closeModal">
-            <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 space-y-4">
-                <div class="space-y-1">
-                    <h3 class="text-base font-bold text-red-400 flex items-center gap-2">
-                        <svg class="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
+        <!-- Danger Confirmation AlertDialog -->
+        <AlertDialog
+            :open="confirmingUserDeletion"
+            @update:open="(!$event) && closeModal()"
+        >
+            <AlertDialogContent class="sm:max-w-md">
+                <AlertDialogHeader>
+                    <AlertDialogTitle class="text-destructive flex items-center gap-2">
+                        <AlertTriangle class="size-4 shrink-0" />
                         <span>Konfirmasi Penghapusan Akun</span>
-                    </h3>
-                    <p class="text-xs text-slate-300">
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
                         Apakah Anda yakin ingin menghapus akun Anda secara permanen? Masukkan password akun Anda untuk mengonfirmasi tindakan ini.
-                    </p>
-                </div>
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
 
-                <div class="space-y-1">
-                    <input
-                        id="password"
+                <div class="space-y-1.5">
+                    <Label for="delete-account-password" class="sr-only">Password</Label>
+                    <Input
+                        id="delete-account-password"
                         ref="passwordInput"
                         v-model="form.password"
                         type="password"
                         placeholder="Masukkan Password Anda"
                         @keyup.enter="deleteUser"
-                        class="w-full bg-slate-950 border border-slate-800 rounded-md px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-hidden focus:border-red-500 transition text-xs"
                     />
-                    <div v-if="form.errors.password" class="text-red-400 text-[11px] mt-1">
+                    <p v-if="form.errors.password" class="text-xs text-destructive">
                         {{ form.errors.password }}
-                    </div>
+                    </p>
                 </div>
 
-                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
-                    <button
-                        @click="closeModal"
-                        class="px-4 py-2 rounded-md bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs font-semibold transition"
-                    >
+                <AlertDialogFooter class="gap-2">
+                    <Button variant="outline" @click="closeModal">
                         Batal
-                    </button>
-
-                    <button
+                    </Button>
+                    <Button
+                        variant="destructive"
                         :disabled="form.processing"
                         @click="deleteUser"
-                        class="px-4 py-2 rounded-md bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-xs font-bold transition"
                     >
-                        {{ form.processing ? 'Menghapus...' : 'Ya, Hapus Akun' }}
-                    </button>
-                </div>
-            </div>
-        </Modal>
+                        {{ form.processing ? "Menghapus..." : "Ya, Hapus Akun" }}
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </section>
 </template>
