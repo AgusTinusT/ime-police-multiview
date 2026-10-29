@@ -27,16 +27,16 @@ const normalizedDept = computed(() => (props.dept || props.department || "").tri
 const deptClasses = computed(() => {
     switch (normalizedDept.value) {
         case "LSPD":
-            return "border-dept-lspd/40 text-dept-lspd bg-dept-lspd/10";
+            return "border-dept-lspd/50 text-dept-lspd";
         case "BCSO":
         case "LSCSD":
-            return "border-dept-bcso/40 text-dept-bcso bg-dept-bcso/10";
+            return "border-dept-bcso/50 text-dept-bcso";
         case "SASP":
-            return "border-dept-sasp/40 text-dept-sasp bg-dept-sasp/10";
+            return "border-dept-sasp/50 text-dept-sasp";
         case "SAPR":
-            return "border-dept-sapr/40 text-dept-sapr bg-dept-sapr/10";
+            return "border-dept-sapr/50 text-dept-sapr";
         default:
-            return "border-border text-muted-foreground bg-muted/40";
+            return "border-border text-muted-foreground";
     }
 });
 </script>
@@ -44,8 +44,15 @@ const deptClasses = computed(() => {
 <template>
     <Badge
         variant="outline"
-        :class="cn('font-mono text-xs font-semibold uppercase tracking-wider', deptClasses, props.class)"
+        :class="
+            cn(
+                'inline-flex items-center gap-1.5 py-1 px-2.5 font-mono text-xs font-semibold uppercase tracking-wider bg-card/90 backdrop-blur-md shadow-xs',
+                deptClasses,
+                props.class,
+            )
+        "
     >
+        <span class="size-1.5 rounded-full shrink-0 bg-current opacity-90" aria-hidden="true" />
         <slot>{{ label || normalizedDept || "UNKNOWN" }}</slot>
     </Badge>
 </template>

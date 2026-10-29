@@ -56,10 +56,10 @@
   --info-foreground: #083344;
   --live: #ef4444;
   --live-foreground: #ffffff;
-  --dept-lspd: #2563eb;
-  --dept-bcso: #d97706;
-  --dept-sasp: #475569;
-  --dept-sapr: #059669;
+  --dept-lspd: #3b82f6;
+  --dept-bcso: #f59e0b;
+  --dept-sasp: #cbd5e1;
+  --dept-sapr: #10b981;
   --hud-line: rgba(59, 130, 246, 0.4);
 }
 
