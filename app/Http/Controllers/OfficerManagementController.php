@@ -19,7 +19,7 @@ class OfficerManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Officer::with(['agency', 'rankRelation', 'division', 'certifications', 'user:id,name,email,role,status', 'bioProfile']);
+        $query = Officer::with(['agency', 'rankRelation', 'division', 'certifications', 'user:id,name,email,role,status', 'bioProfile', 'activeStream:id,officer_id,video_id,status']);
 
         if ($request->filled('dept') && $request->dept !== 'ALL') {
             $query->where('department', $request->dept);

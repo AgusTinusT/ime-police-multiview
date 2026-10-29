@@ -52,15 +52,8 @@ const emit = defineEmits([
     "toggle-ban",
 ]);
 
-const isLive = computed(() => {
-    if (!props.officer) return false;
-    return Boolean(
-        props.officer.is_live ||
-        props.officer.is_online ||
-        (props.officer.duty_status && props.officer.duty_status.includes("10-8")) ||
-        props.officer.active_stream
-    );
-});
+// Live comes from the eager-loaded ActiveStream; duty_status is only a label.
+const isLive = computed(() => Boolean(props.officer?.active_stream));
 
 const formatDutyHours = (minutes) => {
     const min = parseInt(minutes || 0, 10);
@@ -392,3 +385,4 @@ const calcDailyAvg = (minutes) => {
         </SheetContent>
     </Sheet>
 </template>
+

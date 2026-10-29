@@ -17,7 +17,6 @@ import {
     StatTile,
     DeptBadge,
     OfficerAvatar,
-    EmptyState,
     LiveBadge,
 } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
@@ -70,15 +69,8 @@ import {
     DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
 import {
-    Shield,
-    Building2,
     Award,
-    Megaphone,
-    Users,
-    FileCheck,
     Lock,
-    GitPullRequest,
-    Images,
     Search,
     X,
     Plus,
@@ -86,7 +78,6 @@ import {
     Clock,
     Pencil,
     Trash2,
-    ExternalLink,
     MoreHorizontal,
     UserCheck,
     UserX,
@@ -390,15 +381,9 @@ const formatDutyCompact = (minutes) => {
     return `${h}j ${remM}m`;
 };
 
-const isOfficerLive = (officer) => {
-    if (!officer) return false;
-    return Boolean(
-        officer.is_live ||
-        officer.is_online ||
-        (officer.duty_status && officer.duty_status.includes("10-8")) ||
-        officer.active_stream
-    );
-};
+// Live = has an ActiveStream with status LIVE (eager-loaded by the API).
+// `duty_status` is an admin-entered label (defaults to "10-8"), not a live signal.
+const isOfficerLive = (officer) => Boolean(officer?.active_stream);
 
 const selectedDetailOfficer = ref(null);
 const showDetailSheet = ref(false);
