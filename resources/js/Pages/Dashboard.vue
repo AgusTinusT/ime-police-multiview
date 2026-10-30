@@ -196,8 +196,8 @@ const defaultHeroSlides = computed(() => [
         title: "TACTICAL CLIPS STUDIO V2",
         subtitle:
             "Potong momen aksi pengejaran dan situasi tembak-menembak berkecepatan tinggi langsung dari siaran perwira. Tandai multi-cut dan ekspor video 1080p tanpa watermark ke media sosial.",
-        image_desktop_url: "/images/car-police-crash.jpg",
-        image_mobile_url: "/images/car-police-crash-square.jpg",
+        image_desktop_url: "/images/car-police-crash.webp",
+        image_mobile_url: "/images/car-police-crash-square.webp",
         image_alt: "Tactical Clips Studio V2",
         badge_label: "FITUR BARU • AKSES BETA GRATIS",
         accent: "info",
@@ -216,7 +216,7 @@ const defaultHeroSlides = computed(() => [
         title: "OFFICER TACTICAL BIO-LINK HUB",
         subtitle:
             "Verifikasi kepemilikan channel YouTube dinas secara otomatis tanpa antre approval admin. Klaim profil resmi berformat /@callsign, tampilkan jadwal patroli, dan terima tactical donation.",
-        image_desktop_url: "/images/car-police-officer.jpg",
+        image_desktop_url: "/images/car-police-officer.webp",
         image_alt: "Officer Tactical Bio-Link Hub",
         badge_label: "SASP VERIFIED ID • BIO-LINK",
         accent: "warning",
