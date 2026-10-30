@@ -2,7 +2,16 @@
 
 Setiap file di folder ini adalah **brief mandiri** untuk satu task: cukup baca `GEMINI.md` + satu brief. Status resmi dan review tetap di `OFFICER_TACTICAL_BIO_LINKS_TASKS.md`.
 
-## ⚠️ Perbaikan Review #2 (kerjakan dulu, urut)
+## ▶️ Kerjakan Sekarang (setelah Review #5)
+
+| # | Brief | Prioritas | Ringkasan |
+| :---: | :--- | :---: | :--- |
+| 1 | [B-15](B-15.md) | 🟡 P2 | Jumlah penonton bio-link: pakai kolom `viewers_count`, hapus `duty_minutes`; sekalian hapus penulisan `bio_views_pending` yang tak terpakai di `recordPageView()` |
+| 2 | [P-01](P-01.md) | 🟡 P2 | P-01a prefetch hanya untuk user login & bukan halaman publik; P-01b rapikan varian Google Fonts |
+
+Setelah keduanya ✅, lanjut ke task board UI: [`docs/ui/TASKS.md`](../../ui/TASKS.md) (mulai DS-01).
+
+## ✅ Arsip — Perbaikan Review #2 (sudah selesai)
 
 | # | Task | Inti revisi (detail di kolom Review Notes task board) |
 | :---: | :--- | :--- |
