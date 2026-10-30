@@ -921,9 +921,11 @@ onUnmounted(() => {
             <!-- Body -->
             <div class="flex-1 min-h-0 flex">
                 <!-- Stage -->
+                <!-- overflow-hidden: tiles animate to their new rects when the
+                     sidebar opens, and must not paint over it meanwhile. -->
                 <section
                     ref="stageWrap"
-                    class="relative flex flex-1 min-w-0 flex-col bg-background"
+                    class="relative flex flex-1 min-w-0 flex-col overflow-hidden bg-background"
                     :class="
                         isCompactLandscape || isFullscreen
                             ? 'p-0.5'
@@ -1217,7 +1219,7 @@ onUnmounted(() => {
                 <!-- Desktop sidebar -->
                 <aside
                     v-if="isDesktop && showChrome && sidebarOpen"
-                    class="w-80 xl:w-96 shrink-0 flex flex-col border-l border-border bg-card"
+                    class="relative z-10 w-80 xl:w-96 shrink-0 flex flex-col border-l border-border bg-card"
                 >
                     <div class="flex gap-1 px-3 pt-3">
                         <Button
