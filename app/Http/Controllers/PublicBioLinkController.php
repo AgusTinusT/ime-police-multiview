@@ -175,6 +175,7 @@ class PublicBioLinkController extends Controller
                         'title' => $link->title,
                         'subtitle' => $link->subtitle,
                         'link_type' => $link->link_type,
+                        'platform' => $link->platform,
                         'icon' => $link->icon,
                         'badge_label' => $link->badge_label,
                         'is_highlighted' => $link->is_highlighted,
@@ -209,7 +210,10 @@ class PublicBioLinkController extends Controller
             ];
         });
 
-        return Inertia::render('Public/BioLink', $pageProps);
+        // Theme contract stays outside the page cache so config changes apply immediately.
+        return Inertia::render('Public/BioLink', $pageProps + [
+            'themes' => config('biolinks.theme_presets', []),
+        ]);
     }
 
     /**
