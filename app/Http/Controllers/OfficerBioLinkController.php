@@ -38,21 +38,17 @@ class OfficerBioLinkController extends Controller
 
     /**
      * Props for the bio-link editor, shared by SettingsController.
+     * Only the user's own officer: no admin preview of other officers here —
+     * that leaks someone else's bio into the editor UI. The old admin preview
+     * still works through resolveOfficer() with ?officer_id= in write actions.
      */
     public static function pageProps(Request $request): array
     {
         $user = Auth::user();
-
-        // Find officer: either directly bound, or if admin allow selecting/previewing an officer
-        $officer = $user->officer;
-
-        if (!$officer && $user->isAdmin()) {
-            $officerId = $request->query('officer_id');
-            $officer = $officerId ? Officer::find($officerId) : (Officer::whereNotNull('user_id')->first() ?: Officer::first());
-        }
+        $officer = $user?->officer;
 
         if (!$officer) {
-            abort(404, 'Data perwira tidak ditemukan. Hubungi Admin SASP untuk menghubungkan akun Anda.');
+            return [];
         }
 
         $profile = BioProfileService::ensureBioProfile($officer);

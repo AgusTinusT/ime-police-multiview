@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { Head, usePage } from "@inertiajs/vue3";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import { PageContainer, PageHeader } from "@/Components/tactical";
+import { Card, CardContent } from "@/Components/ui/card";
 import AccountSettings from "@/Components/Settings/AccountSettings.vue";
 import OfficerSettings from "@/Components/Settings/OfficerSettings.vue";
 import BioLinkSettings from "@/Components/Settings/BioLinkSettings.vue";
@@ -229,17 +230,25 @@ onUnmounted(() => {
                     />
 
                     <!-- Tab 3: Full bio-link editor (officer only) -->
-                    <BioLinkSettings
-                        v-else-if="activeTab === 'biolink' && isOfficer && bioOfficer && bioProfile"
-                        :officer="bioOfficer"
-                        :profile="bioProfile"
-                        :other-officers="bioOtherOfficers"
-                        :themes="bioThemes"
-                        :button-styles="bioButtonStyles"
-                        :allowed-domains="bioAllowedDomains"
-                        :platforms="bioPlatforms"
-                        :stats="bioStats"
-                    />
+                    <template v-else-if="activeTab === 'biolink' && isOfficer">
+                        <BioLinkSettings
+                            v-if="bioOfficer && bioProfile"
+                            :officer="bioOfficer"
+                            :profile="bioProfile"
+                            :other-officers="bioOtherOfficers"
+                            :themes="bioThemes"
+                            :button-styles="bioButtonStyles"
+                            :allowed-domains="bioAllowedDomains"
+                            :platforms="bioPlatforms"
+                            :stats="bioStats"
+                        />
+                        <!-- Admin or user who isn't bound to an officer -->
+                        <Card v-else>
+                            <CardContent class="p-10 text-center text-sm text-muted-foreground">
+                                Akun Anda belum terhubung dengan profil perwira. Bio-link publik baru tersedia setelah akun diikat ke perwira oleh Admin SASP.
+                            </CardContent>
+                        </Card>
+                    </template>
                 </div>
             </div>
         </PageContainer>
