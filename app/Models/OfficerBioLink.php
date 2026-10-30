@@ -19,6 +19,7 @@ class OfficerBioLink extends Model
         'url_host',
         'icon',
         'link_type',
+        'platform',
         'recommended_officer_id',
         'badge_label',
         'is_highlighted',

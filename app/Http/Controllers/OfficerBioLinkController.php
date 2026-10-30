@@ -9,6 +9,7 @@ use App\Models\OfficerBioLink;
 use App\Models\OfficerBioProfile;
 use App\Services\AuditLogger;
 use App\Services\BioProfileService;
+use App\Support\BioLinkPlatforms;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -69,6 +70,7 @@ class OfficerBioLinkController extends Controller
             'themes' => $themes,
             'buttonStyles' => $buttonStyles,
             'allowedDomains' => $allowedDomains,
+            'platforms' => BioLinkPlatforms::all(),
             'stats' => $stats,
         ]);
     }
@@ -99,7 +101,7 @@ class OfficerBioLinkController extends Controller
             ], 422);
         }
 
-        if ($request->link_type === 'donation') {
+        if ($this->requestedLinkType($request) === 'donation') {
             if ($err = $this->checkDonationPasswordConfirmation($request)) {
                 return $err;
             }
@@ -112,7 +114,8 @@ class OfficerBioLinkController extends Controller
         $validated['sort_order'] = $maxOrder + 1;
         $validated['moderation_status'] = 'approved';
 
-        $link = OfficerBioLink::create($validated);
+        // refresh() picks up DB defaults (is_active) so the dashboard shows the new link as visible
+        $link = OfficerBioLink::create($validated)->refresh();
 
         BioProfileService::invalidatePublicCache($profile->slug);
 
@@ -147,7 +150,7 @@ class OfficerBioLinkController extends Controller
             ], 423);
         }
 
-        if ($request->link_type === 'donation' || $link->link_type === 'donation') {
+        if ($this->requestedLinkType($request) === 'donation' || $link->link_type === 'donation') {
             if ($err = $this->checkDonationPasswordConfirmation($request)) {
                 return $err;
             }
@@ -374,20 +377,52 @@ class OfficerBioLinkController extends Controller
     }
 
     /**
+     * The link_type a store/update request will save, from its platform or link_type.
+     */
+    protected function requestedLinkType(Request $request): ?string
+    {
+        if ($request->filled('platform')) {
+            return BioLinkPlatforms::get($request->input('platform'))['type'] ?? null;
+        }
+
+        return $request->input('link_type');
+    }
+
+    /**
      * Validate link payload and allowlist rules.
      */
     protected function validateLinkData(Request $request, Officer $officer, ?int $ignoreLinkId = null): array
     {
-        $request->validate([
-            'title' => 'required|string|max:120',
-            'subtitle' => 'nullable|string|max:180',
-            'link_type' => ['required', Rule::in(['donation', 'discord', 'officer_recommendation', 'social', 'custom'])],
-            'badge_label' => 'nullable|string|max:30',
-            'is_highlighted' => 'boolean',
-            'icon' => 'nullable|string|max:60',
-        ]);
+        $platformKey = $request->filled('platform') ? $request->input('platform') : null;
+        $platform = null;
 
-        $linkType = $request->link_type;
+        if ($platformKey !== null) {
+            // Simple form (S-01): platform + URL; name and type come from the platform.
+            $request->validate([
+                'platform' => ['required', 'string', Rule::in(array_keys(BioLinkPlatforms::all()))],
+                'title' => [Rule::requiredIf($platformKey === 'custom'), 'nullable', 'string', 'max:120'],
+            ], [
+                'platform.in' => 'Platform tidak dikenal.',
+                'title.required' => 'Nama tautan wajib diisi untuk platform Lainnya.',
+            ]);
+
+            $platform = BioLinkPlatforms::get($platformKey);
+            $linkType = $platform['type'];
+            $title = $platformKey === 'custom' ? trim($request->title) : $platform['name'];
+        } else {
+            $request->validate([
+                'title' => 'required|string|max:120',
+                'subtitle' => 'nullable|string|max:180',
+                'link_type' => ['required', Rule::in(['donation', 'discord', 'officer_recommendation', 'social', 'custom'])],
+                'badge_label' => 'nullable|string|max:30',
+                'is_highlighted' => 'boolean',
+                'icon' => 'nullable|string|max:60',
+            ]);
+
+            $linkType = $request->link_type;
+            $title = $request->title;
+        }
+
         $url = trim($request->input('url', ''));
         $urlHost = null;
         $recommendedOfficerId = null;
@@ -438,18 +473,17 @@ class OfficerBioLinkController extends Controller
             // Remove 'www.' prefix for uniform matching
             $cleanHost = preg_replace('/^www\./', '', $urlHost);
 
-            // Allowlist check per link_type
+            // Allowlist check: per platform, or per link_type for links without one
             $allowlists = config('biolinks.allowed_domains', []);
-            if (isset($allowlists[$linkType])) {
-                $allowed = false;
-                foreach ($allowlists[$linkType] as $allowedDomain) {
-                    if ($cleanHost === $allowedDomain || str_ends_with($cleanHost, '.' . $allowedDomain)) {
-                        $allowed = true;
-                        break;
-                    }
+            if ($platform) {
+                if ($platform['domains'] && !BioLinkPlatforms::hostMatches($cleanHost, $platform['domains'])) {
+                    $domainList = implode(', ', $platform['domains']);
+                    throw ValidationException::withMessages([
+                        'url' => "Link {$platform['name']} harus berasal dari {$domainList}.",
+                    ]);
                 }
-
-                if (!$allowed) {
+            } elseif (isset($allowlists[$linkType])) {
+                if (!BioLinkPlatforms::hostMatches($cleanHost, $allowlists[$linkType])) {
                     $domainList = implode(', ', $allowlists[$linkType]);
                     throw ValidationException::withMessages([
                         'url' => "Domain '{$cleanHost}' tidak diizinkan untuk tipe {$linkType}. Domain yang diterima: {$domainList}",
@@ -473,12 +507,15 @@ class OfficerBioLinkController extends Controller
         }
 
         return [
-            'title' => $request->title,
+            'title' => $title,
             'subtitle' => $request->subtitle,
             'url' => $url,
             'url_host' => $cleanHost ?? null,
             'icon' => $request->icon ?: 'external-link',
             'link_type' => $linkType,
+            'platform' => $linkType === 'officer_recommendation'
+                ? null
+                : ($platformKey ?? BioLinkPlatforms::detect($cleanHost ?? null)),
             'recommended_officer_id' => $recommendedOfficerId,
             'badge_label' => $request->badge_label,
             'is_highlighted' => $request->boolean('is_highlighted', false),

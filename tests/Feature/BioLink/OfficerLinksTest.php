@@ -177,4 +177,59 @@ class OfficerLinksTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_platform_link_takes_name_and_type_from_platform(): void
+    {
+        $user = $this->createVerifiedUser();
+        $officer = Officer::create([
+            'user_id' => $user->id,
+            'channel_id' => 'UC_PLATFORM_01',
+            'handle' => '@platformtest',
+            'streamer_name' => 'platformtest',
+            'officer_name' => 'Ofc. Platform',
+            'callsign' => '1-ADAM-21',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'is_active' => true,
+        ]);
+        BioProfileService::ensureBioProfile($officer);
+
+        $this->actingAs($user)
+            ->postJson('/api/v1/officer/bio-links', ['platform' => 'instagram', 'url' => 'https://www.instagram.com/platformtest'])
+            ->assertStatus(201)
+            ->assertJsonPath('link.title', 'Instagram')
+            ->assertJsonPath('link.link_type', 'social')
+            ->assertJsonPath('link.platform', 'instagram');
+
+        // URL must belong to the chosen platform
+        $this->actingAs($user)
+            ->postJson('/api/v1/officer/bio-links', ['platform' => 'instagram', 'url' => 'https://tiktok.com/@platformtest'])
+            ->assertStatus(422)->assertJsonValidationErrors('url');
+
+        $this->actingAs($user)
+            ->postJson('/api/v1/officer/bio-links', ['platform' => 'myspace', 'url' => 'https://myspace.com/x'])
+            ->assertStatus(422)->assertJsonValidationErrors('platform');
+
+        // "Lainnya" needs a name
+        $this->actingAs($user)
+            ->postJson('/api/v1/officer/bio-links', ['platform' => 'custom', 'url' => 'https://example.com'])
+            ->assertStatus(422)->assertJsonValidationErrors('title');
+
+        // Donation platforms still require a password confirmation
+        $this->actingAs($user)
+            ->postJson('/api/v1/officer/bio-links', ['platform' => 'saweria', 'url' => 'https://saweria.co/platformtest'])
+            ->assertStatus(423);
+
+        $this->actingAs($user)
+            ->withSession(['auth.password_confirmed_at' => time()])
+            ->postJson('/api/v1/officer/bio-links', ['platform' => 'saweria', 'url' => 'https://saweria.co/platformtest'])
+            ->assertStatus(201)
+            ->assertJsonPath('link.link_type', 'donation');
+
+        // Links saved the old way get their platform from the URL host
+        $this->actingAs($user)
+            ->postJson('/api/v1/officer/bio-links', ['title' => 'YT', 'link_type' => 'social', 'url' => 'https://youtu.be/abc'])
+            ->assertStatus(201)
+            ->assertJsonPath('link.platform', 'youtube');
+    }
 }
