@@ -6,7 +6,7 @@ import { PLATFORM_ICONS } from "./platformIcons";
 const props = defineProps({
     platform: {
         type: String,
-        required: true,
+        default: null,
     },
 });
 

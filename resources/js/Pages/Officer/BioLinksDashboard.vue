@@ -509,7 +509,7 @@ const relativeTime = (iso) => {
                         <div class="min-w-0">
                             <div class="flex flex-wrap items-center gap-2">
                                 <h2 class="truncate text-lg font-bold text-foreground">{{ officer.officer_name }}</h2>
-                                <Badge variant="info" class="gap-1"><VerifiedBadge class="size-3" /> Terverifikasi</Badge>
+                                <Badge variant="info" class="gap-1"><VerifiedBadge decorative class="size-3" /> Terverifikasi</Badge>
                             </div>
                             <p class="mt-0.5 text-sm text-muted-foreground">
                                 {{ [officer.department, officer.rank].filter(Boolean).join(" · ") }}
@@ -918,7 +918,7 @@ const relativeTime = (iso) => {
                     <div class="space-y-3" role="radiogroup" aria-label="Platform">
                         <div v-for="group in platformGroups" :key="group.label" class="space-y-1.5">
                             <p class="text-xs font-medium text-muted-foreground">{{ group.label }}</p>
-                            <div class="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                            <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                                 <button
                                     v-for="[key, p] in group.items"
                                     :key="key"
