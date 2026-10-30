@@ -215,9 +215,9 @@ return [
         // wordmark, red slash, police-blue siren glow and speed lines.
         'srt_pursuit' => [
             'name' => 'High Pursuit',
-            'description' => 'Garis dinamis berkecepatan tinggi, aksen oranye balap & pendar biru sirene',
-            'accent' => '#f97316',
-            'accent_2' => '#38bdf8',
+            'description' => 'Wordmark putih, pendar sirene merah-biru & percikan bara api',
+            'accent' => '#3b82f6',
+            'accent_2' => '#f59e0b',
             'surface' => null,
             'backdrop' => 'srt_pursuit',
             'button_style' => 'pursuit_stripe',
