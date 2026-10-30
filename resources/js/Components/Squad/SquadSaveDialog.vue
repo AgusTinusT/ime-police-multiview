@@ -61,7 +61,13 @@ const syncForm = () => {
         name.value = props.squad.name || "";
         description.value = props.squad.description || "";
         visibility.value = props.squad.visibility || "private";
-        officers.value = [...(props.squad.officers || [])];
+        // Start with the squad's current members, then merge in whatever POVs
+        // the user had selected in Multiview — opening Edit after picking POVs
+        // should carry those over so they can be added in one go.
+        const base = [...(props.squad.officers || [])];
+        const haveIds = new Set(base.map((o) => Number(o.id)));
+        const extras = (props.initialOfficers || []).filter((o) => !haveIds.has(Number(o.id)));
+        officers.value = [...base, ...extras];
     } else {
         name.value = "";
         description.value = "";
