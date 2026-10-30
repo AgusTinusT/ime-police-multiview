@@ -58,3 +58,4 @@ const formattedTrend = computed(() => {
         </CardContent>
     </Card>
 </template>
+

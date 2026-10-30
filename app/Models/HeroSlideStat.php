@@ -27,3 +27,4 @@ class HeroSlideStat extends Model
         return $this->belongsTo(HeroSlide::class, 'hero_slide_id');
     }
 }
+

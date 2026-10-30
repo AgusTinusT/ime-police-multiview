@@ -339,3 +339,4 @@ class HeroSlideController extends Controller
         }
     }
 }
+
