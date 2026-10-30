@@ -8,6 +8,7 @@ import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { Card } from "@/Components/ui/card";
 import PlatformIcon from "@/Components/BioLink/PlatformIcon.vue";
+import VerifiedBadge from "@/Components/BioLink/VerifiedBadge.vue";
 import { PLATFORM_KEYS } from "@/Components/BioLink/platformIcons";
 import { contrast, ensureContrast, isNearLiveRed, parseHex } from "@/lib/color";
 
@@ -57,7 +58,7 @@ const rows = computed(() =>
                 description="Setiap preset di config/biolinks.php dirender pada profil nyata. Cek warna, kontras, dan semua jenis tautan sebelum tema dipakai officer."
             />
 
-            <!-- S-04 Platform Icons (13 keys) -->
+            <!-- S-04 Platform Icons (13 keys) & S-05 Verified Badge -->
             <div class="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-4">
                 <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Ikon Platform:
@@ -69,6 +70,19 @@ const rows = computed(() =>
                 >
                     <PlatformIcon :platform="key" class="size-4 text-primary" />
                     <span class="capitalize">{{ key }}</span>
+                </div>
+                <div class="flex items-center gap-2 border-l border-border pl-3">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Verified:
+                    </span>
+                    <div class="flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs text-foreground">
+                        <VerifiedBadge class="size-4" />
+                        <span>Solid</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs text-foreground">
+                        <VerifiedBadge variant="outline" class="size-4" />
+                        <span>Outline</span>
+                    </div>
                 </div>
             </div>
 

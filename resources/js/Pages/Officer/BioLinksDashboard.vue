@@ -1,7 +1,10 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { Head, usePage } from "@inertiajs/vue3";
 import axios from "axios";
+import BioLinkView from "@/Components/BioLink/BioLinkView.vue";
+import PlatformIcon from "@/Components/BioLink/PlatformIcon.vue";
+import VerifiedBadge from "@/Components/BioLink/VerifiedBadge.vue";
 import {
     Dialog,
     DialogContent,
@@ -35,16 +38,12 @@ import {
     EmptyState,
 } from "@/Components/tactical";
 import {
-    Coins,
     Eye,
     History,
     Link2,
-    MessageCircle,
     MousePointerClick,
     Palette,
-    Share2,
     Smartphone,
-    Star,
     Users,
     ArrowUp,
     ArrowDown,
@@ -55,7 +54,6 @@ import {
     Plus,
     RefreshCw,
     ShieldAlert,
-    ShieldCheck,
     Trash2,
     AlertTriangle,
 } from "@lucide/vue";
@@ -82,6 +80,11 @@ const props = defineProps({
         default: () => [],
     },
     allowedDomains: {
+        type: Object,
+        default: () => ({}),
+    },
+    // config('biolinks.platforms'): { key: { name, type, domains } }
+    platforms: {
         type: Object,
         default: () => ({}),
     },
@@ -126,53 +129,113 @@ const flash = (msg, isError = false) => {
     }, 4000);
 };
 
-// Links List Local Reactive State
+// Links List Local Reactive State. URL links and patrol partners share one
+// sort order on the server, but the public page shows partners in their own card.
 const localLinks = ref([...(props.profile.links || [])]);
+const isPartner = (l) => l.link_type === "officer_recommendation";
+const urlLinks = computed(() => localLinks.value.filter((l) => !isPartner(l)));
+const partnerLinks = computed(() => localLinks.value.filter(isPartner));
+const MAX_PARTNERS = 4;
 
-// Link Modal Form State
-const isModalOpen = ref(false);
+// Platform picker: donation platforms first, then social, "Lainnya" last.
+const platformGroups = computed(() => {
+    const entries = Object.entries(props.platforms);
+    return [
+        { label: "Donasi", items: entries.filter(([, p]) => p.type === "donation") },
+        { label: "Media sosial & lainnya", items: entries.filter(([, p]) => p.type !== "donation") },
+    ];
+});
+
+// The platform a pasted URL belongs to, so officers can just paste their link:
+// a known domain picks its platform, any other full domain means "Lainnya",
+// and an unfinished one (no dot yet) decides nothing.
+const detectPlatform = (url) => {
+    let host;
+    const raw = url.trim();
+    try {
+        host = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`).hostname.toLowerCase().replace(/^www\./, "");
+    } catch {
+        return null;
+    }
+    if (!/\.[a-z]{2,}$/.test(host)) return null;
+    const match = Object.entries(props.platforms).find(([, p]) =>
+        p.domains.some((d) => host === d || host.endsWith(`.${d}`)),
+    );
+    return match ? match[0] : "custom";
+};
+
+// Link / partner dialog state
+const linkDialog = ref(null); // null | 'link' | 'partner'
 const editingLinkId = ref(null);
 const linkToDelete = ref(null);
-const linkForm = ref({
-    title: "",
-    subtitle: "",
-    link_type: "custom",
-    url: "",
-    recommended_officer_id: "",
-    badge_label: "",
-    is_highlighted: false,
-    icon: "external-link",
-});
+const emptyLinkForm = () => ({ platform: "", url: "", title: "" });
+const linkForm = ref(emptyLinkForm());
+const partnerOfficerId = ref("");
 const isSavingLink = ref(false);
 
-const openAddModal = () => {
+const selectedPlatform = computed(() => props.platforms[linkForm.value.platform] || null);
+const urlPlaceholder = computed(() => {
+    const domain = selectedPlatform.value?.domains?.[0];
+    return domain ? `https://${domain}/namaanda` : "https://";
+});
+const urlHint = computed(() => {
+    const p = selectedPlatform.value;
+    if (!p) return "Pilih platform, atau langsung tempel link — platform dikenali otomatis.";
+    if (!p.domains.length) return "Link apa saja yang diawali https://";
+    return `Harus berasal dari ${p.domains.join(" atau ")}.`;
+});
+const canSaveLink = computed(() =>
+    linkDialog.value === "partner"
+        ? !!partnerOfficerId.value
+        : !!linkForm.value.platform && !!linkForm.value.url.trim()
+            && (linkForm.value.platform !== "custom" || !!linkForm.value.title.trim()),
+);
+
+watch(() => linkForm.value.url, (url) => {
+    const key = detectPlatform(url);
+    if (key && key !== linkForm.value.platform) linkForm.value.platform = key;
+});
+// "saweria.co/nama" → "https://saweria.co/nama"
+const normalizeUrl = () => {
+    const url = linkForm.value.url.trim();
+    if (url && !/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) linkForm.value.url = `https://${url}`;
+};
+
+const openAddLink = () => {
     editingLinkId.value = null;
-    linkForm.value = {
-        title: "",
-        subtitle: "",
-        link_type: "donation",
-        url: "",
-        recommended_officer_id: "",
-        badge_label: "",
-        is_highlighted: false,
-        icon: "external-link",
-    };
-    isModalOpen.value = true;
+    linkForm.value = emptyLinkForm();
+    linkDialog.value = "link";
+};
+
+const openAddPartner = () => {
+    editingLinkId.value = null;
+    partnerOfficerId.value = "";
+    linkDialog.value = "partner";
 };
 
 const openEditModal = (link) => {
     editingLinkId.value = link.id;
-    linkForm.value = {
-        title: link.title,
-        subtitle: link.subtitle || "",
-        link_type: link.link_type,
-        url: link.url || "",
-        recommended_officer_id: link.recommended_officer_id || "",
-        badge_label: link.badge_label || "",
-        is_highlighted: !!link.is_highlighted,
-        icon: link.icon || "external-link",
-    };
-    isModalOpen.value = true;
+    if (isPartner(link)) {
+        partnerOfficerId.value = link.recommended_officer_id || "";
+        linkDialog.value = "partner";
+        return;
+    }
+    const platform = link.platform || "custom";
+    linkForm.value = { platform, url: link.url || "", title: platform === "custom" ? link.title : "" };
+    linkDialog.value = "link";
+};
+
+const linkPayload = () => {
+    if (linkDialog.value === "partner") {
+        const partner = props.otherOfficers.find((o) => o.id === Number(partnerOfficerId.value));
+        return {
+            link_type: "officer_recommendation",
+            recommended_officer_id: partnerOfficerId.value,
+            title: partner?.officer_name || "Rekan patroli",
+        };
+    }
+    const { platform, url, title } = linkForm.value;
+    return { platform, url: url.trim(), ...(platform === "custom" ? { title: title.trim() } : {}) };
 };
 
 // Password Confirmation State for Donation Links (T-03)
@@ -185,23 +248,26 @@ const isSubmittingPassword = ref(false);
 const saveLink = async () => {
     isSavingLink.value = true;
     passwordConfirmError.value = "";
+    const body = {
+        ...linkPayload(),
+        ...(confirmPasswordInput.value ? { password_confirmation_inline: confirmPasswordInput.value } : {}),
+    };
     try {
         if (editingLinkId.value) {
-            const res = await axios.put(`/api/v1/officer/bio-links/${editingLinkId.value}`, linkForm.value);
+            const res = await axios.put(`/api/v1/officer/bio-links/${editingLinkId.value}`, body);
             const idx = localLinks.value.findIndex((l) => l.id === editingLinkId.value);
             if (idx !== -1) {
                 localLinks.value[idx] = res.data.link;
             }
             flash(res.data.message);
         } else {
-            const res = await axios.post("/api/v1/officer/bio-links", linkForm.value);
+            const res = await axios.post("/api/v1/officer/bio-links", body);
             localLinks.value.push(res.data.link);
             flash(res.data.message);
         }
-        isModalOpen.value = false;
+        linkDialog.value = null;
         isPasswordConfirmModalOpen.value = false;
         confirmPasswordInput.value = "";
-        delete linkForm.value.password_confirmation_inline;
     } catch (err) {
         if (err.response?.status === 423 || err.response?.data?.error === "password_confirmation_required") {
             isPasswordConfirmModalOpen.value = true;
@@ -224,7 +290,6 @@ const submitPasswordConfirmation = async () => {
         return;
     }
     isSubmittingPassword.value = true;
-    linkForm.value.password_confirmation_inline = confirmPasswordInput.value;
     await saveLink();
 };
 
@@ -258,15 +323,14 @@ const confirmDeleteLink = async () => {
     }
 };
 
-// Move Link Up / Down
+// Move a URL link up / down; partners keep their place after the links.
 const moveLink = async (index, direction) => {
     const targetIdx = index + direction;
-    if (targetIdx < 0 || targetIdx >= localLinks.value.length) return;
+    if (targetIdx < 0 || targetIdx >= urlLinks.value.length) return;
 
-    const list = [...localLinks.value];
-    const temp = list[index];
-    list[index] = list[targetIdx];
-    list[targetIdx] = temp;
+    const links = [...urlLinks.value];
+    [links[index], links[targetIdx]] = [links[targetIdx], links[index]];
+    const list = [...links, ...partnerLinks.value];
     localLinks.value = list;
 
     try {
@@ -324,24 +388,34 @@ const onTabChange = (tab) => {
     }
 };
 
-// Helper for accepted domains text
-const domainHint = computed(() => {
-    const t = linkForm.value.link_type;
-    if (props.allowedDomains[t]) {
-        return "Domain yang diizinkan: " + props.allowedDomains[t].join(", ");
-    }
-    return "Domain bebas (kecuali denylist terlarang). Gunakan https://";
-});
-
-const LINK_TYPES = {
-    donation: { label: "Donasi", icon: Coins },
-    discord: { label: "Discord", icon: MessageCircle },
-    social: { label: "Media sosial", icon: Share2 },
-    officer_recommendation: { label: "Rekan patroli", icon: Users },
-    custom: { label: "Tautan", icon: Link2 },
-};
-const linkTypeIcon = (type) => (LINK_TYPES[type] || LINK_TYPES.custom).icon;
-const linkTypeLabel = (type) => (LINK_TYPES[type] || LINK_TYPES.custom).label;
+// Live preview: the real public page (BioLinkView) fed with the unsaved form,
+// shaped like PublicBioLinkController's payload.
+const previewOfficer = computed(() => ({
+    officer_name: props.officer.officer_name,
+    streamer_name: props.officer.streamer_name,
+    callsign: props.officer.callsign,
+    department: props.officer.agency?.agency_code || props.officer.department,
+    rank: props.officer.rank_relation?.rank_title || props.officer.rank,
+    agency: props.officer.agency?.agency_name || props.officer.department,
+    avatar_url: props.officer.avatar_url,
+    is_live: false,
+}));
+const previewProfile = computed(() => ({
+    slug: props.profile.slug,
+    bio_tagline: appearanceForm.value.bio_tagline,
+    theme_preset: appearanceForm.value.theme_preset,
+    button_style: appearanceForm.value.button_style,
+    accent_color: appearanceForm.value.accent_color,
+    show_live_stream_banner: appearanceForm.value.show_live_stream_banner,
+    suspension_reason: props.profile.suspension_reason,
+    is_verified: true,
+    is_unclaimed: false,
+}));
+const previewLinks = computed(() =>
+    localLinks.value
+        .filter((l) => l.is_active && l.moderation_status === "approved")
+        .map((l) => ({ ...l, redirect_url: l.url || "#" })),
+);
 
 // Audit actions look like "bio_link.created"; show them as plain sentences.
 const ACTION_LABELS = {
@@ -435,7 +509,7 @@ const relativeTime = (iso) => {
                         <div class="min-w-0">
                             <div class="flex flex-wrap items-center gap-2">
                                 <h2 class="truncate text-lg font-bold text-foreground">{{ officer.officer_name }}</h2>
-                                <Badge variant="info" class="gap-1"><ShieldCheck class="size-3" /> Terverifikasi</Badge>
+                                <Badge variant="info" class="gap-1"><VerifiedBadge class="size-3" /> Terverifikasi</Badge>
                             </div>
                             <p class="mt-0.5 text-sm text-muted-foreground">
                                 {{ [officer.department, officer.rank].filter(Boolean).join(" · ") }}
@@ -503,16 +577,16 @@ const relativeTime = (iso) => {
                 <!-- TAB 1: LINKS MANAGEMENT -->
                 <div v-show="activeTab === 'links'" class="space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-muted-foreground">{{ localLinks.length }} dari 30 tautan</span>
-                        <Button v-if="!profile.is_suspended" size="sm" class="gap-1.5" @click="openAddModal">
+                        <span class="text-sm text-muted-foreground">Urutan di sini = urutan di halaman Anda</span>
+                        <Button v-if="!profile.is_suspended" size="sm" class="gap-1.5" @click="openAddLink">
                             <Plus class="size-4" /> Tambah tautan
                         </Button>
                     </div>
 
                     <!-- LINKS LIST -->
-                    <Card v-if="localLinks.length > 0" class="gap-0 divide-y divide-border overflow-hidden py-0">
+                    <Card v-if="urlLinks.length > 0" class="gap-0 divide-y divide-border overflow-hidden py-0">
                         <div
-                            v-for="(link, idx) in localLinks"
+                            v-for="(link, idx) in urlLinks"
                             :key="link.id"
                             class="group flex items-center gap-3 px-3 py-3 transition-colors hover:bg-accent/30 sm:px-4"
                         >
@@ -532,7 +606,7 @@ const relativeTime = (iso) => {
                                     variant="ghost"
                                     size="icon-xs"
                                     aria-label="Turunkan urutan tautan"
-                                    :disabled="idx === localLinks.length - 1 || profile.is_suspended"
+                                    :disabled="idx === urlLinks.length - 1 || profile.is_suspended"
                                     class="h-5"
                                     @click="moveLink(idx, 1)"
                                 >
@@ -540,25 +614,21 @@ const relativeTime = (iso) => {
                                 </Button>
                             </div>
 
-                            <!-- Type icon -->
+                            <!-- Platform icon -->
                             <div
                                 :class="[
                                     'flex size-9 shrink-0 items-center justify-center rounded-md',
                                     link.link_type === 'donation' ? 'bg-warning/15 text-warning' : 'bg-muted text-muted-foreground',
                                 ]"
                             >
-                                <component :is="linkTypeIcon(link.link_type)" class="size-4" />
+                                <PlatformIcon :platform="link.platform || 'custom'" class="size-4" />
                             </div>
 
                             <!-- Details -->
                             <div :class="['min-w-0 flex-1', !link.is_active && 'opacity-50']">
-                                <div class="flex items-center gap-1.5">
-                                    <p class="truncate text-sm font-semibold text-foreground">{{ link.title }}</p>
-                                    <Star v-if="link.is_highlighted" class="size-3.5 shrink-0 fill-warning text-warning" aria-label="Disorot" />
-                                    <Badge v-if="link.badge_label" variant="secondary" class="shrink-0">{{ link.badge_label }}</Badge>
-                                </div>
-                                <p class="mt-0.5 truncate text-xs text-muted-foreground">
-                                    {{ linkTypeLabel(link.link_type) }} · {{ link.subtitle || link.url_host || link.url || "Rekan patroli" }}
+                                <p class="truncate text-sm font-semibold text-foreground">{{ link.title }}</p>
+                                <p class="mt-0.5 truncate font-mono text-xs text-muted-foreground">
+                                    {{ link.url_host || link.url }}<span v-if="!link.is_active" class="font-sans"> · disembunyikan</span>
                                 </p>
                             </div>
 
@@ -600,8 +670,64 @@ const relativeTime = (iso) => {
                     <EmptyState
                         v-else
                         title="Belum ada tautan"
-                        description="Tambahkan Saweria, Discord, media sosial, atau rekan patroli Anda."
+                        description="Tambahkan Saweria, Instagram, TikTok, YouTube, atau Discord Anda."
                     />
+
+                    <!-- PATROL PARTNERS: their own card on the public page, after the links -->
+                    <Card class="mt-6 gap-0 overflow-hidden py-0">
+                        <div class="flex items-center justify-between gap-3 px-4 py-3">
+                            <div>
+                                <h3 class="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                                    <Users class="size-4 text-muted-foreground" /> Rekan patroli
+                                </h3>
+                                <p class="text-xs text-muted-foreground">{{ partnerLinks.length }} dari {{ MAX_PARTNERS }} · tampil di bawah tautan Anda</p>
+                            </div>
+                            <Button
+                                v-if="!profile.is_suspended"
+                                variant="outline"
+                                size="sm"
+                                class="gap-1.5"
+                                :disabled="partnerLinks.length >= MAX_PARTNERS"
+                                @click="openAddPartner"
+                            >
+                                <Plus class="size-4" /> Tambah rekan
+                            </Button>
+                        </div>
+                        <div
+                            v-for="link in partnerLinks"
+                            :key="link.id"
+                            class="flex items-center gap-3 border-t border-border px-4 py-3"
+                        >
+                            <OfficerAvatar
+                                :src="link.recommended_officer?.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=partner'"
+                                :name="link.recommended_officer?.officer_name || 'Officer'"
+                                size="sm"
+                                class="shrink-0"
+                            />
+                            <div :class="['min-w-0 flex-1', !link.is_active && 'opacity-50']">
+                                <p class="truncate text-sm font-semibold text-foreground">{{ link.recommended_officer?.officer_name || link.title }}</p>
+                                <p class="truncate font-mono text-xs text-muted-foreground">{{ link.recommended_officer?.callsign }}</p>
+                            </div>
+                            <Switch
+                                :model-value="!!link.is_active"
+                                :disabled="profile.is_suspended"
+                                :aria-label="link.is_active ? 'Sembunyikan rekan' : 'Tampilkan rekan'"
+                                class="mr-1"
+                                @update:model-value="toggleLink(link)"
+                            />
+                            <Button
+                                v-if="!profile.is_suspended"
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Hapus rekan"
+                                title="Hapus rekan"
+                                class="text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
+                                @click="promptDeleteLink(link)"
+                            >
+                                <Trash2 />
+                            </Button>
+                        </div>
+                    </Card>
                 </div>
 
                 <!-- TAB 2: APPEARANCE & THEME CONFIG -->
@@ -745,97 +871,41 @@ const relativeTime = (iso) => {
                     <Smartphone class="size-4" /> Pratinjau langsung
                 </p>
 
-                <div
-                    class="relative flex h-[600px] w-full max-w-[340px] flex-col overflow-hidden rounded-[36px] border-[6px] border-muted bg-background shadow-2xl"
-                    :style="{ '--preview-accent': appearanceForm.accent_color || 'var(--color-primary)' }"
-                >
-                    <div class="flex h-6 shrink-0 items-center justify-center">
-                        <div class="h-3.5 w-20 rounded-full bg-muted" />
-                    </div>
-
-                    <div class="scrollbar-none flex-1 space-y-4 overflow-y-auto px-4 py-4 text-center">
-                        <div class="flex flex-col items-center">
-                            <OfficerAvatar
-                                :src="officer.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=officer'"
-                                :name="officer.officer_name"
-                                size="lg"
-                                class="mb-2"
-                            />
-                            <h4 class="text-base font-bold leading-tight text-foreground">
-                                {{ appearanceForm.display_title || officer.officer_name }}
-                            </h4>
-                            <p class="text-xs font-medium" :style="{ color: 'var(--preview-accent)' }">{{ officer.streamer_name }}</p>
-                            <p v-if="appearanceForm.bio_tagline" class="mt-1.5 max-w-[240px] text-xs leading-relaxed text-muted-foreground">
-                                {{ appearanceForm.bio_tagline }}
-                            </p>
-                        </div>
-
-                        <div class="space-y-2">
-                            <div
-                                v-for="l in localLinks.filter((x) => x.is_active)"
-                                :key="l.id"
-                                class="flex items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 text-left"
-                                :style="l.is_highlighted
-                                    ? { borderColor: 'var(--preview-accent)', backgroundColor: 'color-mix(in oklab, var(--preview-accent) 14%, transparent)' }
-                                    : { borderColor: 'var(--color-border)' }"
-                            >
-                                <component :is="linkTypeIcon(l.link_type)" class="size-4 shrink-0 text-muted-foreground" />
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate text-sm font-semibold text-foreground">{{ l.title }}</p>
-                                    <p v-if="l.subtitle" class="truncate text-xs text-muted-foreground">{{ l.subtitle }}</p>
-                                </div>
-                                <Badge v-if="l.badge_label" variant="secondary" class="shrink-0">{{ l.badge_label }}</Badge>
-                            </div>
-
-                            <p v-if="localLinks.filter((x) => x.is_active).length === 0" class="py-8 text-xs text-muted-foreground">
-                                Belum ada tautan yang ditampilkan.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="flex h-5 shrink-0 items-center justify-center">
-                        <div class="h-1 w-24 rounded-full bg-muted" />
+                <!-- The real public page (same component), with unsaved changes applied -->
+                <div class="relative h-[640px] w-full max-w-[360px] overflow-hidden rounded-[36px] border-[6px] border-muted bg-background shadow-2xl">
+                    <div class="scrollbar-none h-full overflow-y-auto">
+                        <BioLinkView
+                            :officer="previewOfficer"
+                            :profile="previewProfile"
+                            :links="previewLinks"
+                            :themes="themes"
+                            :is-suspended="!!profile.is_suspended"
+                            contained
+                        />
                     </div>
                 </div>
+                <p class="mt-3 max-w-[360px] text-center text-xs text-muted-foreground">
+                    Persis seperti halaman publik. Perubahan tampilan baru berlaku untuk pengunjung setelah disimpan.
+                </p>
             </div>
         </main>
 
         <!-- ADD / EDIT LINK MODAL -->
-        <Dialog :open="isModalOpen" @update:open="(val) => (isModalOpen = val)">
+        <Dialog :open="linkDialog !== null" @update:open="(val) => { if (!val) linkDialog = null; }">
             <DialogContent class="gap-5 sm:max-w-lg">
-                <DialogHeader>
+                <DialogHeader v-if="linkDialog === 'partner'">
+                    <DialogTitle>{{ editingLinkId ? "Ganti rekan patroli" : "Tambah rekan patroli" }}</DialogTitle>
+                    <DialogDescription>Rekan tampil di kartu "Rekan patroli" di bawah tautan Anda.</DialogDescription>
+                </DialogHeader>
+                <DialogHeader v-else>
                     <DialogTitle>{{ editingLinkId ? "Edit tautan" : "Tambah tautan" }}</DialogTitle>
-                    <DialogDescription>Tautan tampil sebagai tombol di halaman publik Anda.</DialogDescription>
+                    <DialogDescription>Pilih platform lalu tempel link Anda. Nama dan ikon terisi otomatis.</DialogDescription>
                 </DialogHeader>
 
-                <!-- Link type -->
-                <div class="space-y-2">
-                    <Label>Jenis tautan</Label>
-                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-3" role="radiogroup">
-                        <button
-                            v-for="(meta, type) in LINK_TYPES"
-                            :key="type"
-                            type="button"
-                            role="radio"
-                            :aria-checked="linkForm.link_type === type"
-                            :class="[
-                                'flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors',
-                                linkForm.link_type === type
-                                    ? 'border-primary bg-primary/10 text-foreground'
-                                    : 'border-border text-muted-foreground hover:border-input hover:text-foreground',
-                            ]"
-                            @click="linkForm.link_type = type"
-                        >
-                            <component :is="meta.icon" class="size-4 shrink-0" />
-                            <span class="truncate">{{ meta.label }}</span>
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Patrol partner -->
-                <div v-if="linkForm.link_type === 'officer_recommendation'" class="space-y-1.5">
-                    <Label for="link-partner">Rekan patroli</Label>
-                    <NativeSelect id="link-partner" v-model="linkForm.recommended_officer_id" class="w-full">
+                <div v-if="linkDialog === 'partner'" class="space-y-1.5">
+                    <Label for="link-partner">Perwira</Label>
+                    <NativeSelect id="link-partner" v-model="partnerOfficerId" class="w-full">
                         <NativeSelectOption value="">Pilih perwira</NativeSelectOption>
                         <NativeSelectOption v-for="o in otherOfficers" :key="o.id" :value="o.id">
                             {{ o.officer_name }} · {{ o.department }} {{ o.callsign }}
@@ -843,45 +913,64 @@ const relativeTime = (iso) => {
                     </NativeSelect>
                 </div>
 
-                <!-- URL -->
-                <div v-else class="space-y-1.5">
-                    <Label for="link-url">URL</Label>
-                    <Input id="link-url" v-model="linkForm.url" type="url" class="font-mono" placeholder="https://" />
-                    <p class="text-xs text-muted-foreground">{{ domainHint }}</p>
-                </div>
+                <template v-else>
+                    <!-- 1. Platform -->
+                    <div class="space-y-3" role="radiogroup" aria-label="Platform">
+                        <div v-for="group in platformGroups" :key="group.label" class="space-y-1.5">
+                            <p class="text-xs font-medium text-muted-foreground">{{ group.label }}</p>
+                            <div class="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                                <button
+                                    v-for="[key, p] in group.items"
+                                    :key="key"
+                                    type="button"
+                                    role="radio"
+                                    :aria-checked="linkForm.platform === key"
+                                    :class="[
+                                        'flex min-h-10 items-center gap-2 rounded-md border px-2.5 py-2 text-left text-sm transition-colors',
+                                        linkForm.platform === key
+                                            ? 'border-primary bg-primary/10 text-foreground'
+                                            : 'border-border text-muted-foreground hover:border-input hover:text-foreground',
+                                    ]"
+                                    @click="linkForm.platform = key"
+                                >
+                                    <PlatformIcon :platform="key" class="size-4 shrink-0" />
+                                    <span class="truncate">{{ p.name }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="space-y-1.5">
-                    <Label for="link-title">Judul tombol</Label>
-                    <Input id="link-title" v-model="linkForm.title" type="text" placeholder="Contoh: Dukung patroli via Saweria" />
-                </div>
-
-                <div class="grid gap-4 sm:grid-cols-2">
+                    <!-- 2. Link -->
                     <div class="space-y-1.5">
-                        <Label for="link-subtitle">Keterangan <span class="font-normal text-muted-foreground">(opsional)</span></Label>
-                        <Input id="link-subtitle" v-model="linkForm.subtitle" type="text" placeholder="Contoh: Min. 10rb TTS on" />
+                        <Label for="link-url">{{ selectedPlatform ? `Link ${selectedPlatform.name}` : "Link" }}</Label>
+                        <Input
+                            id="link-url"
+                            v-model="linkForm.url"
+                            type="url"
+                            inputmode="url"
+                            autocomplete="off"
+                            class="font-mono"
+                            :placeholder="urlPlaceholder"
+                            @blur="normalizeUrl"
+                        />
+                        <p class="text-xs text-muted-foreground">{{ urlHint }}</p>
                     </div>
-                    <div class="space-y-1.5">
-                        <Label for="link-badge">Badge <span class="font-normal text-muted-foreground">(opsional)</span></Label>
-                        <Input id="link-badge" v-model="linkForm.badge_label" type="text" placeholder="Contoh: BARU" />
-                    </div>
-                </div>
 
-                <div class="flex items-center justify-between gap-4 rounded-md border border-border px-3 py-2.5">
-                    <div>
-                        <p class="text-sm font-medium text-foreground">Sorot tautan ini</p>
-                        <p class="text-xs text-muted-foreground">Diberi warna aksen agar lebih menonjol.</p>
+                    <!-- Name only for "Lainnya"; every other platform is named for you -->
+                    <div v-if="linkForm.platform === 'custom'" class="space-y-1.5">
+                        <Label for="link-title">Nama tombol</Label>
+                        <Input id="link-title" v-model="linkForm.title" type="text" maxlength="120" placeholder="Contoh: Jadwal patroli" />
                     </div>
-                    <Switch
-                        :model-value="linkForm.is_highlighted"
-                        aria-label="Sorot tautan ini"
-                        @update:model-value="(val) => (linkForm.is_highlighted = val)"
-                    />
-                </div>
+
+                    <p v-if="selectedPlatform?.type === 'donation'" class="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <ShieldAlert class="size-3.5 shrink-0 text-warning" /> Link donasi meminta konfirmasi password saat disimpan.
+                    </p>
+                </template>
 
                 <DialogFooter>
-                    <Button variant="outline" @click="isModalOpen = false">Batal</Button>
-                    <Button :disabled="isSavingLink" @click="saveLink">
-                        {{ isSavingLink ? "Menyimpan…" : editingLinkId ? "Simpan perubahan" : "Tambah tautan" }}
+                    <Button variant="outline" @click="linkDialog = null">Batal</Button>
+                    <Button :disabled="isSavingLink || !canSaveLink" @click="saveLink">
+                        {{ isSavingLink ? "Menyimpan…" : editingLinkId ? "Simpan perubahan" : linkDialog === "partner" ? "Tambah rekan" : "Tambah tautan" }}
                     </Button>
                 </DialogFooter>
             </DialogContent>
