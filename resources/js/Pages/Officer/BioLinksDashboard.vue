@@ -388,6 +388,16 @@ const onTabChange = (tab) => {
     }
 };
 
+const BUTTON_STYLE_LABELS = {
+    glass_tactical: "Kaca taktis",
+    rounded_edge: "Kapsul bulat",
+    sharp_tactical: "Tegas bergaris aksen",
+    solid_bold: "Blok warna aksen",
+    outlined_glow: "Garis menyala",
+};
+// Some themes (SRT, SWAT) force their own button style; the officer's pick is ignored.
+const themeButtonStyle = computed(() => props.themes[appearanceForm.value.theme_preset]?.button_style || null);
+
 // Live preview: the real public page (BioLinkView) fed with the unsaved form,
 // shaped like PublicBioLinkController's payload.
 const previewOfficer = computed(() => ({
@@ -790,11 +800,20 @@ const relativeTime = (iso) => {
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div class="space-y-1.5">
                                 <Label for="bio-button-style">Gaya tombol</Label>
-                                <NativeSelect id="bio-button-style" v-model="appearanceForm.button_style" class="w-full">
+                                <NativeSelect
+                                    id="bio-button-style"
+                                    v-model="appearanceForm.button_style"
+                                    class="w-full"
+                                    :disabled="!!themeButtonStyle"
+                                    :aria-describedby="themeButtonStyle ? 'bio-button-style-hint' : undefined"
+                                >
                                     <NativeSelectOption v-for="style in buttonStyles" :key="style" :value="style">
-                                        {{ style.replace("_", " ") }}
+                                        {{ BUTTON_STYLE_LABELS[style] || style }}
                                     </NativeSelectOption>
                                 </NativeSelect>
+                                <p v-if="themeButtonStyle" id="bio-button-style-hint" class="text-xs text-muted-foreground">
+                                    Tema ini memakai gaya tombolnya sendiri. Pilih tema lain untuk mengubahnya.
+                                </p>
                             </div>
                             <div class="space-y-1.5">
                                 <Label for="bio-accent">Warna aksen</Label>

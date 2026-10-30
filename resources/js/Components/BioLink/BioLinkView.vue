@@ -132,12 +132,15 @@ const buttonStyleClass = computed(() => {
             return "rounded-sm border-border border-t-2 border-t-primary/50 bg-card hover:border-primary/60 hover:bg-primary/5";
         case "rounded_edge":
             return "rounded-full border-border hover:border-primary/60 bg-card/80 backdrop-blur-md";
+        // Square panel with an accent edge on the left.
         case "sharp_tactical":
-            return "rounded-none border-l-4 border-border bg-card/90";
+            return "rounded-none border-border border-l-4 border-l-primary bg-card/90 hover:bg-primary/10";
+        // Accent-tinted block with a heavier bottom edge.
         case "solid_bold":
-            return "rounded-xl bg-muted hover:bg-muted/80 border-b-2 border-border";
+            return "rounded-xl border-transparent border-b-4 border-b-primary/70 bg-primary/20 hover:bg-primary/30";
+        // Accent outline with a soft glow around it.
         case "outlined_glow":
-            return "rounded-xl border-primary/50 bg-card/60 shadow-sm";
+            return "rounded-xl border-primary/80 bg-background/40 shadow-[0_0_14px_-3px_var(--primary)] hover:shadow-[0_0_22px_-2px_var(--primary)]";
         case "glass_tactical":
         default:
             return "rounded-2xl border-border hover:border-primary/60 bg-card/70 backdrop-blur-xl shadow-lg";
