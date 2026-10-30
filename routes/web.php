@@ -273,16 +273,16 @@ Route::middleware(['auth', 'verified', 'officer', 'not_banned'])->group(function
     Route::get('/dashboard/bio-links', [OfficerBioLinkController::class, 'dashboard'])->name('officer.bio-links');
     
     Route::prefix('api/v1/officer')->group(function () {
-        Route::post('/bio-links', [OfficerBioLinkController::class, 'store'])->middleware('throttle:30,1');
-        Route::put('/bio-links/{link}', [OfficerBioLinkController::class, 'update'])->middleware('throttle:30,1');
+        Route::post('/bio-links', [OfficerBioLinkController::class, 'store'])->middleware('throttle:bio-link-save');
+        Route::put('/bio-links/{link}', [OfficerBioLinkController::class, 'update'])->middleware('throttle:bio-link-save');
         Route::patch('/bio-links/{link}/toggle', [OfficerBioLinkController::class, 'toggle']);
         Route::post('/bio-links/reorder', [OfficerBioLinkController::class, 'reorder']);
         Route::delete('/bio-links/{link}', [OfficerBioLinkController::class, 'destroy']);
-        Route::put('/bio-profile', [OfficerBioLinkController::class, 'updateProfile']);
+        Route::put('/bio-profile', [OfficerBioLinkController::class, 'updateProfile'])->middleware('throttle:bio-profile-save');
         Route::get('/bio-links/history', [OfficerBioLinkController::class, 'history']);
 
         // v3 Self-Service Officer Profile & Change Requests
-        Route::put('/profile', [OfficerSelfProfileController::class, 'update'])->middleware('throttle:10,1');
+        Route::put('/profile', [OfficerSelfProfileController::class, 'update'])->middleware('throttle:officer-profile-save');
         Route::get('/profile/history', [OfficerSelfProfileController::class, 'history']);
         Route::get('/change-requests', [OfficerChangeRequestController::class, 'myRequests']);
         Route::post('/change-requests', [OfficerChangeRequestController::class, 'store'])->middleware('throttle:10,60');
@@ -352,12 +352,12 @@ use App\Http\Controllers\SquadController;
 Route::prefix('api/v1/squads')->group(function () {
     Route::get('/public', [SquadController::class, 'public'])->name('squads.public');
     Route::middleware('auth')->get('/mine', [SquadController::class, 'mine'])->name('squads.mine');
-    // Validation errors (422) count toward the rate limit, so iterating on
-    // a new squad name/members can trip it fast — 60/min keeps room for that.
-    Route::middleware(['auth', 'throttle:60,1'])->post('/', [SquadController::class, 'store'])->name('squads.store');
-    Route::middleware(['auth', 'throttle:60,1'])->put('/{squad}', [SquadController::class, 'update'])->name('squads.update');
-    Route::middleware(['auth', 'throttle:30,1'])->delete('/{squad}', [SquadController::class, 'destroy'])->name('squads.destroy');
-    Route::middleware(['auth', 'throttle:30,1'])->post('/{squad}/fork', [SquadController::class, 'fork'])->name('squads.fork');
+    // squad-save is a named limiter (see AppServiceProvider) so this bucket
+    // doesn't share counts with other save endpoints.
+    Route::middleware(['auth', 'throttle:squad-save'])->post('/', [SquadController::class, 'store'])->name('squads.store');
+    Route::middleware(['auth', 'throttle:squad-save'])->put('/{squad}', [SquadController::class, 'update'])->name('squads.update');
+    Route::middleware(['auth', 'throttle:squad-save'])->delete('/{squad}', [SquadController::class, 'destroy'])->name('squads.destroy');
+    Route::middleware(['auth', 'throttle:squad-save'])->post('/{squad}/fork', [SquadController::class, 'fork'])->name('squads.fork');
     Route::get('/{slug}', [SquadController::class, 'show'])->name('squads.show');
 });
 
