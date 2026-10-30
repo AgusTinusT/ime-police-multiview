@@ -66,6 +66,7 @@ class OfficerManagementController extends Controller
             'duty_status' => 'nullable|string|max:50',
             'channel_id' => 'nullable|string|max:64',
             'avatar_url' => 'nullable|string|max:500',
+            'avatar_hidden' => 'sometimes|boolean',
             'is_active' => 'nullable|boolean',
             'monthly_duty_minutes' => 'nullable|integer|min:0',
             'bypass_hashtag_check' => 'nullable|boolean',
@@ -180,6 +181,7 @@ class OfficerManagementController extends Controller
             'duty_status' => 'nullable|string|max:50',
             'channel_id' => 'nullable|string|max:64',
             'avatar_url' => 'nullable|string|max:500',
+            'avatar_hidden' => 'sometimes|boolean',
             'is_active' => 'nullable|boolean',
             'monthly_duty_minutes' => 'nullable|integer|min:0',
             'bypass_hashtag_check' => 'nullable|boolean',
@@ -216,7 +218,24 @@ class OfficerManagementController extends Controller
             'department' => $officer->department,
         ];
 
+        $avatarHiddenChanged = array_key_exists('avatar_hidden', $validated) && (bool) $officer->avatar_hidden !== (bool) $validated['avatar_hidden'];
+        $oldAvatarHidden = (bool) $officer->avatar_hidden;
+        $newAvatarHidden = array_key_exists('avatar_hidden', $validated) ? (bool) $validated['avatar_hidden'] : $oldAvatarHidden;
+
         $officer->update($validated);
+
+        if ($avatarHiddenChanged) {
+            $adminUser = \Illuminate\Support\Facades\Auth::user();
+            $adminName = $adminUser ? $adminUser->name : 'Admin';
+            \App\Services\AuditLogger::log(
+                'officer.avatar_hidden_changed',
+                'officer',
+                $officer->id,
+                ['avatar_hidden' => $oldAvatarHidden],
+                ['avatar_hidden' => $newAvatarHidden],
+                "Admin {$adminName} mengubah visibilitas foto profil officer"
+            );
+        }
 
         if ($officer->bioProfile) {
             \App\Services\BioProfileService::invalidatePublicCache($officer->bioProfile->slug);

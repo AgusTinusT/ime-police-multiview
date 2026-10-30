@@ -76,7 +76,7 @@ class PublicBioLinkController extends Controller
                     'officer_name' => $officer->officer_name,
                     'callsign' => $officer->callsign,
                     'department' => $officer->department,
-                    'avatar_url' => $officer->avatar_url,
+                    'avatar_url' => $officer->public_avatar_url,
                 ],
                 'profile' => [
                     'slug' => $profile->slug,
@@ -88,7 +88,7 @@ class PublicBioLinkController extends Controller
                 'meta' => [
                     'title' => "{$officer->officer_name} [DINONAKTIFKAN] — Police Tactical Command",
                     'description' => 'Halaman bio-link dinonaktifkan sementara.',
-                    'image' => $officer->avatar_url,
+                    'image' => $officer->public_avatar_url,
                     'url' => url('/@' . $profile->slug),
                     'noindex' => true,
                 ],
@@ -134,7 +134,7 @@ class PublicBioLinkController extends Controller
             // SEO and Social Media Meta
             $metaTitle = "{$officer->officer_name} ({$officer->callsign}) — Official SASP Bio Hub";
             $metaDescription = $profile->bio_tagline ?: "Saluran resmi perwira kepolisian {$officer->streamer_name} di Police Tactical Command Center SASP.";
-            $metaImage = $officer->avatar_url ?: asset('images/icons/icon-512x512.png');
+            $metaImage = $officer->public_avatar_url ?: asset('images/icons/icon-512x512.png');
 
             return [
                 'officer' => [
@@ -147,7 +147,7 @@ class PublicBioLinkController extends Controller
                     'rank' => $officer->rankRelation?->rank_title ?: $officer->rank,
                     'agency' => $officer->agency?->agency_name ?: $officer->department,
                     'agency_badge_url' => $officer->agency?->badge_logo_url,
-                    'avatar_url' => $officer->avatar_url,
+                    'avatar_url' => $officer->public_avatar_url,
                     'duty_status' => $officer->duty_status,
                     'is_live' => $activeStream !== null,
                     'live_stream' => $activeStream ? [
@@ -189,7 +189,7 @@ class PublicBioLinkController extends Controller
                             'rank' => $link->recommendedOfficer->rankRelation?->rank_title ?: $link->recommendedOfficer->rank,
                             'agency' => $link->recommendedOfficer->agency?->agency_name ?: $link->recommendedOfficer->department,
                             'agency_badge_url' => $link->recommendedOfficer->agency?->badge_logo_url,
-                            'avatar_url' => $link->recommendedOfficer->avatar_url,
+                            'avatar_url' => $link->recommendedOfficer->public_avatar_url,
                             'is_live' => $link->recommendedOfficer->activeStream !== null,
                             'active_stream' => $link->recommendedOfficer->activeStream ? [
                                 'video_id' => $link->recommendedOfficer->activeStream->video_id,

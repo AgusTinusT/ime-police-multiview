@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
+import { useI18n } from "vue-i18n";
+import { toast } from "vue-sonner";
 import axios from "axios";
 import {
     Dialog,
@@ -66,6 +68,27 @@ const props = defineProps({
 });
 
 const page = usePage();
+const { t } = useI18n();
+
+const avatarHidden = ref(Boolean(props.officer.avatar_hidden));
+const isUpdatingAvatarVisibility = ref(false);
+
+const handleAvatarVisibilityChange = async (val) => {
+    isUpdatingAvatarVisibility.value = true;
+    try {
+        const res = await axios.patch("/api/v1/officer/avatar-visibility", {
+            avatar_hidden: val,
+        });
+        avatarHidden.value = Boolean(res.data.avatar_hidden);
+        toast.success(res.data.message || t("settings.avatar_update_success"));
+    } catch (e) {
+        toast.error(
+            e.response?.data?.message || t("settings.avatar_update_error")
+        );
+    } finally {
+        isUpdatingAvatarVisibility.value = false;
+    }
+};
 
 // Active tab inside Officer Profile: 'profile' | 'requests' | 'history'
 const activeTab = ref("profile");
@@ -606,6 +629,47 @@ const switchTab = (tab) => {
                 <div class="mt-3 p-3 rounded-xl bg-muted/40 border border-border text-xs text-muted-foreground font-mono flex items-center gap-2">
                     <Info class="w-4 h-4 text-primary shrink-0" />
                     <span>Jika Anda mengganti channel YouTube utama Anda, ajukan tiket bantuan ke Admin SASP untuk re-verifikasi.</span>
+                </div>
+            </Card>
+
+            <!-- CARD: FOTO PROFIL (PRV-01) -->
+            <Card class="p-6 rounded-2xl bg-card border-border">
+                <div class="flex items-center justify-between pb-4 border-b border-border">
+                    <h3 class="text-sm font-bold font-mono uppercase text-foreground">
+                        {{ t("settings.avatar_card_title") }}
+                    </h3>
+                </div>
+
+                <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                    <OfficerAvatar
+                        :src="avatarHidden ? '' : (form.avatar_url || officer.avatar_url || '')"
+                        :name="form.officer_name || officer.officer_name"
+                        size="lg"
+                    />
+
+                    <div class="space-y-3 flex-1">
+                        <p class="text-xs text-muted-foreground leading-relaxed">
+                            {{ t("settings.avatar_card_desc") }}
+                        </p>
+
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border">
+                            <div class="space-y-0.5">
+                                <Label class="text-xs font-mono font-bold text-foreground block cursor-pointer" for="officer-hide-avatar">
+                                    {{ t("settings.avatar_hide_label") }}
+                                </Label>
+                                <span class="text-xs font-mono text-muted-foreground block">
+                                    {{ avatarHidden ? t("settings.avatar_status_hidden") : t("settings.avatar_status_visible") }}
+                                </span>
+                            </div>
+
+                            <Switch
+                                id="officer-hide-avatar"
+                                :model-value="avatarHidden"
+                                :disabled="isUpdatingAvatarVisibility"
+                                @update:model-value="handleAvatarVisibilityChange"
+                            />
+                        </div>
+                    </div>
                 </div>
             </Card>
 

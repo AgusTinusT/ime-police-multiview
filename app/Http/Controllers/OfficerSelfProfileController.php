@@ -326,6 +326,48 @@ class OfficerSelfProfileController extends Controller
     }
 
     /**
+     * Officer toggles avatar visibility (PRV-01).
+     */
+    public function updateAvatarVisibility(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'avatar_hidden' => 'required|boolean',
+        ]);
+
+        $user = Auth::user();
+        $officer = $user ? $user->officer()->with('bioProfile')->first() : null;
+
+        if (!$officer) {
+            return response()->json(['message' => 'Anda belum terikat ke profil perwira.'], 403);
+        }
+
+        $before = (bool) $officer->avatar_hidden;
+        $after = (bool) $validated['avatar_hidden'];
+
+        if ($before !== $after) {
+            $officer->update(['avatar_hidden' => $after]);
+
+            if ($officer->bioProfile) {
+                BioProfileService::invalidatePublicCache($officer->bioProfile->slug);
+            }
+
+            AuditLogger::log(
+                'officer.avatar_hidden_changed',
+                'officer',
+                $officer->id,
+                ['avatar_hidden' => $before],
+                ['avatar_hidden' => $after],
+                $after ? 'Perwira menyembunyikan foto profil' : 'Perwira menampilkan foto profil'
+            );
+        }
+
+        return response()->json([
+            'avatar_hidden' => (bool) $officer->fresh()->avatar_hidden,
+            'message' => $after ? 'Foto profil disembunyikan.' : 'Foto profil ditampilkan.',
+        ]);
+    }
+
+    /**
      * Officer self audit history.
      */
     public function history(): JsonResponse

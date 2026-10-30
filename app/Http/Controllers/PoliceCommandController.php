@@ -52,7 +52,7 @@ class PoliceCommandController extends Controller
                         'department' => $officer->department,
                         'rank' => $officer->rank,
                         'patrol_zone' => $officer->patrol_zone,
-                        'avatar_url' => $officer->avatar_url,
+                        'avatar_url' => $officer->public_avatar_url,
                         'subscriber_count' => $officer->subscriber_count,
                         'subscriber_count_text' => $officer->subscriber_count_text,
                     ] : [
@@ -91,7 +91,7 @@ class PoliceCommandController extends Controller
                     'department' => $officer->department,
                     'rank' => $officer->rank,
                     'patrol_zone' => $officer->patrol_zone,
-                    'avatar_url' => $officer->avatar_url,
+                    'avatar_url' => $officer->public_avatar_url,
                     'subscriber_count' => $officer->subscriber_count,
                     'subscriber_count_text' => $officer->subscriber_count_text,
                     'status' => '10-7 OFFLINE',
@@ -188,7 +188,7 @@ class PoliceCommandController extends Controller
                         'department' => $officer->department,
                         'rank' => $officer->rank,
                         'patrol_zone' => $officer->patrol_zone,
-                        'avatar_url' => $officer->avatar_url,
+                        'avatar_url' => $officer->public_avatar_url,
                         'subscriber_count' => $officer->subscriber_count,
                         'subscriber_count_text' => $officer->subscriber_count_text,
                     ] : [
@@ -226,7 +226,7 @@ class PoliceCommandController extends Controller
                     'department' => $officer->department,
                     'rank' => $officer->rank,
                     'patrol_zone' => $officer->patrol_zone,
-                    'avatar_url' => $officer->avatar_url,
+                    'avatar_url' => $officer->public_avatar_url,
                     'subscriber_count' => $officer->subscriber_count,
                     'subscriber_count_text' => $officer->subscriber_count_text,
                     'status' => '10-7 OFFLINE',
@@ -309,7 +309,7 @@ class PoliceCommandController extends Controller
                         'department' => $officer->department,
                         'rank' => $officer->rank,
                         'patrol_zone' => $officer->patrol_zone,
-                        'avatar_url' => $officer->avatar_url,
+                        'avatar_url' => $officer->public_avatar_url,
                         'subscriber_count' => $officer->subscriber_count,
                         'subscriber_count_text' => $officer->subscriber_count_text,
                     ] : [
@@ -347,7 +347,7 @@ class PoliceCommandController extends Controller
                     'department' => $officer->department,
                     'rank' => $officer->rank,
                     'patrol_zone' => $officer->patrol_zone,
-                    'avatar_url' => $officer->avatar_url,
+                    'avatar_url' => $officer->public_avatar_url,
                     'subscriber_count' => $officer->subscriber_count,
                     'subscriber_count_text' => $officer->subscriber_count_text,
                     'status' => '10-7 OFFLINE',
@@ -538,7 +538,7 @@ class PoliceCommandController extends Controller
                     // Hierarchy level from the ranks table (10 = Chief); 0 when not linked yet.
                     'rank_level' => (int) ($officer->rankRelation?->level ?? 0),
                     'patrol_zone' => $officer->patrol_zone,
-                    'avatar_url' => $officer->avatar_url,
+                    'avatar_url' => $officer->public_avatar_url,
                     'subscriber_count' => $officer->subscriber_count ?? 0,
                     'subscriber_count_text' => $officer->subscriber_count_text ?: ($officer->subscriber_count ? number_format($officer->subscriber_count) . " subs" : "< 1k subs"),
                     'is_online' => $isLive,
@@ -583,17 +583,17 @@ class PoliceCommandController extends Controller
                     'badge_number' => $officer->badge_number,
                     'department' => $officer->department,
                     'rank' => $officer->rank,
-                    'avatar_url' => $officer->avatar_url,
+                    'avatar_url' => $officer->public_avatar_url,
                 ];
             });
 
-        $dbClips = TacClip::with('officer:id,officer_name,streamer_name,handle,avatar_url,department,callsign')
+        $dbClips = TacClip::with('officer:id,officer_name,streamer_name,handle,avatar_url,avatar_hidden,department,callsign')
             ->where('is_approved', true)
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($clip) {
                 $officer = $clip->officer;
-                $avatarUrl = $officer ? $officer->avatar_url : null;
+                $avatarUrl = $officer ? $officer->public_avatar_url : null;
                 return [
                     'id' => $clip->id,
                     'video_id' => $clip->video_id,
@@ -624,7 +624,7 @@ class PoliceCommandController extends Controller
      */
     public function getTacClips(Request $request)
     {
-        $dbClips = TacClip::with('officer:id,officer_name,streamer_name,handle,avatar_url,department,callsign')
+        $dbClips = TacClip::with('officer:id,officer_name,streamer_name,handle,avatar_url,avatar_hidden,department,callsign')
             ->where('is_approved', true)
             ->orderBy('created_at', 'desc')
             ->get()
@@ -642,7 +642,7 @@ class PoliceCommandController extends Controller
                     'creator_name' => $clip->creator_name ?: 'Guest',
                     'likes_count' => (int) $clip->likes_count,
                     'views_count' => (int) $clip->views_count,
-                    'avatar_url' => $officer ? $officer->avatar_url : null,
+                    'avatar_url' => $officer ? $officer->public_avatar_url : null,
                     'user_id' => $clip->user_id,
                     'created_at' => $clip->created_at ? $clip->created_at->toIso8601String() : null,
                 ];
@@ -735,7 +735,7 @@ class PoliceCommandController extends Controller
                 'creator_name' => $clip->creator_name,
                 'likes_count' => 0,
                 'views_count' => 0,
-                'avatar_url' => $officer ? $officer->avatar_url : null,
+                'avatar_url' => $officer ? $officer->public_avatar_url : null,
                 'user_id' => $clip->user_id,
                 'created_at' => $clip->created_at->toIso8601String(),
             ],
@@ -919,7 +919,7 @@ class PoliceCommandController extends Controller
                     'raw_callsign' => $officer->callsign,
                     'department' => $officer->department,
                     'officer_rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
-                    'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                    'avatar_url' => $officer->public_avatar_url,
                     'total_hours' => $totalHoursStr,
                     'total_hours_num' => $totalHoursDecimal,
                     'total_minutes' => $totalMinutesRaw,
@@ -1059,7 +1059,7 @@ class PoliceCommandController extends Controller
                 'callsign' => $officer->callsign,
                 'department' => $officer->department,
                 'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
-                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'avatar_url' => $officer->public_avatar_url,
                 'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
                 'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
                 'value' => $mins,
@@ -1085,7 +1085,7 @@ class PoliceCommandController extends Controller
                 'callsign' => $officer->callsign,
                 'department' => $officer->department,
                 'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
-                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'avatar_url' => $officer->public_avatar_url,
                 'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
                 'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
                 'value' => $count,
@@ -1112,7 +1112,7 @@ class PoliceCommandController extends Controller
                 'callsign' => $officer->callsign,
                 'department' => $officer->department,
                 'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
-                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'avatar_url' => $officer->public_avatar_url,
                 'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
                 'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
                 'value' => $count,
@@ -1135,7 +1135,7 @@ class PoliceCommandController extends Controller
                 'callsign' => $officer->callsign,
                 'department' => $officer->department,
                 'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
-                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'avatar_url' => $officer->public_avatar_url,
                 'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
                 'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
                 'value' => $officer->last_duty_at->toIso8601String(),
@@ -1234,7 +1234,7 @@ class PoliceCommandController extends Controller
                 'streamer_name' => ltrim($officer->handle ?: $officer->streamer_name, '@'),
                 'callsign' => $officer->callsign,
                 'department' => $officer->department,
-                'avatar_url' => $officer->avatar_url ?: "https://api.dicebear.com/7.x/bottts/svg?seed=" . urlencode($officer->handle ?: 'officer'),
+                'avatar_url' => $officer->public_avatar_url,
                 'subscriber_count' => $officer->subscriber_count ?? 0,
                 'subscriber_count_text' => $officer->subscriber_count_text ?: ($officer->subscriber_count ? number_format($officer->subscriber_count) . " subs" : "< 1k subs"),
                 'is_live_now' => $isLive,

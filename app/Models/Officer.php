@@ -51,6 +51,7 @@ class Officer extends Model
         'owner_updated_at',
         'callsign_changed_at',
         'avatar_is_custom',
+        'avatar_hidden',
     ];
 
     protected $casts = [
@@ -62,7 +63,20 @@ class Officer extends Model
         'owner_updated_at' => 'datetime',
         'callsign_changed_at' => 'datetime',
         'avatar_is_custom' => 'boolean',
+        'avatar_hidden' => 'boolean',
     ];
+
+    protected $appends = [
+        'public_avatar_url',
+    ];
+
+    /**
+     * Get the public-facing avatar URL (null if avatar_hidden is true).
+     */
+    public function getPublicAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar_hidden ? null : $this->avatar_url;
+    }
 
     /**
      * Account user managing this officer profile (1:1 relation)

@@ -368,7 +368,7 @@ class SquadController extends Controller
                 'id' => $officer->id,
                 'officer_name' => $officer->officer_name,
                 'department' => $officer->agency?->agency_code ?? $officer->department,
-                'avatar_url' => $officer->avatar_url,
+                'avatar_url' => $officer->public_avatar_url,
                 'channel_id' => $officer->channel_id,
                 'is_live' => $officer->activeStream !== null,
             ];

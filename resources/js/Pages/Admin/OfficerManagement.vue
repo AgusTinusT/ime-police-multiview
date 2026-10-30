@@ -410,6 +410,7 @@ const form = ref({
     patrol_zone: "Los Santos Metropolitan",
     channel_id: "",
     avatar_url: "",
+    avatar_hidden: false,
     is_active: true,
     monthly_duty_minutes: 0,
     bypass_hashtag_check: false,
@@ -1110,6 +1111,7 @@ const openAddModal = () => {
         patrol_zone: "Los Santos Metropolitan",
         channel_id: "",
         avatar_url: "",
+        avatar_hidden: false,
         is_active: true,
         monthly_duty_minutes: 0,
         bypass_hashtag_check: false,
@@ -1136,6 +1138,7 @@ const openEditModal = (officer) => {
         patrol_zone: officer.patrol_zone || "Los Santos Metropolitan",
         channel_id: officer.channel_id || "",
         avatar_url: officer.avatar_url || "",
+        avatar_hidden: Boolean(officer.avatar_hidden),
         is_active: Boolean(officer.is_active),
         monthly_duty_minutes: officer.monthly_duty_minutes || 0,
         bypass_hashtag_check: Boolean(officer.bypass_hashtag_check),
@@ -2491,6 +2494,34 @@ onUnmounted(() => {
                                 />
                                 <span class="text-foreground font-bold text-xs">Status Aktif Dimonitor</span>
                             </label>
+                        </div>
+                    </div>
+
+                    <!-- Avatar URL & Privacy Switch (PRV-01) -->
+                    <div class="space-y-3 p-3 bg-muted/40 rounded-lg border border-border">
+                        <div class="space-y-1.5">
+                            <Label class="text-xs font-bold">{{ $t('admin.officer_form.avatar_url') }}</Label>
+                            <Input
+                                v-model="form.avatar_url"
+                                type="url"
+                                placeholder="https://yt3.ggpht.com/..."
+                                class="text-xs font-mono"
+                            />
+                        </div>
+                        <div class="flex items-start justify-between gap-3 pt-1">
+                            <div class="space-y-0.5">
+                                <Label class="text-xs font-bold text-foreground cursor-pointer" for="admin-hide-avatar">
+                                    {{ $t('admin.officer_form.hide_avatar_label') }}
+                                </Label>
+                                <p class="text-xs text-muted-foreground leading-tight">
+                                    {{ $t('admin.officer_form.hide_avatar_desc') }}
+                                </p>
+                            </div>
+                            <Switch
+                                id="admin-hide-avatar"
+                                :model-value="form.avatar_hidden"
+                                @update:model-value="form.avatar_hidden = $event"
+                            />
                         </div>
                     </div>
 

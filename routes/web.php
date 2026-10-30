@@ -283,6 +283,7 @@ Route::middleware(['auth', 'verified', 'officer', 'not_banned'])->group(function
 
         // v3 Self-Service Officer Profile & Change Requests
         Route::put('/profile', [OfficerSelfProfileController::class, 'update'])->middleware('throttle:officer-profile-save');
+        Route::patch('/avatar-visibility', [OfficerSelfProfileController::class, 'updateAvatarVisibility'])->middleware('throttle:officer-profile-save');
         Route::get('/profile/history', [OfficerSelfProfileController::class, 'history']);
         Route::get('/change-requests', [OfficerChangeRequestController::class, 'myRequests']);
         Route::post('/change-requests', [OfficerChangeRequestController::class, 'store'])->middleware('throttle:10,60');

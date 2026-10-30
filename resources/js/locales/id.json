@@ -272,6 +272,20 @@
     "description": "Kelola informasi akun, profil dinas perwira, dan bio-link taktis Anda.",
     "tab_account": "Akun",
     "tab_officer": "Profil perwira",
-    "tab_biolink": "Bio-link"
+    "tab_biolink": "Bio-link",
+    "avatar_card_title": "Foto profil",
+    "avatar_card_desc": "Foto diambil dari saluran YouTube Anda. Beberapa perwira memakai wajah asli di saluran mereka; Anda bisa menyembunyikan foto ini dari halaman publik, direktori, ranking, bio-link, dan Multiview. Foto akan diganti simbol default.",
+    "avatar_hide_label": "Sembunyikan foto profil saya",
+    "avatar_status_visible": "Tampil di halaman publik.",
+    "avatar_status_hidden": "Disembunyikan — simbol default dipakai di semua halaman.",
+    "avatar_update_success": "Visibilitas foto profil berhasil diperbarui.",
+    "avatar_update_error": "Gagal memperbarui visibilitas foto profil."
+  },
+  "admin": {
+    "officer_form": {
+      "avatar_url": "URL Foto Profil",
+      "hide_avatar_label": "Sembunyikan foto profil officer ini",
+      "hide_avatar_desc": "Foto diganti simbol default di halaman publik, direktori, ranking, bio-link, dan Multiview. Admin tetap melihat foto asli."
+    }
   }
 }

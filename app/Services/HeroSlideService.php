@@ -155,7 +155,7 @@ class HeroSlideService
                 'callsign' => $officer->callsign,
                 'department' => $officer->department,
                 'rank' => $officer->rank,
-                'avatar_url' => $officer->avatar_url,
+                'avatar_url' => $officer->public_avatar_url,
                 'viewers_count' => (int) ($topStream->viewers_count ?? 0),
                 'video_id' => $topStream->video_id,
             ],

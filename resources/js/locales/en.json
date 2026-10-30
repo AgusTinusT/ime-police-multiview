@@ -272,6 +272,20 @@
     "description": "Manage your account details, officer duty profile, and tactical bio-link.",
     "tab_account": "Account",
     "tab_officer": "Officer profile",
-    "tab_biolink": "Bio-link"
+    "tab_biolink": "Bio-link",
+    "avatar_card_title": "Profile photo",
+    "avatar_card_desc": "Photos are retrieved from your YouTube channel. Some officers use their real faces on their channels; you can hide this photo from public pages, directory, ranking, bio-link, and Multiview. The photo will be replaced with a default symbol.",
+    "avatar_hide_label": "Hide my profile photo",
+    "avatar_status_visible": "Shown on public pages.",
+    "avatar_status_hidden": "Hidden — default symbol is used across all pages.",
+    "avatar_update_success": "Profile photo visibility updated successfully.",
+    "avatar_update_error": "Failed to update profile photo visibility."
+  },
+  "admin": {
+    "officer_form": {
+      "avatar_url": "Profile Photo URL",
+      "hide_avatar_label": "Hide this officer's profile photo",
+      "hide_avatar_desc": "Photo is replaced with a default symbol on public pages, directory, ranking, bio-link, and Multiview. Admins still see the real photo."
+    }
   }
 }
