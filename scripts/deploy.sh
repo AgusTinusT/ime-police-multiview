@@ -15,6 +15,12 @@ MAINTENANCE=false
 cd "$(dirname "$0")/.."
 echo "==> $(pwd)"
 
+# `npm install` on the server rewrites package-lock.json; git's copy is the source of truth.
+if ! git diff --quiet -- package-lock.json; then
+    echo "==> package-lock.json diubah di server (npm install), dikembalikan ke versi git"
+    git checkout -- package-lock.json
+fi
+
 # Local edits to tracked files would be overwritten or block the pull.
 if ! git diff --quiet || ! git diff --cached --quiet; then
     echo "!! Ada perubahan lokal pada file yang dilacak git. Batalkan atau simpan dulu:" >&2
