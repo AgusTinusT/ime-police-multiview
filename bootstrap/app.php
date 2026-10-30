@@ -21,7 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureNotBanned::class,
             \Illuminate\Session\Middleware\AuthenticateSession::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
-            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+            // Capped: one Link entry per JS chunk overflowed nginx's 4–8 KB
+            // header buffer (502). The HTML still preloads every chunk.
+            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::using(8),
         ]);
 
         $middleware->alias([
