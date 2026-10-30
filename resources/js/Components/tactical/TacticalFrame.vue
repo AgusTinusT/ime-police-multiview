@@ -9,7 +9,7 @@ const props = defineProps({
     },
     accent: {
         type: String,
-        default: "primary", // 'primary' | 'info' | 'success' | 'warning' | 'live' | 'dept-lspd' | 'dept-bcso' | 'dept-sasp' | 'dept-sapr'
+        default: "primary", // 'primary' | 'highlight' | 'info' | 'success' | 'warning' | 'live' | 'dept-lspd' | 'dept-bcso' | 'dept-sasp' | 'dept-sapr'
     },
     as: {
         type: String,
@@ -52,7 +52,7 @@ const splitClasses = computed(() => {
         :is="as"
         :class="cn('tactical-frame', splitClasses.outer)"
         :data-variant="variant"
-        :style="{ '--tf-color': `var(--color-${accent})` }"
+        :style="{ '--tf-color': `var(--${accent})` }"
     >
         <div :class="cn('tactical-frame-inner', splitClasses.inner, props.innerClass)">
             <slot />

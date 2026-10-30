@@ -65,6 +65,10 @@
   --rank-silver-foreground: #020617;
   --rank-bronze: #ea580c;
   --rank-bronze-foreground: #ffffff;
+
+  /* Bio-link theme highlight (support/donation); themes override it locally */
+  --highlight: #f59e0b;
+  --highlight-foreground: #451a03;
 }
 
 @theme inline {
@@ -76,6 +80,8 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -162,7 +168,8 @@
   --tf-shape: polygon(var(--tf-cut) 0, 100% 0, 100% calc(100% - var(--tf-cut)), calc(100% - var(--tf-cut)) 100%, 0 100%, 0 var(--tf-cut));
   position: relative;
   padding: var(--tf-border);
-  background: var(--tf-color, var(--color-primary));
+  /* Raw tokens (not --color-*): those are resolved at :root, so local theme overrides would be ignored. */
+  background: var(--tf-color, var(--primary));
   @supports not (clip-path: polygon(0 0)) {
     border-radius: var(--radius-lg);
   }
@@ -175,13 +182,13 @@
   &[data-variant='tag'] {
     --tf-cut: 6px;
     --tf-border: 0px;
-    background: color-mix(in oklab, var(--tf-color, var(--color-primary)) 15%, transparent);
+    background: color-mix(in oklab, var(--tf-color, var(--primary)) 15%, transparent);
   }
 }
 
 @utility tactical-frame-inner {
   height: 100%;
-  background: var(--color-card);
+  background: var(--card);
   @supports (clip-path: polygon(0 0)) {
     clip-path: var(--tf-shape);
   }
