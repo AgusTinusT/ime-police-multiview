@@ -262,9 +262,6 @@ const switchTab = (tab) => {
                 <div>
                     <h1 class="text-sm sm:text-base font-bold font-mono tracking-wider uppercase text-foreground flex items-center gap-2">
                         <span>PROFIL DINAS PERWIRA</span>
-                        <Badge variant="info" class="text-xs font-bold font-mono">
-                            PRD v3
-                        </Badge>
                     </h1>
                     <p class="text-xs text-muted-foreground font-mono">
                         Manajemen Kepemilikan & Identitas Perwira Mandiri

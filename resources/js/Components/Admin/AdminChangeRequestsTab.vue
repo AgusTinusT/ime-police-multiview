@@ -132,7 +132,7 @@ onMounted(() => {
                 <div>
                     <h2 class="text-sm font-bold text-foreground uppercase flex items-center gap-2 flex-wrap">
                         <Award class="size-4 text-primary" />
-                        <span>Pengajuan Pangkat &amp; Kesatuan (PRD v3)</span>
+                        <span>Pengajuan Pangkat &amp; Kesatuan</span>
                         <Badge variant="outline" class="bg-info/15 text-info border-info/30 font-bold">
                             KOMANDO REVIEW
                         </Badge>

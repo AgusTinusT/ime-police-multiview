@@ -262,7 +262,7 @@ onMounted(() => {
                             Klaim Kepemilikan Profil Perwira
                         </DialogTitle>
                         <DialogDescription class="text-xs text-muted-foreground font-sans">
-                            SASP Self-Service Ownership & Verification (PRD v3)
+                            Klaim dan verifikasi kepemilikan profil perwira
                         </DialogDescription>
                     </div>
                 </div>
