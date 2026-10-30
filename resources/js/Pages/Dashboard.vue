@@ -12,7 +12,7 @@ import AuthModal from "@/Components/AuthModal.vue";
 import SquadCatalogCard from "@/Components/Squad/SquadCatalogCard.vue";
 import SquadSaveDialog from "@/Components/Squad/SquadSaveDialog.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
-import { LiveBadge } from "@/Components/tactical";
+import { LiveBadge, OfficerAvatar } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
 import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
@@ -539,7 +539,22 @@ onMounted(() => {
                     >
                         <span class="rank-number -mr-6 select-none text-9xl font-extrabold leading-none" aria-hidden="true">{{ o.rank }}</span>
                         <span class="relative aspect-2/3 w-28 overflow-hidden rounded-md bg-muted motion-safe:transition-transform motion-safe:duration-300 group-hover:scale-105 sm:w-32">
-                            <img :src="o.avatar_url" :alt="o.officer_name" loading="lazy" class="size-full object-cover" />
+                            <img
+                                v-if="o.avatar_url"
+                                :src="o.avatar_url"
+                                :alt="o.officer_name"
+                                loading="lazy"
+                                class="size-full object-cover"
+                            />
+                            <div
+                                v-else
+                                class="flex size-full items-center justify-center bg-card/60"
+                            >
+                                <OfficerAvatar
+                                    :name="o.officer_name"
+                                    size="lg"
+                                />
+                            </div>
                             <span class="absolute inset-x-0 bottom-0 bg-linear-to-t from-background/90 to-transparent p-2">
                                 <span class="block truncate text-xs font-semibold text-foreground">{{ o.officer_name }}</span>
                                 <span class="block text-xs text-muted-foreground">{{ o.total_hours }}</span>

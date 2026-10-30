@@ -642,7 +642,13 @@ const switchTab = (tab) => {
 
                 <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-5">
                     <OfficerAvatar
-                        :src="avatarHidden ? '' : (form.avatar_url || officer.avatar_url || '')"
+                        v-if="!avatarHidden"
+                        :src="form.avatar_url || officer.avatar_url || ''"
+                        :name="form.officer_name || officer.officer_name"
+                        size="lg"
+                    />
+                    <OfficerAvatar
+                        v-else
                         :name="form.officer_name || officer.officer_name"
                         size="lg"
                     />
