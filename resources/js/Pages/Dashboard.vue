@@ -10,6 +10,7 @@ import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import AuthModal from "@/Components/AuthModal.vue";
 import SquadCatalogCard from "@/Components/Squad/SquadCatalogCard.vue";
+import SquadSaveDialog from "@/Components/Squad/SquadSaveDialog.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
 import { LiveBadge } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
@@ -313,7 +314,49 @@ const fetchCommunityClips = async () => {
 
 const page = usePage();
 const publicSquads = ref([]);
+const mySquads = ref([]);
 const showSquadAuthModal = ref(false);
+const editingSquad = ref(null);
+const showSquadDialog = ref(false);
+
+const fetchMySquads = async () => {
+    if (!page.props.auth?.user) {
+        mySquads.value = [];
+        return;
+    }
+    try {
+        const res = await axios.get("/api/v1/squads/mine");
+        if (res.data?.status === "success" && Array.isArray(res.data.data)) {
+            mySquads.value = res.data.data;
+        }
+    } catch {
+        mySquads.value = [];
+    }
+};
+
+const openEditSquad = (squad) => {
+    editingSquad.value = squad;
+    showSquadDialog.value = true;
+};
+
+const onSquadSaved = (updated) => {
+    // Perbarui di mySquads
+    const myIdx = mySquads.value.findIndex((s) => s.id === updated.id);
+    if (myIdx !== -1) {
+        mySquads.value[myIdx] = updated;
+    } else {
+        mySquads.value.unshift(updated);
+    }
+
+    // Perbarui juga di publicSquads jika ada
+    const pubIdx = publicSquads.value.findIndex((s) => s.id === updated.id);
+    if (pubIdx !== -1) {
+        publicSquads.value[pubIdx] = updated;
+    }
+
+    showSquadDialog.value = false;
+    editingSquad.value = null;
+};
 
 const fetchPublicSquads = async () => {
     try {
@@ -346,6 +389,7 @@ const handleForkSquad = async (squad) => {
 
 onMounted(() => {
     fetchCommunityClips();
+    fetchMySquads();
     fetchPublicSquads();
 });
 </script>
@@ -414,6 +458,22 @@ onMounted(() => {
                     />
                 </CatalogRow>
 
+                <!-- Squad Saya (SQD-01) -->
+                <CatalogRow
+                    v-if="mySquads.length"
+                    :title="$t('squad.my_squads')"
+                    :subtitle="$t('squad.my_squads_subtitle')"
+                >
+                    <SquadCatalogCard
+                        v-for="sq in mySquads"
+                        :key="sq.id"
+                        :squad="sq"
+                        :live-streams="streams"
+                        @fork="handleForkSquad"
+                        @edit="openEditSquad"
+                    />
+                </CatalogRow>
+
                 <!-- Squad Komunitas (SQ-02) -->
                 <CatalogRow
                     v-if="publicSquads.length"
@@ -426,6 +486,7 @@ onMounted(() => {
                         :squad="sq"
                         :live-streams="streams"
                         @fork="handleForkSquad"
+                        @edit="openEditSquad"
                     />
                 </CatalogRow>
 
@@ -614,6 +675,12 @@ onMounted(() => {
         <AuthModal
             :is-open="showSquadAuthModal"
             @close="showSquadAuthModal = false"
+        />
+
+        <SquadSaveDialog
+            v-model:open="showSquadDialog"
+            :squad="editingSquad"
+            @saved="onSquadSaved"
         />
     </div>
 </template>

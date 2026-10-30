@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
-import { GitFork, Users } from "@lucide/vue";
+import { GitFork, Pencil, Users } from "@lucide/vue";
 import { computed } from "vue";
 
 import { LiveBadge, OfficerAvatar } from "@/Components/tactical";
@@ -13,7 +13,7 @@ const props = defineProps({
     liveStreams: { type: Array, default: () => [] },
 });
 
-const emit = defineEmits(["fork"]);
+const emit = defineEmits(["fork", "edit"]);
 
 const officers = computed(() => props.squad.officers || []);
 
@@ -67,16 +67,29 @@ const overflowCount = computed(() => Math.max(0, officers.value.length - 5));
             <div class="absolute left-2 top-2">
                 <LiveBadge v-if="squad.live_count > 0" :label="`${squad.live_count} LIVE`" />
             </div>
-            <Button
-                size="icon-sm"
-                variant="secondary"
-                class="absolute right-2 top-2 rounded-full bg-background/70 hover:bg-primary hover:text-primary-foreground"
-                :aria-label="$t('squad.fork_button')"
-                :title="$t('squad.fork_button')"
-                @click.prevent.stop="emit('fork', squad)"
-            >
-                <GitFork />
-            </Button>
+            <div class="absolute right-2 top-2 flex items-center gap-1">
+                <Button
+                    v-if="squad.is_owner"
+                    size="icon-sm"
+                    variant="secondary"
+                    class="rounded-full bg-background/70 hover:bg-primary hover:text-primary-foreground"
+                    :aria-label="$t('squad.edit_button')"
+                    :title="$t('squad.edit_button')"
+                    @click.prevent.stop="emit('edit', squad)"
+                >
+                    <Pencil />
+                </Button>
+                <Button
+                    size="icon-sm"
+                    variant="secondary"
+                    class="rounded-full bg-background/70 hover:bg-primary hover:text-primary-foreground"
+                    :aria-label="$t('squad.fork_button')"
+                    :title="$t('squad.fork_button')"
+                    @click.prevent.stop="emit('fork', squad)"
+                >
+                    <GitFork />
+                </Button>
+            </div>
 
             <div class="absolute inset-x-2 bottom-2 flex items-end justify-between gap-2">
                 <p class="truncate text-base font-bold tracking-tight text-foreground">{{ squad.name }}</p>
