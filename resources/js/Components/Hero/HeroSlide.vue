@@ -72,12 +72,13 @@ const isHashUrl = (url) => typeof url === "string" && url.startsWith("#");
             />
         </picture>
 
-        <!-- Netflix-Style Seamless Cinematic Vignette Overlay -->
+        <!-- Vignette: just enough shadow for text in the lower-left,
+             image stays visible to the right and up top. -->
         <div
-            class="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-background via-background/80 to-transparent"
+            class="pointer-events-none absolute inset-0 z-10 bg-linear-to-r from-background from-0% via-background/45 via-45% to-transparent to-75%"
         />
         <div
-            class="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-background via-background/30 to-transparent"
+            class="pointer-events-none absolute inset-0 z-10 bg-linear-to-t from-background/85 from-0% via-background/15 via-45% to-transparent to-70%"
         />
 
         <!-- Slide content: same left gutter as the catalog rows below. -->
