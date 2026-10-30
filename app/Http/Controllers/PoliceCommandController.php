@@ -861,7 +861,7 @@ class PoliceCommandController extends Controller
      * Generate monthly leaderboard metrics for officers based on DB data & live status.
      * Falls back to previous month if no officers have hours recorded in the current month.
      */
-    public function getMonthlyLeaderboard(?int $limit = 6): array
+    public function getMonthlyLeaderboard(?int $limit = 10): array
     {
         $now = now();
         $liveStreams = ActiveStream::where('status', 'LIVE')->get()->keyBy('channel_id');
