@@ -5,6 +5,8 @@ use App\Http\Controllers\PoliceCommandController;
 use App\Http\Controllers\OfficerManagementController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\OfficerSelfProfileController;
 use App\Http\Controllers\TacChannelController;
 use Inertia\Inertia;
 
@@ -247,9 +249,11 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/users')->group(functi
 
 
 Route::middleware('auth')->group(function () {
+    Route::get('/settings', [SettingsController::class, 'show'])->name('settings');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/dashboard/officer-profile', [OfficerSelfProfileController::class, 'dashboard'])->name('officer.profile');
 });
 
 require __DIR__.'/auth.php';
@@ -260,7 +264,6 @@ require __DIR__.'/auth.php';
 use App\Http\Controllers\OfficerBioLinkController;
 use App\Http\Controllers\OfficerBindingController;
 use App\Http\Controllers\OfficerClaimController;
-use App\Http\Controllers\OfficerSelfProfileController;
 use App\Http\Controllers\OfficerChangeRequestController;
 use App\Http\Controllers\AdminBioModerationController;
 use App\Http\Controllers\PublicBioLinkController;
@@ -268,7 +271,6 @@ use App\Http\Controllers\PublicBioLinkController;
 // 1. Authenticated Officer Dashboard & API (PRD v3 4.2, 4.3, 8B)
 Route::middleware(['auth', 'verified', 'officer', 'not_banned'])->group(function () {
     Route::get('/dashboard/bio-links', [OfficerBioLinkController::class, 'dashboard'])->name('officer.bio-links');
-    Route::get('/dashboard/officer-profile', [OfficerSelfProfileController::class, 'dashboard'])->name('officer.profile');
     
     Route::prefix('api/v1/officer')->group(function () {
         Route::post('/bio-links', [OfficerBioLinkController::class, 'store'])->middleware('throttle:30,1');

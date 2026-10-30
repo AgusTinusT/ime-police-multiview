@@ -11,6 +11,7 @@ use App\Services\BioProfileService;
 use App\Services\NameSkeleton;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,11 +22,23 @@ use Inertia\Response;
 class OfficerSelfProfileController extends Controller
 {
     /**
-     * Render the Officer Self-Service Profile page (PRD v3 4.3).
+     * Redirect legacy dashboard to unified Settings page (SET-01).
      */
-    public function dashboard(): Response
+    public function dashboard(): RedirectResponse
     {
-        $user = Auth::user();
+        return redirect()->route('settings', ['tab' => 'officer']);
+    }
+
+    /**
+     * Build props for the Officer Settings tab (SET-01).
+     */
+    public static function pageProps(Request $request): array
+    {
+        $user = $request->user();
+        if (!$user) {
+            return [];
+        }
+
         $officer = $user->officer()->with([
             'bioProfile',
             'agencyRelation',
@@ -34,7 +47,11 @@ class OfficerSelfProfileController extends Controller
             'changeRequests' => function ($q) {
                 $q->latest();
             },
-        ])->firstOrFail();
+        ])->first();
+
+        if (!$officer) {
+            return [];
+        }
 
         $canChangeCallsign = true;
         $remainingCooldownDays = 0;
@@ -48,12 +65,13 @@ class OfficerSelfProfileController extends Controller
 
         $agenciesMaster = Agency::with(['ranks', 'divisions'])->get();
 
-        return Inertia::render('Officer/OfficerProfile', [
+        return [
             'officer' => $officer,
             'agenciesMaster' => $agenciesMaster,
             'canChangeCallsign' => $canChangeCallsign,
             'remainingCooldownDays' => $remainingCooldownDays,
-        ]);
+            'bioSlug' => $officer->bioProfile?->slug,
+        ];
     }
 
     /**

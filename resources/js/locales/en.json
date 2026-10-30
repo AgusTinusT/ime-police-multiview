@@ -288,5 +288,17 @@
       "rank_2": "Rank #2",
       "rank_3": "Rank #3"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your account details, officer duty profile, and tactical bio-link.",
+    "tab_account": "Account",
+    "tab_officer": "Officer profile",
+    "tab_biolink": "Bio-link",
+    "manage_biolink": "Manage bio-link",
+    "public_link": "Public Link",
+    "biolink_desc": "Public tactical bio-link hub featuring social links, unit info, and donation widgets.",
+    "biolink_not_configured": "Bio-link not configured yet.",
+    "open": "Open"
   }
 }

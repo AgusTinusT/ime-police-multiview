@@ -264,6 +264,18 @@
       "rank_2": "Peringkat #2",
       "rank_3": "Peringkat #3"
     }
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "description": "Kelola informasi akun, profil dinas perwira, dan bio-link taktis Anda.",
+    "tab_account": "Akun",
+    "tab_officer": "Profil perwira",
+    "tab_biolink": "Bio-link",
+    "manage_biolink": "Kelola bio-link",
+    "public_link": "Tautan Publik",
+    "biolink_desc": "Halaman bio-link publik untuk perwira dengan tautan media sosial, info unit, dan widget donasi.",
+    "biolink_not_configured": "Bio-link belum dikonfigurasi.",
+    "open": "Buka"
   }
 }
 

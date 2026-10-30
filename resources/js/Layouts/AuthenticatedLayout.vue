@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Toaster } from '@/Components/ui/sonner';
-import { ChevronDown, LogOut, Menu, User, X } from '@lucide/vue';
+import { ChevronDown, LogOut, Menu, Settings, User, X } from '@lucide/vue';
 import { Link } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
@@ -65,11 +65,11 @@ const showingNavigationDropdown = ref(false);
                                     <DropdownMenuContent align="end" class="w-48">
                                         <DropdownMenuItem as-child>
                                             <Link
-                                                :href="route('profile.edit')"
+                                                :href="route('settings')"
                                                 class="flex w-full items-center gap-2 cursor-pointer"
                                             >
-                                                <User class="size-4" />
-                                                <span>Profile</span>
+                                                <Settings class="size-4" />
+                                                <span>{{ $t ? $t('settings.title') : 'Settings' }}</span>
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem as-child>
@@ -135,8 +135,8 @@ const showingNavigationDropdown = ref(false);
                         </div>
 
                         <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
+                            <ResponsiveNavLink :href="route('settings')">
+                                {{ $t ? $t('settings.title') : 'Settings' }}
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 :href="route('logout')"

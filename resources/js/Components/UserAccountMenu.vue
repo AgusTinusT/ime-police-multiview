@@ -16,7 +16,6 @@ import {
     DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
 import {
-    Award,
     ChevronDown,
     Globe,
     Link2,
@@ -157,33 +156,9 @@ const setLanguage = (lang) => {
                             </Link>
                         </DropdownMenuItem>
 
-                        <!-- Self-Service Officer Profile (PRD v3 T-18) -->
-                        <DropdownMenuItem
-                            v-if="$page.props.auth.user.is_officer || isAdmin"
-                            as-child
-                        >
-                            <Link
-                                href="/dashboard/officer-profile"
-                                class="flex items-center px-3 py-2 text-primary gap-2.5 font-semibold cursor-pointer"
-                            >
-                                <Award class="size-4 text-primary shrink-0" />
-                                <div class="flex flex-col">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-xs">Profil Dinas Saya</span>
-                                        <Badge variant="secondary" class="font-mono font-extrabold">
-                                            PERWIRA
-                                        </Badge>
-                                    </div>
-                                    <span class="text-xs text-muted-foreground font-normal">
-                                        Identitas, Callsign & Mutasi Pangkat
-                                    </span>
-                                </div>
-                            </Link>
-                        </DropdownMenuItem>
-
                         <!-- Claim Officer Profile (For Members) -->
                         <DropdownMenuItem
-                            v-else
+                            v-if="!$page.props.auth.user.is_officer && !isAdmin"
                             class="flex items-center px-3 py-2 text-info gap-2.5 font-semibold cursor-pointer"
                             @select="showOfficerClaimModal = true"
                         >
@@ -233,17 +208,17 @@ const setLanguage = (lang) => {
                             </Link>
                         </DropdownMenuItem>
 
-                        <!-- Profile Settings -->
+                        <!-- Unified Settings (SET-01) -->
                         <DropdownMenuItem as-child>
                             <Link
-                                href="/profile"
+                                href="/settings"
                                 class="flex items-center px-3 py-2 text-foreground gap-2.5 cursor-pointer"
                             >
                                 <Settings class="size-4 text-muted-foreground shrink-0" />
                                 <div class="flex flex-col">
-                                    <span class="text-xs font-medium">Profil & Akun</span>
+                                    <span class="text-xs font-medium">{{ $t("settings.title") }}</span>
                                     <span class="text-xs text-muted-foreground font-normal">
-                                        Ubah nama, email, & password
+                                        Akun, profil perwira & preferensi
                                     </span>
                                 </div>
                             </Link>
