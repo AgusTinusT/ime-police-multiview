@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch } from "vue";
-import { Head, usePage } from "@inertiajs/vue3";
+import { usePage } from "@inertiajs/vue3";
 import axios from "axios";
 import BioLinkView from "@/Components/BioLink/BioLinkView.vue";
 import PlatformIcon from "@/Components/BioLink/PlatformIcon.vue";
@@ -31,7 +31,6 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/Components/ui/native-select";
 import { Switch } from "@/Components/ui/switch";
-import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import { Textarea } from "@/Components/ui/textarea";
 import {
     OfficerAvatar,
@@ -461,13 +460,9 @@ const relativeTime = (iso) => {
 </script>
 
 <template>
-    <Head title="Kelola Tactical Bio-Link — Police Duty" />
-
-    <div class="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground">
-        <TacticalDashboardHeader />
-
-        <!-- MAIN CONTENT WORKSPACE -->
-        <main class="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 gap-8 px-4 pb-16 pt-8 sm:px-6 lg:grid-cols-12">
+    <!-- Embedded in Pages/Settings/Index.vue; the page provides the layout, header and container. -->
+    <div class="font-sans">
+        <main class="grid grid-cols-1 gap-8 lg:grid-cols-12">
             <!-- LEFT COLUMN: CONTROLS & TABS (7 cols) -->
             <div class="flex flex-col gap-6 lg:col-span-7">
                 <!-- Page title -->

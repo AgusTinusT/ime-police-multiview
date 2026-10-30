@@ -1,16 +1,13 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { Head, Link, usePage } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import { PageContainer, PageHeader } from "@/Components/tactical";
-import { Card, CardContent } from "@/Components/ui/card";
-import { Button } from "@/Components/ui/button";
 import AccountSettings from "@/Components/Settings/AccountSettings.vue";
 import OfficerSettings from "@/Components/Settings/OfficerSettings.vue";
+import BioLinkSettings from "@/Components/Settings/BioLinkSettings.vue";
 import { cn } from "@/lib/utils";
 import {
-    ExternalLink,
-    Globe,
     Link2,
     ShieldCheck,
     User,
@@ -49,6 +46,16 @@ const props = defineProps({
         type: String,
         default: null,
     },
+    // Bio-link editor props (hoisted here so switching to the Bio-link tab
+    // client-side has everything already loaded).
+    bioOfficer: { type: Object, default: null },
+    bioProfile: { type: Object, default: null },
+    bioOtherOfficers: { type: Array, default: () => [] },
+    bioThemes: { type: Object, default: () => ({}) },
+    bioButtonStyles: { type: Array, default: () => [] },
+    bioAllowedDomains: { type: Object, default: () => ({}) },
+    bioPlatforms: { type: Object, default: () => ({}) },
+    bioStats: { type: Object, default: () => ({ total_views: 0, total_clicks: 0, links_count: 0 }) },
 });
 
 const page = usePage();
@@ -221,69 +228,18 @@ onUnmounted(() => {
                         :remaining-cooldown-days="remainingCooldownDays"
                     />
 
-                    <!-- Tab 3: Tactical Bio-Link Hub Card (Officer Only) -->
-                    <Card v-else-if="activeTab === 'biolink' && isOfficer">
-                        <CardContent class="p-6 space-y-5">
-                            <header class="space-y-1">
-                                <h2 class="text-base font-semibold text-foreground">
-                                    {{ $t("settings.tab_biolink") }}
-                                </h2>
-                                <p class="text-sm text-muted-foreground max-w-xl">
-                                    {{ $t("settings.biolink_desc") }}
-                                </p>
-                            </header>
-
-                            <!-- Public URL row: shown even when no slug yet, so the officer learns it exists -->
-                            <div
-                                v-if="bioSlug"
-                                class="flex items-center justify-between gap-3 p-3.5 rounded-lg bg-muted/40 border border-border flex-wrap"
-                            >
-                                <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                                    <Globe class="size-4 text-muted-foreground shrink-0" aria-hidden="true" />
-                                    <div class="min-w-0">
-                                        <p class="text-xs text-muted-foreground">
-                                            {{ $t("settings.public_link") }}
-                                        </p>
-                                        <a
-                                            :href="`/@${bioSlug}`"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="text-sm font-mono font-medium text-foreground hover:text-primary hover:underline truncate block"
-                                        >
-                                            /@{{ bioSlug }}
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <Button as-child variant="outline" size="sm" class="shrink-0 cursor-pointer gap-1.5">
-                                    <a
-                                        :href="`/@${bioSlug}`"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        <ExternalLink class="size-3.5" />
-                                        <span>{{ $t("settings.open") }}</span>
-                                    </a>
-                                </Button>
-                            </div>
-
-                            <div
-                                v-else
-                                class="p-4 rounded-lg bg-muted/30 border border-dashed border-border text-sm text-muted-foreground"
-                            >
-                                {{ $t("settings.biolink_not_configured") }}
-                            </div>
-
-                            <div class="pt-1">
-                                <Button as-child class="cursor-pointer gap-1.5">
-                                    <Link href="/dashboard/bio-links">
-                                        <Link2 class="size-4" />
-                                        <span>{{ $t("settings.manage_biolink") }}</span>
-                                    </Link>
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <!-- Tab 3: Full bio-link editor (officer only) -->
+                    <BioLinkSettings
+                        v-else-if="activeTab === 'biolink' && isOfficer && bioOfficer && bioProfile"
+                        :officer="bioOfficer"
+                        :profile="bioProfile"
+                        :other-officers="bioOtherOfficers"
+                        :themes="bioThemes"
+                        :button-styles="bioButtonStyles"
+                        :allowed-domains="bioAllowedDomains"
+                        :platforms="bioPlatforms"
+                        :stats="bioStats"
+                    />
                 </div>
             </div>
         </PageContainer>

@@ -11,6 +11,7 @@ use App\Services\AuditLogger;
 use App\Services\BioProfileService;
 use App\Support\BioLinkPlatforms;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -26,10 +27,22 @@ class OfficerBioLinkController extends Controller
     /**
      * Render the Tactical Bio Links Management Dashboard for the authenticated officer.
      */
-    public function dashboard(Request $request): Response
+    /**
+     * Legacy dashboard URL — the editor now lives in the unified Settings page.
+     */
+    public function dashboard(Request $request): RedirectResponse
+    {
+        $query = $request->query('officer_id') ? ['tab' => 'biolink', 'officer_id' => $request->query('officer_id')] : ['tab' => 'biolink'];
+        return redirect()->route('settings', $query);
+    }
+
+    /**
+     * Props for the bio-link editor, shared by SettingsController.
+     */
+    public static function pageProps(Request $request): array
     {
         $user = Auth::user();
-        
+
         // Find officer: either directly bound, or if admin allow selecting/previewing an officer
         $officer = $user->officer;
 
@@ -45,34 +58,27 @@ class OfficerBioLinkController extends Controller
         $profile = BioProfileService::ensureBioProfile($officer);
         $profile->load(['links.recommendedOfficer']);
 
-        // Other officers for the recommendation dropdown
         $otherOfficers = Officer::where('is_active', true)
             ->where('id', '!=', $officer->id)
             ->orderBy('officer_name', 'asc')
             ->get(['id', 'officer_name', 'streamer_name', 'callsign', 'department', 'avatar_url']);
 
-        // Themes and styles config
-        $themes = config('biolinks.theme_presets', []);
-        $buttonStyles = config('biolinks.button_styles', []);
-        $allowedDomains = config('biolinks.allowed_domains', []);
-
-        // Stats summary for this profile
         $stats = [
             'total_views' => (int) $profile->dailyStats()->sum('views'),
             'total_clicks' => (int) $profile->dailyStats()->sum('clicks'),
             'links_count' => $profile->links()->count(),
         ];
 
-        return Inertia::render('Officer/BioLinksDashboard', [
-            'officer' => $officer->load('agency', 'rankRelation'),
-            'profile' => $profile,
-            'otherOfficers' => $otherOfficers,
-            'themes' => $themes,
-            'buttonStyles' => $buttonStyles,
-            'allowedDomains' => $allowedDomains,
-            'platforms' => BioLinkPlatforms::all(),
-            'stats' => $stats,
-        ]);
+        return [
+            'bioOfficer' => $officer->load('agency', 'rankRelation'),
+            'bioProfile' => $profile,
+            'bioOtherOfficers' => $otherOfficers,
+            'bioThemes' => config('biolinks.theme_presets', []),
+            'bioButtonStyles' => config('biolinks.button_styles', []),
+            'bioAllowedDomains' => config('biolinks.allowed_domains', []),
+            'bioPlatforms' => BioLinkPlatforms::all(),
+            'bioStats' => $stats,
+        ];
     }
 
     /**

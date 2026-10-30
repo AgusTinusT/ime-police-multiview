@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\OfficerBioLinkController;
+use App\Http\Controllers\OfficerSelfProfileController;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,8 +25,11 @@ class SettingsController extends Controller
         ];
 
         if ($user && $user->isOfficer()) {
-            $officerProps = OfficerSelfProfileController::pageProps($request);
-            $props = array_merge($props, $officerProps);
+            $props = array_merge(
+                $props,
+                OfficerSelfProfileController::pageProps($request),
+                OfficerBioLinkController::pageProps($request),
+            );
         }
 
         return Inertia::render('Settings/Index', $props);
