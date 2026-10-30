@@ -546,7 +546,7 @@ const formatDate = (isoString) => {
                                 <Card
                                     v-for="(item, index) in ranksFourPlus"
                                     :key="item.id"
-                                    class="p-3 flex items-center justify-between gap-3 hover:border-input transition-colors"
+                                    class="p-3 flex flex-row items-center justify-between gap-3 hover:border-input transition-colors"
                                 >
                                     <div class="flex items-center gap-3 min-w-0">
                                         <span class="font-mono font-bold text-xs text-muted-foreground w-6 shrink-0">
