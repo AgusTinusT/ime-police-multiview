@@ -156,7 +156,7 @@ onUnmounted(() => {
             <!-- Mobile Horizontal Nav Tabs (< md) -->
             <div
                 v-if="navItems.length > 1"
-                class="flex md:hidden overflow-x-auto no-scrollbar gap-1.5 p-1 bg-muted rounded-xl"
+                class="flex md:hidden overflow-x-auto no-scrollbar gap-1 p-1 bg-muted/50 rounded-lg"
             >
                 <button
                     v-for="item in navItems"
@@ -165,9 +165,9 @@ onUnmounted(() => {
                     @click="setTab(item.id)"
                     :class="
                         cn(
-                            'px-3.5 py-2 text-xs font-mono font-medium rounded-lg whitespace-nowrap transition flex items-center gap-2 cursor-pointer',
+                            'flex-1 px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap transition flex items-center justify-center gap-2 cursor-pointer',
                             activeTab === item.id
-                                ? 'bg-card text-foreground font-bold shadow-xs'
+                                ? 'bg-card text-foreground shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground'
                         )
                     "
@@ -178,11 +178,11 @@ onUnmounted(() => {
             </div>
 
             <!-- Desktop Side-by-side Layout (>= md) -->
-            <div class="flex flex-col md:flex-row gap-6 items-start">
-                <!-- Desktop Left Vertical Nav (>= md) -->
+            <div class="flex flex-col md:flex-row gap-8 items-start">
+                <!-- Desktop Left Vertical Nav (>= md): a plain list, not a card. -->
                 <nav
                     v-if="navItems.length > 1"
-                    class="hidden md:flex flex-col w-60 shrink-0 gap-1 bg-card p-2 rounded-xl border border-border self-start sticky top-20"
+                    class="hidden md:flex flex-col w-56 shrink-0 gap-0.5 self-start sticky top-20"
                 >
                     <button
                         v-for="item in navItems"
@@ -191,10 +191,10 @@ onUnmounted(() => {
                         @click="setTab(item.id)"
                         :class="
                             cn(
-                                'w-full text-left px-3.5 py-2.5 text-xs font-mono font-medium rounded-lg transition flex items-center gap-3 cursor-pointer',
+                                'w-full text-left px-3 py-2 text-sm font-medium rounded-md transition flex items-center gap-3 cursor-pointer',
                                 activeTab === item.id
-                                    ? 'bg-primary text-primary-foreground font-bold'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                                    ? 'bg-accent text-foreground'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
                             )
                         "
                     >
@@ -223,49 +223,43 @@ onUnmounted(() => {
 
                     <!-- Tab 3: Tactical Bio-Link Hub Card (Officer Only) -->
                     <Card v-else-if="activeTab === 'biolink' && isOfficer">
-                        <CardContent class="p-6 space-y-4">
-                            <div class="flex items-start justify-between gap-4 flex-wrap">
-                                <div class="space-y-1">
-                                    <h3 class="text-base font-bold text-foreground">
-                                        {{ $t("settings.tab_biolink") }}
-                                    </h3>
-                                    <p class="text-xs text-muted-foreground font-sans max-w-xl">
-                                        {{ $t("settings.biolink_desc") }}
-                                    </p>
-                                </div>
-                                <Button as-child class="font-mono text-xs gap-1.5 cursor-pointer">
-                                    <Link href="/dashboard/bio-links">
-                                        <Link2 class="size-4" />
-                                        <span>{{ $t("settings.manage_biolink") }}</span>
-                                    </Link>
-                                </Button>
-                            </div>
+                        <CardContent class="p-6 space-y-5">
+                            <header class="space-y-1">
+                                <h2 class="text-base font-semibold text-foreground">
+                                    {{ $t("settings.tab_biolink") }}
+                                </h2>
+                                <p class="text-sm text-muted-foreground max-w-xl">
+                                    {{ $t("settings.biolink_desc") }}
+                                </p>
+                            </header>
 
+                            <!-- Public URL row: shown even when no slug yet, so the officer learns it exists -->
                             <div
                                 v-if="bioSlug"
-                                class="p-4 rounded-xl bg-muted/60 border border-border flex items-center justify-between gap-4 flex-wrap"
+                                class="flex items-center justify-between gap-3 p-3.5 rounded-lg bg-muted/40 border border-border flex-wrap"
                             >
-                                <div class="flex items-center gap-2.5 min-w-0">
-                                    <Globe class="size-4 text-primary shrink-0" />
-                                    <span class="text-xs font-mono text-muted-foreground">
-                                        {{ $t("settings.public_link") }}:
-                                    </span>
-                                    <a
-                                        :href="`/@${bioSlug}`"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="text-xs font-mono font-bold text-primary hover:underline truncate"
-                                    >
-                                        /@{{ bioSlug }}
-                                    </a>
+                                <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                    <Globe class="size-4 text-muted-foreground shrink-0" aria-hidden="true" />
+                                    <div class="min-w-0">
+                                        <p class="text-xs text-muted-foreground">
+                                            {{ $t("settings.public_link") }}
+                                        </p>
+                                        <a
+                                            :href="`/@${bioSlug}`"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="text-sm font-mono font-medium text-foreground hover:text-primary hover:underline truncate block"
+                                        >
+                                            /@{{ bioSlug }}
+                                        </a>
+                                    </div>
                                 </div>
 
-                                <Button as-child variant="outline" size="sm" class="text-xs font-mono shrink-0 cursor-pointer">
+                                <Button as-child variant="outline" size="sm" class="shrink-0 cursor-pointer gap-1.5">
                                     <a
                                         :href="`/@${bioSlug}`"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="gap-1.5 flex items-center"
                                     >
                                         <ExternalLink class="size-3.5" />
                                         <span>{{ $t("settings.open") }}</span>
@@ -275,9 +269,18 @@ onUnmounted(() => {
 
                             <div
                                 v-else
-                                class="p-4 rounded-xl bg-muted/40 border border-dashed border-border text-xs text-muted-foreground font-mono"
+                                class="p-4 rounded-lg bg-muted/30 border border-dashed border-border text-sm text-muted-foreground"
                             >
                                 {{ $t("settings.biolink_not_configured") }}
+                            </div>
+
+                            <div class="pt-1">
+                                <Button as-child class="cursor-pointer gap-1.5">
+                                    <Link href="/dashboard/bio-links">
+                                        <Link2 class="size-4" />
+                                        <span>{{ $t("settings.manage_biolink") }}</span>
+                                    </Link>
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>

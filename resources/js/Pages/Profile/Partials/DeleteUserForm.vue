@@ -50,7 +50,7 @@ const closeModal = () => {
 <template>
     <section class="space-y-4">
         <header class="space-y-1">
-            <h2 class="text-base font-bold text-destructive font-mono uppercase tracking-wider flex items-center gap-1.5">
+            <h2 class="text-base font-semibold text-destructive flex items-center gap-1.5">
                 <AlertTriangle class="size-4 text-destructive shrink-0" />
                 <span>Hapus Akun Permanen</span>
             </h2>

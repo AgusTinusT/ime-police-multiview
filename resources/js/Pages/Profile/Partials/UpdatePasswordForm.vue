@@ -41,7 +41,7 @@ const updatePassword = () => {
 <template>
     <section class="space-y-6">
         <header class="space-y-1">
-            <h2 class="text-base font-bold text-foreground font-mono uppercase tracking-wider">
+            <h2 class="text-base font-semibold text-foreground">
                 Keamanan &amp; Ubah Password
             </h2>
             <p class="text-xs text-muted-foreground">
