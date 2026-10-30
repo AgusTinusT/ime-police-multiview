@@ -38,20 +38,35 @@ Tambahkan **Card baru "Foto profil"** di `Components/Settings/OfficerSettings.vu
 - `Switch` "Sembunyikan foto profil saya" terikat ke `avatar_hidden`.
 - Teks di bawah switch berubah sesuai status: "Tampil di halaman publik." atau "Disembunyikan — simbol default dipakai di semua halaman."
 
-### 4. API
+### 4. API (officer sendiri)
 Tambahkan endpoint `PATCH /api/v1/officer/avatar-visibility` di route group yang sudah ada (`auth`, `verified`, `officer`, `not_banned`), dengan throttle `throttle:officer-profile-save` (sudah terdaftar di `AppServiceProvider`).
 
 Controller: `OfficerSelfProfileController@updateAvatarVisibility(Request $r)`:
 - Validasi `avatar_hidden: required|boolean`.
-- Update officer milik user. Admin tidak lewat endpoint ini.
+- Update officer milik user. Admin lewat endpoint berbeda (lihat 5).
 - Log perubahan ke audit log (ikuti pola `AuditLogger::log` yang ada untuk perubahan profil).
 - Return `{ avatar_hidden: bool, message: "Foto profil disembunyikan/ditampilkan" }`.
 
-### 5. Props untuk SettingsController
+### 5. Admin bisa menyembunyikan foto officer mana saja (moderasi)
+Field `avatar_hidden` ditambahkan ke validasi `OfficerManagementController@update`:
+```php
+'avatar_hidden' => 'sometimes|boolean',
+```
+dan diisi ke `$validated` lalu `$officer->update($validated)`. Admin bisa menyembunyikan foto walau officer sendiri tidak mengaktifkannya (penegakan privasi/moderasi), dan sebaliknya.
+
+Di `resources/js/Pages/Admin/OfficerManagement.vue` form edit (sekitar baris 412/1112 — cari field `avatar_url`): tambahkan `avatar_hidden: false` ke state `form`, muat dari `officer.avatar_hidden` di `openEdit*` handler, lalu tambahkan baris baru di template, tepat di bawah input `avatar_url`:
+- `Switch` + label **"Sembunyikan foto profil officer ini"**.
+- Pesan kecil di bawah: "Foto diganti simbol default di halaman publik, direktori, ranking, bio-link, dan Multiview. Admin tetap melihat foto asli."
+- Panel admin **tetap menampilkan `officer.avatar_url` asli** (`<img>` di `OfficerManagement.vue` baris ±1737 dan `OfficerDetailSheet.vue` baris ±111). Jangan diubah.
+- Audit log: `AuditLogger::log('officer.avatar_hidden_changed', ...)` setiap perubahan oleh admin, dengan `before`/`after` dan nama admin.
+
+Admin yang **tidak** memakai endpoint `/api/v1/officer/avatar-visibility`; dia memakai PUT officer yang sudah ada. Officer memakai endpoint PATCH yang di 4.
+
+### 6. Props untuk SettingsController
 Kirim `officer.avatar_hidden` di `OfficerSelfProfileController::pageProps` agar form di Settings tahu status awal.
 
-### 6. Teks
-Semua label lewat i18n (`locales/id.json` + `en.json`, grup `settings`).
+### 7. Teks
+Semua label lewat i18n (`locales/id.json` + `en.json`, grup `settings` untuk officer dan `admin` untuk admin).
 
 ## Test
 `tests/Feature/Officer/AvatarVisibilityTest.php` (baru):
@@ -61,6 +76,8 @@ Semua label lewat i18n (`locales/id.json` + `en.json`, grup `settings`).
 4. Setelah `avatar_hidden=true`, direktori perwira (API/response) → avatar `null`.
 5. `GET /dashboard` → leaderboard officer tersebut `avatar_url` `null`.
 6. Admin melihat officer di `/admin/officers` → tetap melihat `avatar_url` asli (test boleh asersi property Officer, bukan HTTP).
+7. **Admin PUT officer** dengan `avatar_hidden=true` → sukses, kolom tersimpan, audit log terbuat.
+8. **Admin non-admin** (user biasa) PUT officer → 403 (tidak bisa menegakkan privasi orang lain).
 
 ## Jangan
 - Jangan menghapus kolom `avatar_url` — data asli disimpan.
@@ -73,6 +90,8 @@ Semua label lewat i18n (`locales/id.json` + `en.json`, grup `settings`).
 
 ## Selesai jika
 - [ ] Officer bisa menyalakan/mematikan toggle di Pengaturan → Profil perwira.
-- [ ] Foto profil hilang di halaman publik, direktori, ranking, bio-link, Multiview saat disembunyikan.
+- [ ] Admin bisa menyalakan/mematikan toggle di form edit officer di `/admin/officers`.
+- [ ] Foto profil hilang di halaman publik, direktori, ranking, bio-link, Multiview saat disembunyikan — baik dari aksi officer sendiri maupun admin.
 - [ ] Admin tetap melihat foto asli.
+- [ ] Perubahan oleh officer **atau** admin tercatat di audit log.
 - [ ] Baris PRV-01 di `docs/ui/TASKS.md` diisi 🟣 + Dev Notes.
