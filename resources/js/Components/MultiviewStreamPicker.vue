@@ -50,6 +50,16 @@ const filteredOffline = computed(() => props.offlineOfficers.filter(matches));
 const isFull = computed(() => props.selectedIds.length >= props.maxTiles);
 const isSelected = (id) => props.selectedIds.includes(id);
 
+const resetFilters = () => {
+    tab.value = "live";
+    dept.value = "ALL";
+    search.value = "";
+};
+
+defineExpose({
+    resetFilters,
+});
+
 const formatViewers = (n) => {
     const v = Number(n) || 0;
     return v >= 1000 ? `${(v / 1000).toFixed(1)}K` : String(v);

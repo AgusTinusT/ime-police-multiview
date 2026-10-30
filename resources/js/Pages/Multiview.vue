@@ -573,17 +573,35 @@ let resizeObserver = null;
 const sidebarOpen = ref(true);
 const sheetOpen = ref(false);
 const panelTab = ref("pov"); // 'pov' | 'chat'
+const mobilePickerRef = ref(null);
+const desktopPickerRef = ref(null);
+
+const resetPickerFilters = () => {
+    mobilePickerRef.value?.resetFilters();
+    desktopPickerRef.value?.resetFilters();
+};
 
 const openPicker = (tab = "pov") => {
     panelTab.value = tab;
+    if (tab === "pov") {
+        resetPickerFilters();
+    }
     if (isDesktop.value && showChrome.value) sidebarOpen.value = true;
     else sheetOpen.value = true;
 };
 
 const toggleSidebar = () => {
-    if (isDesktop.value && showChrome.value)
+    if (isDesktop.value && showChrome.value) {
         sidebarOpen.value = !sidebarOpen.value;
-    else sheetOpen.value = !sheetOpen.value;
+        if (sidebarOpen.value && panelTab.value === "pov") {
+            resetPickerFilters();
+        }
+    } else {
+        sheetOpen.value = !sheetOpen.value;
+        if (sheetOpen.value && panelTab.value === "pov") {
+            resetPickerFilters();
+        }
+    }
 };
 
 const chatTargetId = computed(
@@ -1153,7 +1171,7 @@ onUnmounted(() => {
                                         "
                                         size="sm"
                                         class="text-sm font-bold"
-                                        @click="panelTab = t.key"
+                                        @click="openPicker(t.key)"
                                     >
                                         {{ t.label }}
                                     </Button>
@@ -1171,6 +1189,7 @@ onUnmounted(() => {
                                 </div>
                                 <MultiviewStreamPicker
                                     v-if="panelTab === 'pov'"
+                                    ref="mobilePickerRef"
                                     class="flex-1 min-h-0"
                                     :streams="streams"
                                     :offline-officers="offlineOfficers"
@@ -1234,13 +1253,14 @@ onUnmounted(() => {
                             "
                             size="sm"
                             class="text-sm font-bold"
-                            @click="panelTab = t.key"
+                            @click="openPicker(t.key)"
                         >
                             {{ t.label }}
                         </Button>
                     </div>
                     <MultiviewStreamPicker
                         v-show="panelTab === 'pov'"
+                        ref="desktopPickerRef"
                         class="flex-1 min-h-0"
                         :streams="streams"
                         :offline-officers="offlineOfficers"
