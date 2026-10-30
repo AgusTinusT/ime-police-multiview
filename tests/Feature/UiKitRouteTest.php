@@ -34,4 +34,30 @@ class UiKitRouteTest extends TestCase
 
         $response->assertRedirect('/login');
     }
+
+    public function test_admin_can_access_bio_themes_preview(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->get('/dev/bio-themes');
+
+        $response->assertOk();
+    }
+
+    public function test_non_admin_cannot_access_bio_themes_preview(): void
+    {
+        $user = User::factory()->create(['role' => 'viewer']);
+
+        $response = $this->actingAs($user)->get('/dev/bio-themes');
+
+        $response->assertForbidden();
+    }
+
+    public function test_guest_is_redirected_from_bio_themes_preview(): void
+    {
+        $response = $this->get('/dev/bio-themes');
+
+        $response->assertRedirect('/login');
+    }
 }
+

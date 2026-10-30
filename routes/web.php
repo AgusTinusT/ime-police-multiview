@@ -42,6 +42,22 @@ Route::get('/admin', function () {
 // Dedicated Standalone Admin Command Hub (Protected by Auth & Admin Role)
 Route::middleware(['auth', 'admin'])->get('/dev/ui-kit', fn () => Inertia::render('Dev/UiKit'))->name('dev.ui-kit');
 
+// Bio-link theme QA: every preset rendered on a real profile (?slug= to pick one).
+Route::middleware(['auth', 'admin'])->get('/dev/bio-themes', function (\Illuminate\Http\Request $request) {
+    $slug = $request->query('slug') ?: \App\Models\OfficerBioProfile::query()
+        ->where('is_active', true)
+        ->where('is_suspended', false)
+        ->whereHas('officer', fn ($q) => $q->where('is_active', true)->whereNotNull('user_id'))
+        ->withCount('links')
+        ->orderByDesc('links_count')
+        ->value('slug');
+
+    return Inertia::render('Dev/BioThemes', [
+        'themes' => config('biolinks.theme_presets', []),
+        'sampleSlug' => $slug,
+    ]);
+})->name('dev.bio-themes');
+
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/officers', [OfficerManagementController::class, 'adminPage'])->name('admin.officers');
     Route::post('/api/sync-streams', [OfficerManagementController::class, 'syncStreams'])->name('admin.sync-streams');
