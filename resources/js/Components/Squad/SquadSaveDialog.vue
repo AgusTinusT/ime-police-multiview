@@ -143,6 +143,9 @@ const handleSave = async () => {
             }
         } else if (err.response?.status === 403) {
             errors.value.general = "Anda tidak memiliki izin untuk mengubah squad ini.";
+        } else if (err.response?.status === 429) {
+            const retry = Number(err.response.headers?.["retry-after"]) || 60;
+            errors.value.general = `Terlalu banyak percobaan simpan. Coba lagi dalam ${retry} detik.`;
         } else {
             errors.value.general = err.response?.data?.message || "Gagal menyimpan squad.";
         }

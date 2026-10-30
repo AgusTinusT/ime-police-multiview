@@ -352,8 +352,10 @@ use App\Http\Controllers\SquadController;
 Route::prefix('api/v1/squads')->group(function () {
     Route::get('/public', [SquadController::class, 'public'])->name('squads.public');
     Route::middleware('auth')->get('/mine', [SquadController::class, 'mine'])->name('squads.mine');
-    Route::middleware(['auth', 'throttle:30,1'])->post('/', [SquadController::class, 'store'])->name('squads.store');
-    Route::middleware(['auth', 'throttle:30,1'])->put('/{squad}', [SquadController::class, 'update'])->name('squads.update');
+    // Validation errors (422) count toward the rate limit, so iterating on
+    // a new squad name/members can trip it fast — 60/min keeps room for that.
+    Route::middleware(['auth', 'throttle:60,1'])->post('/', [SquadController::class, 'store'])->name('squads.store');
+    Route::middleware(['auth', 'throttle:60,1'])->put('/{squad}', [SquadController::class, 'update'])->name('squads.update');
     Route::middleware(['auth', 'throttle:30,1'])->delete('/{squad}', [SquadController::class, 'destroy'])->name('squads.destroy');
     Route::middleware(['auth', 'throttle:30,1'])->post('/{squad}/fork', [SquadController::class, 'fork'])->name('squads.fork');
     Route::get('/{slug}', [SquadController::class, 'show'])->name('squads.show');
