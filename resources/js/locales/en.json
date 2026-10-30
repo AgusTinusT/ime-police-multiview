@@ -83,7 +83,11 @@
   "footer": {
     "tagline": "IME RP Police Duty Multiview — Tactical Bodycam Monitoring Platform for Officers",
     "copyright": "© 2026 IME RP Police Duty. All rights reserved.",
-    "disclaimer": "This platform is created to expand visibility for San Andreas streamers & officers."
+    "disclaimer": "This platform is created to expand visibility for San Andreas streamers & officers.",
+    "col_explore": "Explore",
+    "col_for_officers": "For officers",
+    "col_help": "Help",
+    "officer_bio_link": "Officer bio-link"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -91,10 +95,14 @@
     "directory": "Officer Directory",
     "ranking": "Ranking",
     "clips": "TacClips",
+    "officers": "Officers",
+    "clip_studio": "Clip Studio",
+    "more": "More",
+    "my_biolink": "My bio-link",
     "updates": "Updates",
     "about": "About",
     "faq": "FAQ",
-    "feedback": "Feedback"
+    "feedback": "Send feedback"
   },
   "visibility_panel": {
     "title": "MANAGE OFFICER VISIBILITY",
@@ -151,7 +159,11 @@
   "footer": {
     "tagline": "IME RP Police Duty Multiview — Tactical Officer Bodycam Monitoring Platform",
     "copyright": "© 2026 IME RP Police Duty. All rights reserved.",
-    "disclaimer": "This platform was built to enhance the visibility of San Andreas streamers & officers."
+    "disclaimer": "This platform was built to enhance the visibility of San Andreas streamers & officers.",
+    "col_explore": "Explore",
+    "col_for_officers": "For officers",
+    "col_help": "Help",
+    "officer_bio_link": "Officer bio-link"
   },
   "nav": {
     "dashboard": "Home",
@@ -159,10 +171,14 @@
     "directory": "Officer Directory",
     "ranking": "Ranking",
     "clips": "TacClips",
+    "officers": "Officers",
+    "clip_studio": "Clip Studio",
+    "more": "More",
+    "my_biolink": "My bio-link",
     "updates": "Updates",
     "about": "About",
     "faq": "FAQ",
-    "feedback": "Feedback"
+    "feedback": "Send feedback"
   },
   "catalog": {
     "live_now": "Live now",

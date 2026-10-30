@@ -135,7 +135,11 @@
   "footer": {
     "tagline": "IME RP Police Duty Multiview — Platform Pemantauan Taktis Bodycam Perwira",
     "copyright": "© 2026 IME RP Police Duty. Hak cipta dilindungi.",
-    "disclaimer": "Platform ini dibuat untuk memperluas visibilitas streamer & perwira San Andreas."
+    "disclaimer": "Platform ini dibuat untuk memperluas visibilitas streamer & perwira San Andreas.",
+    "col_explore": "Jelajahi",
+    "col_for_officers": "Untuk perwira",
+    "col_help": "Bantuan",
+    "officer_bio_link": "Bio-link perwira"
   },
   "nav": {
     "dashboard": "Beranda",
@@ -143,10 +147,14 @@
     "directory": "Direktori Perwira",
     "ranking": "Ranking",
     "clips": "TacClips",
+    "officers": "Perwira",
+    "clip_studio": "Clip Studio",
+    "more": "Lainnya",
+    "my_biolink": "Bio-link saya",
     "updates": "Pembaruan",
     "about": "Tentang",
     "faq": "FAQ",
-    "feedback": "Feedback"
+    "feedback": "Kirim masukan"
   },
   "catalog": {
     "live_now": "Sedang live",

@@ -4,6 +4,13 @@ import { usePage, Link } from "@inertiajs/vue3";
 
 import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
 import { Badge } from "@/Components/ui/badge";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
+import { ChevronDown } from "@lucide/vue";
 import { cn } from "@/lib/utils";
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
@@ -106,7 +113,8 @@ onUnmounted(() => {
                 <Link
                     href="/"
                     class="flex items-center space-x-2 shrink-0 group cursor-pointer"
-                    title="Halaman Beranda Dashboard"
+                    :title="$t('nav.dashboard')"
+                    :aria-label="$t('nav.dashboard')"
                 >
                     <div
                         class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-md bg-card border border-border group-hover:border-primary/50 p-1 overflow-hidden transition"
@@ -137,21 +145,6 @@ onUnmounted(() => {
                 <!-- Desktop Navigation Links (>= md) -->
                 <nav class="hidden md:flex items-center space-x-1 shrink-0">
                     <Link
-                        href="/"
-                        :class="
-                            cn(
-                                'px-3 py-1.5 text-xs font-bold rounded-md transition shrink-0',
-                                isUrlActive('/')
-                                    ? 'text-primary-foreground bg-primary'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-                            )
-                        "
-                        title="Home Discovery Hub"
-                    >
-                        <span>{{ $t("nav.dashboard") }}</span>
-                    </Link>
-
-                    <Link
                         href="/multiview"
                         :class="
                             cn(
@@ -161,28 +154,9 @@ onUnmounted(() => {
                                     : 'text-muted-foreground hover:text-foreground hover:bg-accent',
                             )
                         "
-                        title="Stand-alone Multiview Stage"
+                        :title="$t('nav.multiview')"
                     >
                         <span>{{ $t("nav.multiview") }}</span>
-                    </Link>
-
-                    <!-- Clip Studio Feature Link -->
-                    <Link
-                        href="/clipper"
-                        :class="
-                            cn(
-                                'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0 flex items-center gap-1.5',
-                                isUrlActive('/clipper')
-                                    ? 'text-primary-foreground bg-primary font-bold'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-                            )
-                        "
-                        title="Clip Studio"
-                    >
-                        <span>Clip Studio</span>
-                        <Badge variant="success" class="px-1.5 py-0 font-mono font-extrabold">
-                            BETA
-                        </Badge>
                     </Link>
 
                     <Link
@@ -195,39 +169,67 @@ onUnmounted(() => {
                                     : 'text-muted-foreground hover:text-foreground hover:bg-accent',
                             )
                         "
-                        title="TacClips — Kumpulan Klip Momen Aksi Kepolisian"
+                        :title="$t('nav.clips')"
                     >
                         <span>{{ $t("nav.clips") }}</span>
                     </Link>
 
-                    <Link
-                        href="/officers"
-                        :class="
-                            cn(
-                                'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
-                                isUrlActive('/officers')
-                                    ? 'text-primary-foreground bg-primary font-bold'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-                            )
-                        "
-                        title="Direktori Perwira Kepolisian"
-                    >
-                        <span>{{ $t("nav.directory") }}</span>
-                    </Link>
+                    <!-- Dropdown Menu Perwira (Direktori + Ranking) -->
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <button
+                                type="button"
+                                :class="
+                                    cn(
+                                        'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0 flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                                        isUrlActive('/officers') || isUrlActive('/ranking')
+                                            ? 'text-primary-foreground bg-primary font-bold'
+                                            : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                                    )
+                                "
+                                :title="$t('nav.officers')"
+                            >
+                                <span>{{ $t("nav.officers") }}</span>
+                                <ChevronDown class="size-3.5 opacity-70" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" class="w-48 font-sans">
+                            <DropdownMenuItem as-child>
+                                <Link
+                                    href="/officers"
+                                    class="w-full cursor-pointer flex items-center justify-between"
+                                >
+                                    <span>{{ $t("nav.directory") }}</span>
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem as-child>
+                                <Link
+                                    href="/ranking"
+                                    class="w-full cursor-pointer flex items-center justify-between"
+                                >
+                                    <span>{{ $t("nav.ranking") }}</span>
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
+                    <!-- Clip Studio Feature Link -->
                     <Link
-                        href="/ranking"
+                        href="/clipper"
                         :class="
                             cn(
-                                'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
-                                isUrlActive('/ranking')
+                                'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0 flex items-center gap-1.5',
+                                isUrlActive('/clipper')
                                     ? 'text-primary-foreground bg-primary font-bold'
                                     : 'text-muted-foreground hover:text-foreground hover:bg-accent',
                             )
                         "
-                        title="Ranking Perwira Kepolisian"
+                        :title="$t('nav.clip_studio')"
                     >
-                        <span>{{ $t("nav.ranking") }}</span>
+                        <span>{{ $t("nav.clip_studio") }}</span>
+                        <Badge variant="success" class="px-1.5 py-0 font-mono font-extrabold">
+                            BETA
+                        </Badge>
                     </Link>
                 </nav>
             </div>

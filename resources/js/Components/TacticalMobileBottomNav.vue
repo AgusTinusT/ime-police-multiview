@@ -13,12 +13,15 @@ import { cn } from "@/lib/utils";
 import {
     ChevronRight,
     Ellipsis,
+    FileText,
     HelpCircle,
     House,
     Info,
     LayoutGrid,
+    Link2,
     MessageSquare,
     Scissors,
+    Sparkles,
     Trophy,
     Users,
     Video,
@@ -88,7 +91,7 @@ onUnmounted(() => {
                             class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
                         ></span>
                     </div>
-                    <span class="text-xs tracking-tight mt-0.5">Home</span>
+                    <span class="text-xs tracking-tight mt-0.5">{{ $t("nav.dashboard") }}</span>
                 </Link>
 
                 <!-- TAB 2: MULTIVIEW -->
@@ -110,7 +113,7 @@ onUnmounted(() => {
                             class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
                         ></span>
                     </div>
-                    <span class="text-xs tracking-tight mt-0.5">Multiview</span>
+                    <span class="text-xs tracking-tight mt-0.5">{{ $t("nav.multiview") }}</span>
                 </Link>
 
                 <!-- TAB 3: TACCLIPS -->
@@ -132,42 +135,42 @@ onUnmounted(() => {
                             class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
                         ></span>
                     </div>
-                    <span class="text-xs tracking-tight mt-0.5">TacClips</span>
+                    <span class="text-xs tracking-tight mt-0.5">{{ $t("nav.clips") }}</span>
                 </Link>
 
-                <!-- TAB 4: CLIPPER -->
+                <!-- TAB 4: PERWIRA (OFFICERS & RANKING) -->
                 <Link
-                    href="/clipper"
+                    href="/officers"
                     :class="
                         cn(
                             'flex-1 min-h-12 flex flex-col items-center justify-center py-1.5 transition-colors',
-                            isUrlActive('/clipper')
+                            isUrlActive('/officers') || isUrlActive('/ranking')
                                 ? 'text-primary font-bold'
                                 : 'text-muted-foreground hover:text-foreground',
                         )
                     "
                 >
                     <div class="relative p-0.5">
-                        <Scissors class="size-5" />
+                        <Users class="size-5" />
                         <span
-                            v-if="isUrlActive('/clipper')"
+                            v-if="isUrlActive('/officers') || isUrlActive('/ranking')"
                             class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
                         ></span>
                     </div>
-                    <span class="text-xs tracking-tight mt-0.5">Clipper</span>
+                    <span class="text-xs tracking-tight mt-0.5">{{ $t("nav.officers") }}</span>
                 </Link>
 
                 <!-- TAB 5: LAINNYA (MORE / BOTTOM SHEET TRIGGER) -->
                 <button
                     type="button"
-                    aria-label="Menu navigasi lainnya"
+                    :aria-label="$t('nav.more')"
                     @click="openBottomSheet"
                     class="flex-1 min-h-12 flex flex-col items-center justify-center py-1.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 >
                     <div class="relative p-0.5">
                         <Ellipsis class="size-5" />
                     </div>
-                    <span class="text-xs tracking-tight mt-0.5">Lainnya</span>
+                    <span class="text-xs tracking-tight mt-0.5">{{ $t("nav.more") }}</span>
                 </button>
             </div>
         </div>
@@ -189,196 +192,153 @@ onUnmounted(() => {
             </SheetHeader>
 
             <div class="p-5 space-y-5 pb-8">
-                <!-- Navigasi Utama List -->
-                <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1 font-mono">
-                        Menu Utama
-                    </h4>
-                    <div class="space-y-1">
-                        <Link
-                            href="/"
-                            @click="closeBottomSheet"
-                            :class="
-                                cn(
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/')
-                                        ? 'bg-primary/15 text-primary border border-primary/30'
-                                        : 'bg-background/60 text-foreground hover:bg-accent',
-                                )
-                            "
-                        >
-                            <div class="flex items-center gap-3">
-                                <House class="size-4 text-primary" />
-                                <span>Beranda (Home)</span>
+                <!-- Navigasi Tambahan List -->
+                <div class="space-y-1">
+                    <Link
+                        href="/clipper"
+                        @click="closeBottomSheet"
+                        :class="
+                            cn(
+                                'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                isUrlActive('/clipper')
+                                    ? 'bg-primary/15 text-primary border border-primary/30'
+                                    : 'bg-background/60 text-foreground hover:bg-accent',
+                            )
+                        "
+                    >
+                        <div class="flex items-center gap-3">
+                            <Scissors class="size-4 text-primary" />
+                            <div class="flex items-center gap-2">
+                                <span>{{ $t("nav.clip_studio") }}</span>
+                                <Badge variant="success" class="font-mono font-bold">
+                                    BETA
+                                </Badge>
                             </div>
-                            <ChevronRight class="size-4 text-muted-foreground" />
-                        </Link>
+                        </div>
+                        <ChevronRight class="size-4 text-muted-foreground" />
+                    </Link>
 
-                        <Link
-                            href="/multiview"
-                            @click="closeBottomSheet"
-                            :class="
-                                cn(
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/multiview')
-                                        ? 'bg-primary/15 text-primary border border-primary/30'
-                                        : 'bg-background/60 text-foreground hover:bg-accent',
-                                )
-                            "
-                        >
-                            <div class="flex items-center gap-3">
-                                <LayoutGrid class="size-4 text-primary" />
-                                <span>Multiview Stage</span>
-                            </div>
-                            <ChevronRight class="size-4 text-muted-foreground" />
-                        </Link>
+                    <Link
+                        href="/ranking"
+                        @click="closeBottomSheet"
+                        :class="
+                            cn(
+                                'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                isUrlActive('/ranking')
+                                    ? 'bg-primary/15 text-primary border border-primary/30'
+                                    : 'bg-background/60 text-foreground hover:bg-accent',
+                            )
+                        "
+                    >
+                        <div class="flex items-center gap-3">
+                            <Trophy class="size-4 text-primary" />
+                            <span>{{ $t("nav.ranking") }}</span>
+                        </div>
+                        <ChevronRight class="size-4 text-muted-foreground" />
+                    </Link>
 
-                        <Link
-                            href="/clipper"
-                            @click="closeBottomSheet"
-                            :class="
-                                cn(
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/clipper')
-                                        ? 'bg-primary/15 text-primary border border-primary/30'
-                                        : 'bg-background/60 text-foreground hover:bg-accent',
-                                )
-                            "
-                        >
-                            <div class="flex items-center gap-3">
-                                <Scissors class="size-4 text-primary" />
-                                <div class="flex items-center gap-2">
-                                    <span>Clip Studio (Video Trimmer)</span>
-                                    <Badge variant="success" class="font-mono font-bold">
-                                        BETA
-                                    </Badge>
-                                </div>
-                            </div>
-                            <ChevronRight class="size-4 text-muted-foreground" />
-                        </Link>
-
-                        <Link
-                            href="/action-clips"
-                            @click="closeBottomSheet"
-                            :class="
-                                cn(
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/action-clips') || isUrlActive('/clips')
-                                        ? 'bg-primary/15 text-primary border border-primary/30'
-                                        : 'bg-background/60 text-foreground hover:bg-accent',
-                                )
-                            "
-                        >
-                            <div class="flex items-center gap-3">
-                                <Video class="size-4 text-primary" />
-                                <span>TacClips Video</span>
-                            </div>
-                            <ChevronRight class="size-4 text-muted-foreground" />
-                        </Link>
-
-                        <Link
-                            href="/officers"
-                            @click="closeBottomSheet"
-                            :class="
-                                cn(
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/officers')
-                                        ? 'bg-primary/15 text-primary border border-primary/30'
-                                        : 'bg-background/60 text-foreground hover:bg-accent',
-                                )
-                            "
-                        >
-                            <div class="flex items-center gap-3">
-                                <Users class="size-4 text-primary" />
-                                <span>Direktori Perwira (Officers)</span>
-                            </div>
-                            <ChevronRight class="size-4 text-muted-foreground" />
-                        </Link>
-
-                        <Link
-                            href="/ranking"
-                            @click="closeBottomSheet"
-                            :class="
-                                cn(
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/ranking')
-                                        ? 'bg-primary/15 text-primary border border-primary/30'
-                                        : 'bg-background/60 text-foreground hover:bg-accent',
-                                )
-                            "
-                        >
-                            <div class="flex items-center gap-3">
-                                <Trophy class="size-4 text-primary" />
-                                <span>Ranking Perwira</span>
-                            </div>
-                            <ChevronRight class="size-4 text-muted-foreground" />
-                        </Link>
-                    </div>
+                    <!-- Bio-link saya (hanya jika officer) -->
+                    <Link
+                        v-if="$page.props.auth?.user?.is_officer"
+                        href="/dashboard/bio-links"
+                        @click="closeBottomSheet"
+                        :class="
+                            cn(
+                                'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                isUrlActive('/dashboard/bio-links')
+                                    ? 'bg-primary/15 text-primary border border-primary/30'
+                                    : 'bg-background/60 text-foreground hover:bg-accent',
+                            )
+                        "
+                    >
+                        <div class="flex items-center gap-3">
+                            <Link2 class="size-4 text-primary" />
+                            <span>{{ $t("nav.my_biolink") }}</span>
+                        </div>
+                        <ChevronRight class="size-4 text-muted-foreground" />
+                    </Link>
                 </div>
 
-                <!-- Informasi Tambahan List -->
-                <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1 font-mono">
-                        Informasi & Bantuan
-                    </h4>
-                    <div class="space-y-1">
-                        <Link
-                            href="/about"
-                            @click="closeBottomSheet"
-                            :class="
-                                cn(
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/about')
-                                        ? 'bg-primary/15 text-primary border border-primary/30'
-                                        : 'bg-background/60 text-foreground/80 hover:bg-accent',
-                                )
-                            "
-                        >
-                            <div class="flex items-center gap-3">
-                                <Info class="size-4 text-muted-foreground" />
-                                <span>Tentang IME Police</span>
-                            </div>
-                            <ChevronRight class="size-4 text-muted-foreground" />
-                        </Link>
+                <!-- Separator -->
+                <div class="h-px bg-border my-2" />
 
-                        <Link
-                            href="/faq"
-                            @click="closeBottomSheet"
-                            :class="
-                                cn(
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/faq')
-                                        ? 'bg-primary/15 text-primary border border-primary/30'
-                                        : 'bg-background/60 text-foreground/80 hover:bg-accent',
-                                )
-                            "
-                        >
-                            <div class="flex items-center gap-3">
-                                <HelpCircle class="size-4 text-muted-foreground" />
-                                <span>Tanya Jawab (FAQ)</span>
-                            </div>
-                            <ChevronRight class="size-4 text-muted-foreground" />
-                        </Link>
+                <!-- Informasi & Bantuan List -->
+                <div class="space-y-1">
+                    <Link
+                        href="/updates"
+                        @click="closeBottomSheet"
+                        :class="
+                            cn(
+                                'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                isUrlActive('/updates')
+                                    ? 'bg-primary/15 text-primary border border-primary/30'
+                                    : 'bg-background/60 text-foreground/80 hover:bg-accent',
+                            )
+                        "
+                    >
+                        <div class="flex items-center gap-3">
+                            <Sparkles class="size-4 text-muted-foreground" />
+                            <span>{{ $t("nav.updates") }}</span>
+                        </div>
+                        <ChevronRight class="size-4 text-muted-foreground" />
+                    </Link>
 
-                        <Link
-                            href="/feedback"
-                            @click="closeBottomSheet"
-                            :class="
-                                cn(
-                                    'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                    isUrlActive('/feedback')
-                                        ? 'bg-primary/15 text-primary border border-primary/30'
-                                        : 'bg-background/60 text-foreground/80 hover:bg-accent',
-                                )
-                            "
-                        >
-                            <div class="flex items-center gap-3">
-                                <MessageSquare class="size-4 text-muted-foreground" />
-                                <span>Kirim Masukan (Feedback)</span>
-                            </div>
-                            <ChevronRight class="size-4 text-muted-foreground" />
-                        </Link>
-                    </div>
+                    <Link
+                        href="/about"
+                        @click="closeBottomSheet"
+                        :class="
+                            cn(
+                                'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                isUrlActive('/about')
+                                    ? 'bg-primary/15 text-primary border border-primary/30'
+                                    : 'bg-background/60 text-foreground/80 hover:bg-accent',
+                            )
+                        "
+                    >
+                        <div class="flex items-center gap-3">
+                            <Info class="size-4 text-muted-foreground" />
+                            <span>{{ $t("nav.about") }}</span>
+                        </div>
+                        <ChevronRight class="size-4 text-muted-foreground" />
+                    </Link>
+
+                    <Link
+                        href="/faq"
+                        @click="closeBottomSheet"
+                        :class="
+                            cn(
+                                'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                isUrlActive('/faq')
+                                    ? 'bg-primary/15 text-primary border border-primary/30'
+                                    : 'bg-background/60 text-foreground/80 hover:bg-accent',
+                            )
+                        "
+                    >
+                        <div class="flex items-center gap-3">
+                            <HelpCircle class="size-4 text-muted-foreground" />
+                            <span>{{ $t("nav.faq") }}</span>
+                        </div>
+                        <ChevronRight class="size-4 text-muted-foreground" />
+                    </Link>
+
+                    <Link
+                        href="/feedback"
+                        @click="closeBottomSheet"
+                        :class="
+                            cn(
+                                'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
+                                isUrlActive('/feedback')
+                                    ? 'bg-primary/15 text-primary border border-primary/30'
+                                    : 'bg-background/60 text-foreground/80 hover:bg-accent',
+                            )
+                        "
+                    >
+                        <div class="flex items-center gap-3">
+                            <MessageSquare class="size-4 text-muted-foreground" />
+                            <span>{{ $t("nav.feedback") }}</span>
+                        </div>
+                        <ChevronRight class="size-4 text-muted-foreground" />
+                    </Link>
                 </div>
 
                 <!-- Platform Version Footer -->

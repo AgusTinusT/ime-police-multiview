@@ -4,15 +4,7 @@ import { useI18n } from "vue-i18n";
 import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
-import {
-    Crosshair,
-    Globe,
-    HelpCircle,
-    Info,
-    MessageSquareWarning,
-    Scissors,
-    Users,
-} from "@lucide/vue";
+import { Globe } from "@lucide/vue";
 
 const { locale } = useI18n();
 
@@ -23,15 +15,15 @@ const toggleLanguage = () => {
 
 <template>
     <footer
-        class="mt-auto bg-background border-t border-border text-muted-foreground font-sans pt-8 pb-6 px-4 sm:px-6 lg:px-8"
+        class="mt-auto bg-background border-t border-border text-muted-foreground font-sans pt-8 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-6 px-4 sm:px-6 lg:px-8"
     >
         <div class="max-w-(--breakpoint-2xl) mx-auto space-y-6">
-            <!-- Top Footer Grid: Branding, Quick Navigation & System Status -->
+            <!-- Top Footer Grid: Branding, 3 Columns Links, & Language Switcher -->
             <div
                 class="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-border"
             >
-                <!-- Branding & Community Info (Cols 1-5) -->
-                <div class="md:col-span-5 space-y-3">
+                <!-- Branding & Community Info (Cols 1-4) -->
+                <div class="md:col-span-4 space-y-3">
                     <div class="flex items-center space-x-3">
                         <div
                             class="w-10 h-10 rounded-md bg-card border border-border p-1 overflow-hidden shrink-0"
@@ -60,73 +52,127 @@ const toggleLanguage = () => {
                     </p>
                 </div>
 
-                <!-- Navigation Quick Links (Cols 6-8) -->
-                <div class="md:col-span-4 space-y-2">
-                    <h4
-                        class="text-xs font-mono font-bold uppercase tracking-wider text-primary"
-                    >
-                        Navigasi Platform
-                    </h4>
-                    <ul class="grid grid-cols-2 gap-2 text-xs font-medium">
-                        <li>
-                            <Link
-                                href="/multiview"
-                                class="text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 py-1"
-                            >
-                                <Crosshair class="size-3.5 shrink-0" />
-                                <span>{{ $t("nav.multiview") }}</span>
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="/clipper"
-                                class="text-primary hover:text-primary/80 font-bold transition flex items-center gap-1.5 py-1"
-                            >
-                                <Scissors class="size-3.5 shrink-0" />
-                                <span>Clip Studio (BETA)</span>
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="/officers"
-                                class="text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 py-1"
-                            >
-                                <Users class="size-3.5 shrink-0" />
-                                <span>{{ $t("nav.directory") }}</span>
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="/about"
-                                class="text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 py-1"
-                            >
-                                <Info class="size-3.5 shrink-0" />
-                                <span>{{ $t("nav.about") }}</span>
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="/faq"
-                                class="text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 py-1"
-                            >
-                                <HelpCircle class="size-3.5 shrink-0" />
-                                <span>{{ $t("nav.faq") }}</span>
-                            </Link>
-                        </li>
-                        <li class="col-span-2">
-                            <Link
-                                href="/feedback"
-                                class="text-muted-foreground hover:text-foreground transition flex items-center gap-1.5 py-1"
-                            >
-                                <MessageSquareWarning class="size-3.5 shrink-0" />
-                                <span>{{ $t("nav.feedback") }}</span>
-                            </Link>
-                        </li>
-                    </ul>
+                <!-- 3 Columns Links (Cols 5-10) -->
+                <div class="md:col-span-6 grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <!-- Kolom 1: Jelajahi -->
+                    <div class="space-y-2">
+                        <h4
+                            class="text-xs font-mono font-bold uppercase tracking-wider text-foreground"
+                        >
+                            {{ $t("footer.col_explore") }}
+                        </h4>
+                        <ul class="space-y-1.5 text-xs font-medium">
+                            <li>
+                                <Link
+                                    href="/multiview"
+                                    class="text-muted-foreground hover:text-foreground transition block py-0.5"
+                                >
+                                    {{ $t("nav.multiview") }}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/action-clips"
+                                    class="text-muted-foreground hover:text-foreground transition block py-0.5"
+                                >
+                                    {{ $t("nav.clips") }}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/officers"
+                                    class="text-muted-foreground hover:text-foreground transition block py-0.5"
+                                >
+                                    {{ $t("nav.directory") }}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/ranking"
+                                    class="text-muted-foreground hover:text-foreground transition block py-0.5"
+                                >
+                                    {{ $t("nav.ranking") }}
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Kolom 2: Untuk perwira -->
+                    <div class="space-y-2">
+                        <h4
+                            class="text-xs font-mono font-bold uppercase tracking-wider text-foreground"
+                        >
+                            {{ $t("footer.col_for_officers") }}
+                        </h4>
+                        <ul class="space-y-1.5 text-xs font-medium">
+                            <li>
+                                <Link
+                                    href="/clipper"
+                                    class="text-muted-foreground hover:text-foreground transition inline-flex items-center gap-1.5 py-0.5"
+                                >
+                                    <span>{{ $t("nav.clip_studio") }}</span>
+                                    <Badge variant="success" class="font-mono text-xs px-1.5 py-0">
+                                        BETA
+                                    </Badge>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/dashboard/bio-links"
+                                    class="text-muted-foreground hover:text-foreground transition block py-0.5"
+                                >
+                                    {{ $t("footer.officer_bio_link") }}
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Kolom 3: Bantuan -->
+                    <div class="space-y-2 col-span-2 md:col-span-1">
+                        <h4
+                            class="text-xs font-mono font-bold uppercase tracking-wider text-foreground"
+                        >
+                            {{ $t("footer.col_help") }}
+                        </h4>
+                        <ul class="space-y-1.5 text-xs font-medium">
+                            <li>
+                                <Link
+                                    href="/about"
+                                    class="text-muted-foreground hover:text-foreground transition block py-0.5"
+                                >
+                                    {{ $t("nav.about") }}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/faq"
+                                    class="text-muted-foreground hover:text-foreground transition block py-0.5"
+                                >
+                                    {{ $t("nav.faq") }}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/updates"
+                                    class="text-muted-foreground hover:text-foreground transition block py-0.5"
+                                >
+                                    {{ $t("nav.updates") }}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    href="/feedback"
+                                    class="text-muted-foreground hover:text-foreground transition block py-0.5"
+                                >
+                                    {{ $t("nav.feedback") }}
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
-                <!-- Legal / Language Switcher (Cols 9-12) -->
-                <div class="md:col-span-3 space-y-3">
+                <!-- Legal / Language Switcher (Cols 11-12) -->
+                <div class="md:col-span-2 space-y-3">
                     <h4
                         class="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground"
                     >
