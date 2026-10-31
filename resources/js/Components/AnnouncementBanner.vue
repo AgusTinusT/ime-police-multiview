@@ -173,10 +173,11 @@ onUnmounted(() => stopTimer());
                 </div>
             </div>
 
-            <!-- CTA row: full-width button on mobile, inline arrows on desktop -->
+            <!-- CTA row: full-width button on mobile, inline arrows on desktop.
+                 The close button floats top-right, so leave it room (pr-10). -->
             <div
                 v-if="currentAnnouncement.action_url && currentAnnouncement.action_text || props.announcements.length > 1"
-                class="flex shrink-0 items-center gap-1 sm:ml-auto sm:items-start sm:pt-0.5"
+                class="flex shrink-0 items-center gap-1 sm:ml-auto sm:items-start sm:pt-0.5 sm:pr-10"
             >
                 <Button
                     v-if="currentAnnouncement.action_url && currentAnnouncement.action_text"
