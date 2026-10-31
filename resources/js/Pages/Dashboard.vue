@@ -57,6 +57,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    recommendedSites: {
+        type: Array,
+        default: () => [],
+    },
     lastSyncedAt: {
         type: String,
         default: "",
@@ -388,22 +392,14 @@ const fetchAnnouncements = async () => {
     }
 };
 
-const recommendedSites = ref([]);
-const fetchRecommendedSites = async () => {
-    try {
-        const res = await axios.get("/api/v1/recommended-sites");
-        recommendedSites.value = Array.isArray(res.data?.data) ? res.data.data : [];
-    } catch {
-        recommendedSites.value = [];
-    }
-};
+// recommendedSites arrives in the Inertia payload, so no extra request.
+const recommendedSites = computed(() => props.recommendedSites || []);
 
 onMounted(() => {
     fetchCommunityClips();
     fetchMySquads();
     fetchPublicSquads();
     fetchAnnouncements();
-    fetchRecommendedSites();
 });
 </script>
 

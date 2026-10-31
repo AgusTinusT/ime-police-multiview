@@ -123,6 +123,10 @@ class PoliceCommandController extends Controller
             'deptStats' => $deptStats,
             'monthlyLeaderboard' => $this->getMonthlyLeaderboard(10, true),
             'supportOfficers' => $this->getSupportOfficers(),
+            // Ship recommended sites with the initial payload so the row paints
+            // on first render instead of after an extra round trip.
+            'recommendedSites' => \App\Models\RecommendedSite::where('is_active', true)
+                ->orderBy('sort_order')->orderBy('id')->get(),
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
     }
