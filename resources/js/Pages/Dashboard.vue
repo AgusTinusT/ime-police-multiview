@@ -531,12 +531,13 @@ onMounted(() => {
                     :title="$t('dashboard.recommended_sites_title')"
                     :subtitle="$t('dashboard.recommended_sites_subtitle')"
                 >
-                    <!-- Full-width stacked: the poster+copy layout needs room to breathe. -->
+                    <!-- Zigzag alternating layout gives rhythm between stacked cards. -->
                     <div class="w-full shrink-0 space-y-4">
                         <RecommendedSiteCard
-                            v-for="site in recommendedSites"
+                            v-for="(site, idx) in recommendedSites"
                             :key="site.id"
                             :site="site"
+                            :reverse="idx % 2 === 1"
                         />
                     </div>
                 </CatalogRow>
