@@ -100,7 +100,7 @@ class RecommendedSitesTest extends TestCase
             'poster_name' => 'LOS SANTOS POLICE DEPARTMENT',
             'poster_subtitle' => 'Handbook Internal',
             'poster_image_url' => '/images/recommended/lspd-sprite.webp',
-            'background_image_url' => '/images/recommended/lspd-background.png',
+            'background_image_url' => '/images/recommended/lspd-background.webp',
             'url' => 'https://ucup-meletup.site/',
             'cta_text' => 'Kunjungi website',
             'description' => 'Panduan lapangan untuk anggota Los Santos Police Department.',
