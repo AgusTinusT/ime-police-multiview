@@ -124,47 +124,65 @@ onUnmounted(() => stopTimer());
             }"
         />
 
-        <div class="relative flex items-start gap-3 p-3 sm:gap-4 sm:p-4">
-            <!-- Icon / emoji -->
-            <div
-                :class="cn('flex size-10 shrink-0 items-center justify-center rounded-lg border border-current/20 text-lg', toneClasses.icon)"
-                aria-hidden="true"
-            >
-                <span v-if="iconIsEmoji">{{ currentAnnouncement.icon }}</span>
-                <Megaphone v-else class="size-5" />
-            </div>
+        <!-- Close button floats so it doesn't eat width on mobile -->
+        <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Tutup pengumuman"
+            title="Tutup"
+            class="absolute right-1.5 top-1.5 z-10 text-muted-foreground hover:text-foreground"
+            @click="dismissBanner"
+        >
+            <X class="size-4" />
+        </Button>
 
-            <!-- Text -->
-            <div class="min-w-0 flex-1 space-y-1">
-                <div class="flex items-center gap-2">
-                    <span
-                        :class="cn('text-xs font-mono font-bold uppercase tracking-wider', toneClasses.label)"
-                    >
-                        {{ currentAnnouncement.badge_text || "Pengumuman" }}
-                    </span>
-                    <span
-                        v-if="props.announcements.length > 1"
-                        class="text-xs text-muted-foreground"
-                    >{{ activeIndex + 1 }}/{{ props.announcements.length }}</span>
+        <div class="relative flex flex-col gap-3 p-3 sm:flex-row sm:items-start sm:gap-4 sm:p-4">
+            <div class="flex items-start gap-3 min-w-0 flex-1 sm:gap-4">
+                <!-- Icon / emoji -->
+                <div
+                    :class="cn('flex size-10 shrink-0 items-center justify-center rounded-lg border border-current/20 text-lg', toneClasses.icon)"
+                    aria-hidden="true"
+                >
+                    <span v-if="iconIsEmoji">{{ currentAnnouncement.icon }}</span>
+                    <Megaphone v-else class="size-5" />
                 </div>
 
-                <h3 class="text-sm font-semibold text-foreground sm:text-base">
-                    {{ currentAnnouncement.title }}
-                </h3>
+                <!-- Text -->
+                <div class="min-w-0 flex-1 space-y-1 pr-8 sm:pr-0">
+                    <div class="flex items-center gap-2">
+                        <span
+                            :class="cn('text-xs font-mono font-bold uppercase tracking-wider', toneClasses.label)"
+                        >
+                            {{ currentAnnouncement.badge_text || "Pengumuman" }}
+                        </span>
+                        <span
+                            v-if="props.announcements.length > 1"
+                            class="text-xs text-muted-foreground"
+                        >{{ activeIndex + 1 }}/{{ props.announcements.length }}</span>
+                    </div>
 
-                <p
-                    v-if="currentAnnouncement.message"
-                    class="whitespace-pre-line text-sm text-muted-foreground"
-                >{{ currentAnnouncement.message }}</p>
+                    <h3 class="text-sm font-semibold text-foreground sm:text-base">
+                        {{ currentAnnouncement.title }}
+                    </h3>
+
+                    <p
+                        v-if="currentAnnouncement.message"
+                        class="whitespace-pre-line text-sm text-muted-foreground"
+                    >{{ currentAnnouncement.message }}</p>
+                </div>
             </div>
 
-            <!-- Controls -->
-            <div class="flex shrink-0 items-start gap-1">
+            <!-- CTA row: full-width button on mobile, inline arrows on desktop -->
+            <div
+                v-if="currentAnnouncement.action_url && currentAnnouncement.action_text || props.announcements.length > 1"
+                class="flex shrink-0 items-center gap-1 sm:ml-auto sm:items-start sm:pt-0.5"
+            >
                 <Button
                     v-if="currentAnnouncement.action_url && currentAnnouncement.action_text"
                     as-child
                     size="sm"
-                    class="gap-1.5"
+                    class="w-full gap-1.5 sm:w-auto"
                 >
                     <a :href="currentAnnouncement.action_url" target="_blank" rel="noopener noreferrer">
                         <span>{{ currentAnnouncement.action_text }}</span>
@@ -195,17 +213,6 @@ onUnmounted(() => stopTimer());
                     @click="nextSlide"
                 >
                     <ChevronRight class="size-4" />
-                </Button>
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Tutup pengumuman"
-                    title="Tutup"
-                    class="text-muted-foreground hover:text-foreground"
-                    @click="dismissBanner"
-                >
-                    <X class="size-4" />
                 </Button>
             </div>
         </div>
