@@ -25,7 +25,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/Components/ui/dialog";
-import { EmptyState } from "@/Components/tactical";
+import { EmptyState, SectionHeader } from "@/Components/tactical";
 import { cn } from "@/lib/utils";
 
 const emit = defineEmits(["toast"]);
@@ -126,22 +126,11 @@ onMounted(() => {
 
 <template>
     <div class="space-y-5 text-xs">
-        <!-- HEADER & FILTER BAR -->
-        <Card>
-            <CardContent class="p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-sm font-bold text-foreground uppercase flex items-center gap-2 flex-wrap">
-                        <Award class="size-4 text-primary" />
-                        <span>Pengajuan Pangkat &amp; Kesatuan</span>
-                        <Badge variant="outline" class="bg-info/15 text-info border-info/30 font-bold">
-                            KOMANDO REVIEW
-                        </Badge>
-                    </h2>
-                    <p class="text-muted-foreground text-xs mt-0.5">
-                        Tinjau dan verifikasi pengajuan kenaikan pangkat atau mutasi kesatuan dari perwira aktif.
-                    </p>
-                </div>
-
+        <SectionHeader
+            title="Pengajuan pangkat"
+            description="Tinjau pengajuan kenaikan pangkat dan mutasi kesatuan dari perwira aktif."
+        >
+            <template #actions>
                 <div class="flex items-center gap-2 flex-wrap">
                     <div class="inline-flex rounded-lg bg-muted p-1 border border-border gap-1">
                         <Button
@@ -165,8 +154,8 @@ onMounted(() => {
                         {{ isLoading ? "Memuat..." : "Refresh" }}
                     </Button>
                 </div>
-            </CardContent>
-        </Card>
+            </template>
+        </SectionHeader>
 
         <!-- TABLE OF REQUESTS -->
         <Card class="overflow-hidden">

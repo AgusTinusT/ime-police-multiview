@@ -33,7 +33,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/Components/ui/dialog";
-import { EmptyState } from "@/Components/tactical";
+import { EmptyState, SectionHeader } from "@/Components/tactical";
 import { cn } from "@/lib/utils";
 
 const emit = defineEmits(["toast", "updated"]);
@@ -164,20 +164,11 @@ defineExpose({
 
 <template>
     <div class="space-y-4 text-xs">
-        <!-- HEADER & FILTER TOOLBAR -->
-        <Card>
-            <CardContent class="p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <div>
-                    <h2 class="text-sm font-bold text-foreground uppercase flex items-center gap-2">
-                        <ShieldCheck class="size-4 text-primary" />
-                        <span>Antrean Peninjauan Klaim Akun Perwira</span>
-                    </h2>
-                    <p class="text-muted-foreground text-xs mt-0.5">
-                        Verifikasi identitas streamer &amp; bind profil dinas 1-to-1 dengan pencegahan impersonasi.
-                    </p>
-                </div>
-
-                <!-- Filters -->
+        <SectionHeader
+            title="Klaim profil officer"
+            description="Verifikasi identitas streamer dan ikat ke profil dinas."
+        >
+            <template #actions>
                 <div class="flex items-center gap-1.5 flex-wrap">
                     <Button
                         v-for="st in statusOptions"
@@ -199,8 +190,8 @@ defineExpose({
                         <RefreshCw :class="cn('size-4', isLoading && 'motion-safe:animate-spin')" />
                     </Button>
                 </div>
-            </CardContent>
-        </Card>
+            </template>
+        </SectionHeader>
 
         <!-- CLAIMS TABLE -->
         <Card class="overflow-hidden">

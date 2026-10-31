@@ -2001,14 +2001,12 @@ onUnmounted(() => {
 
             <!-- TAB 3: TACTICAL CERTIFICATIONS -->
             <div v-if="activeTab === 'certifications'" class="space-y-6 font-mono text-xs">
-                <!-- Cert Add Control -->
+                <SectionHeader
+                    title="Kualifikasi"
+                    description="Beri kualifikasi taktis kepada personel."
+                />
                 <Card>
-                    <CardHeader class="pb-3">
-                        <CardTitle class="text-sm font-bold uppercase font-mono">
-                            Pemberian Kualifikasi Taktis Personel
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                    <CardContent class="pt-6">
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                             <select
                                 v-model="certOfficerId"

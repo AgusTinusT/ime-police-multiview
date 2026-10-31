@@ -40,7 +40,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/Components/ui/dialog";
-import { EmptyState } from "@/Components/tactical";
+import { EmptyState, SectionHeader } from "@/Components/tactical";
 import { cn } from "@/lib/utils";
 
 const emit = defineEmits(["toast"]);
@@ -320,6 +320,10 @@ onMounted(() => {
 
 <template>
     <div class="space-y-4 text-xs">
+        <SectionHeader
+            title="Moderasi bio-link"
+            description="Kelola tautan publik dan daftar domain terlarang."
+        />
         <!-- SUB-NAVIGATION BAR -->
         <Card>
             <CardContent class="p-3 flex flex-wrap items-center justify-between gap-3">
