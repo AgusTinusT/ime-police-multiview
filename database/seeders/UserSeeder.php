@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\UserWatchlist;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -93,10 +92,6 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'role' => 'member',
                 'clipper_tier' => 'free',
-                'watchlist' => [
-                    ['video_id' => 'v2u59yW8rT4', 'officer_name' => "Ofc. E'ido Ertachta"],
-                    ['video_id' => 'x891AkmK91s', 'officer_name' => 'Sgt. Babon King'],
-                ],
             ],
             [
                 'name' => 'Officer Eido Member',
@@ -104,9 +99,6 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'role' => 'member',
                 'clipper_tier' => 'free',
-                'watchlist' => [
-                    ['video_id' => 'v2u59yW8rT4', 'officer_name' => "Ofc. E'ido Ertachta"],
-                ],
             ],
             [
                 'name' => 'Member User',
@@ -114,14 +106,11 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'role' => 'member',
                 'clipper_tier' => 'free',
-                'watchlist' => [
-                    ['video_id' => 'dQw4w9WgXcQ', 'officer_name' => 'Custom Patrol Unit'],
-                ],
             ],
         ];
 
         foreach ($members as $memberData) {
-            $user = User::updateOrCreate(
+            User::updateOrCreate(
                 ['email' => $memberData['email']],
                 [
                     'name' => $memberData['name'],
@@ -130,21 +119,6 @@ class UserSeeder extends Seeder
                     'clipper_tier' => $memberData['clipper_tier'],
                 ]
             );
-
-            // Seed sample Cloud Watchlist entries for members
-            if (isset($memberData['watchlist']) && is_array($memberData['watchlist'])) {
-                foreach ($memberData['watchlist'] as $w) {
-                    UserWatchlist::firstOrCreate(
-                        [
-                            'user_id' => $user->id,
-                            'video_id' => $w['video_id'],
-                        ],
-                        [
-                            'officer_name' => $w['officer_name'],
-                        ]
-                    );
-                }
-            }
         }
     }
 }

@@ -12,7 +12,7 @@ import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { cn } from "@/lib/utils";
-import { Radio, Star, Video } from "@lucide/vue";
+import { Video } from "@lucide/vue";
 
 const props = defineProps({
     selectedDepartment: {
@@ -20,14 +20,6 @@ const props = defineProps({
         default: "ALL",
     },
     allActiveStreams: {
-        type: Array,
-        default: () => [],
-    },
-    activePersonalStreams: {
-        type: Array,
-        default: () => [],
-    },
-    tacChannels: {
         type: Array,
         default: () => [],
     },
@@ -55,13 +47,6 @@ const emit = defineEmits([
 
 const getDeptCount = (deptId) => {
     if (deptId === "ALL") return props.allActiveStreams?.length || 0;
-    if (deptId === "PERSONAL") return props.activePersonalStreams?.length || 0;
-    if (deptId === "TAC") {
-        return (props.tacChannels || []).reduce(
-            (acc, c) => acc + (c.unit_count || c.video_ids?.length || 0),
-            0,
-        );
-    }
     return (props.allActiveStreams || []).filter((s) => {
         const d = (s.officer?.department || "").toUpperCase();
         if (deptId === "SAPR") return d === "SAPR" || d === "PARK RANGER";
@@ -169,65 +154,6 @@ const getDeptCount = (deptId) => {
                         {{ getDeptCount(item.id) }}
                     </Badge>
                 </Button>
-
-                <Button
-                    type="button"
-                    :variant="
-                        selectedDepartment.startsWith('TAC_')
-                            ? 'default'
-                            : 'ghost'
-                    "
-                    size="sm"
-                    class="text-xs font-mono uppercase tracking-wider font-bold gap-1.5 shrink-0"
-                    @click="
-                        emit(
-                            'update:selectedDepartment',
-                            selectedDepartment.startsWith('TAC_')
-                                ? 'ALL'
-                                : 'TAC_1',
-                        )
-                    "
-                >
-                    <Radio class="size-3.5" />
-                    <span>{{
-                        selectedDepartment.startsWith("TAC_")
-                            ? selectedDepartment.replace("_", " ")
-                            : "TAC"
-                    }}</span>
-                    <Badge
-                        :variant="
-                            selectedDepartment.startsWith('TAC_')
-                                ? 'secondary'
-                                : 'outline'
-                        "
-                        class="px-1.5 py-0 text-xs font-mono font-bold"
-                    >
-                        {{ getDeptCount("TAC") }}
-                    </Badge>
-                </Button>
-
-                <Button
-                    type="button"
-                    :variant="
-                        selectedDepartment === 'PERSONAL' ? 'default' : 'ghost'
-                    "
-                    size="sm"
-                    class="text-xs font-mono uppercase tracking-wider font-bold gap-1.5 shrink-0"
-                    @click="emit('update:selectedDepartment', 'PERSONAL')"
-                >
-                    <Star class="size-3.5" />
-                    <span>{{ $t("multiview.watchlist") }}</span>
-                    <Badge
-                        :variant="
-                            selectedDepartment === 'PERSONAL'
-                                ? 'secondary'
-                                : 'outline'
-                        "
-                        class="px-1.5 py-0 text-xs font-mono font-bold"
-                    >
-                        {{ getDeptCount("PERSONAL") }}
-                    </Badge>
-                </Button>
             </nav>
 
             <!-- RIGHT AREA: Action Controls & User Avatar -->
@@ -277,49 +203,6 @@ const getDeptCount = (deptId) => {
                     class="text-xs px-1 rounded-sm bg-background/30 font-mono font-bold"
                 >
                     {{ getDeptCount(mItem.countKey) }}
-                </span>
-            </Button>
-
-            <Button
-                type="button"
-                :variant="
-                    selectedDepartment.startsWith('TAC_')
-                        ? 'default'
-                        : 'outline'
-                "
-                size="sm"
-                class="h-7 px-3 text-xs font-mono uppercase font-bold shrink-0 gap-1.5"
-                @click="
-                    emit(
-                        'update:selectedDepartment',
-                        selectedDepartment.startsWith('TAC_') ? 'ALL' : 'TAC_1',
-                    )
-                "
-            >
-                <span>TAC</span>
-                <span
-                    v-if="selectedDepartment.startsWith('TAC_')"
-                    class="text-xs px-1 rounded-sm bg-background/30 font-mono font-bold"
-                >
-                    {{ getDeptCount("TAC") }}
-                </span>
-            </Button>
-
-            <Button
-                type="button"
-                :variant="
-                    selectedDepartment === 'PERSONAL' ? 'default' : 'outline'
-                "
-                size="sm"
-                class="h-7 px-3 text-xs font-mono uppercase font-bold shrink-0 gap-1.5"
-                @click="emit('update:selectedDepartment', 'PERSONAL')"
-            >
-                <span>WATCHLIST</span>
-                <span
-                    v-if="selectedDepartment === 'PERSONAL'"
-                    class="text-xs px-1 rounded-sm bg-background/30 font-mono font-bold"
-                >
-                    {{ getDeptCount("PERSONAL") }}
                 </span>
             </Button>
         </div>

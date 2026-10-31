@@ -39,10 +39,6 @@ const props = defineProps({
         type: Array,
         required: true,
     },
-    initialTacChannels: {
-        type: Array,
-        default: () => [],
-    },
     initialReplays: {
         type: Array,
         default: () => [],
@@ -130,12 +126,6 @@ const activeDept = computed({
 const activeDeptStreams = computed(() => {
     const found = deptGroups.value.find((s) => s.dept === activeDept.value);
     return found ? found.items : [];
-});
-const tacRows = computed(() => {
-    const byId = Object.fromEntries(streams.value.map((s) => [s.video_id, s]));
-    return (tacChannels.value || [])
-        .map((ch) => ({ ...ch, units: (ch.video_ids || []).map(String).map((id) => byId[id]).filter(Boolean) }))
-        .filter((ch) => ch.units.length);
 });
 // Officers with no patrol hours yet this month would only show "0 Jam".
 const top10 = computed(() =>
@@ -261,8 +251,6 @@ const toggleBrowserFullscreen = () => {
         }
     }
 };
-
-const tacChannels = ref(props.initialTacChannels || []);
 
 const triggerManualSync = async () => {
     isSyncingFeeds.value = true;
@@ -506,24 +494,6 @@ onMounted(() => {
                     />
                 </CatalogRow>
 
-                <CatalogRow v-for="ch in tacRows" :key="`tac-${ch.code}`" :title="$t('catalog.active_incident', { name: ch.name })" :subtitle="$t('catalog.active_incident_subtitle')">
-                    <template #action>
-                        <Button as-child variant="link" size="sm" class="ml-auto shrink-0">
-                            <Link :href="mvUrl(ch.units.map((u) => u.video_id))">{{ $t('catalog.watch_povs', { count: ch.units.length }) }} <ChevronRight /></Link>
-                        </Button>
-                    </template>
-                    <CatalogCard
-                        v-for="s in ch.units"
-                        :key="`tac-${ch.code}-${s.video_id}`"
-                        :stream="s"
-                        :href="mvUrl(ch.units.map((u) => u.video_id))"
-                        kind="tac"
-                        :in-tray="inTray(s.video_id)"
-                        @toggle-tray="toggleTray"
-                        @detail="detail = $event"
-                    />
-                </CatalogRow>
-
                 <CatalogRow
                     v-if="top10.length"
                     :title="monthlyLeaderboard?.is_previous_period ? $t('catalog.top_10_patrols_last_month') : $t('catalog.top_10_patrols')"
@@ -664,7 +634,6 @@ onMounted(() => {
         <OfficerDetailModal
             :stream="detail"
             :streams="streams"
-            :tac-channels="tacChannels"
             :in-tray="!!detail && inTray(detail.video_id)"
             @close="detail = null"
             @toggle-tray="toggleTray"

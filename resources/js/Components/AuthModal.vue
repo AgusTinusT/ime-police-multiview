@@ -221,7 +221,7 @@ const handleRegister = () => {
             </Tabs>
 
             <div class="pt-3 border-t border-border text-xs text-muted-foreground text-center">
-                <span>Cloud Watchlist &amp; Multi-device Sync • IME Roleplay Community</span>
+                <span>Custom Squads &amp; Multi-device Sync • IME Roleplay Community</span>
             </div>
         </DialogContent>
     </Dialog>

@@ -7,7 +7,6 @@ import { toast } from "vue-sonner";
 import {
     ExternalLink,
     Search,
-    Star,
     Target,
     Trophy,
     UserPlus,
@@ -223,51 +222,6 @@ const openDrawer = (officer) => {
 
 const closeDrawer = () => {
     isDrawerOpen.value = false;
-};
-
-// Personal Streams saved to localStorage
-const personalIds = ref([]);
-const loadPersonalStorage = () => {
-    try {
-        if (typeof window !== "undefined" && window.localStorage) {
-            const saved = localStorage.getItem("ime_personal_video_ids");
-            if (saved) personalIds.value = JSON.parse(saved);
-        }
-    } catch (e) {
-        console.warn(e);
-    }
-};
-loadPersonalStorage();
-
-const isPinned = (identifier) => {
-    return personalIds.value.includes(identifier);
-};
-
-const togglePin = (identifier, officerName = "") => {
-    const idx = personalIds.value.indexOf(identifier);
-    if (idx !== -1) {
-        personalIds.value.splice(idx, 1);
-        triggerToast(
-            `Dilepas dari Personal Watchlist (${officerName || identifier})`,
-        );
-    } else {
-        if (personalIds.value.length >= 6) {
-            toast.warning("Maksimal 6 siaran pada Personal Watchlist!");
-            return;
-        }
-        personalIds.value.push(identifier);
-        triggerToast(
-            `Disimpan ke Personal Watchlist (${officerName || identifier})`,
-        );
-    }
-    try {
-        localStorage.setItem(
-            "ime_personal_video_ids",
-            JSON.stringify(personalIds.value),
-        );
-    } catch (e) {
-        console.warn(e);
-    }
 };
 
 // 1-Click Subscribe Popup Modal
@@ -850,59 +804,6 @@ const liveInDept = computed(() =>
                         </div>
 
                         <div class="flex items-center space-x-1.5 shrink-0">
-                            <!-- Pin to Watchlist -->
-                            <Button
-                                type="button"
-                                size="icon-sm"
-                                :variant="
-                                    isPinned(
-                                        officer.channel_id || officer.handle,
-                                    )
-                                        ? 'secondary'
-                                        : 'outline'
-                                "
-                                @click="
-                                    togglePin(
-                                        officer.channel_id || officer.handle,
-                                        officer.officer_name,
-                                    )
-                                "
-                                :class="
-                                    isPinned(
-                                        officer.channel_id || officer.handle,
-                                    )
-                                        ? 'text-primary border-primary/50'
-                                        : 'text-muted-foreground'
-                                "
-                                class="w-8 h-8"
-                                :aria-label="
-                                    isPinned(
-                                        officer.channel_id || officer.handle,
-                                    )
-                                        ? 'Hapus dari Watchlist'
-                                        : 'Pin ke Watchlist'
-                                "
-                                :title="
-                                    isPinned(
-                                        officer.channel_id || officer.handle,
-                                    )
-                                        ? 'Hapus dari Watchlist'
-                                        : 'Pin ke Watchlist'
-                                "
-                            >
-                                <Star
-                                    class="w-3.5 h-3.5"
-                                    :class="
-                                        isPinned(
-                                            officer.channel_id ||
-                                                officer.handle,
-                                        )
-                                            ? 'fill-current'
-                                            : ''
-                                    "
-                                />
-                            </Button>
-
                             <!-- 1-Click YouTube Subscribe Popup -->
                             <Button
                                 type="button"
@@ -1127,7 +1028,7 @@ const liveInDept = computed(() =>
                                 </div>
                             </TableCell>
 
-                            <!-- Sector / TAC -->
+                            <!-- Sector -->
                             <TableCell
                                 class="py-3.5 px-4 font-mono text-xs text-muted-foreground"
                             >
@@ -1136,12 +1037,6 @@ const liveInDept = computed(() =>
                                     <strong class="text-foreground">{{
                                         officer.patrol_zone || "LS"
                                     }}</strong>
-                                </div>
-                                <div
-                                    v-if="officer.tac_channel"
-                                    class="text-xs text-primary"
-                                >
-                                    TAC-{{ officer.tac_channel }}
                                 </div>
                             </TableCell>
 
@@ -1153,63 +1048,6 @@ const liveInDept = computed(() =>
                                 <div
                                     class="flex items-center justify-end space-x-1.5"
                                 >
-                                    <Button
-                                        type="button"
-                                        size="icon-sm"
-                                        :variant="
-                                            isPinned(
-                                                officer.channel_id ||
-                                                    officer.handle,
-                                            )
-                                                ? 'secondary'
-                                                : 'outline'
-                                        "
-                                        @click="
-                                            togglePin(
-                                                officer.channel_id ||
-                                                    officer.handle,
-                                                officer.officer_name,
-                                            )
-                                        "
-                                        :class="
-                                            isPinned(
-                                                officer.channel_id ||
-                                                    officer.handle,
-                                            )
-                                                ? 'text-primary border-primary/50'
-                                                : 'text-muted-foreground'
-                                        "
-                                        class="w-8 h-8"
-                                        :aria-label="
-                                            isPinned(
-                                                officer.channel_id ||
-                                                    officer.handle,
-                                            )
-                                                ? 'Hapus dari Watchlist'
-                                                : 'Pin ke Watchlist'
-                                        "
-                                        :title="
-                                            isPinned(
-                                                officer.channel_id ||
-                                                    officer.handle,
-                                            )
-                                                ? 'Hapus dari Watchlist'
-                                                : 'Pin ke Watchlist'
-                                        "
-                                    >
-                                        <Star
-                                            class="w-3.5 h-3.5"
-                                            :class="
-                                                isPinned(
-                                                    officer.channel_id ||
-                                                        officer.handle,
-                                                )
-                                                    ? 'fill-current'
-                                                    : ''
-                                            "
-                                        />
-                                    </Button>
-
                                     <Button
                                         type="button"
                                         variant="outline"
@@ -1552,38 +1390,8 @@ const liveInDept = computed(() =>
                 <!-- Drawer Action Footer -->
                 <SheetFooter
                     v-if="activeOfficer"
-                    class="p-4 border-t border-border bg-card flex-row items-center justify-between gap-2 font-mono text-xs shrink-0"
+                    class="p-4 border-t border-border bg-card flex-row items-center justify-end gap-2 font-mono text-xs shrink-0"
                 >
-                    <Button
-                        type="button"
-                        :variant="
-                            isPinned(
-                                activeOfficer.channel_id ||
-                                    activeOfficer.handle,
-                            )
-                                ? 'secondary'
-                                : 'outline'
-                        "
-                        size="sm"
-                        @click="
-                            togglePin(
-                                activeOfficer.channel_id ||
-                                    activeOfficer.handle,
-                                activeOfficer.officer_name,
-                            )
-                        "
-                        class="text-xs font-semibold"
-                    >
-                        {{
-                            isPinned(
-                                activeOfficer.channel_id ||
-                                    activeOfficer.handle,
-                            )
-                                ? "PINNED ✓"
-                                : "PIN WATCHLIST"
-                        }}
-                    </Button>
-
                     <Button
                         type="button"
                         size="sm"

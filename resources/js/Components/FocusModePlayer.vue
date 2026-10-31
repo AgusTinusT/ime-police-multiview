@@ -7,7 +7,6 @@ import {
     X,
     Scissors,
     RectangleHorizontal,
-    Radio,
     Volume2,
     VolumeX,
     Pause,
@@ -35,7 +34,6 @@ const props = defineProps({
     isStreamStopped: { type: Boolean, default: false },
     isRightChatOpen: { type: Boolean, default: true },
     isTheaterMode: { type: Boolean, default: false },
-    activeTacChannel: { type: String, default: null },
     fetchedDescription: { type: String, default: "" },
     chatEmbedDomain: { type: String, default: "" },
 });
@@ -45,9 +43,6 @@ const emit = defineEmits([
     "toggle-stop-feed",
     "toggle-right-chat",
     "toggle-theater-mode",
-    "toggle-tac-popover",
-    "assign-tac",
-    "remove-tac",
     "close-focus",
 ]);
 
@@ -63,18 +58,6 @@ const computedChatEmbedDomain = computed(() => {
     }
     return "localhost";
 });
-
-const isTacPopoverOpen = ref(false);
-
-const selectTacChannel = (tacCode) => {
-    emit("assign-tac", tacCode);
-    isTacPopoverOpen.value = false;
-};
-
-const removeTacChannel = () => {
-    emit("remove-tac");
-    isTacPopoverOpen.value = false;
-};
 
 const newClipTitle = ref("");
 const newClipStartTime = ref("00:00");
@@ -380,110 +363,8 @@ const youtubeHandle = computed(() => {
                 </h1>
             </div>
 
-            <!-- RIGHT SIDE BUTTONS (GRID, PAUSE, AUDIO, TAC) -->
+            <!-- RIGHT SIDE BUTTONS (AUDIO, PAUSE, ETC) -->
             <div class="flex items-center space-x-1.5 shrink-0">
-                <!-- TAC BUTTON WITH INTERACTIVE DROPDOWN POPOVER -->
-                <div class="relative">
-                    <Button
-                        type="button"
-                        size="sm"
-                        :variant="activeTacChannel ? 'secondary' : 'outline'"
-                        @click="isTacPopoverOpen = !isTacPopoverOpen"
-                        :class="
-                            activeTacChannel
-                                ? 'bg-primary/15 text-primary border-primary/50 font-bold'
-                                : 'text-muted-foreground hover:text-foreground'
-                        "
-                        class="h-8 px-2.5 gap-1.5 text-xs font-mono"
-                        title="Pilih / Kelola Saluran Radio TAC"
-                    >
-                        <Radio class="w-3.5 h-3.5" />
-                        <span class="hidden sm:inline">{{
-                            activeTacChannel
-                                ? activeTacChannel.replace("_", " ")
-                                : "Radio TAC"
-                        }}</span>
-                    </Button>
-
-                    <!-- TAC CHANNEL SELECTION DROPDOWN POPOVER -->
-                    <div
-                        v-if="isTacPopoverOpen"
-                        class="absolute right-0 mt-2 w-72 sm:w-80 bg-popover border border-border rounded-xl p-3 shadow-2xl z-50 space-y-3 font-sans text-xs animate-in fade-in zoom-in-95 duration-150"
-                    >
-                        <div
-                            class="flex items-center justify-between border-b border-border pb-2"
-                        >
-                            <div class="flex items-center space-x-1.5">
-                                <span
-                                    class="w-2 h-2 rounded-full bg-success motion-safe:animate-pulse"
-                                ></span>
-                                <span
-                                    class="font-semibold text-foreground font-mono text-xs"
-                                    >Radio Taktis TAC</span
-                                >
-                            </div>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon-sm"
-                                aria-label="Tutup Popover TAC"
-                                @click="isTacPopoverOpen = false"
-                                class="h-6 w-6 text-muted-foreground hover:text-foreground"
-                            >
-                                <X class="w-3.5 h-3.5" />
-                            </Button>
-                        </div>
-
-                        <p class="text-xs text-muted-foreground leading-snug">
-                            Pilih saluran radio TAC 1 - 10 untuk menghubungkan
-                            stream perwira ini:
-                        </p>
-
-                        <!-- 10 TAC CHANNELS GRID (2 ROWS X 5 COLS: TAC 1 - TAC 10) -->
-                        <div class="grid grid-cols-5 gap-1.5 font-mono text-xs">
-                            <button
-                                v-for="i in 10"
-                                :key="`tac-opt-${i}`"
-                                type="button"
-                                @click="selectTacChannel(`TAC_${i}`)"
-                                :class="
-                                    activeTacChannel === `TAC_${i}`
-                                        ? 'bg-primary text-primary-foreground border-primary font-bold shadow-xs'
-                                        : 'bg-background text-foreground border-border hover:bg-muted'
-                                "
-                                class="px-1 py-1.5 rounded-sm border transition-colors cursor-pointer flex flex-col items-center justify-center leading-none gap-0.5"
-                                :title="`Alokasikan ke Radio TAC ${i}`"
-                            >
-                                <span
-                                    class="text-xs font-bold tracking-tight opacity-75"
-                                    >TAC</span
-                                >
-                                <span
-                                    class="text-xs sm:text-sm font-extrabold font-mono"
-                                    >{{ i }}</span
-                                >
-                            </button>
-                        </div>
-
-                        <!-- UNASSIGN / REMOVE TAC BUTTON -->
-                        <div
-                            v-if="activeTacChannel"
-                            class="pt-2 border-t border-border"
-                        >
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                @click="removeTacChannel"
-                                class="w-full h-8 font-mono text-xs font-semibold gap-1.5"
-                            >
-                                <X class="w-3.5 h-3.5" />
-                                <span>Lepas dari Radio TAC</span>
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- AUDIO BUTTON (3rd from right) -->
                 <Button
                     type="button"

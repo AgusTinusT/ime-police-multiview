@@ -1,9 +1,33 @@
 export const releasesId = [
     {
-        version: "v2.5.0-Pro",
-        date: "27 September 2026",
+        version: "v2.6.0-Pro",
+        date: "31 Oktober 2026",
         badge: "RILIS TERBARU",
         isLatest: true,
+        summary:
+            "Pembaruan arsitektur: Penghentian fitur Watchlist personal dan TAC Channel radio yang digantikan sepenuhnya oleh sistem Squad kustom dan preset komunitas yang lebih fleksibel.",
+        changes: [
+            {
+                type: "REMOVED",
+                tag: "Sistem Squad",
+                tagColor: "bg-amber-950/70 text-amber-300 border-amber-500/40",
+                title: "Fitur Watchlist Dihentikan — Gunakan Squad",
+                description:
+                    "Fitur Watchlist personal telah dihentikan. Pengguna kini dapat menggunakan fitur Squad untuk mengelompokkan dan menyimpan perwira favorit secara multi-device.",
+            },
+            {
+                type: "REMOVED",
+                tag: "Sistem Squad",
+                tagColor: "bg-amber-950/70 text-amber-300 border-amber-500/40",
+                title: "Fitur TAC Channel Dihentikan — Squad Menggantikan",
+                description:
+                    "Kanal radio taktis TAC 1 - 10 dihentikan dan digantikan oleh squad komunitas dan preset watch party yang dapat dibagikan langsung antar pengguna.",
+            },
+        ],
+    },
+    {
+        version: "v2.5.0-Pro",
+        date: "27 September 2026",
         summary:
             "Pembaruan rilis utama: Halaman Dashboard Utama, Fitur Dukungan Streamer 1K Subs, Leaderboard Streamer Bulanan, Panel Visibilitas & Prioritas Perwira, serta Penyederhanaan Multiview Stage 10-8.",
         changes: [

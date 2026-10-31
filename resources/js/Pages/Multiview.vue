@@ -50,7 +50,6 @@ import {
 const props = defineProps({
     initialStreams: { type: Array, required: true },
     initialOfflineOfficers: { type: Array, required: true },
-    initialTacChannels: { type: Array, default: () => [] },
     initialReplays: { type: Array, default: () => [] },
     deptStats: { type: Object, default: () => ({}) },
     lastSyncedAt: { type: String, default: "" },
@@ -1072,7 +1071,6 @@ onUnmounted(() => {
                         ref="soloStrip"
                         :streams="streams"
                         :current-id="selectedIds[0] || null"
-                        :tac-channels="initialTacChannels"
                         :allowed-officer-ids="activeSquadOfficerIds"
                         :class="
                             isCompactLandscape || isFullscreen

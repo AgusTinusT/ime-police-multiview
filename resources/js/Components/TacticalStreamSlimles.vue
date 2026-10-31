@@ -26,7 +26,6 @@ const props = defineProps({
     trendingStreams: { type: Array, default: () => [] },
     recentReplayStreams: { type: Array, default: () => [] },
     isSyncingFeeds: { type: Boolean, default: false },
-    tacChannels: { type: Array, default: () => [] },
     totalLiveViewers: { type: Number, default: 0 },
     totalOfficers: { type: Number, default: 0 },
 });
@@ -116,20 +115,6 @@ const getStreamYoutubeUrl = (stream) => {
         return handle ? `https://www.youtube.com/@${handle}` : "#";
     }
     return `https://www.youtube.com/watch?v=${stream.video_id}`;
-};
-
-const getStreamTac = (videoId) => {
-    if (!videoId) return null;
-    const targetId = String(videoId).trim();
-    for (const channel of props.tacChannels || []) {
-        if (
-            channel.video_ids &&
-            channel.video_ids.map(String).includes(targetId)
-        ) {
-            return channel.name || channel.code;
-        }
-    }
-    return null;
 };
 </script>
 
@@ -341,19 +326,8 @@ const getStreamTac = (videoId) => {
                                     }}
                                 </Badge>
 
-                                <!-- TAC & Department Badges -->
+                                <!-- Department Badge -->
                                 <div class="flex items-center gap-1">
-                                    <Badge
-                                        v-if="getStreamTac(stream.video_id)"
-                                        variant="warning"
-                                        class="font-mono font-bold text-xs"
-                                    >
-                                        {{
-                                            getStreamTac(
-                                                stream.video_id,
-                                            ).replace("_", " ")
-                                        }}
-                                    </Badge>
                                     <DeptBadge
                                         :dept="
                                             stream.officer?.department || 'SASP'

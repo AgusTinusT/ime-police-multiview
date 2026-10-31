@@ -106,7 +106,7 @@ export function useAnalytics() {
     };
 
     /**
-     * Track user switching department category tabs (LSPD, BCSO, SASP, SAPR, TAC, Personal)
+     * Track user switching department category tabs (LSPD, BCSO, SASP, SAPR)
      */
     const trackDepartmentChange = (deptCode) => {
         if (!deptCode || typeof window === "undefined") return;
@@ -114,8 +114,6 @@ export function useAnalytics() {
         const deptLabel =
             deptCode === "ALL"
                 ? "Seluruh Unit (10-8)"
-                : deptCode === "PERSONAL"
-                ? "Watchlist Personal"
                 : deptCode.replace("_", " ");
 
         const titleText = `Kategori: ${deptLabel}`;

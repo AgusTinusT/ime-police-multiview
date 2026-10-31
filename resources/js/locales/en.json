@@ -31,9 +31,6 @@
     "title_watching": "Watching: {officer} ({dept}) – IME RP Multiview",
     "title_category": "Category: {category} – IME RP Multiview",
     "title_search": "Search: {query} – IME RP Multiview",
-    "watchlist": "Watchlist",
-    "tac_channel": "TAC Channel",
-    "tac_active": "Active TAC Radio",
     "theater_mode": "Theater Mode",
     "data_saver": "Saver Mode",
     "all_units": "All Units"
@@ -182,10 +179,7 @@
   "officer_detail": {
     "watch": "Watch",
     "in_multiview": "In multiview",
-    "multiview": "Multiview",
-    "other_units_in_tac": "Other units in {name}",
-    "watch_povs_together": "Watch {count} POVs together",
-    "no_tac_channel": "This officer is not currently in a TAC channel with other units."
+    "multiview": "Multiview"
   },
   "multiview_tile": {
     "replay": "REPLAY",

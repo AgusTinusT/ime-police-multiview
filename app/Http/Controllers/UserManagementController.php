@@ -9,16 +9,11 @@ use Illuminate\Support\Facades\Hash;
 class UserManagementController extends Controller
 {
     /**
-     * Get list of all registered users with their cloud watchlist counts.
-     */
-    /**
-     * Get list of all registered users with their cloud watchlist counts.
+     * Get list of all registered users.
      */
     public function index(Request $request)
     {
-        $users = User::withCount('watchlists')
-            ->with('watchlists')
-            ->orderBy('id', 'desc')
+        $users = User::orderBy('id', 'desc')
             ->get()
             ->map(function ($u) {
                 $arr = $u->toArray();

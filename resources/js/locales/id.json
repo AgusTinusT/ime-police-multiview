@@ -31,9 +31,6 @@
     "title_watching": "Menonton: {officer} ({dept}) – IME RP Multiview",
     "title_category": "Kategori: {category} – IME RP Multiview",
     "title_search": "Cari: {query} – IME RP Multiview",
-    "watchlist": "Watchlist",
-    "tac_channel": "Channel TAC",
-    "tac_active": "Radio TAC Aktif",
     "theater_mode": "Theater Mode",
     "data_saver": "Saver Mode",
     "all_units": "All Units"
@@ -182,10 +179,7 @@
   "officer_detail": {
     "watch": "Tonton",
     "in_multiview": "Di multiview",
-    "multiview": "Multiview",
-    "other_units_in_tac": "Unit lain di {name}",
-    "watch_povs_together": "Tonton {count} POV bersama",
-    "no_tac_channel": "Officer ini tidak sedang berada di kanal TAC bersama unit lain."
+    "multiview": "Multiview"
   },
   "multiview_tile": {
     "replay": "REKAMAN",

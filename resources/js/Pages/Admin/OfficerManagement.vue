@@ -85,7 +85,6 @@ import {
     Link2,
     ShieldAlert,
     Ban,
-    Star,
     Radio,
 } from "@lucide/vue";
 
@@ -1380,7 +1379,6 @@ const triggerSyncSubs = async () => {
 const usersList = ref([]);
 const isLoadingUsers = ref(false);
 const userSearchQuery = ref("");
-const selectedUserWatchlistModal = ref(null);
 const showUserModal = ref(false);
 const isEditUser = ref(false);
 const isSavingUser = ref(false);
@@ -2194,7 +2192,6 @@ onUnmounted(() => {
                                 <TableHead>Nama Member</TableHead>
                                 <TableHead>Email</TableHead>
                                 <TableHead>Role Access</TableHead>
-                                <TableHead>Watchlist</TableHead>
                                 <TableHead class="text-right">Aksi</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -2254,17 +2251,6 @@ onUnmounted(() => {
                                             }}
                                         </Badge>
                                     </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="link"
-                                        size="sm"
-                                        @click="selectedUserWatchlistModal = u"
-                                        class="h-auto p-0 text-xs font-mono gap-1"
-                                    >
-                                        <Star class="size-3.5 text-warning shrink-0" />
-                                        <span>{{ u.watchlists_count || 0 }} Stream</span>
-                                    </Button>
                                 </TableCell>
                                 <TableCell class="text-right space-x-1.5">
                                     <Button
@@ -2767,54 +2753,6 @@ onUnmounted(() => {
                     <Button @click="saveAnnouncement" :disabled="isSavingAnnouncement" class="font-bold">
                         {{ isSavingAnnouncement ? "Menyimpan..." : isEditAnnouncement ? "Update Alert" : "Simpan Alert Baru" }}
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-
-        <!-- USER WATCHLIST DETAIL MODAL -->
-        <Dialog :open="!!selectedUserWatchlistModal" @update:open="(!$event) && (selectedUserWatchlistModal = null)">
-            <DialogContent class="sm:max-w-lg text-xs">
-                <DialogHeader>
-                    <DialogTitle class="text-sm font-bold font-mono flex items-center gap-2">
-                        <Star class="size-4 text-warning shrink-0" />
-                        <span>Cloud Watchlist Member</span>
-                    </DialogTitle>
-                    <DialogDescription v-if="selectedUserWatchlistModal" class="text-xs">
-                        {{ selectedUserWatchlistModal.name }} ({{ selectedUserWatchlistModal.email }})
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div class="space-y-2 max-h-80 overflow-y-auto pr-1 py-2">
-                    <div
-                        v-if="!selectedUserWatchlistModal?.watchlists || selectedUserWatchlistModal.watchlists.length === 0"
-                        class="py-6 text-center text-muted-foreground font-mono text-xs"
-                    >
-                        Member ini belum menyimpan stream ke Cloud Watchlist.
-                    </div>
-                    <div
-                        v-else
-                        v-for="item in selectedUserWatchlistModal.watchlists"
-                        :key="item.id"
-                        class="p-3 bg-muted/40 border border-border rounded-md flex items-center justify-between text-xs"
-                    >
-                        <div>
-                            <div class="font-bold text-foreground">
-                                {{ item.officer_name || item.video_id }}
-                            </div>
-                            <div class="text-xs text-muted-foreground font-mono">
-                                Video ID: {{ item.video_id }}
-                            </div>
-                        </div>
-                        <Button as-child variant="outline" size="sm" class="h-7 px-2.5 text-xs font-mono">
-                            <a :href="`https://youtube.com/watch?v=${item.video_id}`" target="_blank">
-                                YouTube ↗
-                            </a>
-                        </Button>
-                    </div>
-                </div>
-
-                <DialogFooter>
-                    <Button variant="outline" @click="selectedUserWatchlistModal = null">Tutup</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

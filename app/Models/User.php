@@ -139,14 +139,6 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the user's cloud watchlist items.
-     */
-    public function watchlists(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(UserWatchlist::class);
-    }
-
-    /**
      * Get the user's created video clips.
      */
     public function videoClips(): \Illuminate\Database\Eloquent\Relations\HasMany

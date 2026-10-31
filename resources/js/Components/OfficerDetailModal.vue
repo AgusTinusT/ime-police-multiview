@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
-import { Check, ExternalLink, Play, Plus, Radio } from "@lucide/vue";
+import { Check, ExternalLink, Play, Plus } from "@lucide/vue";
 import { computed } from "vue";
 
 import { DeptBadge, LiveBadge, OfficerAvatar } from "@/Components/tactical";
@@ -13,11 +13,9 @@ import {
     DialogTitle,
 } from "@/Components/ui/dialog";
 
-// Detail for one stream: who it is, and which other units share its TAC channel.
 const props = defineProps({
     stream: { type: Object, default: null },
     streams: { type: Array, default: () => [] },
-    tacChannels: { type: Array, default: () => [] },
     inTray: { type: Boolean, default: false },
 });
 
@@ -32,15 +30,6 @@ const officer = computed(() => props.stream?.officer || {});
 const isLive = computed(() => props.streams.some((s) => s.video_id === props.stream?.video_id));
 const thumb = (s) => s.thumbnail || `https://i.ytimg.com/vi/${s.video_id}/hqdefault.jpg`;
 const mvUrl = (ids) => `/multiview?v=${ids.filter(Boolean).join(",")}`;
-
-const incident = computed(() => {
-    const id = String(props.stream?.video_id || "");
-    const channel = props.tacChannels.find((c) => (c.video_ids || []).map(String).includes(id));
-    if (!channel) return null;
-    const byId = Object.fromEntries(props.streams.map((s) => [String(s.video_id), s]));
-    const units = (channel.video_ids || []).map(String).map((v) => byId[v]).filter(Boolean);
-    return { name: channel.name, units, others: units.filter((u) => String(u.video_id) !== id) };
-});
 </script>
 
 <template>
@@ -83,26 +72,6 @@ const incident = computed(() => {
                         <p v-if="officer.subscriber_count_text" class="text-xs text-muted-foreground">{{ officer.subscriber_count_text }}</p>
                     </div>
                 </div>
-
-                <div v-if="incident && incident.others.length">
-                    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                        <h3 class="flex items-center gap-2 text-base font-semibold text-foreground">
-                            <Radio class="size-4 text-warning" /> {{ $t('officer_detail.other_units_in_tac', { name: incident.name }) }}
-                        </h3>
-                        <Button as-child variant="link" size="sm" class="px-0">
-                            <Link :href="mvUrl(incident.units.map((u) => u.video_id))">{{ $t('officer_detail.watch_povs_together', { count: incident.units.length }) }}</Link>
-                        </Button>
-                    </div>
-                    <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        <li v-for="u in incident.others" :key="u.video_id">
-                            <Link :href="mvUrl([stream.video_id, u.video_id])" class="group block rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-                                <img :src="thumb(u)" :alt="u.title" loading="lazy" class="aspect-video w-full rounded-md object-cover" />
-                                <p class="mt-1.5 truncate text-xs font-semibold text-foreground group-hover:text-primary">{{ u.officer?.officer_name }}</p>
-                            </Link>
-                        </li>
-                    </ul>
-                </div>
-                <p v-else class="text-sm text-muted-foreground">{{ $t('officer_detail.no_tac_channel') }}</p>
             </div>
         </DialogContent>
     </Dialog>

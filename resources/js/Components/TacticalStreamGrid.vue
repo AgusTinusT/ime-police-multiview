@@ -9,11 +9,8 @@ import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
 import iconSasp from "@/Components/Icons/SASP_HD.svg";
 import iconSapr from "@/Components/Icons/ranger_logo.svg";
 import iconAllUnits from "@/Components/Icons/category-svgrepo-com.svg";
-import iconRadio from "@/Components/Icons/radio-tac-svgrepo-com.svg";
-import iconClock from "@/Components/Icons/time-svgrepo-com.svg";
 
 import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
-import TacChannelToolbar from "@/Components/TacChannelToolbar.vue";
 import FocusModePlayer from "@/Components/FocusModePlayer.vue";
 import TacticalStreamCard from "@/Components/TacticalStreamCard.vue";
 import TacticalDockControlBar from "@/Components/TacticalDockControlBar.vue";
@@ -31,8 +28,6 @@ const props = defineProps({
     isSyncingFeeds: { type: Boolean, default: false },
     isTheaterMode: { type: Boolean, default: false },
     allActiveStreams: { type: Array, default: () => [] },
-    activePersonalStreams: { type: Array, default: () => [] },
-    tacSituationalStreams: { type: Array, default: () => [] },
     filteredOfflineOfficers: { type: Array, default: () => [] },
     visibleStreams: { type: Array, default: () => [] },
     focusStream: { type: Object, default: null },
@@ -41,15 +36,12 @@ const props = defineProps({
     activePreviewVideoIds: { type: Array, default: () => [] },
     activeGridVideoIds: { type: Array, default: () => [] },
     activeAudioVideoId: { type: String, default: null },
-    activeTacPopoverVideoId: { type: [String, Number], default: null },
     activeChatVideoId: { type: [String, Number], default: null },
     activeGridChatStream: { type: Object, default: null },
     originUrl: { type: String, default: "" },
     chatEmbedDomain: { type: String, default: "" },
     activeAnnouncements: { type: Array, default: () => [] },
     activeTab: { type: String, default: "10-8" },
-    personalStreamIds: { type: Array, default: () => [] },
-    tacChannels: { type: Array, default: () => [] },
     customOrderMap: { type: Object, default: () => ({}) },
 });
 
@@ -59,21 +51,15 @@ const emit = defineEmits([
     "toggle-audio",
     "toggle-theater-mode",
     "toggle-fullscreen",
-    "toggle-personal-stream",
     "toggle-custom-order",
-    "assign-stream-to-tac",
-    "remove-stream-from-tac",
     "open-subscribe-popup",
     "open-quick-add",
     "open-officer-visibility",
     "trigger-manual-sync",
     "toggle-sidebar-preview",
-    "extend-tac-timer",
-    "disband-tac-channel",
     "disable-data-saver",
     "enable-data-saver",
     "toggle-grid-stream-play",
-    "update:activeTacPopoverVideoId",
     "update:activeChatVideoId",
     "update:activeTab",
     "update:selectedDepartment",
@@ -83,12 +69,6 @@ const emit = defineEmits([
 
 const getDeptCount = (deptId) => {
     if (deptId === "ALL") return props.allActiveStreams?.length || 0;
-    if (deptId === "PERSONAL") return props.activePersonalStreams?.length || 0;
-    if (deptId && deptId.startsWith("TAC_")) {
-        const ch = (props.tacChannels || []).find((c) => c.code === deptId);
-        if (!ch) return 0;
-        return ch.video_ids?.length || ch.unit_count || 0;
-    }
     return (props.allActiveStreams || []).filter((s) => {
         const d = (s.officer?.department || "").toUpperCase();
         if (deptId === "SAPR") return d === "SAPR" || d === "PARK RANGER";
@@ -103,8 +83,6 @@ const selectedDeptLabel = computed(() => {
     if (d === "BCSO") return "BCSO Sheriff";
     if (d === "SASP") return "SASP State";
     if (d === "SAPR") return "SAPR Ranger";
-    if (d === "PERSONAL") return "Watchlist";
-    if (d && d.startsWith("TAC_")) return d.replace("_", " ");
     return d || "All units";
 });
 
@@ -269,38 +247,6 @@ const getDeptIcon = (dept) => {
     return iconAllUnits;
 };
 
-const isTacDepartment = (deptId) => {
-    return typeof deptId === "string" && deptId.startsWith("TAC_");
-};
-
-const getTacRemainingSeconds = (tacCode) => {
-    const ch = props.tacChannels.find((c) => c.code === tacCode);
-    return ch ? ch.remaining_seconds || 0 : 0;
-};
-
-const isPersonalStream = (channelOrHandle) => {
-    if (!channelOrHandle) return false;
-    const target = String(channelOrHandle).trim().toLowerCase();
-    return (props.personalStreamIds || []).some(
-        (id) => String(id).trim().toLowerCase() === target,
-    );
-};
-
-const getStreamTac = (videoId) => {
-    if (!videoId) return null;
-    const targetId = String(videoId).trim();
-    for (const channel of props.tacChannels || []) {
-        if (
-            channel.video_ids &&
-            Array.isArray(channel.video_ids) &&
-            channel.video_ids.some((id) => String(id).trim() === targetId)
-        ) {
-            return channel.code;
-        }
-    }
-    return null;
-};
-
 const getCustomOrderRank = (item) => {
     if (!item || !props.customOrderMap) return 0;
     const key =
@@ -341,18 +287,6 @@ const getCustomOrderRank = (item) => {
         v-if="activeTab === '10-8'"
         class="w-full flex flex-col relative space-y-4 pb-24"
     >
-        <!-- GMEET CCTV MULTIVIEW GRID -->
-        <TacChannelToolbar
-            v-if="isTacDepartment(selectedDepartment)"
-            :selectedDepartment="selectedDepartment"
-            :visibleStreamsCount="visibleStreams.length"
-            :remainingSeconds="getTacRemainingSeconds(selectedDepartment)"
-            :iconRadio="iconRadio"
-            :iconClock="iconClock"
-            @extendTimer="emit('extend-tac-timer', $event)"
-            @disbandChannel="emit('disband-tac-channel', $event)"
-        />
-
         <!-- Department Standby Banner when visibleStreams.length === 0 -->
         <EmptyState
             v-if="visibleStreams.length === 0"
@@ -416,15 +350,6 @@ const getCustomOrderRank = (item) => {
                         "
                         :isRightChatOpen="isRightChatOpen"
                         :isTheaterMode="isTheaterMode"
-                        :activeTacChannel="
-                            getStreamTac(primaryFocusedStream.video_id)
-                        "
-                        :isPersonalStream="
-                            isPersonalStream(
-                                primaryFocusedStream.officer?.handle ||
-                                    primaryFocusedStream.video_id,
-                            )
-                        "
                         :fetchedDescription="
                             getStreamDescription(primaryFocusedStream)
                         "
@@ -436,36 +361,6 @@ const getCustomOrderRank = (item) => {
                         "
                         @toggle-right-chat="isRightChatOpen = !isRightChatOpen"
                         @toggle-theater-mode="emit('toggle-theater-mode')"
-                        @toggle-tac-popover="
-                            emit(
-                                'update:activeTacPopoverVideoId',
-                                activeTacPopoverVideoId ===
-                                    primaryFocusedStream.video_id
-                                    ? null
-                                    : primaryFocusedStream.video_id,
-                            )
-                        "
-                        @assign-tac="
-                            (tacCode) =>
-                                emit(
-                                    'assign-stream-to-tac',
-                                    tacCode,
-                                    primaryFocusedStream.video_id,
-                                )
-                        "
-                        @remove-tac="
-                            emit(
-                                'remove-stream-from-tac',
-                                primaryFocusedStream.video_id,
-                            )
-                        "
-                        @toggle-personal-stream="
-                            emit(
-                                'toggle-personal-stream',
-                                primaryFocusedStream.officer?.handle ||
-                                    primaryFocusedStream.video_id,
-                            )
-                        "
                         @close-focus="emit('update:selectedLayout', 'auto')"
                     />
                 </div>

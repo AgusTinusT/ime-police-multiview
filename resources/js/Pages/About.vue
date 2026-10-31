@@ -303,14 +303,14 @@ const techStack = [
                             <CardContent class="p-5">
                                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                     <h3 class="font-display font-bold text-base sm:text-lg uppercase text-foreground tracking-wider">
-                                        03. ALOKASI RADIO TAC &amp; PERSONAL WATCHLIST
+                                        03. SQUAD KOMUNITAS &amp; PRESET MULTIVIEW
                                     </h3>
                                     <Badge variant="outline" class="font-mono text-primary border-primary/30 bg-primary/10 w-fit">
-                                        INTEGRASI DISPATCH
+                                        CUSTOM SQUADS
                                     </Badge>
                                 </div>
                                 <p class="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed max-w-prose">
-                                    Unit yang sedang merespon operasi khusus dikelompokkan ke saluran radio TAC 1 - 10 dengan timer alokasi 30 menit. Penonton juga dapat menyematkan stream favorit ke Personal Watchlist.
+                                    Kelompokkan perwira favorit ke dalam Squad kustom atau jelajahi preset squad komunitas untuk langsung memantau beberapa POV perwira dalam satu klik.
                                 </p>
                             </CardContent>
                         </Card>

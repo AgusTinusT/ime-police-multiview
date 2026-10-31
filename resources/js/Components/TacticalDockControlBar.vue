@@ -27,11 +27,9 @@ import {
     LayoutGrid,
     Maximize,
     Monitor,
-    Radio,
     RefreshCw,
     Search,
     Settings,
-    Star,
     Volume2,
     VolumeX,
     X,
@@ -194,78 +192,6 @@ const getDeptIcon = (dept) => {
                             {{ getDeptCount(dItem.id) }}
                         </Badge>
                     </button>
-
-                    <button
-                        type="button"
-                        :class="
-                            cn(
-                                'p-2 rounded-md border flex items-center justify-between transition text-left cursor-pointer',
-                                selectedDepartment === 'PERSONAL'
-                                    ? 'bg-primary text-primary-foreground border-primary font-bold'
-                                    : 'bg-background hover:bg-accent text-foreground/80 border-border',
-                            )
-                        "
-                        @click="
-                            emit('update:selectedDepartment', 'PERSONAL');
-                            isDockCategoryOpen = false;
-                        "
-                    >
-                        <div class="flex items-center gap-2">
-                            <Star class="size-4" />
-                            <span>Watchlist</span>
-                        </div>
-                        <Badge
-                            variant="secondary"
-                            class="px-1.5 py-0 text-xs font-mono font-bold"
-                        >
-                            {{ getDeptCount("PERSONAL") }}
-                        </Badge>
-                    </button>
-                </div>
-
-                <!-- TAC Channels Section -->
-                <div class="pt-2 border-t border-border space-y-1.5">
-                    <div
-                        class="text-xs font-mono font-bold text-warning flex items-center gap-1.5"
-                    >
-                        <Radio class="size-3.5" />
-                        <span>KANAL RADIO OPERASIONAL (TAC)</span>
-                    </div>
-                    <div class="grid grid-cols-5 gap-1">
-                        <button
-                            v-for="i in 10"
-                            :key="`tac-${i}`"
-                            type="button"
-                            :class="
-                                cn(
-                                    'p-1.5 rounded-md border text-center transition flex flex-col items-center justify-center gap-0.5 cursor-pointer',
-                                    selectedDepartment === `TAC_${i}`
-                                        ? 'bg-primary text-primary-foreground border-primary font-bold'
-                                        : getDeptCount(`TAC_${i}`) > 0
-                                          ? 'bg-warning/15 text-warning border-warning/40 font-semibold'
-                                          : 'bg-background text-muted-foreground border-border hover:bg-accent',
-                                )
-                            "
-                            @click="
-                                emit('update:selectedDepartment', `TAC_${i}`);
-                                isDockCategoryOpen = false;
-                            "
-                        >
-                            <span class="text-xs font-mono">TAC {{ i }}</span>
-                            <span
-                                :class="
-                                    cn(
-                                        'text-xs px-1 rounded-sm font-mono',
-                                        getDeptCount(`TAC_${i}`) > 0
-                                            ? 'bg-warning text-warning-foreground font-bold'
-                                            : 'bg-card text-muted-foreground',
-                                    )
-                                "
-                            >
-                                {{ getDeptCount(`TAC_${i}`) }}
-                            </span>
-                        </button>
-                    </div>
                 </div>
             </Card>
 

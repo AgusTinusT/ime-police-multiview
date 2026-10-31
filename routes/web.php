@@ -7,7 +7,6 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\OfficerSelfProfileController;
-use App\Http\Controllers\TacChannelController;
 use Inertia\Inertia;
 
 // Main Police Tactical Command Center Dashboard
@@ -85,15 +84,6 @@ Route::prefix('api/v1')->group(function () {
         Route::post('/{id}/like', [PoliceCommandController::class, 'likeTacClip']);
         Route::delete('/{id}', [PoliceCommandController::class, 'destroyTacClip']);
     });
-
-    // TAC Tactical Radio Channels
-    Route::prefix('tac')->group(function () {
-        Route::get('/', [TacChannelController::class, 'index']);
-        Route::post('/assign', [TacChannelController::class, 'assign']);
-        Route::post('/remove', [TacChannelController::class, 'remove']);
-        Route::post('/extend', [TacChannelController::class, 'extend']);
-        Route::post('/clear', [TacChannelController::class, 'clear']);
-    });
 });
 
 
@@ -134,15 +124,7 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/hero-slides')->group(
 Route::post('/api/v1/hero-slides/{slide}/event', [HeroSlideController::class, 'recordEvent'])
     ->middleware('throttle:60,1');
 
-// Authenticated User Cloud Watchlist API
-use App\Http\Controllers\UserWatchlistController;
 use App\Http\Controllers\VideoClipController;
-
-Route::middleware('auth')->prefix('api/v1/user/watchlist')->group(function () {
-    Route::get('/', [UserWatchlistController::class, 'index']);
-    Route::post('/toggle', [UserWatchlistController::class, 'toggle']);
-});
-
 use App\Http\Controllers\ClipperRequestController;
 
 // Dedicated Tactical Video Trimmer Workspace Page (Public Teaser & Auth Workspace)

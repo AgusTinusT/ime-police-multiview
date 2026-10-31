@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const props = defineProps({
     stream: { type: Object, required: true },
     href: { type: String, required: true },
-    kind: { type: String, default: "live" }, // 'live' | 'tac' | 'replay'
+    kind: { type: String, default: "live" }, // 'live' | 'replay'
     inTray: { type: Boolean, default: false },
     size: { type: String, default: "md" }, // 'md' | 'sm'
 });
@@ -40,7 +40,6 @@ const dept = computed(() => props.stream.officer?.department || "");
 
             <div class="absolute left-2 top-2">
                 <LiveBadge v-if="kind === 'live'" />
-                <Badge v-else-if="kind === 'tac'" variant="warning">TAC</Badge>
             </div>
             <Badge
                 v-if="kind === 'replay' && stream.streamed_at"

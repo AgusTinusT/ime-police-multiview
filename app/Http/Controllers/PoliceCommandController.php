@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Officer;
 use App\Models\ActiveStream;
-use App\Models\TacChannel;
 use App\Models\TacClip;
 use App\Jobs\SyncOfficerStreamsJob;
 use Illuminate\Support\Facades\Cache;
@@ -116,27 +115,10 @@ class PoliceCommandController extends Controller
             'sapr_live' => $activeStreams->filter(fn($s) => in_array($s['officer']['department'] ?? '', ['SAPR', 'PARK RANGER']))->count(),
         ];
 
-        // 5. Tactical Radio Channels (TAC 1 to TAC 5)
-        TacChannel::ensureChannelsExist();
-        $tacChannels = TacChannel::orderBy('id')->get()->map(function ($ch) {
-            $ch->checkAndResetIfExpired();
-            return [
-                'id' => $ch->id,
-                'code' => $ch->code,
-                'name' => $ch->name,
-                'video_ids' => $ch->video_ids ?? [],
-                'expires_at' => $ch->expires_at ? $ch->expires_at->toIso8601String() : null,
-                'remaining_seconds' => $ch->remaining_seconds,
-                'is_active' => $ch->is_active,
-                'unit_count' => $ch->unit_count,
-            ];
-        });
-
         return Inertia::render('Dashboard', [
             'heroSlides' => \App\Services\HeroSlideService::forAudience($request->user()),
             'initialStreams' => $activeStreams->values(),
             'initialOfflineOfficers' => $offlineOfficers->values(),
-            'initialTacChannels' => $tacChannels->values(),
             'initialReplays' => $recentReplays,
             'deptStats' => $deptStats,
             'monthlyLeaderboard' => $this->getMonthlyLeaderboard(10, true),
@@ -253,25 +235,9 @@ class PoliceCommandController extends Controller
             'sapr_live' => $activeStreams->filter(fn($s) => in_array($s['officer']['department'] ?? '', ['SAPR', 'PARK RANGER']))->count(),
         ];
 
-        TacChannel::ensureChannelsExist();
-        $tacChannels = TacChannel::orderBy('id')->get()->map(function ($ch) {
-            $ch->checkAndResetIfExpired();
-            return [
-                'id' => $ch->id,
-                'code' => $ch->code,
-                'name' => $ch->name,
-                'video_ids' => $ch->video_ids ?? [],
-                'expires_at' => $ch->expires_at ? $ch->expires_at->toIso8601String() : null,
-                'remaining_seconds' => $ch->remaining_seconds,
-                'is_active' => $ch->is_active,
-                'unit_count' => $ch->unit_count,
-            ];
-        });
-
         return Inertia::render('Multiview', [
             'initialStreams' => $activeStreams->values(),
             'initialOfflineOfficers' => $offlineOfficers->values(),
-            'initialTacChannels' => $tacChannels->values(),
             'initialReplays' => $recentReplays,
             'deptStats' => $deptStats,
             'lastSyncedAt' => now()->toIso8601String(),
@@ -790,27 +756,12 @@ class PoliceCommandController extends Controller
      */
     public function radioCodes(Request $request)
     {
-        TacChannel::ensureChannelsExist();
-        $tacChannels = TacChannel::orderBy('id')->get()->map(function ($ch) {
-            $ch->checkAndResetIfExpired();
-            return [
-                'id' => $ch->id,
-                'code' => $ch->code,
-                'name' => $ch->name,
-                'video_ids' => $ch->video_ids ?? [],
-                'remaining_seconds' => $ch->remaining_seconds,
-                'is_active' => $ch->is_active,
-                'unit_count' => $ch->unit_count,
-            ];
-        });
-
         $deptStats = [
             'total_officers' => Officer::where('is_active', true)->count(),
             'total_live' => ActiveStream::where('status', 'LIVE')->count(),
         ];
 
         return Inertia::render('RadioCodes', [
-            'tacChannels' => $tacChannels->values(),
             'deptStats' => $deptStats,
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
