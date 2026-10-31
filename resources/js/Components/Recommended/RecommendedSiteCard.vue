@@ -42,7 +42,8 @@ const hasBadgeInTitle = computed(() => {
         :style="backgroundStyle"
     >
         <!-- Overlay to guarantee contrast against background art -->
-        <div class="absolute inset-0 bg-background/85 md:bg-gradient-to-r md:from-background md:via-background/90 md:to-background/60 pointer-events-none" />
+        <!-- Scrim keeps text readable without hiding the hero art on the right. -->
+        <div class="absolute inset-0 bg-background/55 md:bg-gradient-to-r md:from-background md:via-background/80 md:via-55% md:to-background/0 pointer-events-none" />
 
         <!-- Card Content Body -->
         <div class="relative z-10 flex flex-col md:flex-row items-center md:items-center gap-6 lg:gap-8 p-6 sm:p-8">

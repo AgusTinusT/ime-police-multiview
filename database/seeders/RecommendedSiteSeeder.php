@@ -29,6 +29,24 @@ class RecommendedSiteSeeder extends Seeder
                 'sort_order' => 0,
             ]
         );
+
+        RecommendedSite::updateOrCreate(
+            ['url' => 'https://sasp-motionliferp.com/'],
+            [
+                'name' => 'SASP FORUM',
+                'badge' => 'FORUM',
+                'poster_name' => 'LAW ENFORCEMENT',
+                'poster_subtitle' => 'To Protect and To Serve',
+                'poster_image_url' => '/images/recommended/sasp-sprite.webp',
+                'background_image_url' => '/images/recommended/sasp-background.jpg',
+                'cta_text' => 'Kunjungi website',
+                'description' => 'Website internal IME Police. Semua informasi dan pengajuan, mulai dari pengumuman, rekrutmen, reinstatement, hingga lisensi senjata, tersedia di satu forum.',
+                'chips' => ['Informasi', 'Pengajuan', 'Employment'],
+                'is_featured' => true,
+                'is_active' => true,
+                'sort_order' => 1,
+            ]
+        );
     }
 }
 

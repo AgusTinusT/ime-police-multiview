@@ -531,13 +531,8 @@ onMounted(() => {
                     :title="$t('dashboard.recommended_sites_title')"
                     :subtitle="$t('dashboard.recommended_sites_subtitle')"
                 >
-                    <div v-if="recommendedSites.length === 1" class="w-full shrink-0">
-                        <RecommendedSiteCard :site="recommendedSites[0]" />
-                    </div>
-                    <div
-                        v-else
-                        class="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 shrink-0"
-                    >
+                    <!-- Full-width stacked: the poster+copy layout needs room to breathe. -->
+                    <div class="w-full shrink-0 space-y-4">
                         <RecommendedSiteCard
                             v-for="site in recommendedSites"
                             :key="site.id"
