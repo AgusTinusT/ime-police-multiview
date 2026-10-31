@@ -349,4 +349,18 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/squads')->group(funct
     Route::patch('/{squad}/hide', [SquadController::class, 'toggleHide'])->name('admin.squads.hide');
 });
 
+// 8. Recommended Sites API (REC-01)
+use App\Http\Controllers\RecommendedSiteController;
+
+Route::get('/api/v1/recommended-sites', [RecommendedSiteController::class, 'index'])->middleware('throttle:120,1');
+
+Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/recommended-sites')->group(function () {
+    Route::get('/', [RecommendedSiteController::class, 'adminIndex']);
+    Route::post('/', [RecommendedSiteController::class, 'store']);
+    Route::put('/{site}', [RecommendedSiteController::class, 'update']);
+    Route::patch('/{site}/toggle', [RecommendedSiteController::class, 'toggleActive']);
+    Route::delete('/{site}', [RecommendedSiteController::class, 'destroy']);
+});
+
+
 

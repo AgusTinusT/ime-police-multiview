@@ -11,6 +11,7 @@ import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import AuthModal from "@/Components/AuthModal.vue";
 import SquadCatalogCard from "@/Components/Squad/SquadCatalogCard.vue";
 import SquadSaveDialog from "@/Components/Squad/SquadSaveDialog.vue";
+import RecommendedSiteCard from "@/Components/Recommended/RecommendedSiteCard.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
 import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
 import { LiveBadge, OfficerAvatar } from "@/Components/tactical";
@@ -387,11 +388,22 @@ const fetchAnnouncements = async () => {
     }
 };
 
+const recommendedSites = ref([]);
+const fetchRecommendedSites = async () => {
+    try {
+        const res = await axios.get("/api/v1/recommended-sites");
+        recommendedSites.value = Array.isArray(res.data?.data) ? res.data.data : [];
+    } catch {
+        recommendedSites.value = [];
+    }
+};
+
 onMounted(() => {
     fetchCommunityClips();
     fetchMySquads();
     fetchPublicSquads();
     fetchAnnouncements();
+    fetchRecommendedSites();
 });
 </script>
 
@@ -511,6 +523,27 @@ onMounted(() => {
                         :key="`clip-${c.id}`"
                         :clip="c"
                     />
+                </CatalogRow>
+
+                <!-- Website Rekomendasi (REC-01) -->
+                <CatalogRow
+                    v-if="recommendedSites.length"
+                    :title="$t('dashboard.recommended_sites_title')"
+                    :subtitle="$t('dashboard.recommended_sites_subtitle')"
+                >
+                    <div v-if="recommendedSites.length === 1" class="w-full shrink-0">
+                        <RecommendedSiteCard :site="recommendedSites[0]" />
+                    </div>
+                    <div
+                        v-else
+                        class="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 shrink-0"
+                    >
+                        <RecommendedSiteCard
+                            v-for="site in recommendedSites"
+                            :key="site.id"
+                            :site="site"
+                        />
+                    </div>
                 </CatalogRow>
 
                 <CatalogRow

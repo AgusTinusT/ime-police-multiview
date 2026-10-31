@@ -24,7 +24,10 @@
     "replay_archive": "ARSIP & REPLAY",
     "videos_unit": "Video",
     "transmission_feed": "TRANSMISI SIARAN",
-    "transmission_log": "[DISPATCH]: Stream bodycam terhubung. Beralih ke Multiview Theater untuk tampilan grid tersinkronisasi."
+    "transmission_log": "[DISPATCH]: Stream bodycam terhubung. Beralih ke Multiview Theater untuk tampilan grid tersinkronisasi.",
+    "recommended_sites_title": "Website rekomendasi",
+    "recommended_sites_subtitle": "Jelajahi platform roleplay IME Police lainnya.",
+    "visit_site": "Kunjungi website"
   },
   "multiview": {
     "title_default": "Multiview (10-8 Live Officer Feeds) – IME RP Multiview",

@@ -24,7 +24,10 @@
     "replay_archive": "ARCHIVE & REPLAY",
     "videos_unit": "Videos",
     "transmission_feed": "BROADCAST TRANSMISSION",
-    "transmission_log": "[DISPATCH]: Bodycam stream connected. Switching to Multiview Theater for synchronized grid display."
+    "transmission_log": "[DISPATCH]: Bodycam stream connected. Switching to Multiview Theater for synchronized grid display.",
+    "recommended_sites_title": "Recommended websites",
+    "recommended_sites_subtitle": "Explore other IME Police roleplay platforms.",
+    "visit_site": "Visit website"
   },
   "multiview": {
     "title_default": "Multiview (10-8 Live Officer Feeds) – IME RP Multiview",

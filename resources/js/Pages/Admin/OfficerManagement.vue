@@ -9,6 +9,7 @@ import BioModerationTab from "@/Components/Admin/BioModerationTab.vue";
 import AdminChangeRequestsTab from "@/Components/Admin/AdminChangeRequestsTab.vue";
 import HeroSlidesTab from "@/Components/Admin/HeroSlidesTab.vue";
 import SquadsTab from "@/Components/Admin/SquadsTab.vue";
+import RecommendedSitesTab from "@/Components/Admin/RecommendedSitesTab.vue";
 import OfficerBindingModal from "@/Components/Admin/OfficerBindingModal.vue";
 import OfficerDetailSheet from "@/Components/Admin/OfficerDetailSheet.vue";
 import {
@@ -2389,6 +2390,11 @@ onUnmounted(() => {
             <!-- TAB 10: SQUADS (SQ-03) -->
             <div v-if="activeTab === 'squads'">
                 <SquadsTab @toast="showToast" />
+            </div>
+
+            <!-- TAB 11: RECOMMENDED SITES (REC-01) -->
+            <div v-if="activeTab === 'recommended'">
+                <RecommendedSitesTab @toast="showToast" />
             </div>
         </PageContainer>
 

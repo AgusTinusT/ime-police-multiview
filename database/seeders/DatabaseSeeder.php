@@ -507,6 +507,9 @@ class DatabaseSeeder extends Seeder
         // Run Officer Bio Link Seeder for tactical bio-link accounts & profiles
         $this->call(OfficerBioLinkSeeder::class);
 
+        // Run Recommended Sites Seeder for recommended roleplay platforms
+        $this->call(RecommendedSiteSeeder::class);
+
         // Automatically fetch real YouTube channel avatars & subscriber counts for officers
         \Illuminate\Support\Facades\Artisan::call('officer:sync-subscribers');
     }

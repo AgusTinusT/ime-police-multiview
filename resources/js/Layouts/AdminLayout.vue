@@ -33,6 +33,7 @@ import {
     Images,
     ArrowLeft,
     ShieldAlert,
+    Globe,
 } from "@lucide/vue";
 
 const props = defineProps({
@@ -73,6 +74,7 @@ const navGroups = [
             { id: "hero", label: "Hero Slides", icon: Images },
             { id: "announcements", label: "Pengumuman", icon: Megaphone },
             { id: "squads", label: "Squad", icon: Users },
+            { id: "recommended", label: "Rekomendasi Website", icon: Globe },
             { id: "moderation", label: "Moderasi Bio-Link", icon: Lock },
         ],
     },
