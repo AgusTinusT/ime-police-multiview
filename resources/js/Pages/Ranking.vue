@@ -9,6 +9,7 @@ import {
     OfficerAvatar,
     DeptBadge,
     LiveBadge,
+    HiatusBadge,
     EmptyState,
 } from "@/Components/tactical";
 import {
@@ -225,6 +226,7 @@ const formatDate = (isoString) => {
                                             :src="topThree[1].avatar_url"
                                             :name="topThree[1].officer_name"
                                             size="lg"
+                                            :class="topThree[1].is_hiatus ? 'opacity-60' : ''"
                                         />
                                         <div class="w-full min-w-0">
                                             <div class="flex items-center justify-center gap-1.5">
@@ -232,6 +234,7 @@ const formatDate = (isoString) => {
                                                     {{ topThree[1].officer_name }}
                                                 </h3>
                                                 <LiveBadge v-if="topThree[1].is_live" />
+                                                <HiatusBadge v-if="topThree[1].is_hiatus" />
                                             </div>
                                             <div class="flex items-center justify-center gap-1.5 mt-1">
                                                 <DeptBadge :dept="topThree[1].department" />
@@ -296,7 +299,7 @@ const formatDate = (isoString) => {
                                                 :src="topThree[0].avatar_url"
                                                 :name="topThree[0].officer_name"
                                                 size="lg"
-                                                class="size-16 sm:size-20 border-2 border-primary"
+                                                :class="['size-16 sm:size-20 border-2 border-primary', topThree[0].is_hiatus && 'opacity-60']"
                                             />
                                             <div class="absolute -top-2 -right-2 rounded-full bg-primary p-1 text-primary-foreground shadow-sm">
                                                 <Crown class="size-3.5 fill-current" />
@@ -308,6 +311,7 @@ const formatDate = (isoString) => {
                                                     {{ topThree[0].officer_name }}
                                                 </h3>
                                                 <LiveBadge v-if="topThree[0].is_live" />
+                                                <HiatusBadge v-if="topThree[0].is_hiatus" />
                                             </div>
                                             <div class="flex items-center justify-center gap-1.5 mt-1">
                                                 <DeptBadge :dept="topThree[0].department" />
@@ -371,6 +375,7 @@ const formatDate = (isoString) => {
                                             :src="topThree[2].avatar_url"
                                             :name="topThree[2].officer_name"
                                             size="lg"
+                                            :class="topThree[2].is_hiatus ? 'opacity-60' : ''"
                                         />
                                         <div class="w-full min-w-0">
                                             <div class="flex items-center justify-center gap-1.5">
@@ -378,6 +383,7 @@ const formatDate = (isoString) => {
                                                     {{ topThree[2].officer_name }}
                                                 </h3>
                                                 <LiveBadge v-if="topThree[2].is_live" />
+                                                <HiatusBadge v-if="topThree[2].is_hiatus" />
                                             </div>
                                             <div class="flex items-center justify-center gap-1.5 mt-1">
                                                 <DeptBadge :dept="topThree[2].department" />
@@ -470,6 +476,7 @@ const formatDate = (isoString) => {
                                                         :src="item.avatar_url"
                                                         :name="item.officer_name"
                                                         size="sm"
+                                                        :class="item.is_hiatus ? 'opacity-60' : ''"
                                                     />
                                                     <div class="min-w-0">
                                                         <div class="flex items-center gap-1.5">
@@ -477,6 +484,7 @@ const formatDate = (isoString) => {
                                                                 {{ item.officer_name }}
                                                             </span>
                                                             <LiveBadge v-if="item.is_live" />
+                                                            <HiatusBadge v-if="item.is_hiatus" />
                                                         </div>
                                                         <p class="text-xs text-muted-foreground font-mono truncate">
                                                             {{ item.callsign }}
@@ -556,6 +564,7 @@ const formatDate = (isoString) => {
                                             :src="item.avatar_url"
                                             :name="item.officer_name"
                                             size="sm"
+                                            :class="item.is_hiatus ? 'opacity-60' : ''"
                                         />
                                         <div class="min-w-0 space-y-0.5">
                                             <div class="flex items-center gap-1.5">
@@ -563,6 +572,7 @@ const formatDate = (isoString) => {
                                                     {{ item.officer_name }}
                                                 </h4>
                                                 <LiveBadge v-if="item.is_live" />
+                                                <HiatusBadge v-if="item.is_hiatus" />
                                             </div>
                                             <div class="flex items-center gap-1.5">
                                                 <DeptBadge :dept="item.department" />

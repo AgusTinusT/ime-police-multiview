@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
-import { DeptBadge, LiveBadge } from "@/Components/tactical";
+import { DeptBadge, LiveBadge, HiatusBadge } from "@/Components/tactical";
 import { cn } from "@/lib/utils";
 
 const props = defineProps({
@@ -80,6 +80,7 @@ const dept = computed(() => props.stream.officer?.department || "");
             </p>
             <div class="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <DeptBadge v-if="dept" :dept="dept" />
+                <HiatusBadge v-if="stream.officer?.is_hiatus" />
                 <span class="truncate">
                     <template v-if="kind === 'replay'">{{ name }}</template>
                     <template v-else-if="kind === 'live'">{{ $t('catalog.watching_title', { count: stream.viewers_count || 0, title: stream.title }) }}</template>

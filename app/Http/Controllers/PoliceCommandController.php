@@ -53,6 +53,7 @@ class PoliceCommandController extends Controller
                         'rank' => $officer->rank,
                         'patrol_zone' => $officer->patrol_zone,
                         'avatar_url' => $officer->public_avatar_url,
+                        'is_hiatus' => false,
                         'subscriber_count' => $officer->subscriber_count,
                         'subscriber_count_text' => $officer->subscriber_count_text,
                     ] : [
@@ -67,6 +68,7 @@ class PoliceCommandController extends Controller
                         'rank' => 'Officer',
                         'patrol_zone' => 'Los Santos',
                         'avatar_url' => null,
+                        'is_hiatus' => false,
                     ],
                 ];
             });
@@ -74,7 +76,8 @@ class PoliceCommandController extends Controller
         // 2. Get Offline 10-7 Officer Roster
         $liveOfficerIds = ActiveStream::where('status', 'LIVE')->pluck('officer_id')->filter()->toArray();
 
-        $offlineOfficers = Officer::where('is_active', true)
+        $offlineOfficers = Officer::with('activeStream')
+            ->where('is_active', true)
             ->whereNotIn('id', $liveOfficerIds)
             ->orderBy('department')
             ->orderBy('rank')
@@ -92,6 +95,7 @@ class PoliceCommandController extends Controller
                     'rank' => $officer->rank,
                     'patrol_zone' => $officer->patrol_zone,
                     'avatar_url' => $officer->public_avatar_url,
+                    'is_hiatus' => (bool) $officer->is_hiatus,
                     'subscriber_count' => $officer->subscriber_count,
                     'subscriber_count_text' => $officer->subscriber_count_text,
                     'status' => '10-7 OFFLINE',
@@ -135,7 +139,7 @@ class PoliceCommandController extends Controller
             'initialTacChannels' => $tacChannels->values(),
             'initialReplays' => $recentReplays,
             'deptStats' => $deptStats,
-            'monthlyLeaderboard' => $this->getMonthlyLeaderboard(),
+            'monthlyLeaderboard' => $this->getMonthlyLeaderboard(10, true),
             'supportOfficers' => $this->getSupportOfficers(),
             'lastSyncedAt' => now()->toIso8601String(),
         ]);
@@ -189,6 +193,7 @@ class PoliceCommandController extends Controller
                         'rank' => $officer->rank,
                         'patrol_zone' => $officer->patrol_zone,
                         'avatar_url' => $officer->public_avatar_url,
+                        'is_hiatus' => false,
                         'subscriber_count' => $officer->subscriber_count,
                         'subscriber_count_text' => $officer->subscriber_count_text,
                     ] : [
@@ -203,13 +208,15 @@ class PoliceCommandController extends Controller
                         'rank' => 'Officer',
                         'patrol_zone' => 'Los Santos',
                         'avatar_url' => null,
+                        'is_hiatus' => false,
                     ],
                 ];
             });
 
         $liveOfficerIds = ActiveStream::where('status', 'LIVE')->pluck('officer_id')->filter()->toArray();
 
-        $offlineOfficers = Officer::where('is_active', true)
+        $offlineOfficers = Officer::with('activeStream')
+            ->where('is_active', true)
             ->whereNotIn('id', $liveOfficerIds)
             ->orderBy('department')
             ->orderBy('rank')
@@ -227,6 +234,7 @@ class PoliceCommandController extends Controller
                     'rank' => $officer->rank,
                     'patrol_zone' => $officer->patrol_zone,
                     'avatar_url' => $officer->public_avatar_url,
+                    'is_hiatus' => (bool) $officer->is_hiatus,
                     'subscriber_count' => $officer->subscriber_count,
                     'subscriber_count_text' => $officer->subscriber_count_text,
                     'status' => '10-7 OFFLINE',
@@ -310,6 +318,7 @@ class PoliceCommandController extends Controller
                         'rank' => $officer->rank,
                         'patrol_zone' => $officer->patrol_zone,
                         'avatar_url' => $officer->public_avatar_url,
+                        'is_hiatus' => false,
                         'subscriber_count' => $officer->subscriber_count,
                         'subscriber_count_text' => $officer->subscriber_count_text,
                     ] : [
@@ -324,13 +333,15 @@ class PoliceCommandController extends Controller
                         'rank' => 'Officer',
                         'patrol_zone' => 'Los Santos',
                         'avatar_url' => null,
+                        'is_hiatus' => false,
                     ],
                 ];
             });
 
         // 2. Offline 10-7 Officer Roster
         $liveOfficerIds = ActiveStream::where('status', 'LIVE')->pluck('officer_id')->filter()->toArray();
-        $offlineOfficers = Officer::where('is_active', true)
+        $offlineOfficers = Officer::with('activeStream')
+            ->where('is_active', true)
             ->whereNotIn('id', $liveOfficerIds)
             ->orderBy('department')
             ->orderBy('rank')
@@ -348,6 +359,7 @@ class PoliceCommandController extends Controller
                     'rank' => $officer->rank,
                     'patrol_zone' => $officer->patrol_zone,
                     'avatar_url' => $officer->public_avatar_url,
+                    'is_hiatus' => (bool) $officer->is_hiatus,
                     'subscriber_count' => $officer->subscriber_count,
                     'subscriber_count_text' => $officer->subscriber_count_text,
                     'status' => '10-7 OFFLINE',
@@ -374,7 +386,7 @@ class PoliceCommandController extends Controller
             'replays' => $recentReplays,
             'offline_officers' => $offlineOfficers->values(),
             'dept_stats' => $deptStats,
-            'monthly_leaderboard' => $this->getMonthlyLeaderboard(),
+            'monthly_leaderboard' => $this->getMonthlyLeaderboard(10, true),
             'support_officers' => $this->getSupportOfficers(),
             'count' => $activeStreams->count(),
             'synced_at' => now()->toIso8601String(),
@@ -516,7 +528,7 @@ class PoliceCommandController extends Controller
             ->get();
         $liveOfficerIds = $activeStreams->pluck('officer_id')->filter()->toArray();
 
-        $allOfficers = Officer::with('rankRelation:id,rank_title,level')
+        $allOfficers = Officer::with(['rankRelation:id,rank_title,level', 'activeStream'])
             ->where('is_active', true)
             ->orderBy('department')
             ->orderBy('rank')
@@ -542,6 +554,7 @@ class PoliceCommandController extends Controller
                     'subscriber_count' => $officer->subscriber_count ?? 0,
                     'subscriber_count_text' => $officer->subscriber_count_text ?: ($officer->subscriber_count ? number_format($officer->subscriber_count) . " subs" : "< 1k subs"),
                     'is_online' => $isLive,
+                    'is_hiatus' => (bool) $officer->is_hiatus,
                     'live_video_id' => $liveStream ? $liveStream->video_id : null,
                 ];
             });
@@ -861,13 +874,13 @@ class PoliceCommandController extends Controller
      * Generate monthly leaderboard metrics for officers based on DB data & live status.
      * Falls back to previous month if no officers have hours recorded in the current month.
      */
-    public function getMonthlyLeaderboard(?int $limit = 10): array
+    public function getMonthlyLeaderboard(?int $limit = 10, bool $filterHiatus = false): array
     {
         $now = now();
         $liveStreams = ActiveStream::where('status', 'LIVE')->get()->keyBy('channel_id');
         $officers = Officer::with(['rankRelation', 'activeStream'])->where('is_active', true)->get();
 
-        $buildForMonth = function (\Carbon\CarbonInterface $date, bool $isCurrent) use ($officers, $liveStreams, $limit) {
+        $buildForMonth = function (\Carbon\CarbonInterface $date, bool $isCurrent) use ($officers, $liveStreams, $limit, $filterHiatus) {
             $daysInMonth = $date->daysInMonth;
             $daysLeft = max(1, $daysInMonth - $date->day);
             $monthName = strtoupper($date->locale('id')->translatedFormat('F Y'));
@@ -925,6 +938,7 @@ class PoliceCommandController extends Controller
                     'total_minutes' => $totalMinutesRaw,
                     'avg_shift' => $avgShiftStr,
                     'is_live' => $isLive,
+                    'is_hiatus' => (bool) $officer->is_hiatus,
                     'live_viewers' => $liveStream ? ($liveStream->viewers_count ?? 0) : 0,
                     'youtube_url' => $youtubeUrl,
                 ];
@@ -934,6 +948,9 @@ class PoliceCommandController extends Controller
             $topHours = $mapped->first()['total_hours_num'] ?? 184;
 
             $query = $mapped;
+            if ($filterHiatus) {
+                $query = $query->filter(fn($item) => empty($item['is_hiatus']))->values();
+            }
             if ($limit !== null) {
                 $query = $query->take($limit);
             }
@@ -1013,6 +1030,7 @@ class PoliceCommandController extends Controller
                     'rank' => $item['officer_rank'] ?? '',
                     'avatar_url' => $item['avatar_url'],
                     'is_live' => (bool) ($item['is_live'] ?? false),
+                    'is_hiatus' => (bool) ($item['is_hiatus'] ?? false),
                     'youtube_url' => $item['youtube_url'],
                     'value' => (int) ($item['total_minutes'] ?? round(($item['total_hours_num'] ?? 0) * 60)),
                     'value_label' => $item['total_hours'],
@@ -1061,6 +1079,7 @@ class PoliceCommandController extends Controller
                 'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
                 'avatar_url' => $officer->public_avatar_url,
                 'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
+                'is_hiatus' => (bool) $officer->is_hiatus,
                 'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
                 'value' => $mins,
                 'value_label' => $totalHoursStr,
@@ -1087,6 +1106,7 @@ class PoliceCommandController extends Controller
                 'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
                 'avatar_url' => $officer->public_avatar_url,
                 'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
+                'is_hiatus' => (bool) $officer->is_hiatus,
                 'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
                 'value' => $count,
                 'value_label' => $this->formatSubscriberCount($count),
@@ -1114,6 +1134,7 @@ class PoliceCommandController extends Controller
                 'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
                 'avatar_url' => $officer->public_avatar_url,
                 'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
+                'is_hiatus' => (bool) $officer->is_hiatus,
                 'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
                 'value' => $count,
                 'value_label' => number_format($count, 0, ',', '.') . '/1.000',
@@ -1137,6 +1158,7 @@ class PoliceCommandController extends Controller
                 'rank' => $officer->rankRelation?->rank_title ?? $officer->rank,
                 'avatar_url' => $officer->public_avatar_url,
                 'is_live' => $officer->activeStream !== null && $officer->activeStream->status === 'LIVE',
+                'is_hiatus' => (bool) $officer->is_hiatus,
                 'youtube_url' => $this->buildOfficerYoutubeUrl($officer),
                 'value' => $officer->last_duty_at->toIso8601String(),
                 'value_label' => $officer->last_duty_at->locale('id')->diffForHumans(),

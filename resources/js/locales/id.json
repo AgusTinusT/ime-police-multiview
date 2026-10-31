@@ -287,5 +287,9 @@
       "hide_avatar_label": "Sembunyikan foto profil officer ini",
       "hide_avatar_desc": "Foto diganti simbol default di halaman publik, direktori, ranking, bio-link, dan Multiview. Admin tetap melihat foto asli."
     }
+  },
+  "officer": {
+    "hiatus_badge": "Hiatus",
+    "hiatus_tooltip": "Tidak live > {days} hari"
   }
 }

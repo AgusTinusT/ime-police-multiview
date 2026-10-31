@@ -79,6 +79,21 @@ class Officer extends Model
     }
 
     /**
+     * Determine if officer is on hiatus (inactive/not live for >= hiatus_days).
+     */
+    public function getIsHiatusAttribute(): bool
+    {
+        if ($this->relationLoaded('activeStream') ? $this->activeStream : $this->activeStream()->exists()) {
+            return false;
+        }
+        if (!$this->last_duty_at) {
+            // Officer baru / belum pernah live: hiatus bila dibuat >= hiatus_days hari lalu.
+            return $this->created_at ? $this->created_at->diffInDays(now()) >= config('police.hiatus_days', 14) : false;
+        }
+        return $this->last_duty_at->diffInDays(now()) >= config('police.hiatus_days', 14);
+    }
+
+    /**
      * Account user managing this officer profile (1:1 relation)
      */
     public function user()

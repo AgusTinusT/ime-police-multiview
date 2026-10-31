@@ -287,5 +287,9 @@
       "hide_avatar_label": "Hide this officer's profile photo",
       "hide_avatar_desc": "Photo is replaced with a default symbol on public pages, directory, ranking, bio-link, and Multiview. Admins still see the real photo."
     }
+  },
+  "officer": {
+    "hiatus_badge": "Hiatus",
+    "hiatus_tooltip": "Not live for > {days} days"
   }
 }

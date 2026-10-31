@@ -1,5 +1,6 @@
 export { default as DeptBadge } from "./DeptBadge.vue";
 export { default as EmptyState } from "./EmptyState.vue";
+export { default as HiatusBadge } from "./HiatusBadge.vue";
 export { default as LiveBadge } from "./LiveBadge.vue";
 export { default as OfficerAvatar } from "./OfficerAvatar.vue";
 export { default as PageContainer } from "./PageContainer.vue";

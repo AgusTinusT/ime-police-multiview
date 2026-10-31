@@ -53,6 +53,7 @@ import {
     PageContainer,
     DeptBadge,
     LiveBadge,
+    HiatusBadge,
     OfficerAvatar,
     EmptyState,
 } from "@/Components/tactical";
@@ -654,7 +655,7 @@ const liveInDept = computed(() =>
                                 :name="officer.officer_name"
                                 :live="officer.is_online"
                                 size="xl"
-                                class="shrink-0 ring-2 ring-border"
+                                :class="['shrink-0 ring-2 ring-border', officer.is_hiatus && 'opacity-60']"
                             />
                             <div class="relative min-w-0">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -667,6 +668,7 @@ const liveInDept = computed(() =>
                                     <span class="font-mono">{{ officer.callsign }}</span>
                                     <span v-if="officer.badge_number" class="font-mono">{{ officer.badge_number }}</span>
                                     <LiveBadge v-if="officer.is_online" />
+                                    <HiatusBadge v-if="officer.is_hiatus" />
                                 </p>
                             </div>
                         </button>
@@ -959,12 +961,16 @@ const liveInDept = computed(() =>
                                 :name="officer.officer_name"
                                 :live="officer.is_online"
                                 size="md"
+                                :class="officer.is_hiatus ? 'opacity-60' : ''"
                             />
                             <span class="w-full min-w-0">
                                 <span class="block truncate text-sm font-semibold text-foreground group-hover:text-primary">{{ officer.officer_name }}</span>
                                 <span class="block truncate font-mono text-xs text-muted-foreground">{{ officer.callsign }}</span>
                             </span>
-                            <LiveBadge v-if="officer.is_online" />
+                            <div class="flex items-center gap-1">
+                                <LiveBadge v-if="officer.is_online" />
+                                <HiatusBadge v-if="officer.is_hiatus" />
+                            </div>
                         </button>
                     </div>
                 </section>
@@ -1024,12 +1030,15 @@ const liveInDept = computed(() =>
                                         :dept="officer.department"
                                         :live="officer.is_online"
                                         size="md"
+                                        :class="officer.is_hiatus ? 'opacity-60' : ''"
                                     />
                                     <div class="min-w-0">
                                         <div
-                                            class="font-bold text-foreground group-hover:text-primary transition truncate"
+                                            class="font-bold text-foreground group-hover:text-primary transition truncate flex items-center gap-1.5"
                                         >
-                                            {{ officer.officer_name }}
+                                            <span>{{ officer.officer_name }}</span>
+                                            <LiveBadge v-if="officer.is_online" />
+                                            <HiatusBadge v-if="officer.is_hiatus" />
                                         </div>
                                         <div
                                             class="text-xs text-muted-foreground font-mono flex items-center gap-1.5"
@@ -1417,7 +1426,7 @@ const liveInDept = computed(() =>
                             :dept="activeOfficer.department"
                             :live="activeOfficer.is_online"
                             size="lg"
-                            class="shrink-0"
+                            :class="['shrink-0', activeOfficer.is_hiatus && 'opacity-60']"
                         />
                         <div class="min-w-0 flex-1 space-y-1">
                             <div class="flex items-center gap-2">
@@ -1426,6 +1435,7 @@ const liveInDept = computed(() =>
                                     class="text-xs font-mono text-muted-foreground font-bold"
                                     >{{ activeOfficer.badge_number }}</span
                                 >
+                                <HiatusBadge v-if="activeOfficer.is_hiatus" />
                             </div>
                             <h2
                                 class="text-lg font-bold text-foreground leading-snug"
