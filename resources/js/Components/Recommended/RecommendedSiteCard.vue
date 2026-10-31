@@ -34,15 +34,16 @@ const hasBadgeInTitle = computed(() => Boolean(props.site?.badge));
         :href="site.url"
         target="_blank"
         rel="noopener noreferrer"
-        class="group relative block w-[88vw] max-w-[560px] shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 sm:w-[520px]"
+        class="group relative block w-[88vw] max-w-[700px] shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 sm:w-[680px]"
         :style="backgroundStyle"
     >
-        <!-- Scrim keeps text readable while the hero art on the right stays visible. -->
+        <!-- Scrim keeps text readable while leaving most of the hero art visible on the right. -->
         <div
-            class="pointer-events-none absolute inset-0 bg-background/60 sm:bg-gradient-to-r sm:from-background sm:via-background/85 sm:via-55% sm:to-background/10"
+            class="pointer-events-none absolute inset-0 bg-background/55 sm:bg-gradient-to-r sm:from-background sm:via-background/70 sm:via-40% sm:to-background/0"
         />
 
-        <div class="relative z-10 flex gap-4 p-4 sm:gap-5 sm:p-5">
+        <!-- Text column is capped so hero art has room to breathe on wider cards. -->
+        <div class="relative z-10 flex gap-4 p-4 sm:gap-5 sm:p-5 sm:pr-10 md:w-[62%]">
             <!-- Poster -->
             <div class="shrink-0">
                 <div class="flex h-56 w-32 flex-col items-center justify-between overflow-hidden rounded-xl border border-warning/40 bg-card/80 p-2.5 text-center backdrop-blur-xs shadow-sm sm:h-60 sm:w-36">
