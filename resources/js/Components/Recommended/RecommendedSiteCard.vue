@@ -34,7 +34,7 @@ const hasBadgeInTitle = computed(() => Boolean(props.site?.badge));
         :href="site.url"
         target="_blank"
         rel="noopener noreferrer"
-        class="group relative block w-[88vw] max-w-[700px] shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 sm:w-[680px]"
+        class="group relative block w-[88vw] max-w-[800px] shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 sm:w-[680px] lg:w-[780px]"
         :style="backgroundStyle"
     >
         <!-- Scrim keeps text readable while leaving most of the hero art visible on the right. -->
