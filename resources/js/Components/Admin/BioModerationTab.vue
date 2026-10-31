@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import {
     Link2,
@@ -7,6 +7,7 @@ import {
     ScrollText,
     Search,
     RefreshCw,
+    RotateCcw,
     Check,
     Flag,
     X,
@@ -14,16 +15,30 @@ import {
     ShieldAlert,
     UserX,
     UserCheck,
+    MoreHorizontal,
     ChevronLeft,
     ChevronRight,
 } from "@lucide/vue";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
-import { Card, CardContent } from "@/Components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
 import { Label } from "@/Components/ui/label";
 import { Switch } from "@/Components/ui/switch";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
 import {
     Table,
     TableBody,
@@ -54,6 +69,21 @@ const isLoadingLinks = ref(false);
 const linkStatusFilter = ref("all");
 const linkTypeFilter = ref("all");
 const linkSearch = ref("");
+
+const hasActiveLinkFilters = computed(() => {
+    return (
+        !!linkSearch.value.trim() ||
+        linkStatusFilter.value !== "all" ||
+        linkTypeFilter.value !== "all"
+    );
+});
+
+const resetLinkFilters = () => {
+    linkSearch.value = "";
+    linkStatusFilter.value = "all";
+    linkTypeFilter.value = "all";
+    fetchLinks(1);
+};
 
 // Link action modals
 const showModerateModal = ref(false);
@@ -313,64 +343,100 @@ const onSubTabChange = (tab) => {
     if (tab === "audit") fetchAuditLogs(1);
 };
 
+const onRefreshCurrent = () => {
+    if (subTab.value === "links") fetchLinks(linksPagination.value.current_page || 1);
+    if (subTab.value === "audit") fetchAuditLogs(auditPagination.value.current_page || 1);
+};
+
 onMounted(() => {
     fetchLinks(1);
 });
 </script>
 
 <template>
-    <div class="space-y-4 text-xs">
+    <div class="space-y-4 text-xs font-mono">
         <SectionHeader
             title="Moderasi bio-link"
             description="Kelola tautan publik dan daftar domain terlarang."
-        />
-        <!-- SUB-NAVIGATION BAR -->
-        <Card>
-            <CardContent class="p-3 flex flex-wrap items-center justify-between gap-3">
+        >
+            <template #actions>
                 <div class="flex items-center gap-1.5 flex-wrap">
                     <Button
                         size="sm"
                         :variant="subTab === 'links' ? 'default' : 'outline'"
+                        class="gap-1.5 font-mono text-xs h-8"
                         @click="onSubTabChange('links')"
                     >
-                        <Link2 class="size-3.5 mr-1.5" />
-                        Moderasi Tautan Global
+                        <Link2 class="size-3.5" />
+                        <span>Tautan</span>
                     </Button>
                     <Button
                         size="sm"
                         :variant="subTab === 'domains' ? 'default' : 'outline'"
+                        class="gap-1.5 font-mono text-xs h-8"
                         @click="onSubTabChange('domains')"
                     >
-                        <Ban class="size-3.5 mr-1.5" />
-                        Denylist Domain
+                        <Ban class="size-3.5" />
+                        <span>Denylist Domain</span>
                     </Button>
                     <Button
                         size="sm"
                         :variant="subTab === 'audit' ? 'default' : 'outline'"
+                        class="gap-1.5 font-mono text-xs h-8"
                         @click="onSubTabChange('audit')"
                     >
-                        <ScrollText class="size-3.5 mr-1.5" />
-                        Log Audit Keamanan
+                        <ScrollText class="size-3.5" />
+                        <span>Log Audit</span>
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        class="h-8 gap-1.5 font-mono text-xs"
+                        :disabled="isLoadingLinks || isLoadingAudit"
+                        @click="onRefreshCurrent"
+                    >
+                        <RefreshCw :class="cn('size-3.5', (isLoadingLinks || isLoadingAudit) && 'motion-safe:animate-spin')" />
+                        <span class="hidden sm:inline">Refresh</span>
                     </Button>
                 </div>
-            </CardContent>
-        </Card>
+            </template>
+        </SectionHeader>
 
         <!-- 1. LINKS MODERATION VIEW -->
-        <div v-show="subTab === 'links'" class="space-y-3">
-            <!-- Filter Toolbar -->
-            <Card>
-                <CardContent class="p-3.5 flex flex-wrap items-center gap-3 justify-between">
+        <div v-show="subTab === 'links'" class="space-y-4">
+            <!-- Filter & Search Toolbar -->
+            <Card class="p-3.5">
+                <div class="flex flex-wrap items-center gap-3 justify-between">
                     <div class="flex items-center gap-2 flex-1 min-w-[240px]">
-                        <Input
-                            v-model="linkSearch"
-                            type="text"
-                            placeholder="Cari judul tautan, URL, host..."
-                            @keyup.enter="fetchLinks(1)"
-                        />
-                        <Button variant="outline" class="shrink-0" @click="fetchLinks(1)">
-                            <Search class="size-3.5 mr-1.5" />
-                            Cari
+                        <div class="relative flex-1">
+                            <Search class="size-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                            <Input
+                                v-model="linkSearch"
+                                type="text"
+                                placeholder="Cari judul tautan, URL, host, atau streamer..."
+                                class="pl-9 h-9 text-xs font-mono"
+                                @keyup.enter="fetchLinks(1)"
+                            />
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="h-9 shrink-0 gap-1.5 font-mono"
+                            @click="fetchLinks(1)"
+                        >
+                            <Search class="size-3.5" />
+                            <span>Cari</span>
+                        </Button>
+                        <Button
+                            v-if="hasActiveLinkFilters"
+                            variant="ghost"
+                            size="sm"
+                            class="h-9 shrink-0 text-muted-foreground hover:text-foreground gap-1.5 font-mono"
+                            title="Reset filter & pencarian"
+                            @click="resetLinkFilters"
+                        >
+                            <RotateCcw class="size-3.5" />
+                            <span class="hidden sm:inline">Reset</span>
                         </Button>
                     </div>
 
@@ -379,7 +445,7 @@ onMounted(() => {
                         <select
                             v-model="linkStatusFilter"
                             aria-label="Filter status moderasi"
-                            class="h-9 bg-background border border-input text-foreground rounded-md px-2.5 text-xs focus:outline-hidden focus:ring-2 focus:ring-ring"
+                            class="h-9 rounded-md border border-input bg-background px-2.5 text-xs font-mono text-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                             @change="fetchLinks(1)"
                         >
                             <option value="all">Semua Status</option>
@@ -392,7 +458,7 @@ onMounted(() => {
                         <select
                             v-model="linkTypeFilter"
                             aria-label="Filter tipe tautan"
-                            class="h-9 bg-background border border-input text-foreground rounded-md px-2.5 text-xs focus:outline-hidden focus:ring-2 focus:ring-ring"
+                            class="h-9 rounded-md border border-input bg-background px-2.5 text-xs font-mono text-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                             @change="fetchLinks(1)"
                         >
                             <option value="all">Semua Tipe</option>
@@ -402,13 +468,17 @@ onMounted(() => {
                             <option value="social">Social</option>
                             <option value="custom">Custom</option>
                         </select>
+
+                        <div class="text-xs text-muted-foreground font-mono whitespace-nowrap pl-2 border-l border-border hidden md:block">
+                            Total: <strong class="text-foreground">{{ linksPagination.total || 0 }}</strong>
+                        </div>
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
             <!-- Table -->
             <Card class="overflow-hidden">
-                <div v-if="isLoadingLinks" class="py-12 text-center text-muted-foreground">
+                <div v-if="isLoadingLinks" class="py-12 text-center text-muted-foreground font-mono">
                     Memuat tautan...
                 </div>
                 <div v-else-if="links.length === 0" class="p-6">
@@ -421,9 +491,9 @@ onMounted(() => {
                 <div v-else class="overflow-x-auto">
                     <Table>
                         <TableHeader>
-                            <TableRow>
+                            <TableRow class="bg-muted/40 uppercase text-xs font-mono">
                                 <TableHead>Tautan / Profil</TableHead>
-                                <TableHead>Tipe &amp; URL Host</TableHead>
+                                <TableHead>Tipe &amp; Host</TableHead>
                                 <TableHead>Status Moderasi</TableHead>
                                 <TableHead class="text-right">Aksi Moderasi</TableHead>
                             </TableRow>
@@ -431,10 +501,10 @@ onMounted(() => {
                         <TableBody>
                             <TableRow v-for="link in links" :key="link.id">
                                 <TableCell>
-                                    <div class="font-bold text-foreground text-sm">
+                                    <div class="font-bold text-foreground text-sm font-sans">
                                         {{ link.title }}
                                     </div>
-                                    <div class="text-xs text-muted-foreground truncate max-w-sm">
+                                    <div class="text-xs text-muted-foreground truncate max-w-sm font-mono mt-0.5">
                                         <a
                                             :href="link.url"
                                             target="_blank"
@@ -444,13 +514,13 @@ onMounted(() => {
                                             {{ link.url }}
                                         </a>
                                     </div>
-                                    <div class="text-xs text-primary/90 font-mono mt-0.5">
+                                    <div class="text-xs text-primary/90 font-mono mt-1">
                                         Profil: /@{{ link.profile?.slug }} • {{ link.profile?.officer?.officer_name }}
                                     </div>
                                 </TableCell>
 
                                 <TableCell>
-                                    <Badge variant="secondary" class="uppercase font-mono">
+                                    <Badge variant="secondary" class="uppercase font-mono text-xs">
                                         {{ link.link_type }}
                                     </Badge>
                                     <div class="text-xs text-muted-foreground font-mono mt-1">
@@ -461,102 +531,105 @@ onMounted(() => {
                                 <TableCell>
                                     <Badge
                                         variant="outline"
-                                        :class="cn('uppercase font-bold', moderationBadgeClass(link.moderation_status))"
+                                        :class="cn('uppercase font-bold text-xs', moderationBadgeClass(link.moderation_status))"
                                     >
                                         {{ link.moderation_status }}
                                     </Badge>
                                     <div
                                         v-if="link.moderation_reason"
-                                        class="text-xs text-muted-foreground italic mt-1 max-w-xs"
+                                        class="text-xs text-muted-foreground italic mt-1 max-w-xs font-sans"
                                     >
                                         "{{ link.moderation_reason }}"
                                     </div>
                                 </TableCell>
 
                                 <TableCell class="text-right">
-                                    <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <!-- Primary Moderation Quick Buttons -->
                                         <Button
                                             v-if="link.moderation_status !== 'approved'"
                                             size="sm"
                                             variant="outline"
-                                            class="border-success/40 text-success hover:bg-success/15"
+                                            class="h-7 px-2 text-xs border-success/40 text-success hover:bg-success/15 font-mono"
                                             @click="openModerateModal(link, 'approved')"
                                         >
-                                            <Check class="size-3.5 mr-1" />
-                                            Approve
+                                            <Check class="size-3 mr-1" />
+                                            <span>Approve</span>
                                         </Button>
                                         <Button
                                             v-if="link.moderation_status !== 'flagged'"
                                             size="sm"
                                             variant="outline"
-                                            class="border-warning/40 text-warning hover:bg-warning/15"
+                                            class="h-7 px-2 text-xs border-warning/40 text-warning hover:bg-warning/15 font-mono"
                                             @click="openModerateModal(link, 'flagged')"
                                         >
-                                            <Flag class="size-3.5 mr-1" />
-                                            Flag
+                                            <Flag class="size-3 mr-1" />
+                                            <span>Flag</span>
                                         </Button>
                                         <Button
                                             v-if="link.moderation_status !== 'banned'"
                                             size="sm"
                                             variant="outline"
-                                            class="border-destructive/40 text-destructive hover:bg-destructive/15"
+                                            class="h-7 px-2 text-xs border-destructive/40 text-destructive hover:bg-destructive/15 font-mono"
                                             @click="openModerateModal(link, 'banned')"
                                         >
-                                            <X class="size-3.5 mr-1" />
-                                            Ban
+                                            <X class="size-3 mr-1" />
+                                            <span>Ban</span>
                                         </Button>
-                                        <Button
-                                            size="icon"
-                                            variant="outline"
-                                            class="size-8 text-muted-foreground hover:text-destructive"
-                                            aria-label="Hapus paksa tautan"
-                                            title="Hapus Paksa"
-                                            @click="deleteLink(link)"
-                                        >
-                                            <Trash2 class="size-3.5" />
-                                        </Button>
-                                        <Button
-                                            v-if="link.profile"
-                                            size="sm"
-                                            variant="outline"
-                                            :class="
-                                                link.profile.is_suspended
-                                                    ? 'border-warning/40 text-warning hover:bg-warning/15'
-                                                    : 'border-destructive/40 text-destructive hover:bg-destructive/15'
-                                            "
-                                            :title="
-                                                link.profile.is_suspended
-                                                    ? 'Cabut pembekuan halaman bio ini'
-                                                    : 'Bekukan halaman bio profil ini (Kill Switch)'
-                                            "
-                                            @click="toggleSuspendProfile(link.profile)"
-                                        >
-                                            <ShieldAlert class="size-3.5 mr-1" />
-                                            {{ link.profile.is_suspended ? "Unsuspend Bio" : "Suspend Bio" }}
-                                        </Button>
-                                        <Button
-                                            v-if="link.profile?.officer?.user"
-                                            size="sm"
-                                            variant="outline"
-                                            :class="
-                                                link.profile.officer.user.status === 'banned'
-                                                    ? 'border-success/40 text-success hover:bg-success/15'
-                                                    : 'text-foreground'
-                                            "
-                                            :title="
-                                                link.profile.officer.user.status === 'banned'
-                                                    ? 'Cabut ban user pemilik'
-                                                    : 'Ban akun user pemilik link ini'
-                                            "
-                                            @click="toggleBanUser(link.profile.officer.user)"
-                                        >
-                                            <UserCheck
-                                                v-if="link.profile.officer.user.status === 'banned'"
-                                                class="size-3.5 mr-1"
-                                            />
-                                            <UserX v-else class="size-3.5 mr-1" />
-                                            {{ link.profile.officer.user.status === "banned" ? "Unban User" : "Ban User" }}
-                                        </Button>
+
+                                        <!-- Advanced / Destructive Command Actions Dropdown -->
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger as-child>
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    class="size-7 text-muted-foreground hover:text-foreground"
+                                                    title="Aksi Komando Lanjutan"
+                                                >
+                                                    <MoreHorizontal class="size-3.5" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" class="w-52 font-mono text-xs">
+                                                <DropdownMenuItem
+                                                    class="text-destructive gap-2 cursor-pointer"
+                                                    @click="deleteLink(link)"
+                                                >
+                                                    <Trash2 class="size-3.5" />
+                                                    <span>Hapus Paksa Tautan</span>
+                                                </DropdownMenuItem>
+
+                                                <DropdownMenuSeparator v-if="link.profile" />
+
+                                                <DropdownMenuItem
+                                                    v-if="link.profile"
+                                                    class="gap-2 cursor-pointer"
+                                                    @click="toggleSuspendProfile(link.profile)"
+                                                >
+                                                    <ShieldAlert
+                                                        class="size-3.5"
+                                                        :class="link.profile.is_suspended ? 'text-warning' : 'text-destructive'"
+                                                    />
+                                                    <span>
+                                                        {{ link.profile.is_suspended ? "Cabut Suspend Bio" : "Bekukan Bio (Kill-Switch)" }}
+                                                    </span>
+                                                </DropdownMenuItem>
+
+                                                <DropdownMenuItem
+                                                    v-if="link.profile?.officer?.user"
+                                                    class="gap-2 cursor-pointer"
+                                                    @click="toggleBanUser(link.profile.officer.user)"
+                                                >
+                                                    <UserCheck
+                                                        v-if="link.profile.officer.user.status === 'banned'"
+                                                        class="size-3.5 text-success"
+                                                    />
+                                                    <UserX v-else class="size-3.5 text-destructive" />
+                                                    <span>
+                                                        {{ link.profile.officer.user.status === "banned" ? "Unban User Pemilik" : "Ban User Pemilik" }}
+                                                    </span>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -567,13 +640,14 @@ onMounted(() => {
                 <!-- Links Pagination -->
                 <div
                     v-if="linksPagination.last_page > 1"
-                    class="p-3 bg-muted/40 border-t border-border flex items-center justify-between text-xs text-muted-foreground"
+                    class="p-3 bg-muted/40 border-t border-border flex items-center justify-between text-xs text-muted-foreground font-mono"
                 >
                     <span>Total {{ linksPagination.total }} tautan</span>
                     <div class="flex items-center gap-1.5">
                         <Button
                             size="sm"
                             variant="outline"
+                            class="h-7 px-2 font-mono text-xs"
                             :disabled="linksPagination.current_page <= 1"
                             @click="fetchLinks(linksPagination.current_page - 1)"
                         >
@@ -586,6 +660,7 @@ onMounted(() => {
                         <Button
                             size="sm"
                             variant="outline"
+                            class="h-7 px-2 font-mono text-xs"
                             :disabled="linksPagination.current_page >= linksPagination.last_page"
                             @click="fetchLinks(linksPagination.current_page + 1)"
                         >
@@ -598,68 +673,116 @@ onMounted(() => {
         </div>
 
         <!-- 2. DOMAIN BAN VIEW -->
-        <div v-show="subTab === 'domains'" class="space-y-4">
-            <Card class="max-w-2xl">
-                <CardContent class="p-5 space-y-4">
-                    <h3 class="text-sm font-bold text-foreground uppercase flex items-center gap-2">
-                        <Ban class="size-4 text-destructive" />
-                        <span>Masukkan Domain ke Denylist Global</span>
-                    </h3>
-                    <p class="text-muted-foreground text-xs leading-relaxed">
-                        Domain yang dimasukkan ke denylist akan otomatis dinonaktifkan di seluruh profil bio-link perwira, dan tidak dapat ditambahkan kembali oleh perwira manapun (termasuk subdomain terkait).
-                    </p>
+        <div v-show="subTab === 'domains'" class="space-y-4 font-mono">
+            <Card class="max-w-3xl">
+                <CardHeader class="pb-3 border-b border-border/50">
+                    <div class="flex items-center gap-2 text-destructive font-bold text-sm uppercase">
+                        <Ban class="size-4" />
+                        <CardTitle class="text-sm font-bold uppercase font-mono">
+                            Denylist Domain Global
+                        </CardTitle>
+                    </div>
+                    <CardDescription class="text-xs font-mono">
+                        Domain yang dimasukkan ke denylist otomatis dinonaktifkan di seluruh profil bio-link perwira, dan diblokir secara permanen dari penambahan baru (termasuk seluruh subdomain terkait).
+                    </CardDescription>
+                </CardHeader>
 
-                    <div class="space-y-1.5">
-                        <Label for="ban-domain-host" class="text-xs uppercase">Nama Host / Domain</Label>
-                        <Input
-                            id="ban-domain-host"
-                            v-model="banDomainInput"
-                            type="text"
-                            placeholder="Contoh: phishing-site.xyz atau judi-online.com"
-                            class="font-mono"
-                        />
+                <CardContent class="p-5 space-y-4 font-mono text-xs">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <Label for="ban-domain-host" class="text-xs uppercase font-bold">
+                                Nama Host / Domain <span class="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="ban-domain-host"
+                                v-model="banDomainInput"
+                                type="text"
+                                placeholder="Contoh: judi-online.com atau scam-donate.xyz"
+                                class="font-mono text-xs"
+                                @keyup.enter="submitBanDomain"
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                Cukup masukkan nama domain atau URL, skema (https://) dan www otomatis dibersihkan.
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <Label for="ban-domain-reason" class="text-xs uppercase font-bold">
+                                Alasan Pemblokiran <span class="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="ban-domain-reason"
+                                v-model="banDomainReason"
+                                type="text"
+                                placeholder="Contoh: Scam donasi / Phishing kredensial"
+                                class="text-xs"
+                                @keyup.enter="submitBanDomain"
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                Alasan akan dicatat ke log audit keamanan dan riwayat moderasi.
+                            </p>
+                        </div>
                     </div>
 
-                    <div class="space-y-1.5">
-                        <Label for="ban-domain-reason" class="text-xs uppercase">
-                            Alasan Pemblokiran <span class="text-destructive">*</span>
-                        </Label>
-                        <Input
-                            id="ban-domain-reason"
-                            v-model="banDomainReason"
-                            type="text"
-                            placeholder="Contoh: Terdeteksi URL scam donasi / phishing kredensial"
-                        />
+                    <div class="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/50">
+                        <div class="text-xs text-muted-foreground flex items-center gap-1.5">
+                            <ShieldAlert class="size-3.5 text-warning shrink-0" />
+                            <span>Tindakan berlaku instan di seluruh sistem (Global Enforcement Level 3).</span>
+                        </div>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            :disabled="isBanningDomain || !banDomainInput.trim() || !banDomainReason.trim()"
+                            class="gap-1.5 font-bold font-mono"
+                            @click="submitBanDomain"
+                        >
+                            <Ban class="size-3.5" :class="{ 'motion-safe:animate-spin': isBanningDomain }" />
+                            <span>{{ isBanningDomain ? "Memblokir Domain..." : "Blokir Domain Global" }}</span>
+                        </Button>
                     </div>
-
-                    <Button
-                        variant="destructive"
-                        :disabled="isBanningDomain"
-                        @click="submitBanDomain"
-                    >
-                        <Ban class="size-3.5 mr-1.5" />
-                        {{ isBanningDomain ? "Memblokir Domain..." : "Blokir Domain Global" }}
-                    </Button>
                 </CardContent>
             </Card>
         </div>
 
         <!-- 3. AUDIT LOGS VIEW -->
-        <div v-show="subTab === 'audit'" class="space-y-3">
-            <Card>
-                <CardContent class="p-3 flex items-center justify-between">
-                    <span class="text-muted-foreground text-xs uppercase font-bold">
-                        Catatan Audit Aksi Sensitif (Append-Only)
-                    </span>
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        @click="fetchAuditLogs(auditPagination.current_page)"
-                    >
-                        <RefreshCw :class="cn('size-3.5 mr-1.5', isLoadingAudit && 'motion-safe:animate-spin')" />
-                        Refresh
-                    </Button>
-                </CardContent>
+        <div v-show="subTab === 'audit'" class="space-y-4 font-mono">
+            <Card class="p-3.5">
+                <div class="flex flex-wrap items-center justify-between gap-3 font-mono">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs text-muted-foreground uppercase font-bold">Filter Aksi:</span>
+                        <select
+                            v-model="auditActionFilter"
+                            aria-label="Filter aksi audit"
+                            class="h-9 rounded-md border border-input bg-background px-2.5 text-xs font-mono text-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                            @change="fetchAuditLogs(1)"
+                        >
+                            <option value="all">Semua Aksi</option>
+                            <option value="bio_link.moderated">Moderasi Tautan</option>
+                            <option value="bio_link.force_deleted">Hapus Paksa Tautan</option>
+                            <option value="domain.banned">Blokir Domain Global</option>
+                            <option value="bio_profile.suspended">Bekukan Profil Bio</option>
+                            <option value="bio_profile.unsuspended">Buka Pembekuan Bio</option>
+                            <option value="user.banned">Ban Akun User</option>
+                            <option value="user.unbanned">Unban Akun User</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-muted-foreground font-mono">
+                            Total: <strong class="text-foreground">{{ auditPagination.total || 0 }}</strong> log
+                        </span>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            class="h-9 gap-1.5 font-mono text-xs"
+                            :disabled="isLoadingAudit"
+                            @click="fetchAuditLogs(auditPagination.current_page || 1)"
+                        >
+                            <RefreshCw :class="cn('size-3.5', isLoadingAudit && 'motion-safe:animate-spin')" />
+                            <span>Refresh</span>
+                        </Button>
+                    </div>
+                </div>
             </Card>
 
             <Card class="overflow-hidden">
@@ -676,7 +799,7 @@ onMounted(() => {
                 <div v-else class="overflow-x-auto">
                     <Table>
                         <TableHeader>
-                            <TableRow>
+                            <TableRow class="bg-muted/40 uppercase text-xs font-mono">
                                 <TableHead>Waktu</TableHead>
                                 <TableHead>Aktor / Admin</TableHead>
                                 <TableHead>Aksi</TableHead>
@@ -685,7 +808,7 @@ onMounted(() => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="log in auditLogs" :key="log.id" class="text-xs">
+                            <TableRow v-for="log in auditLogs" :key="log.id" class="text-xs font-mono">
                                 <TableCell class="text-muted-foreground whitespace-nowrap font-mono tabular-nums">
                                     {{ new Date(log.created_at).toLocaleString() }}
                                 </TableCell>
@@ -698,7 +821,7 @@ onMounted(() => {
                                 <TableCell class="text-muted-foreground font-mono">
                                     {{ log.subject_type }} #{{ log.subject_id }}
                                 </TableCell>
-                                <TableCell class="text-foreground">
+                                <TableCell class="text-foreground font-sans">
                                     {{ log.reason || "-" }}
                                 </TableCell>
                             </TableRow>
@@ -709,13 +832,14 @@ onMounted(() => {
                 <!-- Audit Pagination -->
                 <div
                     v-if="auditPagination.last_page > 1"
-                    class="p-3 bg-muted/40 border-t border-border flex items-center justify-between text-xs text-muted-foreground"
+                    class="p-3 bg-muted/40 border-t border-border flex items-center justify-between text-xs text-muted-foreground font-mono"
                 >
                     <span>Total {{ auditPagination.total }} entri audit</span>
                     <div class="flex items-center gap-1.5">
                         <Button
                             size="sm"
                             variant="outline"
+                            class="h-7 px-2 font-mono text-xs"
                             :disabled="auditPagination.current_page <= 1"
                             @click="fetchAuditLogs(auditPagination.current_page - 1)"
                         >
@@ -728,6 +852,7 @@ onMounted(() => {
                         <Button
                             size="sm"
                             variant="outline"
+                            class="h-7 px-2 font-mono text-xs"
                             :disabled="auditPagination.current_page >= auditPagination.last_page"
                             @click="fetchAuditLogs(auditPagination.current_page + 1)"
                         >

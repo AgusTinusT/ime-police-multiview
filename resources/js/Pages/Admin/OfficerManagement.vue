@@ -1610,7 +1610,7 @@ onUnmounted(() => {
         :user-name="auth.user?.name || ''"
         @update:current-tab="setActiveTab"
     >
-        <PageContainer class="space-y-6">
+        <PageContainer size="full" class="space-y-6">
             <!-- Overview (header + unit summary) only on the roster; other sections get the layout's title bar. -->
             <PageHeader
                 v-if="activeTab === 'officers'"
@@ -1657,18 +1657,18 @@ onUnmounted(() => {
             <!-- TAB 1: OFFICERS -->
             <div v-if="activeTab === 'officers'" class="space-y-6">
                 <!-- ACTION CONTROL BAR -->
-                <Card>
-                    <CardContent class="p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                <Card class="p-3 sm:p-4 gap-0 py-0">
+                    <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
                         <!-- Search & Filters -->
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 min-w-0">
                             <!-- Search Input -->
-                            <div class="relative flex-1 min-w-[220px]">
+                            <div class="relative w-full sm:w-72 lg:w-80 shrink-0">
                                 <Search class="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                                 <Input
                                     v-model="searchQuery"
                                     type="text"
                                     placeholder="Search officer name, callsign, badge, handle..."
-                                    class="pl-9 pr-8 text-xs sm:text-sm"
+                                    class="pl-9 pr-8 text-xs sm:text-sm h-9"
                                 />
                                 <Button
                                     v-if="searchQuery"
@@ -1697,7 +1697,7 @@ onUnmounted(() => {
                             </div>
 
                             <!-- Status Filter -->
-                            <div class="shrink-0 min-w-[150px]">
+                            <div class="shrink-0 w-full sm:w-[150px]">
                                 <Select v-model="selectedStatus">
                                     <SelectTrigger class="h-9 text-xs font-mono">
                                         <SelectValue placeholder="All Statuses" />
@@ -1744,7 +1744,7 @@ onUnmounted(() => {
                                 <span>Add Officer</span>
                             </Button>
                         </div>
-                    </CardContent>
+                    </div>
                 </Card>
 
                 <!-- OFFICERS TABLE -->
