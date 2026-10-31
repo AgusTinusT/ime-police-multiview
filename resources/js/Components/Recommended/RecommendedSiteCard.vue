@@ -62,13 +62,10 @@ const hasBadgeInTitle = computed(() => Boolean(props.site?.badge));
                         ★ Pilihan
                     </span>
 
-                    <div class="absolute inset-x-0 bottom-0 space-y-0.5 p-2.5 text-center">
+                    <div class="absolute inset-x-0 bottom-0 p-2.5 text-center">
                         <h4 class="line-clamp-2 font-heading text-xs font-extrabold uppercase leading-tight tracking-wide text-foreground">
                             {{ site.poster_name }}
                         </h4>
-                        <p v-if="site.poster_subtitle" class="line-clamp-1 font-mono text-xs text-muted-foreground">
-                            {{ site.poster_subtitle }}
-                        </p>
                     </div>
                 </div>
             </div>
