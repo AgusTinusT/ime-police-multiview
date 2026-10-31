@@ -23,7 +23,7 @@ const { t, locale } = useI18n();
 defineProps({
     appVersion: {
         type: String,
-        default: "2.5.0-Pro",
+        default: "2.5.0",
     },
 });
 
@@ -104,7 +104,7 @@ const filteredReleases = computed(() => {
             <!-- METRICS SUMMARY ROW -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <StatTile label="TOTAL RILIS" value="4 Versi" />
-                <StatTile label="VERSI UTAMA" value="v2.4.0-Pro" tone="primary" />
+                <StatTile label="VERSI UTAMA" value="v2.4.0" tone="primary" />
                 <StatTile label="HASHTAG RULE" value="Wajib #imepolice" />
                 <StatTile label="UPDATE TERAKHIR" value="17 Sep 2026" />
             </div>

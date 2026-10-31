@@ -1,6 +1,6 @@
 export const releasesEn = [
     {
-        version: "v2.5.0-Pro",
+        version: "v2.5.0",
         date: "September 27, 2026",
         badge: "LATEST RELEASE",
         isLatest: true,
@@ -76,7 +76,7 @@ export const releasesEn = [
         ],
     },
     {
-        version: "v2.4.0-Pro",
+        version: "v2.4.0",
         date: "September 17, 2026",
         badge: "STABLE",
         isLatest: false,

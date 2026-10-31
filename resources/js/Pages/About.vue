@@ -41,7 +41,7 @@ defineProps({
     },
     appVersion: {
         type: String,
-        default: "2.4.0-Pro",
+        default: "2.4.0",
     },
 });
 

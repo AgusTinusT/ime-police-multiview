@@ -1,6 +1,6 @@
 export const releasesId = [
     {
-        version: "v2.6.0-Pro",
+        version: "v2.6.0",
         date: "31 Oktober 2026",
         badge: "RILIS TERBARU",
         isLatest: true,
@@ -26,7 +26,7 @@ export const releasesId = [
         ],
     },
     {
-        version: "v2.5.0-Pro",
+        version: "v2.5.0",
         date: "27 September 2026",
         summary:
             "Pembaruan rilis utama: Halaman Dashboard Utama, Fitur Dukungan Streamer 1K Subs, Leaderboard Streamer Bulanan, Panel Visibilitas & Prioritas Perwira, serta Penyederhanaan Multiview Stage 10-8.",
@@ -100,7 +100,7 @@ export const releasesId = [
         ],
     },
     {
-        version: "v2.4.0-Pro",
+        version: "v2.4.0",
         date: "17 September 2026",
         badge: "STABLE",
         isLatest: false,
