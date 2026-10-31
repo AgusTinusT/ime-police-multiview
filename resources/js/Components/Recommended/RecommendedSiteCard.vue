@@ -44,23 +44,25 @@ const hasBadgeInTitle = computed(() => Boolean(props.site?.badge));
 
         <!-- Text column is capped so hero art has room to breathe on wider cards. -->
         <div class="relative z-10 flex gap-4 p-4 sm:gap-5 sm:p-5 sm:pr-10 md:w-[62%]">
-            <!-- Poster -->
+            <!-- Poster: image fills the whole tile, labels float on scrims -->
             <div class="shrink-0">
-                <div class="flex h-56 w-32 flex-col items-center justify-between overflow-hidden rounded-xl border border-warning/40 bg-card/80 p-2.5 text-center backdrop-blur-xs shadow-sm sm:h-60 sm:w-36">
-                    <span class="text-xs font-mono font-bold uppercase tracking-widest text-warning">
+                <div class="relative h-56 w-32 overflow-hidden rounded-xl border border-warning/40 shadow-sm sm:h-60 sm:w-36">
+                    <img
+                        :src="site.poster_image_url"
+                        :alt="site.poster_name || site.name"
+                        class="absolute inset-0 size-full object-cover"
+                        loading="lazy"
+                    />
+
+                    <!-- Top and bottom scrims keep the gold label and caption readable -->
+                    <div class="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/80 to-transparent" />
+                    <div class="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/85 to-transparent" />
+
+                    <span class="absolute inset-x-0 top-2 text-center text-xs font-mono font-bold uppercase tracking-widest text-warning">
                         ★ Pilihan
                     </span>
 
-                    <div class="relative size-16 overflow-hidden rounded-full border-2 border-warning/30 bg-muted/40 p-1 sm:size-20">
-                        <img
-                            :src="site.poster_image_url"
-                            :alt="site.poster_name || site.name"
-                            class="size-full object-contain"
-                            loading="lazy"
-                        />
-                    </div>
-
-                    <div class="w-full space-y-0.5">
+                    <div class="absolute inset-x-0 bottom-0 space-y-0.5 p-2.5 text-center">
                         <h4 class="line-clamp-2 font-heading text-xs font-extrabold uppercase leading-tight tracking-wide text-foreground">
                             {{ site.poster_name }}
                         </h4>
