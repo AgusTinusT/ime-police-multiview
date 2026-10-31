@@ -5,15 +5,13 @@ import { Badge } from "@/Components/ui/badge";
 
 const props = defineProps({
     site: { type: Object, required: true },
-    // Flip poster/content order so stacked cards alternate (zigzag).
-    reverse: { type: Boolean, default: false },
 });
 
 const backgroundStyle = computed(() => {
     if (!props.site?.background_image_url) return {};
     return {
         backgroundImage: `url('${props.site.background_image_url}')`,
-        backgroundPosition: props.reverse ? "left center" : "right center",
+        backgroundPosition: "right center",
         backgroundRepeat: "no-repeat",
         backgroundSize: "cover",
     };
@@ -31,42 +29,28 @@ const hasBadgeInTitle = computed(() => Boolean(props.site?.badge));
 </script>
 
 <template>
-    <!-- Whole card is one click target going to the site. -->
+    <!-- Fixed-width tile sits in the CatalogRow horizontal scroll track. -->
     <a
         :href="site.url"
         target="_blank"
         rel="noopener noreferrer"
-        :class="[
-            'group relative block overflow-hidden rounded-2xl border border-border bg-card shadow-sm',
-            'transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5',
-        ]"
+        class="group relative block w-[88vw] max-w-[560px] shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 sm:w-[520px]"
         :style="backgroundStyle"
     >
-        <!-- Scrim fades out the side the hero art is on so text keeps contrast,
-             art stays visible. Flipped when `reverse` moves the poster right. -->
+        <!-- Scrim keeps text readable while the hero art on the right stays visible. -->
         <div
-            :class="[
-                'absolute inset-0 bg-background/55 pointer-events-none',
-                reverse
-                    ? 'md:bg-gradient-to-l md:from-background md:via-background/80 md:via-55% md:to-background/0'
-                    : 'md:bg-gradient-to-r md:from-background md:via-background/80 md:via-55% md:to-background/0',
-            ]"
+            class="pointer-events-none absolute inset-0 bg-background/60 sm:bg-gradient-to-r sm:from-background sm:via-background/85 sm:via-55% sm:to-background/10"
         />
 
-        <div
-            :class="[
-                'relative z-10 flex flex-col gap-5 p-5 sm:p-6 md:gap-7 md:p-8',
-                reverse ? 'md:flex-row-reverse' : 'md:flex-row',
-            ]"
-        >
+        <div class="relative z-10 flex gap-4 p-4 sm:gap-5 sm:p-5">
             <!-- Poster -->
-            <div class="mx-auto w-full max-w-[200px] shrink-0 md:mx-0 md:w-44 lg:w-48">
-                <div class="relative flex h-64 flex-col items-center justify-between overflow-hidden rounded-xl border border-warning/40 bg-card/80 p-3 text-center backdrop-blur-xs shadow-sm">
+            <div class="shrink-0">
+                <div class="flex h-56 w-32 flex-col items-center justify-between overflow-hidden rounded-xl border border-warning/40 bg-card/80 p-2.5 text-center backdrop-blur-xs shadow-sm sm:h-60 sm:w-36">
                     <span class="text-xs font-mono font-bold uppercase tracking-widest text-warning">
-                        ★ Website Pilihan
+                        ★ Pilihan
                     </span>
 
-                    <div class="relative size-24 overflow-hidden rounded-full border-2 border-warning/30 bg-muted/40 p-1.5">
+                    <div class="relative size-16 overflow-hidden rounded-full border-2 border-warning/30 bg-muted/40 p-1 sm:size-20">
                         <img
                             :src="site.poster_image_url"
                             :alt="site.poster_name || site.name"
@@ -87,9 +71,9 @@ const hasBadgeInTitle = computed(() => Boolean(props.site?.badge));
             </div>
 
             <!-- Content -->
-            <div :class="['min-w-0 flex-1 space-y-3 text-center', reverse ? 'md:text-right' : 'md:text-left']">
+            <div class="min-w-0 flex-1 space-y-2.5 text-left">
                 <!-- Chips -->
-                <div :class="['flex flex-wrap items-center gap-1.5', reverse ? 'justify-center md:justify-end' : 'justify-center md:justify-start']">
+                <div class="flex flex-wrap gap-1.5">
                     <Badge
                         v-if="site.is_featured"
                         variant="outline"
@@ -103,35 +87,22 @@ const hasBadgeInTitle = computed(() => Boolean(props.site?.badge));
                     >{{ chip }}</Badge>
                 </div>
 
-                <!-- Title with boxed badge -->
-                <h3
-                    :class="[
-                        'flex flex-wrap items-center gap-2 font-heading text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl',
-                        reverse ? 'justify-center md:justify-end' : 'justify-center md:justify-start',
-                    ]"
-                >
+                <!-- Title + boxed badge -->
+                <h3 class="flex flex-wrap items-center gap-1.5 font-heading text-xl font-extrabold uppercase tracking-tight text-foreground sm:text-2xl">
                     <span v-if="titlePrefix">{{ titlePrefix }}</span>
                     <span
                         v-if="hasBadgeInTitle"
-                        class="inline-block rounded-sm border-2 border-foreground px-2.5 py-0.5 text-2xl uppercase tracking-wide sm:text-3xl lg:text-4xl"
+                        class="inline-block rounded-sm border-2 border-foreground px-1.5 py-0.5 text-lg uppercase tracking-wide sm:text-xl"
                     >{{ site.badge }}</span>
                 </h3>
 
-                <!-- Description -->
-                <p
-                    :class="[
-                        'mx-auto max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base',
-                        reverse ? 'md:ml-auto md:mr-0' : 'md:ml-0 md:mr-auto',
-                    ]"
-                >{{ site.description }}</p>
+                <!-- Description, capped at 3 lines so cards keep uniform height -->
+                <p class="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                    {{ site.description }}
+                </p>
 
-                <!-- CTA -->
-                <div
-                    :class="[
-                        'flex items-center gap-2 pt-1 text-sm font-semibold text-primary transition-transform group-hover:translate-x-0.5',
-                        reverse ? 'justify-center md:justify-end' : 'justify-center md:justify-start',
-                    ]"
-                >
+                <!-- CTA affordance (card is the link) -->
+                <div class="flex items-center gap-1.5 pt-1 text-sm font-semibold text-primary">
                     <span>{{ site.cta_text || "Kunjungi website" }}</span>
                     <ArrowUpRight class="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </div>
