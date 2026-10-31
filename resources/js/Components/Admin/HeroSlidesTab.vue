@@ -181,21 +181,17 @@ onMounted(() => {
 
 <template>
     <div class="space-y-6">
-        <Card class="py-4">
-            <CardContent class="px-5">
-                <SectionHeader
-                    title="Manajemen Hero Slider Dashboard"
-                    description="Kelola sorotan fitur, event komunitas, dan Live Spotlight di halaman utama. Maksimal 5 slide aktif ditayangkan sesuai urutan."
-                >
-                    <template #actions>
-                        <Button size="sm" @click="openCreateDialog">
-                            <Plus class="size-4" />
-                            Tambah Slide Hero
-                        </Button>
-                    </template>
-                </SectionHeader>
-            </CardContent>
-        </Card>
+        <SectionHeader
+            title="Hero slider"
+            description="Sorotan di halaman utama. Maksimal 5 slide aktif ditayangkan sesuai urutan."
+        >
+            <template #actions>
+                <Button size="sm" @click="openCreateDialog" class="gap-1.5">
+                    <Plus class="size-4" />
+                    Tambah slide
+                </Button>
+            </template>
+        </SectionHeader>
 
         <!-- Loading State -->
         <Card v-if="isLoading" class="py-6">

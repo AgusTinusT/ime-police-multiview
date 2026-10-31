@@ -14,6 +14,7 @@ import OfficerDetailSheet from "@/Components/Admin/OfficerDetailSheet.vue";
 import {
     PageContainer,
     PageHeader,
+    SectionHeader,
     TacticalFrame,
     StatTile,
     DeptBadge,
@@ -1881,22 +1882,17 @@ onUnmounted(() => {
 
             <!-- TAB 2: AGENCIES & RANKS STRUCTURE -->
             <div v-if="activeTab === 'agencies'" class="space-y-6 font-mono text-xs">
-                <Card>
-                    <CardContent class="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div>
-                            <h2 class="text-sm font-bold text-foreground uppercase">
-                                Master Instansi Kepolisian & Hierarki Pangkat
-                            </h2>
-                            <p class="text-muted-foreground text-xs mt-0.5 font-sans">
-                                Kelola data instansi (SASP, LSPD, BCSO, SAPR), tingkatan pangkat, level komando & sub-divisi taktis.
-                            </p>
-                        </div>
-                        <Button size="sm" @click="openAddAgencyModal" class="font-bold gap-1.5">
+                <SectionHeader
+                    title="Instansi & pangkat"
+                    description="Kelola instansi (SASP, LSPD, BCSO, SAPR), tingkatan pangkat, dan sub-divisi."
+                >
+                    <template #actions>
+                        <Button size="sm" @click="openAddAgencyModal" class="gap-1.5">
                             <Plus class="size-4" />
-                            <span>Tambah Instansi</span>
+                            <span>Tambah instansi</span>
                         </Button>
-                    </CardContent>
-                </Card>
+                    </template>
+                </SectionHeader>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card v-for="agency in agenciesList" :key="agency.id">
@@ -2090,22 +2086,17 @@ onUnmounted(() => {
 
             <!-- TAB 4: ANNOUNCEMENTS & ALERTS -->
             <div v-if="activeTab === 'announcements'" class="space-y-6 font-mono text-xs">
-                <Card>
-                    <CardContent class="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div>
-                            <h2 class="text-sm font-bold text-foreground uppercase">
-                                Manajemen Promosi, Pengumuman & Alert Dashboard
-                            </h2>
-                            <p class="text-muted-foreground text-xs mt-0.5 font-sans">
-                                Kelola banner pengumuman taktis yang muncul di halaman utama CCTV Multiview.
-                            </p>
-                        </div>
-                        <Button size="sm" @click="openAddAnnouncementModal" class="font-bold gap-1.5">
+                <SectionHeader
+                    title="Pengumuman & alert"
+                    description="Banner pengumuman yang muncul di halaman utama."
+                >
+                    <template #actions>
+                        <Button size="sm" @click="openAddAnnouncementModal" class="gap-1.5">
                             <Plus class="size-4" />
-                            <span>Tambah Alert</span>
+                            <span>Tambah alert</span>
                         </Button>
-                    </CardContent>
-                </Card>
+                    </template>
+                </SectionHeader>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Card
@@ -2160,30 +2151,23 @@ onUnmounted(() => {
 
             <!-- TAB 5: MEMBER ACCOUNTS -->
             <div v-if="activeTab === 'users'" class="space-y-6 font-mono text-xs">
-                <Card>
-                    <CardContent class="p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                        <div>
-                            <h2 class="text-sm font-bold text-foreground uppercase">
-                                Daftar Akun Member Terdaftar
-                            </h2>
-                            <p class="text-muted-foreground text-xs mt-0.5 font-sans">
-                                Kelola akun pengunjung & hak akses role di platform IME Police Multiview.
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <Input
-                                v-model="userSearchQuery"
-                                type="text"
-                                placeholder="Cari nama / email..."
-                                class="w-64 text-xs"
-                            />
-                            <Button size="sm" @click="openAddUserModal" class="font-bold gap-1.5 shrink-0">
-                                <Plus class="size-4" />
-                                <span>Tambah Member</span>
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                <SectionHeader
+                    title="Akun pengguna"
+                    description="Kelola akun dan peran pengguna di platform."
+                >
+                    <template #actions>
+                        <Input
+                            v-model="userSearchQuery"
+                            type="text"
+                            placeholder="Cari nama / email…"
+                            class="w-56 sm:w-64"
+                        />
+                        <Button size="sm" @click="openAddUserModal" class="gap-1.5 shrink-0">
+                            <Plus class="size-4" />
+                            <span>Tambah akun</span>
+                        </Button>
+                    </template>
+                </SectionHeader>
 
                 <Card class="overflow-hidden">
                     <Table>
