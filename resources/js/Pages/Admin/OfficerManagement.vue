@@ -20,6 +20,7 @@ import {
     DeptBadge,
     OfficerAvatar,
     LiveBadge,
+    EmptyState,
 } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
@@ -806,12 +807,51 @@ const deleteDivision = (id) => {
 // Certifications Handlers
 const certOfficerId = ref(null);
 const certType = ref("");
+const certSearchQuery = ref("");
+const showAddCertModal = ref(false);
+const isSubmittingCert = ref(false);
+
+const openAddCertModal = (officerId = null) => {
+    certOfficerId.value = officerId || null;
+    certType.value = "";
+    showAddCertModal.value = true;
+};
+
+const certifiedOfficers = computed(() => {
+    return (officers.value || []).filter(
+        (o) => o.certifications && o.certifications.length > 0
+    );
+});
+
+const filteredCertifiedOfficers = computed(() => {
+    if (!certSearchQuery.value.trim()) {
+        return certifiedOfficers.value;
+    }
+    const q = certSearchQuery.value.trim().toLowerCase();
+    return certifiedOfficers.value.filter((o) => {
+        const nameMatch = (o.officer_name || "").toLowerCase().includes(q);
+        const callsignMatch = (o.callsign || "").toLowerCase().includes(q);
+        const deptMatch = (o.department || o.agency?.agency_code || "").toLowerCase().includes(q);
+        const certMatch = (o.certifications || []).some((c) =>
+            (c.cert_type || "").toLowerCase().includes(q)
+        );
+        return nameMatch || callsignMatch || deptMatch || certMatch;
+    });
+});
+
+const totalCertificationsCount = computed(() => {
+    return certifiedOfficers.value.reduce(
+        (acc, o) => acc + (o.certifications ? o.certifications.length : 0),
+        0
+    );
+});
 
 const addCertification = async () => {
     if (!certOfficerId.value || !certType.value.trim()) {
         showToast("Pilih petugas dan masukkan jenis kualifikasi!", "error");
         return;
     }
+    isSubmittingCert.value = true;
     const csrfToken = document
         .querySelector('meta[name="csrf-token"]')
         ?.getAttribute("content");
@@ -825,37 +865,50 @@ const addCertification = async () => {
             },
             body: JSON.stringify({
                 officer_id: certOfficerId.value,
-                cert_type: certType.value,
+                cert_type: certType.value.trim(),
             }),
         });
         const json = await res.json();
         if (res.ok && json.status === "success") {
-            showToast(json.message, "success");
+            showToast(json.message || "Kualifikasi berhasil ditambahkan.", "success");
             certType.value = "";
+            showAddCertModal.value = false;
             fetchOfficers();
+        } else {
+            showToast(json.message || "Gagal menambahkan kualifikasi.", "error");
         }
     } catch (e) {
         showToast("Failed to add certification", "error");
+    } finally {
+        isSubmittingCert.value = false;
     }
 };
 
-const deleteCertification = async (id) => {
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute("content");
-    try {
-        const res = await fetch(`/api/v1/certifications/${id}`, {
-            method: "DELETE",
-            headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
-        });
-        const json = await res.json();
-        if (res.ok && json.status === "success") {
-            showToast("Kualifikasi dihapus.", "success");
-            fetchOfficers();
+const deleteCertification = (id, certName = "") => {
+    openConfirmDialog(
+        "Hapus Kualifikasi?",
+        `Apakah Anda yakin ingin menghapus kualifikasi ${certName ? `"${certName}"` : "ini"}?`,
+        async () => {
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content");
+            try {
+                const res = await fetch(`/api/v1/certifications/${id}`, {
+                    method: "DELETE",
+                    headers: { "X-CSRF-TOKEN": csrfToken, Accept: "application/json" },
+                });
+                const json = await res.json();
+                if (res.ok && json.status === "success") {
+                    showToast(json.message || "Kualifikasi dihapus.", "success");
+                    fetchOfficers();
+                } else {
+                    showToast(json.message || "Gagal menghapus kualifikasi.", "error");
+                }
+            } catch (e) {
+                showToast("Failed to delete certification", "error");
+            }
         }
-    } catch (e) {
-        showToast("Failed to delete certification", "error");
-    }
+    );
 };
 
 // Announcements State & Logic
@@ -2004,76 +2057,124 @@ onUnmounted(() => {
                 <SectionHeader
                     title="Kualifikasi"
                     description="Beri kualifikasi taktis kepada personel."
-                />
-                <Card>
-                    <CardContent class="pt-6">
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                            <select
-                                v-model="certOfficerId"
-                                class="flex h-9 flex-1 rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                    <template #actions>
+                        <div class="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="h-8 gap-1.5 font-mono text-xs"
+                                :disabled="isLoading"
+                                @click="fetchOfficers"
                             >
-                                <option :value="null" class="bg-popover text-popover-foreground">
-                                    -- Pilih Petugas Kepolisian --
-                                </option>
-                                <option
-                                    v-for="o in officers"
-                                    :key="o.id"
-                                    :value="o.id"
-                                    class="bg-popover text-popover-foreground"
-                                >
-                                    {{ o.officer_name }} ({{ o.callsign }} - {{ o.department }})
-                                </option>
-                            </select>
-                            <Input
-                                v-model="certType"
-                                type="text"
-                                placeholder="Contoh: Class 2 Firearms, Air Support Pilot, CQB Breaching..."
-                                class="flex-1 text-xs"
-                            />
-                            <Button @click="addCertification" class="font-bold gap-1.5 shrink-0">
+                                <RefreshCw class="size-3.5" :class="{ 'motion-safe:animate-spin': isLoading }" />
+                                <span>Refresh</span>
+                            </Button>
+                            <Button
+                                size="sm"
+                                class="h-8 gap-1.5 font-mono text-xs font-bold"
+                                @click="openAddCertModal()"
+                            >
                                 <Plus class="size-4" />
-                                <span>Berikan Kualifikasi</span>
+                                <span>Beri Kualifikasi</span>
                             </Button>
                         </div>
-                    </CardContent>
+                    </template>
+                </SectionHeader>
+
+                <!-- Filters & Search -->
+                <Card class="p-4">
+                    <div class="flex items-center gap-3">
+                        <div class="relative flex-1">
+                            <Search class="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                            <Input
+                                v-model="certSearchQuery"
+                                type="text"
+                                placeholder="Cari berdasarkan nama perwira, callsign, atau jenis kualifikasi..."
+                                class="pl-9 h-9 text-xs font-mono"
+                            />
+                        </div>
+                        <div class="text-xs text-muted-foreground whitespace-nowrap">
+                            Total: <strong class="text-foreground">{{ totalCertificationsCount }}</strong> kualifikasi aktif
+                        </div>
+                    </div>
                 </Card>
 
                 <!-- Certifications Roster -->
                 <Card>
-                    <CardHeader class="pb-3">
-                        <CardTitle class="text-sm font-bold font-mono">
-                            Daftar Kualifikasi Taktis Aktif Member
-                        </CardTitle>
+                    <CardHeader class="pb-3 border-b border-border">
+                        <div class="flex items-center justify-between">
+                            <CardTitle class="text-sm font-bold font-mono">
+                                Daftar Kualifikasi Taktis Aktif Member
+                            </CardTitle>
+                            <span class="text-xs text-muted-foreground font-mono">
+                                {{ filteredCertifiedOfficers.length }} personel
+                            </span>
+                        </div>
                     </CardHeader>
-                    <CardContent>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div
-                                v-for="o in officers.filter((o) => o.certifications && o.certifications.length > 0)"
-                                :key="o.id"
-                                class="p-4 bg-muted/40 border border-border rounded-lg space-y-2.5"
+                    <CardContent class="pt-4">
+                        <div
+                            v-if="filteredCertifiedOfficers.length === 0"
+                            class="py-12"
+                        >
+                            <EmptyState
+                                :icon="Award"
+                                title="Tidak Ada Kualifikasi Ditemukan"
+                                :description="certSearchQuery ? 'Tidak ada personel atau kualifikasi yang cocok dengan pencarian.' : 'Belum ada personel yang memiliki kualifikasi taktis.'"
                             >
-                                <div class="font-bold text-foreground text-sm flex items-center justify-between">
-                                    <span>{{ o.officer_name }}</span>
-                                    <span class="text-primary text-xs font-mono">{{ o.callsign }}</span>
-                                </div>
-                                <div class="flex flex-wrap gap-1.5">
-                                    <Badge
-                                        v-for="c in o.certifications"
-                                        :key="c.id"
-                                        variant="outline"
-                                        class="px-2 py-1 text-xs font-mono gap-1.5"
-                                    >
-                                        <Award class="size-3 text-primary shrink-0" />
-                                        <span>{{ c.cert_type }}</span>
-                                        <button
-                                            type="button"
-                                            :aria-label="`Hapus kualifikasi ${c.cert_type}`"
-                                            @click="deleteCertification(c.id)"
-                                            class="text-destructive hover:opacity-80 ml-0.5"
+                                <template v-if="!certSearchQuery" #action>
+                                    <Button size="sm" class="gap-1.5 font-mono text-xs" @click="openAddCertModal()">
+                                        <Plus class="size-4" />
+                                        <span>Beri Kualifikasi Pertama</span>
+                                    </Button>
+                                </template>
+                            </EmptyState>
+                        </div>
+
+                        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div
+                                v-for="o in filteredCertifiedOfficers"
+                                :key="o.id"
+                                class="p-4 bg-muted/40 border border-border rounded-lg space-y-2.5 flex flex-col justify-between"
+                            >
+                                <div>
+                                    <div class="font-bold text-foreground text-sm flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <DeptBadge v-if="o.agency?.agency_code || o.department" :department="o.agency?.agency_code || o.department" />
+                                            <span class="truncate">{{ o.officer_name }}</span>
+                                        </div>
+                                        <span class="text-primary text-xs font-mono shrink-0">{{ o.callsign }}</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                                        <Badge
+                                            v-for="c in o.certifications"
+                                            :key="c.id"
+                                            variant="outline"
+                                            class="px-2 py-1 text-xs font-mono gap-1.5"
                                         >
-                                            <X class="size-3" />
-                                        </button>
-                                    </Badge>
+                                            <Award class="size-3 text-primary shrink-0" />
+                                            <span>{{ c.cert_type }}</span>
+                                            <button
+                                                type="button"
+                                                :aria-label="`Hapus kualifikasi ${c.cert_type}`"
+                                                @click="deleteCertification(c.id, c.cert_type)"
+                                                class="text-destructive hover:opacity-80 ml-0.5 cursor-pointer"
+                                            >
+                                                <X class="size-3" />
+                                            </button>
+                                        </Badge>
+                                    </div>
+                                </div>
+                                <div class="pt-2 border-t border-border/50 flex justify-end">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        class="h-6 px-2 text-xs font-mono text-muted-foreground hover:text-foreground gap-1"
+                                        @click="openAddCertModal(o.id)"
+                                    >
+                                        <Plus class="size-3" />
+                                        <span>Tambah</span>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -2826,6 +2927,65 @@ onUnmounted(() => {
                     <Button variant="outline" @click="showUserModal = false">Batal</Button>
                     <Button @click="saveUser" :disabled="isSavingUser">
                         {{ isSavingUser ? "Menyimpan…" : isEditUser ? "Simpan perubahan" : "Tambah akun" }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- MODAL: BERI KUALIFIKASI -->
+        <Dialog :open="showAddCertModal" @update:open="showAddCertModal = $event">
+            <DialogContent class="sm:max-w-md font-mono text-xs">
+                <DialogHeader>
+                    <DialogTitle class="text-base font-bold uppercase font-mono">
+                        Beri Kualifikasi Taktis
+                    </DialogTitle>
+                    <DialogDescription class="text-xs">
+                        Pilih perwira dan cantumkan jenis kualifikasi taktis dinas.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div class="space-y-4 py-2">
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Pilih Petugas Kepolisian *</Label>
+                        <select
+                            v-model="certOfficerId"
+                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                        >
+                            <option :value="null" class="bg-popover text-popover-foreground">
+                                -- Pilih Petugas Kepolisian --
+                            </option>
+                            <option
+                                v-for="o in officers"
+                                :key="o.id"
+                                :value="o.id"
+                                class="bg-popover text-popover-foreground"
+                            >
+                                {{ o.officer_name }} ({{ o.callsign }} - {{ o.agency?.agency_code || o.department }})
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <Label class="text-xs font-bold">Jenis Kualifikasi *</Label>
+                        <Input
+                            v-model="certType"
+                            type="text"
+                            placeholder="Contoh: Class 2 Firearms, Air Support Pilot, CQB Breaching..."
+                            class="text-xs"
+                            @keydown.enter.prevent="addCertification"
+                        />
+                    </div>
+                </div>
+
+                <DialogFooter class="gap-2">
+                    <Button variant="outline" @click="showAddCertModal = false">Batal</Button>
+                    <Button
+                        @click="addCertification"
+                        :disabled="isSubmittingCert || !certOfficerId || !certType.trim()"
+                        class="font-bold gap-1.5"
+                    >
+                        <Plus class="size-4" />
+                        <span>Berikan Kualifikasi</span>
                     </Button>
                 </DialogFooter>
             </DialogContent>
