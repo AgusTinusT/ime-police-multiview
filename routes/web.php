@@ -325,6 +325,10 @@ Route::get('/links/{slug}', function (string $slug) {
 });
 
 // 6. Public Officer Tactical Bio-Link Page (Registered last to prevent route shadow)
+use App\Http\Controllers\BioLinkPromoController;
+
+Route::get('/bio-link', [BioLinkPromoController::class, 'show'])->name('biolink.promo');
+
 Route::get('/@{slug}', [PublicBioLinkController::class, 'show'])
     ->where('slug', '[a-zA-Z0-9._-]+')
     ->name('bio.show');

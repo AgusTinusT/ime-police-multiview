@@ -211,8 +211,17 @@ class PublicBioLinkController extends Controller
         });
 
         // Theme contract stays outside the page cache so config changes apply immediately.
+        $user = $request->user();
+        $isOfficer = $user ? $user->isOfficer() : false;
+        $promoCta = ! $isOfficer ? [
+            'text' => 'Suka tampilan ini? Kamu juga bisa punya bio-link resmi di /@kamu.',
+            'action_label' => 'Pelajari →',
+            'action_url' => '/bio-link',
+        ] : null;
+
         return Inertia::render('Public/BioLink', $pageProps + [
             'themes' => config('biolinks.theme_presets', []),
+            'promoCta' => $promoCta,
         ]);
     }
 

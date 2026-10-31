@@ -288,5 +288,47 @@
   "officer": {
     "hiatus_badge": "Hiatus",
     "hiatus_tooltip": "Not live for > {days} days"
+  },
+  "biolink_promo": {
+    "hero_title": "One link for everything you build.",
+    "hero_subtitle": "Share /@you on your live stream — donations, social links, and patrol partners all in one hub.",
+    "cta_officer": "I am an officer — start verification",
+    "cta_example": "View examples",
+    "open_example": "Open /@{slug}",
+    "features_title": "What can you share on your page?",
+    "features_donation_title": "Support & Donations",
+    "features_donation_desc": "Saweria, Trakteer, BagiBagi, Tako, Sociabuzz with prominent donation buttons.",
+    "features_social_title": "Social Media",
+    "features_social_desc": "Link your Instagram, TikTok, YouTube channel, and community Discord server.",
+    "features_partners_title": "Patrol Partners",
+    "features_partners_desc": "Showcase your squad partners with live on-duty stream telemetry.",
+    "themes_title": "Tactical Theme Presets",
+    "themes_subtitle": "Authentic law enforcement backdrops and accents engineered for high readability and contrast.",
+    "verify_title": "Why do you need verification?",
+    "verify_points": [
+      "Only you can update your bio at /@you — no impersonators.",
+      "Official law enforcement badge displayed on the page as proof of identity.",
+      "Patrol partners are verified officers linked directly across the network."
+    ],
+    "faq_title": "Frequently Asked Questions",
+    "faq": [
+      {
+        "q": "Do I have to pay?",
+        "a": "No, this official bio-link hub is 100% free for all law enforcement officers."
+      },
+      {
+        "q": "How long does verification take?",
+        "a": "Once your YouTube channel token is verified, your profile activates in minutes."
+      },
+      {
+        "q": "What happens if I retire?",
+        "a": "Your public page is safely flagged as 'Unclaimed' and links are temporarily paused."
+      },
+      {
+        "q": "Can I change my /@ slug?",
+        "a": "Yes, with SASP command approval, at most once every 90 days."
+      }
+    ],
+    "footer_cta_title": "Launch your official tactical bio-link today."
   }
 }

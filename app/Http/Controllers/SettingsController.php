@@ -22,6 +22,8 @@ class SettingsController extends Controller
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
             'currentTab' => $request->query('tab', 'account'),
+            'biolinksAdminEmail' => config('biolinks.admin_email'),
+            'bioThemes' => config('biolinks.theme_presets', []),
         ];
 
         if ($user && $user->isOfficer()) {

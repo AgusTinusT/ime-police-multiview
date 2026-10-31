@@ -288,5 +288,47 @@
   "officer": {
     "hiatus_badge": "Hiatus",
     "hiatus_tooltip": "Tidak live > {days} hari"
+  },
+  "biolink_promo": {
+    "hero_title": "Satu tautan untuk semua yang kamu buat.",
+    "hero_subtitle": "Bagikan /@kamu di streammu — dukungan, komunitas, dan rekan patroli di satu halaman.",
+    "cta_officer": "Saya perwira — mulai verifikasi",
+    "cta_example": "Lihat contoh",
+    "open_example": "Buka /@{slug}",
+    "features_title": "Apa saja yang bisa kamu taruh?",
+    "features_donation_title": "Dukungan & Donasi",
+    "features_donation_desc": "Saweria, Trakteer, BagiBagi, Tako, Sociabuzz langsung dengan tombol khusus donasi.",
+    "features_social_title": "Media Sosial",
+    "features_social_desc": "Tautkan akun Instagram, TikTok, YouTube channel, hingga server Discord komunitasmu.",
+    "features_partners_title": "Rekan Patroli",
+    "features_partners_desc": "Tampilkan rekan dinas kepolisian lain secara otomatis lengkap dengan status live streaming.",
+    "themes_title": "Pilihan Tema Taktis",
+    "themes_subtitle": "Preset warna & latar belakang khas kepolisian yang dirancang khusus untuk kenyamanan mata dan kontras tinggi.",
+    "verify_title": "Kenapa harus verifikasi?",
+    "verify_points": [
+      "Hanya kamu yang bisa mengubah bio di /@kamu — tidak ada yang bisa mengaku.",
+      "Lambang perwira resmi tampil di halaman, menandakan ini akun asli.",
+      "Daftar rekan patroli otomatis tertaut ke officer lain, bukan link acak."
+    ],
+    "faq_title": "Pertanyaan yang Sering Diajukan",
+    "faq": [
+      {
+        "q": "Apakah saya harus bayar?",
+        "a": "Tidak, seluruh fitur bio-link resmi ini gratis untuk seluruh perwira kepolisian."
+      },
+      {
+        "q": "Berapa lama proses verifikasi?",
+        "a": "Sesudah token YouTube dicocokkan, otomatis selesai dalam beberapa menit."
+      },
+      {
+        "q": "Apa yang terjadi kalau saya pensiun?",
+        "a": "Halaman kamu ditandai 'Belum diklaim' dan link dinonaktifkan sementara untuk menjaga integritas data."
+      },
+      {
+        "q": "Bisakah saya ganti slug /@?",
+        "a": "Bisa melalui persetujuan Admin SASP, maksimal sekali per 90 hari."
+      }
+    ],
+    "footer_cta_title": "Mulai buat bio-link resmi perwiramu hari ini."
   }
 }

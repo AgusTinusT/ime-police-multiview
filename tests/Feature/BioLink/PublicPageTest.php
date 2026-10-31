@@ -352,4 +352,28 @@ class PublicPageTest extends TestCase
         ]);
         $this->assertArrayNotHasKey('duty_minutes', $apiResponse->json('live_stream'));
     }
+
+    public function test_public_bio_page_displays_promo_nudge_for_guests(): void
+    {
+        $officer = $this->createOfficer();
+        $profile = BioProfileService::ensureBioProfile($officer);
+
+        $response = $this->get("/@{$profile->slug}");
+
+        $response->assertOk();
+        $response->assertSee('Suka tampilan ini?');
+    }
+
+    public function test_public_bio_page_does_not_display_promo_nudge_for_officers(): void
+    {
+        $officerUser = $this->createVerifiedUser();
+        $officer = $this->createOfficer();
+        $this->bindOfficer($officer, $officerUser);
+        $profile = BioProfileService::ensureBioProfile($officer);
+
+        $response = $this->actingAs($officerUser)->get("/@{$profile->slug}");
+
+        $response->assertOk();
+        $response->assertDontSee('Suka tampilan ini?');
+    }
 }

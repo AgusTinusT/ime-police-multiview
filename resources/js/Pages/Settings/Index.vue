@@ -4,12 +4,16 @@ import { Head, usePage } from "@inertiajs/vue3";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import { PageContainer, PageHeader } from "@/Components/tactical";
 import { Card, CardContent } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
 import AccountSettings from "@/Components/Settings/AccountSettings.vue";
 import OfficerSettings from "@/Components/Settings/OfficerSettings.vue";
 import BioLinkSettings from "@/Components/Settings/BioLinkSettings.vue";
+import BioExampleGallery from "@/Components/BioLink/BioExampleGallery.vue";
 import { cn } from "@/lib/utils";
 import {
+    ArrowRight,
     Link2,
+    Mail,
     ShieldCheck,
     User,
 } from "@lucide/vue";
@@ -44,6 +48,10 @@ const props = defineProps({
         default: 0,
     },
     bioSlug: {
+        type: String,
+        default: null,
+    },
+    biolinksAdminEmail: {
         type: String,
         default: null,
     },
@@ -243,11 +251,48 @@ onUnmounted(() => {
                             :stats="bioStats"
                         />
                         <!-- Admin or user who isn't bound to an officer -->
-                        <Card v-else>
-                            <CardContent class="p-10 text-center text-sm text-muted-foreground">
-                                Akun Anda belum terhubung dengan profil perwira. Bio-link publik baru tersedia setelah akun diikat ke perwira oleh Admin SASP.
-                            </CardContent>
-                        </Card>
+                        <div v-else class="space-y-6">
+                            <Card>
+                                <CardContent class="p-8 sm:p-10 text-center space-y-4">
+                                    <div class="max-w-xl mx-auto space-y-2">
+                                        <h3 class="font-heading font-extrabold text-base sm:text-lg text-foreground">
+                                            Profil Perwira Belum Terhubung
+                                        </h3>
+                                        <p class="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                            Akun Anda belum terhubung dengan profil perwira. Bio-link publik baru tersedia setelah akun diikat ke perwira oleh Admin SASP.
+                                        </p>
+                                    </div>
+
+                                    <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                                        <Button as-child size="sm" class="font-mono text-xs font-bold gap-2">
+                                            <a href="/bio-link">
+                                                <span>Pelajari & mulai verifikasi</span>
+                                                <ArrowRight class="size-3.5" />
+                                            </a>
+                                        </Button>
+                                        <Button
+                                            v-if="props.biolinksAdminEmail"
+                                            as-child
+                                            variant="outline"
+                                            size="sm"
+                                            class="font-mono text-xs gap-2"
+                                        >
+                                            <a :href="`mailto:${props.biolinksAdminEmail}?subject=Bantuan%20Klaim%20Bio-Link%20Officer`">
+                                                <Mail class="size-3.5" />
+                                                <span>Hubungi Admin SASP</span>
+                                            </a>
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <div class="space-y-3">
+                                <h4 class="font-mono text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                                    Contoh Pilihan Tema Bio-Link:
+                                </h4>
+                                <BioExampleGallery :themes="bioThemes" :limit="3" />
+                            </div>
+                        </div>
                     </template>
                 </div>
             </div>

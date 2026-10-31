@@ -270,4 +270,11 @@ return [
     |--------------------------------------------------------------------------
     */
     'discord_webhook_url' => env('DISCORD_TACTICAL_WEBHOOK_URL', null),
+
+    /*
+    |--------------------------------------------------------------------------
+    | SASP Admin Support Email (for bio-link claiming support)
+    |--------------------------------------------------------------------------
+    */
+    'admin_email' => env('BIOLINKS_ADMIN_EMAIL', null),
 ];
