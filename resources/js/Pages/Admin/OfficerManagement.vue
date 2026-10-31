@@ -2759,101 +2759,91 @@ onUnmounted(() => {
 
         <!-- MODAL: ADD / EDIT USER MEMBER -->
         <Dialog :open="showUserModal" @update:open="showUserModal = $event">
-            <DialogContent class="sm:max-w-md font-mono text-xs">
+            <DialogContent class="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle class="text-sm font-bold uppercase font-mono">
-                        {{ isEditUser ? "Edit Akun Member" : "Tambah Akun Member Baru" }}
+                    <DialogTitle>
+                        {{ isEditUser ? "Edit akun" : "Tambah akun" }}
                     </DialogTitle>
+                    <DialogDescription>
+                        {{ isEditUser
+                            ? "Ubah data akun pengguna di bawah ini."
+                            : "Isi informasi akun untuk pengguna baru." }}
+                    </DialogDescription>
                 </DialogHeader>
-                <div class="space-y-3 py-2">
+
+                <div class="space-y-5 py-2">
                     <div class="space-y-1.5">
-                        <Label class="text-xs font-bold">Nama Lengkap *</Label>
-                        <Input
-                            v-model="userForm.name"
-                            type="text"
-                            placeholder="Contoh: John Doe"
-                            class="text-xs"
-                        />
-                    </div>
-                    <div class="space-y-1.5">
-                        <Label class="text-xs font-bold">Email Address *</Label>
-                        <Input
-                            v-model="userForm.email"
-                            type="email"
-                            placeholder="nama@email.com"
-                            class="text-xs"
-                        />
-                    </div>
-                    <div class="space-y-1.5">
-                        <Label class="text-xs font-bold">
-                            Password {{ isEditUser ? "(Opsional - Isi jika ingin ubah password)" : "*" }}
-                        </Label>
-                        <Input
-                            v-model="userForm.password"
-                            type="password"
-                            placeholder="Minimal 6 karakter"
-                            class="text-xs"
-                        />
-                    </div>
-                    <div class="space-y-1.5">
-                        <Label class="text-xs font-bold">Role Utama Akun Pengguna *</Label>
-                        <select
-                            v-model="userForm.role"
-                            @change="onUserRoleChange"
-                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
-                        >
-                            <option value="member" class="bg-popover text-popover-foreground">
-                                Member (Pengguna Umum / Pengunjung Platform)
-                            </option>
-                            <option value="officer" class="bg-popover text-popover-foreground">
-                                Officer / Streamer RP (Akses Penuh Officer + Hak 2 Slot Clipper)
-                            </option>
-                            <option value="clipper" class="bg-popover text-popover-foreground">
-                                Clipper Komunitas (IME Video Creator / Editor)
-                            </option>
-                            <option value="admin" class="bg-popover text-popover-foreground">
-                                Admin (Administrator Taktis Command Center)
-                            </option>
-                        </select>
-                        <span class="text-xs text-muted-foreground block">
-                            Menentukan wewenang sistem & hak fitur penunjukan slot Officer.
-                        </span>
+                        <Label for="user-name">Nama lengkap</Label>
+                        <Input id="user-name" v-model="userForm.name" type="text" placeholder="Contoh: John Doe" />
                     </div>
 
-                    <!-- Clipper Tier / Subscription Package Selection -->
+                    <div class="space-y-1.5">
+                        <Label for="user-email">Email</Label>
+                        <Input id="user-email" v-model="userForm.email" type="email" placeholder="nama@email.com" />
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <Label for="user-password">Password</Label>
+                        <Input
+                            id="user-password"
+                            v-model="userForm.password"
+                            type="password"
+                            :placeholder="isEditUser ? 'Kosongkan jika tidak diubah' : 'Minimal 6 karakter'"
+                        />
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <Label for="user-role">Peran</Label>
+                        <select
+                            id="user-role"
+                            v-model="userForm.role"
+                            @change="onUserRoleChange"
+                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                        >
+                            <option value="member" class="bg-popover text-popover-foreground">Member</option>
+                            <option value="officer" class="bg-popover text-popover-foreground">Officer</option>
+                            <option value="clipper" class="bg-popover text-popover-foreground">Clipper komunitas</option>
+                            <option value="admin" class="bg-popover text-popover-foreground">Admin</option>
+                        </select>
+                        <p class="text-xs text-muted-foreground">
+                            {{
+                                userForm.role === "admin" ? "Akses penuh ke panel admin."
+                                : userForm.role === "officer" ? "Akses officer + 2 slot Clipper."
+                                : userForm.role === "clipper" ? "Pemotong klip komunitas (editor)."
+                                : "Pengguna umum / pengunjung platform."
+                            }}
+                        </p>
+                    </div>
+
+                    <!-- Tier otomatis untuk officer & admin -->
                     <div
                         v-if="userForm.role === 'officer' || userForm.role === 'admin'"
-                        class="p-3 rounded-lg bg-success/15 border border-success/40 text-success text-xs"
+                        class="rounded-md bg-success/10 border border-success/30 p-3 text-sm text-success"
                     >
-                        <span class="font-bold">⚡ Akses Otomatis Tier Ultimate:</span>
-                        Akun bertipe {{ userForm.role === "admin" ? "Admin" : "Officer" }} secara otomatis mendapatkan akses **PRO Ultimate** (Unlimited Klip, Durasi 10 Menit, DVR Live Stream, & 2 Slot Penunjukan).
+                        <p class="font-medium">Tier Ultimate otomatis</p>
+                        <p class="mt-0.5 text-xs opacity-90">
+                            Akun {{ userForm.role === "admin" ? "admin" : "officer" }} langsung mendapat klip tanpa batas, durasi 10 menit, DVR live, dan 2 slot penunjukan.
+                        </p>
                     </div>
 
                     <div v-else class="space-y-1.5">
-                        <Label class="text-xs font-bold">Paket Fitur Trimming / Clipper Tier *</Label>
+                        <Label for="user-tier">Paket klip</Label>
                         <select
+                            id="user-tier"
                             v-model="userForm.clipper_tier"
-                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                         >
-                            <option value="free" class="bg-popover text-popover-foreground">
-                                Free Member (Gratis - 3 Klip/minggu, Max 1 Menit)
-                            </option>
-                            <option value="creator" class="bg-popover text-popover-foreground">
-                                Clipper Komunitas / Police Duty (10 Klip/hari, Max 5 Menit)
-                            </option>
-                            <option value="ultimate" class="bg-popover text-popover-foreground">
-                                VIP Supporter Tier (Unlimited Klip, Max 10 Menit + DVR Live Stream)
-                            </option>
+                            <option value="free" class="bg-popover text-popover-foreground">Free — 3 klip / minggu, maks 1 menit</option>
+                            <option value="creator" class="bg-popover text-popover-foreground">Komunitas — 10 klip / hari, maks 5 menit</option>
+                            <option value="ultimate" class="bg-popover text-popover-foreground">Ultimate — tanpa batas, maks 10 menit + DVR</option>
                         </select>
-                        <span class="text-xs text-muted-foreground block">
-                            Pilih paket kuota & durasi pemotongan video untuk member ini.
-                        </span>
                     </div>
                 </div>
+
                 <DialogFooter class="gap-2">
                     <Button variant="outline" @click="showUserModal = false">Batal</Button>
-                    <Button @click="saveUser" :disabled="isSavingUser" class="font-bold">
-                        {{ isSavingUser ? "Menyimpan..." : isEditUser ? "Update Akun" : "Simpan Akun Baru" }}
+                    <Button @click="saveUser" :disabled="isSavingUser">
+                        {{ isSavingUser ? "Menyimpan…" : isEditUser ? "Simpan perubahan" : "Tambah akun" }}
                     </Button>
                 </DialogFooter>
             </DialogContent>
