@@ -12,6 +12,7 @@ import AuthModal from "@/Components/AuthModal.vue";
 import SquadCatalogCard from "@/Components/Squad/SquadCatalogCard.vue";
 import SquadSaveDialog from "@/Components/Squad/SquadSaveDialog.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
+import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
 import { LiveBadge, OfficerAvatar } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
@@ -375,10 +376,22 @@ const handleForkSquad = async (squad) => {
     }
 };
 
+// Admin-managed announcement banner (shown above the hero carousel).
+const announcements = ref([]);
+const fetchAnnouncements = async () => {
+    try {
+        const res = await axios.get("/api/v1/active-announcements");
+        announcements.value = Array.isArray(res.data?.data) ? res.data.data : [];
+    } catch {
+        announcements.value = [];
+    }
+};
+
 onMounted(() => {
     fetchCommunityClips();
     fetchMySquads();
     fetchPublicSquads();
+    fetchAnnouncements();
 });
 </script>
 
@@ -421,8 +434,14 @@ onMounted(() => {
 
         <!-- Main Content Area -->
         <main class="flex-1 w-full">
-            <!-- CINEMATIC HERO SLIDER CAROUSEL (Netflix Style) -->
-            <div class="-mt-[57px] sm:-mt-[65px]">
+            <!-- Admin announcement sits under the header, above the cinematic hero -->
+            <div v-if="announcements.length" class="relative z-20 px-3 pt-3 sm:px-6">
+                <AnnouncementBanner :announcements="announcements" />
+            </div>
+
+            <!-- CINEMATIC HERO SLIDER CAROUSEL (Netflix Style) — pulled behind
+                 the header only when no announcement is shown above it. -->
+            <div :class="announcements.length ? 'mt-4' : '-mt-[57px] sm:-mt-[65px]'">
                 <HeroCarousel :slides="effectiveHeroSlides" />
             </div>
 
