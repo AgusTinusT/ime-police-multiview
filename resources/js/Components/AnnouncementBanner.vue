@@ -1,19 +1,19 @@
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue';
-import { Alert, AlertTitle, AlertDescription } from '@/Components/ui/alert';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { cn } from '@/lib/utils';
-import { ArrowRight, ChevronLeft, ChevronRight, Megaphone, X } from '@lucide/vue';
+import { ref, computed, watch, onUnmounted } from "vue";
+import { Button } from "@/Components/ui/button";
+import { cn } from "@/lib/utils";
+import { ArrowRight, ChevronLeft, ChevronRight, Megaphone, X } from "@lucide/vue";
 
+// Admin-managed announcement banner on the home dashboard. Reads the model
+// fields that the admin form writes (title, message, icon, image_url).
 const props = defineProps({
     announcements: {
         type: Array,
-        default: () => []
-    }
+        default: () => [],
+    },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(["close"]);
 
 const isVisible = ref(true);
 const activeIndex = ref(0);
@@ -24,35 +24,42 @@ const currentAnnouncement = computed(() => {
     return props.announcements[activeIndex.value % props.announcements.length];
 });
 
-const announcementTone = computed(() => {
-    const type = (currentAnnouncement.value?.type || '').toLowerCase();
-    if (type === 'warning' || type === 'poll') {
+// Admin picks "info" / "warning" / "poll" (or leaves it as default).
+// Each type gets its own border tint so the banner reads at a glance.
+const toneClasses = computed(() => {
+    const type = (currentAnnouncement.value?.type || "").toLowerCase();
+    if (type === "warning" || type === "poll") {
         return {
-            alertClass: 'border-warning/40 bg-warning/10',
-            iconWrapClass: 'bg-warning/15 border-warning/40 text-warning',
-            badgeVariant: 'warning',
+            frame: "border-warning/50 bg-warning/5",
+            label: "text-warning",
+            icon: "bg-warning/15 text-warning",
         };
     }
-    if (type === 'info') {
+    if (type === "info") {
         return {
-            alertClass: 'border-info/40 bg-info/10',
-            iconWrapClass: 'bg-info/15 border-info/40 text-info',
-            badgeVariant: 'info',
+            frame: "border-info/40 bg-info/5",
+            label: "text-info",
+            icon: "bg-info/15 text-info",
         };
     }
     return {
-        alertClass: 'border-primary/40 bg-card/95',
-        iconWrapClass: 'bg-primary/15 border-primary/40 text-primary',
-        badgeVariant: 'default',
+        frame: "border-primary/40 bg-primary/5",
+        label: "text-primary",
+        icon: "bg-primary/15 text-primary",
     };
+});
+
+// The admin field accepts an emoji glyph (🚨, 📢, ⚠️); fall back to the icon.
+const iconIsEmoji = computed(() => {
+    const raw = (currentAnnouncement.value?.icon || "").trim();
+    // very loose: 1–4 chars that aren't just whitespace/alphanumerics
+    return !!raw && raw.length <= 4 && !/^[a-z0-9_-]+$/i.test(raw);
 });
 
 const startTimer = () => {
     if (timer) clearInterval(timer);
     if (props.announcements && props.announcements.length > 1) {
-        timer = setInterval(() => {
-            nextSlide();
-        }, 6000);
+        timer = setInterval(() => nextSlide(), 6000);
     }
 };
 
@@ -67,7 +74,8 @@ const nextSlide = () => {
 
 const prevSlide = () => {
     if (!props.announcements || props.announcements.length === 0) return;
-    activeIndex.value = (activeIndex.value - 1 + props.announcements.length) % props.announcements.length;
+    activeIndex.value =
+        (activeIndex.value - 1 + props.announcements.length) % props.announcements.length;
 };
 
 const setSlide = (idx) => {
@@ -77,115 +85,124 @@ const setSlide = (idx) => {
 
 const dismissBanner = () => {
     isVisible.value = false;
-    emit('close');
+    emit("close");
 };
 
-watch(() => props.announcements, (newVal) => {
-    if (newVal && newVal.length > 0) {
-        activeIndex.value = 0;
-        startTimer();
-    } else {
-        stopTimer();
-    }
-}, { immediate: true, deep: true });
+watch(
+    () => props.announcements,
+    (newVal) => {
+        if (newVal && newVal.length > 0) {
+            activeIndex.value = 0;
+            startTimer();
+        } else {
+            stopTimer();
+        }
+    },
+    { immediate: true, deep: true }
+);
 
-onUnmounted(() => {
-    stopTimer();
-});
+onUnmounted(() => stopTimer());
 </script>
 
 <template>
-    <Alert
+    <section
         v-if="isVisible && currentAnnouncement"
+        :aria-label="currentAnnouncement.title"
+        :class="cn('relative overflow-hidden rounded-xl border bg-card/70 backdrop-blur-sm', toneClasses.frame)"
         @mouseenter="stopTimer"
         @mouseleave="startTimer"
-        :class="cn('block p-3 sm:p-4 mb-4 rounded-xl backdrop-blur-xl transition-all duration-300 relative overflow-hidden font-sans group', announcementTone.alertClass)"
     >
-        <div class="flex items-start sm:items-center justify-between gap-3 relative z-10">
-            <!-- Banner Main Content -->
-            <div class="flex items-start sm:items-center space-x-3 min-w-0 flex-1">
-                <div
-                    :class="cn('w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 sm:mt-0', announcementTone.iconWrapClass)"
-                >
-                    <Megaphone class="size-5" />
-                </div>
+        <!-- Optional banner image fades in from the right. Decorative, hidden to AT. -->
+        <div
+            v-if="currentAnnouncement.image_url"
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 md:block"
+            :style="{
+                backgroundImage: `linear-gradient(to right, var(--color-card) 10%, transparent 90%), url('${currentAnnouncement.image_url}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center right',
+            }"
+        />
 
-                <div class="min-w-0 flex-1">
-                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                        <Badge
-                            :variant="announcementTone.badgeVariant"
-                            class="uppercase tracking-wider font-mono font-extrabold"
-                        >
-                            {{ currentAnnouncement.badge_text || 'DISPATCH ANNOUNCEMENT' }}
-                        </Badge>
-
-                        <span v-if="props.announcements.length > 1" class="text-xs text-muted-foreground font-mono">
-                            ({{ activeIndex + 1 }}/{{ props.announcements.length }})
-                        </span>
-                    </div>
-
-                    <AlertTitle class="text-xs sm:text-sm font-bold text-foreground mt-1 leading-snug truncate">
-                        {{ currentAnnouncement.title }}
-                    </AlertTitle>
-
-                    <AlertDescription v-if="currentAnnouncement.content" class="text-xs text-foreground/80 mt-0.5 line-clamp-2 leading-relaxed">
-                        {{ currentAnnouncement.content }}
-                    </AlertDescription>
-                </div>
+        <div class="relative flex items-start gap-3 p-3 sm:gap-4 sm:p-4">
+            <!-- Icon / emoji -->
+            <div
+                :class="cn('flex size-10 shrink-0 items-center justify-center rounded-lg border border-current/20 text-lg', toneClasses.icon)"
+                aria-hidden="true"
+            >
+                <span v-if="iconIsEmoji">{{ currentAnnouncement.icon }}</span>
+                <Megaphone v-else class="size-5" />
             </div>
 
-            <!-- Action Link & Navigation / Close Controls -->
-            <div class="flex items-center space-x-2 shrink-0">
+            <!-- Text -->
+            <div class="min-w-0 flex-1 space-y-1">
+                <div class="flex items-center gap-2">
+                    <span
+                        :class="cn('text-xs font-mono font-bold uppercase tracking-wider', toneClasses.label)"
+                    >
+                        {{ currentAnnouncement.badge_text || "Pengumuman" }}
+                    </span>
+                    <span
+                        v-if="props.announcements.length > 1"
+                        class="text-xs text-muted-foreground"
+                    >{{ activeIndex + 1 }}/{{ props.announcements.length }}</span>
+                </div>
+
+                <h3 class="text-sm font-semibold text-foreground sm:text-base">
+                    {{ currentAnnouncement.title }}
+                </h3>
+
+                <p
+                    v-if="currentAnnouncement.message"
+                    class="whitespace-pre-line text-sm text-muted-foreground"
+                >{{ currentAnnouncement.message }}</p>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex shrink-0 items-start gap-1">
                 <Button
-                    v-if="currentAnnouncement.action_url"
+                    v-if="currentAnnouncement.action_url && currentAnnouncement.action_text"
                     as-child
                     size="sm"
-                    class="font-mono text-xs"
+                    class="gap-1.5"
                 >
-                    <a
-                        :href="currentAnnouncement.action_url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        <span>{{ currentAnnouncement.action_text || 'Buka Link' }}</span>
+                    <a :href="currentAnnouncement.action_url" target="_blank" rel="noopener noreferrer">
+                        <span>{{ currentAnnouncement.action_text }}</span>
                         <ArrowRight class="size-3.5" />
                     </a>
                 </Button>
 
-                <!-- Carousel Controls (if > 1 announcements) -->
-                <div v-if="props.announcements.length > 1" class="hidden sm:flex items-center space-x-1 border-l border-border pl-2">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        class="size-7"
-                        aria-label="Pengumuman Sebelumnya"
-                        title="Pengumuman Sebelumnya"
-                        @click="prevSlide"
-                    >
-                        <ChevronLeft class="size-4" />
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        class="size-7"
-                        aria-label="Pengumuman Selanjutnya"
-                        title="Pengumuman Selanjutnya"
-                        @click="nextSlide"
-                    >
-                        <ChevronRight class="size-4" />
-                    </Button>
-                </div>
-
-                <!-- Dismiss Button -->
+                <Button
+                    v-if="props.announcements.length > 1"
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Pengumuman sebelumnya"
+                    title="Sebelumnya"
+                    class="hidden sm:inline-flex"
+                    @click="prevSlide"
+                >
+                    <ChevronLeft class="size-4" />
+                </Button>
+                <Button
+                    v-if="props.announcements.length > 1"
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Pengumuman selanjutnya"
+                    title="Selanjutnya"
+                    class="hidden sm:inline-flex"
+                    @click="nextSlide"
+                >
+                    <ChevronRight class="size-4" />
+                </Button>
                 <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
-                    class="size-7 text-muted-foreground hover:text-foreground"
-                    aria-label="Tutup Banner"
-                    title="Tutup Banner"
+                    size="icon-sm"
+                    aria-label="Tutup pengumuman"
+                    title="Tutup"
+                    class="text-muted-foreground hover:text-foreground"
                     @click="dismissBanner"
                 >
                     <X class="size-4" />
@@ -193,16 +210,19 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <!-- Slide Indicators (If > 1) -->
-        <div v-if="props.announcements.length > 1" class="flex items-center justify-center space-x-1.5 mt-2.5 pt-2 border-t border-border/60">
+        <!-- Dots at bottom when more than one -->
+        <div
+            v-if="props.announcements.length > 1"
+            class="relative flex items-center justify-center gap-1.5 pb-2"
+        >
             <button
                 v-for="(_, idx) in props.announcements"
                 :key="idx"
                 type="button"
                 :aria-label="`Pengumuman ${idx + 1}`"
                 @click="setSlide(idx)"
-                :class="cn('h-1 rounded-full transition-all duration-300', idx === activeIndex ? 'w-5 bg-primary' : 'w-1.5 bg-muted hover:bg-muted-foreground')"
+                :class="cn('h-1 rounded-full transition-all', idx === activeIndex ? 'w-5 bg-primary' : 'w-1.5 bg-muted hover:bg-muted-foreground/50')"
             ></button>
         </div>
-    </Alert>
+    </section>
 </template>
