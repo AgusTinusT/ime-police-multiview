@@ -3,6 +3,7 @@ import { ref, computed, watch } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import axios from "axios";
 import BioLinkView from "@/Components/BioLink/BioLinkView.vue";
+import LazyAdminDesignCard from "@/Components/BioLink/LazyAdminDesignCard.vue";
 import PlatformIcon from "@/Components/BioLink/PlatformIcon.vue";
 import VerifiedBadge from "@/Components/BioLink/VerifiedBadge.vue";
 import {
@@ -90,6 +91,10 @@ const props = defineProps({
     stats: {
         type: Object,
         default: () => ({ total_views: 0, total_clicks: 0, links_count: 0 }),
+    },
+    adminWhatsapp: {
+        type: String,
+        default: "6281234567890",
     },
 });
 
@@ -877,6 +882,9 @@ const relativeTime = (iso) => {
                         description="Setiap perubahan tautan atau tampilan akan tercatat di sini."
                     />
                 </div>
+
+                <!-- Lazy Admin Reminder -->
+                <LazyAdminDesignCard :whatsapp-number="adminWhatsapp" class="mt-8" />
             </div>
 
             <!-- RIGHT COLUMN: LIVE PHONE PREVIEW -->

@@ -277,4 +277,11 @@ return [
     |--------------------------------------------------------------------------
     */
     'admin_email' => env('BIOLINKS_ADMIN_EMAIL', null),
+
+    /*
+    |--------------------------------------------------------------------------
+    | SASP Admin Support WhatsApp (for bio-link feedback / design suggestions)
+    |--------------------------------------------------------------------------
+    */
+    'admin_whatsapp' => env('BIOLINKS_ADMIN_WHATSAPP', '6281234567890'),
 ];

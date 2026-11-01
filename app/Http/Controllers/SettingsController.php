@@ -23,6 +23,7 @@ class SettingsController extends Controller
             'status' => session('status'),
             'currentTab' => $request->query('tab', 'account'),
             'biolinksAdminEmail' => config('biolinks.admin_email'),
+            'biolinksAdminWhatsapp' => config('biolinks.admin_whatsapp', '6281234567890'),
             'bioThemes' => config('biolinks.theme_presets', []),
         ];
 

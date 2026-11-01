@@ -9,6 +9,7 @@ import AccountSettings from "@/Components/Settings/AccountSettings.vue";
 import OfficerSettings from "@/Components/Settings/OfficerSettings.vue";
 import BioLinkSettings from "@/Components/Settings/BioLinkSettings.vue";
 import BioExampleGallery from "@/Components/BioLink/BioExampleGallery.vue";
+import LazyAdminDesignCard from "@/Components/BioLink/LazyAdminDesignCard.vue";
 import { cn } from "@/lib/utils";
 import {
     ArrowRight,
@@ -54,6 +55,10 @@ const props = defineProps({
     biolinksAdminEmail: {
         type: String,
         default: null,
+    },
+    biolinksAdminWhatsapp: {
+        type: String,
+        default: "6281234567890",
     },
     // Bio-link editor props (hoisted here so switching to the Bio-link tab
     // client-side has everything already loaded).
@@ -249,6 +254,7 @@ onUnmounted(() => {
                             :allowed-domains="bioAllowedDomains"
                             :platforms="bioPlatforms"
                             :stats="bioStats"
+                            :admin-whatsapp="props.biolinksAdminWhatsapp"
                         />
                         <!-- Admin or user who isn't bound to an officer -->
                         <div v-else class="space-y-6">
@@ -296,6 +302,8 @@ onUnmounted(() => {
                                     class="grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                                 />
                             </div>
+
+                            <LazyAdminDesignCard :whatsapp-number="props.biolinksAdminWhatsapp" class="mt-6" />
                         </div>
                     </template>
                 </div>

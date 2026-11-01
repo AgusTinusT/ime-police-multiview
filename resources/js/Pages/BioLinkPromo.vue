@@ -24,6 +24,7 @@ import {
     AccordionTrigger,
 } from "@/Components/ui/accordion";
 import BioExampleGallery from "@/Components/BioLink/BioExampleGallery.vue";
+import LazyAdminDesignCard from "@/Components/BioLink/LazyAdminDesignCard.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 
 const props = defineProps({
@@ -234,6 +235,8 @@ const verifyPoints = [
                 </div>
 
                 <BioExampleGallery :themes="themes" />
+
+                <LazyAdminDesignCard />
             </section>
 
             <!-- 5. WHY VERIFY SECTION -->
