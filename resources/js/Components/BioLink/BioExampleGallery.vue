@@ -15,6 +15,10 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    themeKeys: {
+        type: Array,
+        default: null,
+    },
     limit: {
         type: Number,
         default: null,
@@ -33,15 +37,25 @@ const themesMap = computed(() => {
 });
 
 const themeList = computed(() => {
-    const entries = Object.entries(themesMap.value).map(([key, theme]) => ({
-        key,
-        ...theme,
-    }));
+    let list = [];
+    if (props.themeKeys && props.themeKeys.length > 0) {
+        list = props.themeKeys
+            .map((key) => {
+                const theme = themesMap.value[key];
+                return theme ? { key, ...theme } : null;
+            })
+            .filter(Boolean);
+    } else {
+        list = Object.entries(themesMap.value).map(([key, theme]) => ({
+            key,
+            ...theme,
+        }));
+    }
 
     if (props.limit && props.limit > 0) {
-        return entries.slice(0, props.limit);
+        return list.slice(0, props.limit);
     }
-    return entries;
+    return list;
 });
 </script>
 
