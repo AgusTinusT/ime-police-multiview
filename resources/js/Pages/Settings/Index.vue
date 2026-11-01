@@ -290,7 +290,7 @@ onUnmounted(() => {
                                 <h4 class="font-mono text-xs font-bold text-muted-foreground uppercase tracking-wider">
                                     Contoh Pilihan Tema Bio-Link:
                                 </h4>
-                                <BioExampleGallery :themes="bioThemes" :limit="3" />
+                                <BioExampleGallery :themes="bioThemes" :limit="3" class="grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" />
                             </div>
                         </div>
                     </template>

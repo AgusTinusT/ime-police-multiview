@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from "vue";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/Components/ui/card";
-import { Badge } from "@/Components/ui/badge";
-import BioLinkView from "@/Components/BioLink/BioLinkView.vue";
+import BioThumbnailFrame from "@/Components/BioLink/BioThumbnailFrame.vue";
+import { cn } from "@/lib/utils";
 import {
     dummyOfficer,
     dummyProfile,
@@ -18,6 +18,10 @@ const props = defineProps({
     limit: {
         type: Number,
         default: null,
+    },
+    class: {
+        type: [String, Object, Array],
+        default: "",
     },
 });
 
@@ -42,46 +46,33 @@ const themeList = computed(() => {
 </script>
 
 <template>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div :class="cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6', props.class)">
         <Card
             v-for="item in themeList"
             :key="item.key"
             class="overflow-hidden border border-border bg-card/80 backdrop-blur-xs flex flex-col justify-between"
         >
-            <CardHeader class="p-4 pb-3 border-b border-border/60">
-                <div class="flex items-start justify-between gap-2">
-                    <div class="min-w-0">
-                        <CardTitle class="text-sm font-bold font-mono text-foreground truncate">
-                            {{ item.name }}
-                        </CardTitle>
-                        <CardDescription class="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                            {{ item.description }}
-                        </CardDescription>
-                    </div>
-                    <Badge variant="outline" class="font-mono text-xs uppercase shrink-0">
-                        {{ item.backdrop || "preset" }}
-                    </Badge>
+            <CardHeader class="p-3.5 pb-2.5 border-b border-border/60">
+                <div class="space-y-1">
+                    <CardTitle class="text-sm font-bold font-mono text-foreground truncate">
+                        {{ item.name }}
+                    </CardTitle>
+                    <CardDescription class="text-xs text-muted-foreground line-clamp-2">
+                        {{ item.description }}
+                    </CardDescription>
                 </div>
             </CardHeader>
 
-            <CardContent class="p-4 pt-3 flex-1">
-                <!-- Thumbnail Frame (Preview Only, pointer-events disabled) -->
-                <div class="relative h-96 overflow-hidden rounded-xl border border-border/80 bg-background/90 shadow-inner select-none pointer-events-none">
-                    <div class="w-[440px] max-w-none origin-top-left scale-75 transform-gpu">
-                        <BioLinkView
-                            :officer="dummyOfficer"
-                            :profile="dummyProfile"
-                            :links="dummyLinks"
-                            :themes="themesMap"
-                            :theme-key="item.key"
-                            contained
-                        />
-                    </div>
-                    <!-- Subtle glare & border overlay -->
-                    <div class="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/5 pointer-events-none" />
-                </div>
+            <CardContent class="p-3.5 pt-3 flex-1 flex flex-col justify-center">
+                <!-- Thumbnail Frame (Auto-scaled to fit frame width, pointer-events disabled) -->
+                <BioThumbnailFrame
+                    :theme-key="item.key"
+                    :themes-map="themesMap"
+                    :officer="dummyOfficer"
+                    :profile="dummyProfile"
+                    :links="dummyLinks"
+                />
             </CardContent>
         </Card>
     </div>
 </template>
-
