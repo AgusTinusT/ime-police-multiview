@@ -163,7 +163,7 @@ onUnmounted(() => {
     <Head :title="`${$t('settings.title')} - SASP Police Multiview`" />
 
     <TacticalLayout>
-        <PageContainer size="lg" class="py-8 space-y-6">
+        <PageContainer size="xl" class="py-8 space-y-6">
             <PageHeader
                 :title="$t('settings.title')"
                 :description="$t('settings.description')"
