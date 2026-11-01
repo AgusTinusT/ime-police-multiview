@@ -478,12 +478,14 @@ const computeLayout = (n, W, H, mode, fi, narrow) => {
                 height: mainH + GAP + rows * th + (rows - 1) * GAP,
             };
         }
-        const cols = n === 1 ? 1 : 2;
-        const tw = (W - GAP * (cols - 1)) / cols;
+        // Phones: one tile per row. Two tiles side-by-side on a 375px screen
+        // shrunk YouTube players below the thumbnail cutoff; stacking lets each
+        // POV read at full width.
+        const cols = 1;
+        const tw = W;
         const th = hOf(tw);
         gridRects(all, W, cols, tw, th, 0, rects);
-        const rows = Math.ceil(n / cols);
-        return { rects, height: rows * th + (rows - 1) * GAP };
+        return { rects, height: n * th + (n - 1) * GAP };
     }
 
     if (useFocus) {
