@@ -749,7 +749,7 @@ onUnmounted(() => {
                 v-if="showChrome"
                 class="flex items-center gap-2 px-2 sm:px-4 py-1.5 border-b border-border bg-background/80"
             >
-                <div class="flex items-center gap-2 min-w-0 mr-auto">
+                <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 mr-auto">
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
                             <Button variant="ghost" size="icon" class="size-8 shrink-0" aria-label="Menu situs">
@@ -762,8 +762,9 @@ onUnmounted(() => {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    <!-- Title hidden on phones; the hamburger + LIVE badge are enough -->
                     <h1
-                        class="font-heading text-base sm:text-lg font-bold tracking-wide leading-none"
+                        class="hidden font-heading text-base sm:inline sm:text-lg font-bold tracking-wide leading-none"
                     >
                         MULTIVIEW
                     </h1>
@@ -773,7 +774,7 @@ onUnmounted(() => {
                     </span>
                 </div>
 
-                <div class="flex items-center gap-1 sm:gap-1.5">
+                <div class="flex items-center gap-0.5 sm:gap-1.5">
                     <!-- Layout switch -->
                     <div
                         class="flex p-0.5 rounded-lg bg-card border border-border shrink-0 gap-0.5"
@@ -784,7 +785,7 @@ onUnmounted(() => {
                                 layoutMode === 'grid' ? 'default' : 'ghost'
                             "
                             size="sm"
-                            class="h-8 px-2 text-xs font-bold gap-1"
+                            class="size-8 px-0 text-xs font-bold md:h-8 md:w-auto md:px-2 md:gap-1"
                             title="Grid (G)"
                             @click="setLayout('grid')"
                         >
@@ -797,7 +798,7 @@ onUnmounted(() => {
                                 layoutMode === 'focus' ? 'default' : 'ghost'
                             "
                             size="sm"
-                            class="h-8 px-2 text-xs font-bold gap-1"
+                            class="size-8 px-0 text-xs font-bold md:h-8 md:w-auto md:px-2 md:gap-1"
                             title="Fokus (G)"
                             @click="setLayout('focus')"
                         >
@@ -808,7 +809,7 @@ onUnmounted(() => {
                             type="button"
                             :variant="layoutMode === 'solo' ? 'default' : 'ghost'"
                             size="sm"
-                            class="h-8 px-2 text-xs font-bold gap-1"
+                            class="size-8 px-0 text-xs font-bold md:h-8 md:w-auto md:px-2 md:gap-1"
                             title="Solo: satu POV + ganti cepat (G)"
                             @click="setLayout('solo')"
                         >
@@ -827,7 +828,7 @@ onUnmounted(() => {
                     <Button
                         type="button"
                         size="sm"
-                        class="h-9 px-2.5 sm:px-3 text-xs font-bold gap-1.5"
+                        class="size-8 px-0 sm:size-9 sm:w-auto sm:px-3 text-xs font-bold sm:gap-1.5"
                         @click="openPicker('pov')"
                     >
                         <Plus class="size-4" />
@@ -840,7 +841,7 @@ onUnmounted(() => {
                                 type="button"
                                 variant="outline"
                                 size="icon"
-                                class="size-9 max-sm:hidden"
+                                class="size-8 sm:size-9 max-sm:hidden"
                                 aria-label="Live chat"
                                 @click="openPicker('chat')"
                             >
@@ -856,7 +857,7 @@ onUnmounted(() => {
                                 type="button"
                                 variant="outline"
                                 size="icon"
-                                class="size-9"
+                                class="size-8 sm:size-9"
                                 aria-label="Bisukan semua (M)"
                                 @click="muteAll"
                             >
@@ -872,7 +873,7 @@ onUnmounted(() => {
                                 type="button"
                                 variant="outline"
                                 size="icon"
-                                class="size-9"
+                                class="size-8 sm:size-9"
                                 aria-label="Bagikan link multiview"
                                 :disabled="!selectedIds.length"
                                 @click="shareLink"
@@ -889,7 +890,7 @@ onUnmounted(() => {
                                 type="button"
                                 variant="outline"
                                 size="icon"
-                                class="size-9"
+                                class="size-8 sm:size-9"
                                 aria-label="Layar penuh"
                                 @click="toggleFullscreen"
                             >
@@ -905,7 +906,7 @@ onUnmounted(() => {
                                 type="button"
                                 variant="outline"
                                 size="icon"
-                                class="size-9 max-sm:hidden"
+                                class="size-8 sm:size-9 max-sm:hidden"
                                 aria-label="Kosongkan semua"
                                 @click="clearAll"
                             >
@@ -921,7 +922,7 @@ onUnmounted(() => {
                                 type="button"
                                 :variant="sidebarOpen ? 'default' : 'outline'"
                                 size="icon"
-                                class="size-9"
+                                class="size-8 sm:size-9"
                                 aria-label="Tampilkan / sembunyikan panel"
                                 @click="toggleSidebar"
                             >

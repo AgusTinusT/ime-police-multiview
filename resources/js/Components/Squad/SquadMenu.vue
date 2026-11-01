@@ -101,7 +101,7 @@ const onSquadForked = (forkedSquad) => {
                 type="button"
                 variant="outline"
                 size="sm"
-                class="h-9 px-2.5 sm:px-3 text-xs font-bold gap-1.5 font-mono"
+                class="size-8 px-0 sm:size-9 sm:w-auto sm:px-3 text-xs font-bold sm:gap-1.5 font-mono"
                 :class="{ 'border-primary text-primary bg-primary/10': activeSquad }"
                 :title="activeSquad ? `Squad: ${activeSquad.name}` : $t('squad.menu')"
             >
