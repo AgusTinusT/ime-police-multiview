@@ -1178,8 +1178,10 @@ class PoliceCommandController extends Controller
     {
         $liveStreams = ActiveStream::where('status', 'LIVE')->get()->keyBy('channel_id');
 
-        // Query active officers with subscriber_count < 1000 (or null)
-        $officers = Officer::where('is_active', true)
+        // Query active officers with subscriber_count < 1000 (or null).
+        // Eager-load activeStream so is_hiatus doesn't fire per-officer queries.
+        $officers = Officer::with('activeStream')
+            ->where('is_active', true)
             ->where(function ($q) {
                 $q->whereNull('subscriber_count')
                   ->orWhere('subscriber_count', '<', 1000);
@@ -1187,11 +1189,17 @@ class PoliceCommandController extends Controller
             ->get();
 
         if ($officers->isEmpty()) {
-            $officers = Officer::where('is_active', true)
+            $officers = Officer::with('activeStream')
+                ->where('is_active', true)
                 ->orderBy('subscriber_count', 'asc')
                 ->take(9)
                 ->get();
         }
+
+        // Dukungan hanya untuk perwira yang masih rutin live — officer hiatus
+        // (lebih dari config('police.hiatus_days') hari sejak terakhir live)
+        // tidak ditampilkan.
+        $officers = $officers->filter(fn ($officer) => ! $officer->is_hiatus);
 
         return $officers->map(function ($officer) use ($liveStreams) {
             $isLive = $liveStreams->has($officer->channel_id);
