@@ -39,11 +39,11 @@ const hasBadgeInTitle = computed(() => Boolean(props.site?.badge));
     >
         <!-- Scrim keeps text readable while leaving most of the hero art visible on the right. -->
         <div
-            class="pointer-events-none absolute inset-0 bg-background/60 sm:bg-gradient-to-r sm:from-background sm:via-background/75 sm:via-50% sm:to-transparent"
+            class="pointer-events-none absolute inset-0 bg-background/60 sm:bg-gradient-to-r sm:from-background sm:via-background/80 sm:via-55% sm:to-transparent"
         />
 
         <!-- Text column is capped so hero art has room to breathe on wider cards. -->
-        <div class="relative z-10 flex gap-4 p-4 sm:gap-5 sm:p-5 sm:pr-4 sm:w-[72%]">
+        <div class="relative z-10 flex gap-4 p-4 sm:gap-5 sm:p-5 sm:pr-4 sm:w-[540px] lg:w-[610px]">
             <!-- Poster: image fills the whole tile, labels float on scrims -->
             <div class="shrink-0">
                 <div class="relative h-56 w-32 overflow-hidden rounded-xl border border-warning/40 shadow-sm sm:h-60 sm:w-36">
