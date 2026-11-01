@@ -196,6 +196,7 @@ class PublicBioLinkController extends Controller
                                 'title' => $link->recommendedOfficer->activeStream->title,
                             ] : null,
                             'bio_slug' => $link->recommendedOfficer->bioProfile?->slug,
+                            'youtube_url' => $link->recommendedOfficer->youtube_url,
                         ] : null,
                     ];
                 })->values()->all(),

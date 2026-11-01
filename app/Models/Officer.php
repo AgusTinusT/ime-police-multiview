@@ -79,6 +79,24 @@ class Officer extends Model
     }
 
     /**
+     * Canonical YouTube channel URL from handle, falling back to channel_id.
+     * Returns null if neither is a real identifier.
+     */
+    public function getYoutubeUrlAttribute(): ?string
+    {
+        $handle = trim($this->handle ?? '');
+        if ($handle !== '') {
+            $clean = str_starts_with($handle, '@') ? $handle : '@' . $handle;
+            return "https://www.youtube.com/{$clean}";
+        }
+        $channel = (string) ($this->channel_id ?? '');
+        if ($channel !== '' && ! str_starts_with($channel, 'UC_')) {
+            return "https://www.youtube.com/channel/{$channel}";
+        }
+        return null;
+    }
+
+    /**
      * Determine if officer is on hiatus (inactive/not live for >= hiatus_days).
      */
     public function getIsHiatusAttribute(): bool

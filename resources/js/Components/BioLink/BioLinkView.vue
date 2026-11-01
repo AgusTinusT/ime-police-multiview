@@ -22,6 +22,7 @@ import {
     AlertTriangle,
     Radio,
     Play,
+    PlaySquare,
     Eye,
     Users,
 } from "@lucide/vue";
@@ -395,6 +396,22 @@ const blockNavigation = (event) => {
                                 class="bg-live text-live-foreground hover:bg-live/90"
                             >
                                 <a :href="`/multiview?v=${link.recommended_officer.active_stream.video_id}`">Tonton</a>
+                            </Button>
+                            <Button
+                                v-if="link.recommended_officer.youtube_url"
+                                as-child
+                                variant="outline"
+                                size="icon-sm"
+                                :title="`Buka saluran YouTube ${link.recommended_officer.officer_name}`"
+                                :aria-label="`Buka saluran YouTube ${link.recommended_officer.officer_name}`"
+                            >
+                                <a
+                                    :href="link.recommended_officer.youtube_url"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <PlaySquare class="size-3.5" />
+                                </a>
                             </Button>
                             <Button v-if="link.recommended_officer.bio_slug" as-child variant="outline" size="sm">
                                 <a :href="`/@${link.recommended_officer.bio_slug}`">Bio</a>
