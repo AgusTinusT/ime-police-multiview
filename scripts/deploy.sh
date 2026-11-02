@@ -57,7 +57,7 @@ main() {
     fi
 
     if $maintenance; then
-        php artisan down --retry=30 || true
+        php artisan down --render="errors.503" --retry=30 || true
         trap 'php artisan up' EXIT
     fi
 
