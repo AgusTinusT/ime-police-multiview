@@ -66,6 +66,7 @@ class OfficerManagementController extends Controller
             'duty_status' => 'nullable|string|max:50',
             'channel_id' => 'nullable|string|max:64',
             'avatar_url' => 'nullable|string|max:500',
+            'avatar_is_custom' => 'sometimes|boolean',
             'avatar_hidden' => 'sometimes|boolean',
             'is_active' => 'nullable|boolean',
             'monthly_duty_minutes' => 'nullable|integer|min:0',
@@ -131,6 +132,14 @@ class OfficerManagementController extends Controller
         $validated['bypass_hashtag_check'] = $request->boolean('bypass_hashtag_check', false);
         $validated['monthly_duty_minutes'] = $request->input('monthly_duty_minutes', 0);
 
+        if ($request->has('avatar_is_custom')) {
+            $validated['avatar_is_custom'] = $request->boolean('avatar_is_custom');
+        } elseif (!empty($request->avatar_url) && !str_contains($request->avatar_url, 'dicebear')) {
+            $validated['avatar_is_custom'] = true;
+        } else {
+            $validated['avatar_is_custom'] = false;
+        }
+
         // Check if handle or channel_id already exists
         $existing = Officer::where('handle', $validated['handle'])
             ->orWhere('channel_id', $validated['channel_id'])
@@ -181,6 +190,7 @@ class OfficerManagementController extends Controller
             'duty_status' => 'nullable|string|max:50',
             'channel_id' => 'nullable|string|max:64',
             'avatar_url' => 'nullable|string|max:500',
+            'avatar_is_custom' => 'sometimes|boolean',
             'avatar_hidden' => 'sometimes|boolean',
             'is_active' => 'nullable|boolean',
             'monthly_duty_minutes' => 'nullable|integer|min:0',
@@ -209,6 +219,12 @@ class OfficerManagementController extends Controller
 
         if ($request->has('bypass_hashtag_check')) {
             $validated['bypass_hashtag_check'] = $request->boolean('bypass_hashtag_check');
+        }
+
+        if ($request->has('avatar_is_custom')) {
+            $validated['avatar_is_custom'] = $request->boolean('avatar_is_custom');
+        } elseif (array_key_exists('avatar_url', $validated) && $validated['avatar_url'] !== $officer->avatar_url) {
+            $validated['avatar_is_custom'] = true;
         }
 
         $beforeState = [

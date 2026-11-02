@@ -412,6 +412,7 @@ const form = ref({
     station: "Central",
     channel_id: "",
     avatar_url: "",
+    avatar_is_custom: false,
     avatar_hidden: false,
     is_active: true,
     monthly_duty_minutes: 0,
@@ -1165,6 +1166,7 @@ const openAddModal = () => {
         station: "Central",
         channel_id: "",
         avatar_url: "",
+        avatar_is_custom: false,
         avatar_hidden: false,
         is_active: true,
         monthly_duty_minutes: 0,
@@ -1192,6 +1194,7 @@ const openEditModal = (officer) => {
         station: officer.station || "Central",
         channel_id: officer.channel_id || "",
         avatar_url: officer.avatar_url || "",
+        avatar_is_custom: Boolean(officer.avatar_is_custom),
         avatar_hidden: Boolean(officer.avatar_hidden),
         is_active: Boolean(officer.is_active),
         monthly_duty_minutes: officer.monthly_duty_minutes || 0,
@@ -1223,7 +1226,10 @@ const verifyYouTubeChannel = async () => {
             if (data.handle) form.value.handle = data.handle;
             if (data.streamer_name && !form.value.streamer_name)
                 form.value.streamer_name = data.streamer_name;
-            if (data.avatar_url) form.value.avatar_url = data.avatar_url;
+            if (data.avatar_url) {
+                form.value.avatar_url = data.avatar_url;
+                form.value.avatar_is_custom = false;
+            }
             showToast(
                 `Channel verified: ${data.streamer_name || data.handle} (${data.subscriber_count_text || "Subscribers OK"})`,
                 "success",
@@ -2580,12 +2586,28 @@ onUnmounted(() => {
                             <Label class="text-xs font-bold">{{ $t('admin.officer_form.avatar_url') }}</Label>
                             <Input
                                 v-model="form.avatar_url"
+                                @input="form.avatar_is_custom = true"
                                 type="url"
                                 placeholder="https://yt3.ggpht.com/..."
                                 class="text-xs font-mono"
                             />
                         </div>
                         <div class="flex items-start justify-between gap-3 pt-1">
+                            <div class="space-y-0.5">
+                                <Label class="text-xs font-bold text-foreground cursor-pointer" for="admin-custom-avatar">
+                                    Kunci Avatar Kustom
+                                </Label>
+                                <p class="text-xs text-muted-foreground leading-tight">
+                                    Jika aktif, foto profil ini tidak akan ditimpa otomatis oleh foto channel YouTube saat sinkronisasi subscriber.
+                                </p>
+                            </div>
+                            <Switch
+                                id="admin-custom-avatar"
+                                :model-value="form.avatar_is_custom"
+                                @update:model-value="form.avatar_is_custom = $event"
+                            />
+                        </div>
+                        <div class="flex items-start justify-between gap-3 pt-1 border-t border-border/50">
                             <div class="space-y-0.5">
                                 <Label class="text-xs font-bold text-foreground cursor-pointer" for="admin-hide-avatar">
                                     {{ $t('admin.officer_form.hide_avatar_label') }}
