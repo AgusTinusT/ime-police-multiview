@@ -33,7 +33,7 @@ class OfficerManagementController extends Controller
                   ->orWhereRaw('LOWER(callsign) LIKE ?', ["%{$search}%"])
                   ->orWhereRaw('LOWER(handle) LIKE ?', ["%{$search}%"])
                   ->orWhereRaw('LOWER(badge_number) LIKE ?', ["%{$search}%"])
-                  ->orWhereRaw('LOWER(patrol_zone) LIKE ?', ["%{$search}%"]);
+                  ->orWhereRaw('LOWER(station) LIKE ?', ["%{$search}%"]);
             });
         }
 
@@ -59,7 +59,7 @@ class OfficerManagementController extends Controller
             'department' => 'required|string|max:50',
             'rank' => 'nullable|string|max:100',
             'badge_number' => 'nullable|string|max:50',
-            'patrol_zone' => 'nullable|string|max:150',
+            'station' => 'nullable|string|in:71,72,Central',
             'agency_id' => 'nullable|exists:agencies,id',
             'rank_id' => 'nullable|exists:ranks,id',
             'division_id' => 'nullable|exists:divisions,id',
@@ -125,7 +125,7 @@ class OfficerManagementController extends Controller
 
         $validated['rank'] = $validated['rank'] ?? 'Officer';
         $validated['badge_number'] = $validated['badge_number'] ?? '#000';
-        $validated['patrol_zone'] = $validated['patrol_zone'] ?? 'Los Santos Metropolitan';
+        $validated['station'] = $validated['station'] ?? 'Central';
         $validated['duty_status'] = $validated['duty_status'] ?? '10-8 (On-Duty)';
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['bypass_hashtag_check'] = $request->boolean('bypass_hashtag_check', false);
@@ -174,7 +174,7 @@ class OfficerManagementController extends Controller
             'department' => 'required|string|max:50',
             'rank' => 'nullable|string|max:100',
             'badge_number' => 'nullable|string|max:50',
-            'patrol_zone' => 'nullable|string|max:150',
+            'station' => 'nullable|string|in:71,72,Central',
             'agency_id' => 'nullable|exists:agencies,id',
             'rank_id' => 'nullable|exists:ranks,id',
             'division_id' => 'nullable|exists:divisions,id',

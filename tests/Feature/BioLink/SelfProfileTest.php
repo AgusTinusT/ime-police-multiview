@@ -85,7 +85,7 @@ class SelfProfileTest extends TestCase
             'streamer_name' => 'GordonLive',
             'callsign' => '102',
             'badge_number' => '102',
-            'patrol_zone' => 'Vinewood Hills',
+            'station' => '71',
             'avatar_url' => 'https://yt3.ggpht.com/avatar_valid.jpg',
             'division_id' => $this->swatLspd->id,
         ]);
@@ -97,7 +97,7 @@ class SelfProfileTest extends TestCase
         $this->assertEquals('GordonLive', $this->officer->streamer_name);
         $this->assertEquals('102', $this->officer->callsign);
         $this->assertEquals('102', $this->officer->badge_number);
-        $this->assertEquals('Vinewood Hills', $this->officer->patrol_zone);
+        $this->assertEquals('71', $this->officer->station);
         $this->assertEquals('https://yt3.ggpht.com/avatar_valid.jpg', $this->officer->avatar_url);
         $this->assertTrue((bool) $this->officer->avatar_is_custom);
         $this->assertEquals($this->swatLspd->id, $this->officer->division_id);
@@ -190,12 +190,13 @@ class SelfProfileTest extends TestCase
             ->assertJsonValidationErrors(['division_id']);
     }
 
-    public function test_editing_patrol_zone_multiple_times_does_not_consume_name_rate_limit(): void
+    public function test_editing_station_multiple_times_does_not_consume_name_rate_limit(): void
     {
-        // Change patrol zone 5 times
-        for ($i = 1; $i <= 5; $i++) {
+        $stations = ['71', '72', 'Central'];
+        // Change station 5 times
+        for ($i = 0; $i < 5; $i++) {
             $this->actingAs($this->user)->putJson('/api/v1/officer/profile', [
-                'patrol_zone' => "Zone {$i}",
+                'station' => $stations[$i % 3],
             ])->assertStatus(200);
         }
 
@@ -212,7 +213,7 @@ class SelfProfileTest extends TestCase
         $this->officer->bioProfile->update(['is_suspended' => true]);
 
         $response = $this->actingAs($this->user)->putJson('/api/v1/officer/profile', [
-            'patrol_zone' => 'Downtown',
+            'station' => 'Central',
         ]);
 
         $response->assertStatus(423);
@@ -223,7 +224,7 @@ class SelfProfileTest extends TestCase
         $unboundUser = User::factory()->create(['email_verified_at' => now(), 'role' => 'member']);
 
         $response = $this->actingAs($unboundUser)->putJson('/api/v1/officer/profile', [
-            'patrol_zone' => 'Downtown',
+            'station' => 'Central',
         ]);
 
         $response->assertStatus(403);

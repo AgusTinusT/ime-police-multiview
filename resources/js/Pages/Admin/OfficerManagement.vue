@@ -409,7 +409,7 @@ const form = ref({
     rank_id: null,
     division_id: null,
     duty_status: "10-8 (On-Duty)",
-    patrol_zone: "Los Santos Metropolitan",
+    station: "Central",
     channel_id: "",
     avatar_url: "",
     avatar_hidden: false,
@@ -1162,7 +1162,7 @@ const openAddModal = () => {
                 ? defaultAgency.divisions[0].id
                 : null,
         duty_status: "10-8 (On-Duty)",
-        patrol_zone: "Los Santos Metropolitan",
+        station: "Central",
         channel_id: "",
         avatar_url: "",
         avatar_hidden: false,
@@ -1189,7 +1189,7 @@ const openEditModal = (officer) => {
         rank_id: officer.rank_id || null,
         division_id: officer.division_id || null,
         duty_status: officer.duty_status || "10-8 (On-Duty)",
-        patrol_zone: officer.patrol_zone || "Los Santos Metropolitan",
+        station: officer.station || "Central",
         channel_id: officer.channel_id || "",
         avatar_url: officer.avatar_url || "",
         avatar_hidden: Boolean(officer.avatar_hidden),
@@ -2550,16 +2550,18 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <!-- Patrol Zone & Active Status -->
+                    <!-- Station & Active Status -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div class="space-y-1.5">
-                            <Label class="text-xs font-bold">Patrol Zone</Label>
-                            <Input
-                                v-model="form.patrol_zone"
-                                type="text"
-                                placeholder="e.g. Mission Row / Downtown"
-                                class="text-xs"
-                            />
+                            <Label class="text-xs font-bold">Station</Label>
+                            <select
+                                v-model="form.station"
+                                class="w-full h-9 px-3 rounded-md border border-input bg-background text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            >
+                                <option value="Central">Central</option>
+                                <option value="71">Station 71</option>
+                                <option value="72">Station 72</option>
+                            </select>
                         </div>
                         <div class="flex items-center pt-5">
                             <label class="flex items-center gap-2 cursor-pointer">

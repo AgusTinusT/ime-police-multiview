@@ -17,7 +17,7 @@ class Officer extends Model
         'callsign',
         'badge_number',
         'avatar_url',
-        'patrol_zone',
+        'station',
         'division_id',
     ];
 
@@ -36,7 +36,7 @@ class Officer extends Model
         'badge_number',
         'department',
         'rank',
-        'patrol_zone',
+        'station',
         'agency_id',
         'rank_id',
         'division_id',

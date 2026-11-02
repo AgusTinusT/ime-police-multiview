@@ -53,7 +53,7 @@ class OwnershipFlowTest extends TestCase
             'agency_id' => $lspd->id,
             'rank_id' => $cadetRank->id,
             'badge_number' => '101',
-            'patrol_zone' => 'Mission Row',
+            'station' => 'Central',
         ]);
 
         $storeResponse->assertStatus(201);

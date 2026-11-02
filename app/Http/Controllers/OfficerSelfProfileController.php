@@ -112,7 +112,7 @@ class OfficerSelfProfileController extends Controller
             'officer_name' => 'nullable|string|min:3|max:150',
             'streamer_name' => 'nullable|string|min:2|max:150',
             'avatar_url' => ['nullable', 'url', 'regex:/^https:\/\//i', 'max:500'],
-            'patrol_zone' => 'nullable|string|max:150',
+            'station' => 'nullable|string|in:71,72,Central',
             'division_id' => 'nullable|exists:divisions,id',
             'callsign' => 'nullable|string|min:2|max:50',
             'badge_number' => 'nullable|string|max:50',
@@ -153,7 +153,7 @@ class OfficerSelfProfileController extends Controller
                 'callsign' => $lockedOfficer->callsign,
                 'badge_number' => $lockedOfficer->badge_number,
                 'avatar_url' => $lockedOfficer->avatar_url,
-                'patrol_zone' => $lockedOfficer->patrol_zone,
+                'station' => $lockedOfficer->station,
                 'division_id' => $lockedOfficer->division_id,
             ];
 
@@ -247,9 +247,9 @@ class OfficerSelfProfileController extends Controller
                 $updateData['avatar_is_custom'] = true;
             }
 
-            // 4. Patrol zone & division
-            if (array_key_exists('patrol_zone', $validated)) {
-                $updateData['patrol_zone'] = $validated['patrol_zone'];
+            // 4. Station & division
+            if (array_key_exists('station', $validated)) {
+                $updateData['station'] = $validated['station'];
             }
             if (array_key_exists('division_id', $validated)) {
                 $updateData['division_id'] = $validated['division_id'];

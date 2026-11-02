@@ -1115,7 +1115,7 @@ class YouTubeScraperService
                                     'badge_number' => $officer->badge_number,
                                     'department' => $officer->department,
                                     'rank' => $officer->rank,
-                                    'patrol_zone' => $officer->patrol_zone,
+                                    'station' => $officer->station,
                                     'avatar_url' => $officer->avatar_url,
                                     'subscriber_count' => $officer->subscriber_count,
                                     'subscriber_count_text' => $officer->subscriber_count_text,

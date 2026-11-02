@@ -42,7 +42,7 @@ class AvatarVisibilityTest extends TestCase
             'badge_number' => '#110',
             'department' => 'LSPD',
             'rank' => 'Officer',
-            'patrol_zone' => 'Mission Row',
+            'station' => 'Central',
             'avatar_url' => 'https://yt3.ggpht.com/real_photo.jpg',
             'avatar_hidden' => false,
             'is_active' => true,

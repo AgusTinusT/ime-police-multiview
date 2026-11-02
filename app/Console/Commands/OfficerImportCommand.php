@@ -77,7 +77,7 @@ class OfficerImportCommand extends Command
             $department = strtoupper($item['department'] ?? 'LSPD');
             $rank = $item['rank'] ?? 'Officer';
             $badgeNumber = $item['badge_number'] ?? '#000';
-            $patrolZone = $item['patrol_zone'] ?? null;
+            $station = $item['station'] ?? $item['patrol_zone'] ?? null;
             $existingOfficer = Officer::where('handle', $handle)
                 ->orWhere('channel_id', $channelId)
                 ->first();
@@ -90,7 +90,7 @@ class OfficerImportCommand extends Command
                 'department' => $department,
                 'rank' => $rank,
                 'badge_number' => $badgeNumber,
-                'patrol_zone' => $patrolZone,
+                'station' => $station,
                 'is_active' => true,
             ];
 

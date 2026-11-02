@@ -117,7 +117,7 @@ const form = ref({
     streamer_name: props.officer.streamer_name || "",
     avatar_url: props.officer.avatar_url || "",
     use_custom_avatar: !!props.officer.avatar_is_custom,
-    patrol_zone: props.officer.patrol_zone || "",
+    station: props.officer.station || "",
     division_id: props.officer.division_id || "",
     callsign: props.officer.callsign || "",
     badge_number: props.officer.badge_number || "",
@@ -144,7 +144,7 @@ const saveProfile = async () => {
             streamer_name: form.value.streamer_name,
             avatar_url: form.value.avatar_url,
             avatar_is_custom: form.value.use_custom_avatar,
-            patrol_zone: form.value.patrol_zone,
+            station: form.value.station,
             division_id: form.value.division_id || null,
         };
 
@@ -315,7 +315,7 @@ const switchTab = (tab) => {
                     </p>
                     <p class="text-xs text-muted-foreground font-mono">
                         Streamer: <span class="text-primary font-semibold">{{ officer.streamer_name || "-" }}</span>
-                        <span v-if="officer.patrol_zone"> • Sektor: {{ officer.patrol_zone }}</span>
+                        <span v-if="officer.station"> • Station: {{ officer.station }}</span>
                     </p>
                 </div>
             </div>
@@ -417,14 +417,17 @@ const switchTab = (tab) => {
 
                     <div class="space-y-1">
                         <Label class="text-xs font-mono text-muted-foreground">
-                            Sektor / Zona Patroli Rutin
+                            Station
                         </Label>
-                        <Input
-                            v-model="form.patrol_zone"
-                            type="text"
-                            class="text-sm font-mono"
-                            placeholder="Contoh: Vinewood Hills & Sandy Shores"
-                        />
+                        <select
+                            v-model="form.station"
+                            class="w-full px-3.5 py-2 rounded-xl bg-background border border-input focus:border-primary text-sm font-mono text-foreground outline-hidden"
+                        >
+                            <option value="">-- Pilih Station --</option>
+                            <option value="Central">Central</option>
+                            <option value="71">Station 71</option>
+                            <option value="72">Station 72</option>
+                        </select>
                     </div>
 
                     <div class="space-y-1">

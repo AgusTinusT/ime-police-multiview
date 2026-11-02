@@ -14,7 +14,7 @@ class OwnerDataProtectionTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * T-19: OfficerImportCommand creates new officers without crash (patrol_zone defined).
+     * T-19: OfficerImportCommand creates new officers without crash (station defined).
      */
     public function test_import_command_successfully_creates_new_officer(): void
     {
@@ -27,7 +27,7 @@ class OwnerDataProtectionTest extends TestCase
                 'department' => 'LSPD',
                 'rank' => 'Cadet',
                 'badge_number' => '#101',
-                'patrol_zone' => 'Downtown',
+                'station' => 'Central',
             ]
         ]);
 
@@ -38,7 +38,7 @@ class OwnerDataProtectionTest extends TestCase
             'handle' => '@newrookie',
             'officer_name' => 'Ofc. Rookie',
             'callsign' => '1-R-01',
-            'patrol_zone' => 'Downtown',
+            'station' => 'Central',
         ]);
     }
 
@@ -57,7 +57,7 @@ class OwnerDataProtectionTest extends TestCase
             'badge_number' => '#999',
             'department' => 'LSPD',
             'rank' => 'Officer',
-            'patrol_zone' => 'Vinewood',
+            'station' => 'Central',
             'avatar_url' => 'https://custom-avatar.com/owner.png',
             'avatar_is_custom' => true,
             'is_active' => true,
@@ -73,7 +73,7 @@ class OwnerDataProtectionTest extends TestCase
                 'badge_number' => '#001',
                 'department' => 'SASP',
                 'rank' => 'Trooper',
-                'patrol_zone' => 'Sandy Shores',
+                'station' => '71',
             ]
         ]);
 
@@ -85,7 +85,7 @@ class OwnerDataProtectionTest extends TestCase
         $this->assertEquals('Owner Streamer', $fresh->streamer_name);
         $this->assertEquals('1-O-99', $fresh->callsign);
         $this->assertEquals('#999', $fresh->badge_number);
-        $this->assertEquals('Vinewood', $fresh->patrol_zone);
+        $this->assertEquals('Central', $fresh->station);
         $this->assertEquals('https://custom-avatar.com/owner.png', $fresh->avatar_url);
 
         // Non-owner fields (e.g. department) can update

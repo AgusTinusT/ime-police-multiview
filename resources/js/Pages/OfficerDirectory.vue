@@ -150,7 +150,7 @@ const newOfficerForm = ref({
     badge_number: "",
     department: "LSPD",
     rank: "Officer",
-    patrol_zone: "Los Santos",
+    station: "Central",
     handle: "",
 });
 
@@ -166,7 +166,7 @@ const closeAddModal = () => {
         badge_number: "",
         department: "LSPD",
         rank: "Officer",
-        patrol_zone: "Los Santos",
+        station: "Central",
         handle: "",
     };
 };
@@ -185,7 +185,7 @@ const handleCreateOfficer = () => {
             `#${Math.floor(Math.random() * 899 + 100)}`,
         department: newOfficerForm.value.department,
         rank: newOfficerForm.value.rank || "Officer",
-        patrol_zone: newOfficerForm.value.patrol_zone || "Los Santos",
+        station: newOfficerForm.value.station || "Central",
         handle: newOfficerForm.value.handle || "",
         streamer_name: newOfficerForm.value.officer_name,
         is_online: false,
@@ -299,7 +299,7 @@ const exportCSV = () => {
         `"${o.is_online ? "10-8 ON DUTY" : "10-7 OFF DUTY"}"`,
         `"${o.subscriber_count || 0}"`,
         `"${o.handle || ""}"`,
-        `"${o.patrol_zone || "LS"}"`,
+        `"${o.station || "Central"}"`,
     ]);
 
     const csvContent =
@@ -343,7 +343,7 @@ const filteredOfficers = computed(() => {
                     o.streamer_name.toLowerCase().includes(q)) ||
                 (o.handle && o.handle.toLowerCase().includes(q)) ||
                 (o.badge_number && o.badge_number.toLowerCase().includes(q)) ||
-                (o.patrol_zone && o.patrol_zone.toLowerCase().includes(q)) ||
+                (o.station && o.station.toLowerCase().includes(q)) ||
                 (o.rank && o.rank.toLowerCase().includes(q)),
         );
     }
@@ -796,9 +796,9 @@ const liveInDept = computed(() =>
                             class="text-xs font-mono text-muted-foreground truncate"
                         >
                             <span
-                                >Sektor:
+                                >Station:
                                 <strong class="text-foreground">{{
-                                    officer.patrol_zone || "LS"
+                                    officer.station || "Central"
                                 }}</strong></span
                             >
                         </div>
@@ -905,7 +905,7 @@ const liveInDept = computed(() =>
                             <TableHead
                                 class="py-3.5 px-4 font-mono text-xs uppercase"
                             >
-                                Sektor / TAC
+                                Station
                             </TableHead>
                             <TableHead
                                 class="py-3.5 px-4 text-right font-mono text-xs uppercase"
@@ -1028,14 +1028,14 @@ const liveInDept = computed(() =>
                                 </div>
                             </TableCell>
 
-                            <!-- Sector -->
+                            <!-- Station -->
                             <TableCell
                                 class="py-3.5 px-4 font-mono text-xs text-muted-foreground"
                             >
                                 <div>
-                                    Sektor:
+                                    Station:
                                     <strong class="text-foreground">{{
-                                        officer.patrol_zone || "LS"
+                                        officer.station || "Central"
                                     }}</strong>
                                 </div>
                             </TableCell>
@@ -1312,10 +1312,10 @@ const liveInDept = computed(() =>
                         <Card class="p-3 space-y-1">
                             <span
                                 class="text-xs text-muted-foreground uppercase font-bold"
-                                >Sektor Patroli</span
+                                >Station</span
                             >
                             <div class="text-xs text-foreground font-bold">
-                                {{ activeOfficer.patrol_zone || "Los Santos" }}
+                                {{ activeOfficer.station || "Central" }}
                             </div>
                         </Card>
                     </div>
