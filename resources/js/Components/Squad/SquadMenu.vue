@@ -38,6 +38,7 @@ const isLoading = ref(false);
 const showAuthModal = ref(false);
 const showSaveDialog = ref(false);
 const dialogSquad = ref(null);
+const dialogOfficers = ref([]);
 
 const fetchMySquads = async () => {
     if (!currentUser.value) return;
@@ -68,18 +69,30 @@ watch(currentUser, (user) => {
     }
 });
 
-const handleOpenSave = () => {
+const handleOpenSaveCurrent = () => {
     if (!currentUser.value) {
         showAuthModal.value = true;
         return;
     }
     dialogSquad.value = null;
+    dialogOfficers.value = [...props.currentOfficers];
+    showSaveDialog.value = true;
+};
+
+const handleOpenCreateBlank = () => {
+    if (!currentUser.value) {
+        showAuthModal.value = true;
+        return;
+    }
+    dialogSquad.value = null;
+    dialogOfficers.value = [];
     showSaveDialog.value = true;
 };
 
 const handleEditSquad = () => {
     if (!props.activeSquad) return;
     dialogSquad.value = props.activeSquad;
+    dialogOfficers.value = [...props.currentOfficers];
     showSaveDialog.value = true;
 };
 
@@ -143,11 +156,21 @@ const onSquadForked = (forkedSquad) => {
 
             <!-- Save Current POVs Item -->
             <DropdownMenuItem
+                v-if="currentOfficers.length > 0"
                 class="gap-2 cursor-pointer text-primary font-bold"
-                @click="handleOpenSave"
+                @click="handleOpenSaveCurrent"
             >
                 <Plus class="size-3.5" />
-                <span>{{ $t('squad.save_current_pov') }}</span>
+                <span>{{ $t('squad.save_current_pov') }} ({{ currentOfficers.length }})</span>
+            </DropdownMenuItem>
+
+            <!-- Create Blank Squad Item (Free selection) -->
+            <DropdownMenuItem
+                class="gap-2 cursor-pointer font-bold"
+                @click="handleOpenCreateBlank"
+            >
+                <Plus class="size-3.5 text-primary" />
+                <span>Buat Squad Baru (Pilih Bebas)</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
@@ -205,7 +228,7 @@ const onSquadForked = (forkedSquad) => {
     <SquadSaveDialog
         v-model:open="showSaveDialog"
         :squad="dialogSquad"
-        :initial-officers="currentOfficers"
+        :initial-officers="dialogOfficers"
         @saved="onSquadSaved"
         @forked="onSquadForked"
     />

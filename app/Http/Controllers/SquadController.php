@@ -70,6 +70,37 @@ class SquadController extends Controller
     }
 
     /**
+     * Get all active officers available for squad selection (including live status).
+     */
+    public function availableOfficers(): JsonResponse
+    {
+        $officers = Cache::remember('squads.available_officers', 30, function () {
+            return Officer::with('activeStream:id,officer_id,status')
+                ->where('is_active', true)
+                ->orderBy('department')
+                ->orderBy('rank')
+                ->get()
+                ->map(fn (Officer $o) => [
+                    'id' => $o->id,
+                    'officer_name' => $o->officer_name,
+                    'streamer_name' => $o->streamer_name,
+                    'callsign' => $o->callsign,
+                    'badge_number' => $o->badge_number,
+                    'department' => $o->department,
+                    'rank' => $o->rank,
+                    'station' => $o->station,
+                    'avatar_url' => $o->public_avatar_url,
+                    'is_online' => (bool) ($o->activeStream && $o->activeStream->status === 'LIVE'),
+                ]);
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $officers,
+        ]);
+    }
+
+    /**
      * Show squad by slug.
      */
     public function show(string $slug): JsonResponse

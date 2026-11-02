@@ -515,4 +515,34 @@ class SquadTest extends TestCase
         $this->assertCount(1, $searchRes->json('data'));
         $this->assertSame('Traffic Control', $searchRes->json('data.0.name'));
     }
+
+    public function test_available_officers_returns_active_roster_with_online_flags(): void
+    {
+        $officer1 = $this->createOfficer('Officer Alpha', '101');
+        $officer2 = $this->createOfficer('Officer Beta', '102');
+
+        // Create active live stream for officer1
+        \App\Models\ActiveStream::create([
+            'officer_id' => $officer1->id,
+            'video_id' => 'abc123live',
+            'channel_id' => $officer1->channel_id,
+            'title' => 'Patrol Stream',
+            'status' => 'LIVE',
+            'last_synced_at' => now(),
+        ]);
+
+        $res = $this->getJson('/api/v1/squads/officers');
+        $res->assertOk();
+        $res->assertJsonPath('status', 'success');
+
+        $data = collect($res->json('data'));
+        $found1 = $data->firstWhere('id', $officer1->id);
+        $found2 = $data->firstWhere('id', $officer2->id);
+
+        $this->assertNotNull($found1);
+        $this->assertTrue($found1['is_online']);
+
+        $this->assertNotNull($found2);
+        $this->assertFalse($found2['is_online']);
+    }
 }

@@ -338,6 +338,7 @@ use App\Http\Controllers\SquadController;
 
 Route::prefix('api/v1/squads')->group(function () {
     Route::get('/public', [SquadController::class, 'public'])->name('squads.public');
+    Route::get('/officers', [SquadController::class, 'availableOfficers'])->name('squads.officers');
     Route::middleware('auth')->get('/mine', [SquadController::class, 'mine'])->name('squads.mine');
     // squad-save is a named limiter (see AppServiceProvider) so this bucket
     // doesn't share counts with other save endpoints.

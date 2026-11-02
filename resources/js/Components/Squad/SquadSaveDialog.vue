@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
-import { GitFork, Loader2, Save, X } from "@lucide/vue";
+import { GitFork, Loader2, Plus, Save, Search, UserPlus, X } from "@lucide/vue";
 import {
     Dialog,
     DialogContent,
@@ -48,6 +48,49 @@ const officers = ref([]);
 const isSubmitting = ref(false);
 const errors = ref({});
 
+const allOfficers = ref([]);
+const isLoadingOfficers = ref(false);
+const officerSearch = ref("");
+const showAddPicker = ref(false);
+
+const loadAvailableOfficers = async () => {
+    if (allOfficers.value.length > 0) return;
+    isLoadingOfficers.value = true;
+    try {
+        const res = await axios.get("/api/v1/squads/officers");
+        if (res.data?.status === "success") {
+            allOfficers.value = res.data.data || [];
+        }
+    } catch {
+        // silent fail
+    } finally {
+        isLoadingOfficers.value = false;
+    }
+};
+
+const selectableOfficers = computed(() => {
+    const currentIds = new Set(officers.value.map((o) => Number(o.id)));
+    let list = allOfficers.value.filter((o) => !currentIds.has(Number(o.id)));
+    if (officerSearch.value.trim()) {
+        const q = officerSearch.value.trim().toLowerCase();
+        list = list.filter((o) =>
+            [o.officer_name, o.streamer_name, o.callsign, o.department, o.badge_number]
+                .filter(Boolean)
+                .some((v) => String(v).toLowerCase().includes(q))
+        );
+    }
+    return list;
+});
+
+const addOfficer = (officer) => {
+    if (officers.value.length >= 12) {
+        toast.warning("Maksimal 12 perwira dalam satu squad.");
+        return;
+    }
+    officers.value.push(officer);
+    delete errors.value.officer_ids;
+};
+
 const isOwner = computed(() => {
     if (!props.squad) return true;
     return Boolean(props.squad.is_owner);
@@ -57,6 +100,9 @@ const isEditing = computed(() => Boolean(props.squad?.id));
 
 const syncForm = () => {
     errors.value = {};
+    showAddPicker.value = false;
+    officerSearch.value = "";
+    loadAvailableOfficers();
     if (props.squad) {
         name.value = props.squad.name || "";
         description.value = props.squad.description || "";
@@ -326,6 +372,99 @@ const handleForkAndEdit = async () => {
                         <p v-if="officers.length === 0" class="text-xs text-muted-foreground italic text-center py-2 font-mono">
                             Belum ada perwira terpilih.
                         </p>
+                    </div>
+
+                    <!-- Add Officer Picker (Live & Offline) -->
+                    <div v-if="(!isEditing || isOwner) && officers.length < 12" class="pt-1">
+                        <Button
+                            v-if="!showAddPicker"
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            class="w-full text-xs font-mono gap-1.5 border-dashed border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                            @click="showAddPicker = true; loadAvailableOfficers();"
+                        >
+                            <UserPlus class="size-3.5 text-primary" />
+                            <span>Tambah Perwira (Live / Offline)</span>
+                        </Button>
+
+                        <div v-else class="rounded-md border border-border p-2 space-y-2 bg-muted/40">
+                            <div class="flex items-center gap-1.5">
+                                <div class="relative flex-1">
+                                    <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                                    <Input
+                                        v-model="officerSearch"
+                                        type="search"
+                                        placeholder="Cari nama, callsign, departemen..."
+                                        class="h-8 pl-8 pr-2 text-xs font-mono bg-background"
+                                    />
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    class="h-8 px-2 text-xs font-mono text-muted-foreground hover:text-foreground cursor-pointer"
+                                    @click="showAddPicker = false; officerSearch = '';"
+                                >
+                                    Tutup
+                                </Button>
+                            </div>
+
+                            <div v-if="isLoadingOfficers" class="py-4 text-center text-xs text-muted-foreground font-mono">
+                                <Loader2 class="size-4 motion-safe:animate-spin mx-auto mb-1 text-primary" />
+                                Memuat daftar perwira...
+                            </div>
+
+                            <div v-else class="max-h-36 overflow-y-auto space-y-1 pr-1">
+                                <div
+                                    v-for="cand in selectableOfficers"
+                                    :key="cand.id"
+                                    class="flex items-center justify-between gap-2 p-1.5 rounded-sm hover:bg-accent border border-transparent hover:border-border transition cursor-pointer text-xs font-mono"
+                                    @click="addOfficer(cand)"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                                        <OfficerAvatar
+                                            :src="cand.avatar_url"
+                                            :name="cand.officer_name"
+                                            :callsign="cand.callsign"
+                                            :department="cand.department"
+                                            size="sm"
+                                            class="shrink-0"
+                                        />
+                                        <div class="min-w-0 flex-1 truncate">
+                                            <span class="font-bold text-foreground truncate block">
+                                                {{ cand.officer_name }}
+                                            </span>
+                                            <span class="text-muted-foreground text-xs flex items-center gap-1">
+                                                <span>{{ cand.callsign }}</span>
+                                                <span>·</span>
+                                                <DeptBadge :department="cand.department" />
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        <span
+                                            v-if="cand.is_online"
+                                            class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-success/20 text-success border border-success/30 uppercase tracking-wider"
+                                        >
+                                            10-8 Live
+                                        </span>
+                                        <span
+                                            v-else
+                                            class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-muted text-muted-foreground border border-border uppercase tracking-wider"
+                                        >
+                                            10-7 Off
+                                        </span>
+                                        <Plus class="size-3.5 text-primary" />
+                                    </div>
+                                </div>
+
+                                <p v-if="selectableOfficers.length === 0" class="text-xs text-muted-foreground italic text-center py-3 font-mono">
+                                    {{ officerSearch ? 'Tidak ada perwira yang cocok.' : 'Semua perwira sudah ditambahkan.' }}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                     <p v-if="errors.officer_ids" class="text-xs text-destructive font-mono">
                         {{ errors.officer_ids }}
