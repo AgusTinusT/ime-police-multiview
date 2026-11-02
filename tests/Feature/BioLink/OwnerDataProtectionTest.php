@@ -137,6 +137,33 @@ class OwnerDataProtectionTest extends TestCase
     }
 
     /**
+     * Non-custom officer avatar updates when YouTube channel avatar changes.
+     */
+    public function test_sync_subscribers_updates_avatar_when_youtube_avatar_changes(): void
+    {
+        $officer = Officer::create([
+            'channel_id' => 'UC_YOUTUBE_CHANGE',
+            'handle' => '@youtubechange',
+            'streamer_name' => 'Changing Streamer',
+            'officer_name' => 'Ofc. Changing',
+            'callsign' => '1-Y-30',
+            'department' => 'LSPD',
+            'rank' => 'Officer',
+            'avatar_url' => 'https://yt3.ggpht.com/old_avatar_v1.jpg',
+            'avatar_is_custom' => false,
+            'is_active' => true,
+        ]);
+
+        Http::fake([
+            '*youtube.com*' => Http::response('<html><meta property="og:image" content="https://yt3.ggpht.com/new_avatar_v2.jpg"><meta name="description" content="15K subscribers"></html>', 200),
+        ]);
+
+        Artisan::call('officer:sync-subscribers');
+
+        $this->assertEquals('https://yt3.ggpht.com/new_avatar_v2.jpg', $officer->fresh()->avatar_url);
+    }
+
+    /**
      * T-19: Admin updating a claimed officer logs officer.admin_override audit event.
      */
     public function test_admin_updating_claimed_officer_logs_admin_override(): void

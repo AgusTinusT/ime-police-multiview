@@ -73,12 +73,17 @@ class SyncOfficerSubscribersCommand extends Command
                         $updateData['channel_id'] = $realChannelId;
                     }
 
-                    // Extract avatar URL if currently dicebear placeholder or empty, unless custom set by owner (T-19)
-                    if (!$officer->avatar_is_custom && (str_contains($officer->avatar_url ?? '', 'dicebear') || empty($officer->avatar_url))) {
+                    // Extract latest YouTube avatar URL, unless custom set by owner (T-19)
+                    if (!$officer->avatar_is_custom) {
+                        $latestAvatar = null;
                         if (preg_match('/"avatar"\s*:\s*\{\s*"thumbnails"\s*:\s*\[\s*\{\s*"url"\s*:\s*"([^"]+)"/i', $html, $am)) {
-                            $updateData['avatar_url'] = str_replace('\u0026', '&', $am[1]);
+                            $latestAvatar = str_replace('\u0026', '&', $am[1]);
                         } elseif (preg_match('/<meta property="og:image" content="([^"]+)"/i', $html, $am)) {
-                            $updateData['avatar_url'] = $am[1];
+                            $latestAvatar = $am[1];
+                        }
+
+                        if ($latestAvatar && $latestAvatar !== $officer->avatar_url) {
+                            $updateData['avatar_url'] = $latestAvatar;
                         }
                     }
 
