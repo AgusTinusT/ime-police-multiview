@@ -138,7 +138,7 @@ const handleUpdateSlug = async () => {
         :open="Boolean(show && officer)"
         @update:open="(!$event) && emit('close')"
     >
-        <DialogContent v-if="officer" class="sm:max-w-md text-xs">
+        <DialogContent v-if="officer" class="sm:max-w-md text-xs z-[60]">
             <DialogHeader>
                 <DialogTitle class="flex items-center gap-2 uppercase text-sm">
                     <Link2 v-if="mode === 'bind'" class="size-4 text-primary" />

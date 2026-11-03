@@ -125,18 +125,21 @@ const bindingMode = ref("bind"); // 'bind' | 'unbind' | 'slug'
 const bindingOfficer = ref(null);
 
 const openBindModal = (officer) => {
+    showDetailSheet.value = false;
     bindingOfficer.value = officer;
     bindingMode.value = "bind";
     showBindingModal.value = true;
 };
 
 const openUnbindModal = (officer) => {
+    showDetailSheet.value = false;
     bindingOfficer.value = officer;
     bindingMode.value = "unbind";
     showBindingModal.value = true;
 };
 
 const openSlugModal = (officer) => {
+    showDetailSheet.value = false;
     bindingOfficer.value = officer;
     bindingMode.value = "slug";
     showBindingModal.value = true;
@@ -156,6 +159,7 @@ const toggleSuspendProfile = async (officer) => {
     const targetSuspended = !isCurrentlySuspended;
 
     if (targetSuspended) {
+        showDetailSheet.value = false;
         reasonDialog.value = {
             show: true,
             mode: "suspend",
@@ -184,6 +188,7 @@ const toggleBanUser = async (officer) => {
     const isBanned = officer.user.status === 'banned';
 
     if (!isBanned) {
+        showDetailSheet.value = false;
         reasonDialog.value = {
             show: true,
             mode: "ban",
@@ -295,6 +300,7 @@ const dutyMinutesInput = ref(60);
 const isAdjustingDuty = ref(false);
 
 const openDutyModal = (officer) => {
+    showDetailSheet.value = false;
     dutyOfficer.value = officer;
     dutyAction.value = "add";
     dutyMinutesInput.value = 60;
@@ -322,6 +328,9 @@ const handleAdjustDuty = async () => {
             showToast(res.data.message, "success");
             dutyOfficer.value.monthly_duty_minutes =
                 res.data.monthly_duty_minutes;
+            if (selectedDetailOfficer.value && selectedDetailOfficer.value.id === dutyOfficer.value.id) {
+                selectedDetailOfficer.value.monthly_duty_minutes = res.data.monthly_duty_minutes;
+            }
             showDutyModal.value = false;
             fetchOfficers();
         } else {
@@ -1140,6 +1149,7 @@ const getDeptBadgeClass = (dept) => {
 
 // Open Modal for Add Officer
 const openAddModal = () => {
+    showDetailSheet.value = false;
     isEditMode.value = false;
     const defaultAgency =
         agenciesList.value.find((a) => a.agency_code === "LSPD") ||
@@ -1177,6 +1187,7 @@ const openAddModal = () => {
 
 // Open Modal for Edit Officer
 const openEditModal = (officer) => {
+    showDetailSheet.value = false;
     isEditMode.value = true;
     form.value = {
         id: officer.id,
@@ -1340,6 +1351,7 @@ const toggleOfficerStatus = async (officer) => {
 
 // Delete Officer
 const confirmDeleteOfficer = (officer) => {
+    showDetailSheet.value = false;
     officerToDelete.value = officer;
     showDeleteConfirm.value = true;
 };
@@ -2404,9 +2416,24 @@ onUnmounted(() => {
             </div>
         </PageContainer>
 
+        <!-- OFFICER DETAIL SHEET (UX-09) -->
+        <OfficerDetailSheet
+            v-model:open="showDetailSheet"
+            :officer="selectedDetailOfficer"
+            @edit="openEditModal"
+            @delete="confirmDeleteOfficer"
+            @duty="openDutyModal"
+            @toggle-hashtag="toggleHashtagBypass"
+            @bind="openBindModal"
+            @slug="openSlugModal"
+            @unbind="openUnbindModal"
+            @toggle-suspend="toggleSuspendProfile"
+            @toggle-ban="toggleBanUser"
+        />
+
         <!-- MODAL: ADD / EDIT OFFICER (With Cascading Agency Dropdown) -->
         <Dialog :open="showModal" @update:open="showModal = $event">
-            <DialogContent class="sm:max-w-xl max-h-[90vh] overflow-y-auto font-mono text-xs">
+            <DialogContent class="sm:max-w-xl max-h-[90vh] overflow-y-auto font-mono text-xs z-[60]">
                 <DialogHeader>
                     <DialogTitle class="text-base font-bold uppercase font-mono">
                         {{ isEditMode ? "Edit Officer Details" : "Add New Police Unit" }}
@@ -3046,7 +3073,7 @@ onUnmounted(() => {
 
         <!-- MODAL: ADJUST DUTY TIME -->
         <Dialog :open="showDutyModal" @update:open="showDutyModal = $event">
-            <DialogContent class="sm:max-w-md font-mono text-xs">
+            <DialogContent class="sm:max-w-md font-mono text-xs z-[60]">
                 <DialogHeader>
                     <DialogTitle class="text-sm font-bold uppercase font-mono">
                         Adjust Duty Time
@@ -3106,7 +3133,7 @@ onUnmounted(() => {
 
         <!-- MODAL: SUSPEND BIO-LINK / BAN USER REASON -->
         <Dialog :open="reasonDialog.show" @update:open="reasonDialog.show = $event">
-            <DialogContent class="sm:max-w-md font-mono text-xs">
+            <DialogContent class="sm:max-w-md font-mono text-xs z-[60]">
                 <DialogHeader>
                     <DialogTitle class="text-sm font-bold uppercase font-mono">
                         {{ reasonDialog.mode === "suspend" ? "Bekukan Bio-Link (Kill-Switch)" : "Ban Akun Pengguna" }}
@@ -3145,7 +3172,7 @@ onUnmounted(() => {
 
         <!-- ALERT DIALOG: DELETE OFFICER -->
         <AlertDialog :open="showDeleteConfirm" @update:open="showDeleteConfirm = $event">
-            <AlertDialogContent class="font-mono text-xs">
+            <AlertDialogContent class="font-mono text-xs z-[60]">
                 <AlertDialogHeader>
                     <AlertDialogTitle class="font-mono uppercase text-sm">
                         Hapus Unit Perwira?
@@ -3177,21 +3204,6 @@ onUnmounted(() => {
             @close="showBindingModal = false"
             @success="fetchOfficers"
             @toast="showToast"
-        />
-
-        <!-- OFFICER DETAIL SHEET (UX-09) -->
-        <OfficerDetailSheet
-            v-model:open="showDetailSheet"
-            :officer="selectedDetailOfficer"
-            @edit="openEditModal"
-            @delete="confirmDeleteOfficer"
-            @duty="openDutyModal"
-            @toggle-hashtag="toggleHashtagBypass"
-            @bind="openBindModal"
-            @slug="openSlugModal"
-            @unbind="openUnbindModal"
-            @toggle-suspend="toggleSuspendProfile"
-            @toggle-ban="toggleBanUser"
         />
     </AdminLayout>
 </template>
