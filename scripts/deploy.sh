@@ -86,9 +86,29 @@ main() {
     php artisan config:cache
     php artisan route:cache
     php artisan view:cache
+    php artisan event:cache 2>/dev/null || true
+
+    echo "==> periksa permission storage & bootstrap/cache"
+    chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+    if command -v sudo >/dev/null 2>&1; then
+        sudo chown -R "${USER:-www-data}":www-data storage bootstrap/cache 2>/dev/null || true
+        sudo chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+    fi
 
     # Workers keep old code in memory until restarted.
+    echo "==> restart queue worker"
     php artisan queue:restart
+
+    # Reload PHP-FPM untuk membersihkan OPcache jika systemctl tersedia
+    if command -v systemctl >/dev/null 2>&1; then
+        for fpm in php8.3-fpm php8.4-fpm php-fpm; do
+            if systemctl is-active --quiet "$fpm" 2>/dev/null; then
+                echo "==> reload $fpm (flush opcache)"
+                sudo systemctl reload "$fpm" 2>/dev/null || true
+                break
+            fi
+        done
+    fi
 
     echo "==> Selesai: $(git log -1 --format='%h %s')"
 }
