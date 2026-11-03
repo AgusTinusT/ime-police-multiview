@@ -17,6 +17,10 @@ class EmailVerificationPromptController extends Controller
     {
         return $request->user()->hasVerifiedEmail()
                     ? redirect()->intended(route('dashboard', absolute: false))
-                    : Inertia::render('Auth/VerifyEmail', ['status' => session('status')]);
+                    : Inertia::render('Auth/VerifyEmail', [
+                        'status' => session('status'),
+                        'officialSenderEmail' => (string) config('mail.from.address', 'gusti.police.duty@12655999.brevosend.com'),
+                        'officialSenderName' => (string) config('mail.from.name', 'Gusti Police Duty - IME Roleplay'),
+                    ]);
     }
 }

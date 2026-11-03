@@ -68,8 +68,8 @@ const form = useForm({
                 </p>
             </div>
 
-            <div v-if="mustVerifyEmail && user.email_verified_at === null">
-                <p class="mt-2 text-xs text-warning">
+            <div v-if="mustVerifyEmail && user.email_verified_at === null" class="space-y-1.5 pt-1">
+                <p class="text-xs text-warning">
                     Alamat email Anda belum diverifikasi.
                     <Link
                         :href="route('verification.send')"
@@ -79,6 +79,10 @@ const form = useForm({
                     >
                         Kirim ulang email verifikasi.
                     </Link>
+                </p>
+
+                <p class="text-xs text-muted-foreground leading-relaxed">
+                    Email verifikasi resmi hanya dikirim dari: <span class="font-mono text-foreground">gusti.police.duty@12655999.brevosend.com</span> (cek folder Spam/Promosi jika tidak muncul di Inbox).
                 </p>
 
                 <div
