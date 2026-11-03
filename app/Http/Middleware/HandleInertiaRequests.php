@@ -64,6 +64,7 @@ class HandleInertiaRequests extends Middleware
                         'badge_number' => $request->user()->officer->badge_number,
                         'slug' => $request->user()->officer->bioProfile?->slug,
                     ] : null,
+                    'blocked_officer_ids' => $request->user()->blockedOfficers()->pluck('officers.id')->all(),
                 ]) : null,
             ],
         ];

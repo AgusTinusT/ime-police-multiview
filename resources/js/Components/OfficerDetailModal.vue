@@ -1,7 +1,8 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
-import { Check, ExternalLink, Play, Plus } from "@lucide/vue";
+import { Check, ExternalLink, EyeOff, Play, Plus } from "@lucide/vue";
 import { computed } from "vue";
+import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 
 import { DeptBadge, LiveBadge, OfficerAvatar } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
@@ -20,6 +21,15 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["close", "toggle-tray"]);
+
+const { hideOfficer } = useOfficerFilter();
+
+const handleHide = () => {
+    if (props.stream) {
+        hideOfficer(props.stream);
+        emit("close");
+    }
+};
 
 const open = computed({
     get: () => !!props.stream,
@@ -52,6 +62,14 @@ const mvUrl = (ids) => `/multiview?v=${ids.filter(Boolean).join(",")}`;
                         <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" rel="noopener">
                             <ExternalLink /> YouTube
                         </a>
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        class="text-muted-foreground hover:text-destructive hover:bg-destructive/10 gap-1.5"
+                        @click="handleHide"
+                    >
+                        <EyeOff class="size-4" />
+                        {{ $t('officer_detail.hide_officer') }}
                     </Button>
                 </div>
             </div>

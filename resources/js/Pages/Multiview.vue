@@ -16,12 +16,14 @@ import SquadMenu from "@/Components/Squad/SquadMenu.vue";
 import { DeptBadge, LiveBadge } from "@/Components/tactical";
 import MultiviewSoloStrip from "@/Components/MultiviewSoloStrip.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
+import OfficerVisibilityModal from "@/Components/OfficerVisibilityModal.vue";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
 import { Toaster } from "@/Components/ui/sonner";
@@ -32,6 +34,7 @@ import {
     TooltipTrigger,
 } from "@/Components/ui/tooltip";
 import { useAnalytics } from "@/Composables/useAnalytics";
+import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 import {
     LayoutGrid,
     Link2,
@@ -40,6 +43,7 @@ import {
     MessageSquare,
     PanelRight,
     Plus,
+    SlidersHorizontal,
     Square,
     Trash2,
     Volume2,
@@ -71,6 +75,35 @@ const VIDEO_ID_RE = /^[\w-]{11}$/;
 // ---------------------------------------------------------------------------
 const streams = ref(props.initialStreams);
 const offlineOfficers = ref(props.initialOfflineOfficers);
+const showVisibilityModal = ref(false);
+
+const { isOfficerDisabled, hideOfficer } = useOfficerFilter();
+
+const visibleStreams = computed(() =>
+    streams.value.filter((s) => !isOfficerDisabled(s))
+);
+
+const visibleOfflineOfficers = computed(() =>
+    offlineOfficers.value.filter((o) => !isOfficerDisabled(o))
+);
+
+const allOfficersList = computed(() => {
+    const list = [];
+    const seen = new Set();
+    streams.value.forEach((s) => {
+        if (s.officer?.id && !seen.has(s.officer.id)) {
+            seen.add(s.officer.id);
+            list.push(s.officer);
+        }
+    });
+    offlineOfficers.value.forEach((o) => {
+        if (o.id && !seen.has(o.id)) {
+            seen.add(o.id);
+            list.push(o);
+        }
+    });
+    return list;
+});
 
 const streamCache = reactive({});
 const cacheStreams = (list) =>
@@ -300,7 +333,7 @@ const loadSquad = async (slug, { fromUrl = false } = {}) => {
         activeSquad.value = squad;
 
         const squadOfficerIds = new Set((squad.officers || []).map((o) => Number(o.id)));
-        const liveSquadStreams = streams.value.filter((s) =>
+        const liveSquadStreams = visibleStreams.value.filter((s) =>
             squadOfficerIds.has(Number(s.officer?.id || s.officer_id)),
         );
         const offlineCount = (squad.officers || []).length - liveSquadStreams.length;
@@ -680,7 +713,22 @@ const deptOf = (info) => {
     return d === "PARK RANGER" ? "SAPR" : d;
 };
 
-const totalLive = computed(() => streams.value.length);
+const totalLive = computed(() => visibleStreams.value.length);
+
+// Watch for hidden officers and evict them from selected tiles
+watch(
+    visibleStreams,
+    () => {
+        const toEvict = selectedIds.value.filter((id) => {
+            const info = infoOf(id);
+            return info && isOfficerDisabled(info);
+        });
+        if (toEvict.length > 0) {
+            toEvict.forEach((id) => removeStream(id));
+        }
+    },
+    { deep: true }
+);
 
 let pollTimer = null;
 
@@ -758,9 +806,14 @@ onUnmounted(() => {
                                 <Menu class="size-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" class="w-48">
+                        <DropdownMenuContent align="start" class="w-56 font-sans">
                             <DropdownMenuItem v-for="nav in siteNav" :key="nav.href" as-child>
                                 <Link :href="nav.href">{{ nav.label }}</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem class="cursor-pointer gap-2" @select="showVisibilityModal = true">
+                                <SlidersHorizontal class="size-4 text-muted-foreground" />
+                                <span>Filter Visibilitas Perwira</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -851,6 +904,23 @@ onUnmounted(() => {
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>Live chat</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                        <TooltipTrigger as-child>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                class="size-8 sm:size-9"
+                                aria-label="Filter Visibilitas Perwira"
+                                title="Filter Visibilitas Perwira"
+                                @click="showVisibilityModal = true"
+                            >
+                                <SlidersHorizontal class="size-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Filter Visibilitas Perwira</TooltipContent>
                     </Tooltip>
 
                     <Tooltip v-if="audioId">
@@ -1070,9 +1140,9 @@ onUnmounted(() => {
                     </div>
 
                     <MultiviewSoloStrip
-                        v-if="layoutMode === 'solo' && streams.length"
+                        v-if="layoutMode === 'solo' && visibleStreams.length"
                         ref="soloStrip"
-                        :streams="streams"
+                        :streams="visibleStreams"
                         :current-id="selectedIds[0] || null"
                         :allowed-officer-ids="activeSquadOfficerIds"
                         :class="
@@ -1192,8 +1262,8 @@ onUnmounted(() => {
                                     v-if="panelTab === 'pov'"
                                     ref="mobilePickerRef"
                                     class="flex-1 min-h-0"
-                                    :streams="streams"
-                                    :offline-officers="offlineOfficers"
+                                    :streams="visibleStreams"
+                                    :offline-officers="visibleOfflineOfficers"
                                     :selected-ids="selectedIds"
                                     :max-tiles="maxTiles"
                                     @toggle="toggleStream"
@@ -1263,8 +1333,8 @@ onUnmounted(() => {
                         v-show="panelTab === 'pov'"
                         ref="desktopPickerRef"
                         class="flex-1 min-h-0"
-                        :streams="streams"
-                        :offline-officers="offlineOfficers"
+                        :streams="visibleStreams"
+                        :offline-officers="visibleOfflineOfficers"
                         :selected-ids="selectedIds"
                         :max-tiles="maxTiles"
                         @toggle="toggleStream"
@@ -1321,6 +1391,12 @@ onUnmounted(() => {
             </p>
 
             <TacticalMobileBottomNav v-if="isNarrow" />
+            <OfficerVisibilityModal
+                :open="showVisibilityModal"
+                :initial-officers="allOfficersList"
+                @update:open="showVisibilityModal = $event"
+                @close="showVisibilityModal = false"
+            />
             <Toaster rich-colors position="top-right" />
         </div>
     </TooltipProvider>

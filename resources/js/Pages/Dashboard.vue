@@ -1,9 +1,11 @@
 <script setup>
 import { Head, Link, usePage } from "@inertiajs/vue3";
-import { ChevronRight, Loader2, MonitorPlay } from "@lucide/vue";
+import { ChevronRight, Loader2, MonitorPlay, SlidersHorizontal } from "@lucide/vue";
 import { computed, ref, onMounted } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
+import { useOfficerFilter } from "@/Composables/useOfficerFilter";
+import OfficerVisibilityModal from "@/Components/OfficerVisibilityModal.vue";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -84,10 +86,36 @@ const recentReplays = ref(props.initialReplays || []);
 const isSyncingFeeds = ref(false);
 const showClipperClaimModal = ref(false);
 const showOfficerClaimModal = ref(false);
+const showVisibilityModal = ref(false);
+
+const { isOfficerDisabled, hideOfficer } = useOfficerFilter();
+
+// Filtered streams & officers based on user hidden list
+const visibleStreams = computed(() =>
+    streams.value.filter((s) => !isOfficerDisabled(s))
+);
+
+const allOfficersList = computed(() => {
+    const list = [];
+    const seen = new Set();
+    streams.value.forEach((s) => {
+        if (s.officer?.id && !seen.has(s.officer.id)) {
+            seen.add(s.officer.id);
+            list.push(s.officer);
+        }
+    });
+    offlineOfficers.value.forEach((o) => {
+        if (o.id && !seen.has(o.id)) {
+            seen.add(o.id);
+            list.push(o);
+        }
+    });
+    return list;
+});
 
 // Computed All Active & Catalog Streams
 const totalLiveViewers = computed(() =>
-    streams.value.reduce(
+    visibleStreams.value.reduce(
         (sum, s) => sum + Number(s.viewers_count ?? s.viewer_count ?? 0),
         0,
     ),
@@ -101,7 +129,7 @@ const deptOf = (s) => {
 const nameOf = (s) => s.officer?.officer_name || s.officer?.streamer_name || s.officer_name || "Officer";
 const mvUrl = (ids) => `/multiview?v=${ids.filter(Boolean).join(",")}`;
 const liveByViewers = computed(() =>
-    [...streams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0)),
+    [...visibleStreams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0)),
 );
 const DEPARTMENTS = ["LSPD", "BCSO", "SASP", "SAPR"];
 const deptDot = { LSPD: "bg-dept-lspd", BCSO: "bg-dept-bcso", SASP: "bg-dept-sasp", SAPR: "bg-dept-sapr" };
@@ -152,6 +180,7 @@ const roadTo1kOfficers = computed(() => {
         return [];
     }
     return [...props.supportOfficers]
+        .filter((o) => !isOfficerDisabled(o))
         .sort((a, b) => (Number(b.subscriber_count) || 0) - (Number(a.subscriber_count) || 0))
         .slice(0, 12);
 });
@@ -165,7 +194,7 @@ const toggleTray = (s) => {
 };
 const detail = ref(null);
 const recentReplayStreams = computed(() => {
-    const list = [...(recentReplays.value || [])];
+    const list = [...(recentReplays.value || [])].filter((r) => !isOfficerDisabled(r));
     return list.sort((a, b) => {
         const timeA = parseRelativeTimeToSeconds(
             a.streamed_at || a.incident_code,
@@ -239,12 +268,16 @@ const defaultHeroSlides = computed(() => [
 ]);
 
 const effectiveHeroSlides = computed(() => {
-    if (props.heroSlides && props.heroSlides.length > 0) {
-        return props.heroSlides;
-    }
-    return defaultHeroSlides.value;
+    const raw = props.heroSlides && props.heroSlides.length > 0
+        ? props.heroSlides
+        : defaultHeroSlides.value;
+    return raw.filter((slide) => {
+        if (slide.officer_id && isOfficerDisabled(slide.officer_id)) return false;
+        if (slide.officer && isOfficerDisabled(slide.officer)) return false;
+        return true;
+    });
 });
-const displayedGridStreams = computed(() => streams.value);
+const displayedGridStreams = computed(() => visibleStreams.value);
 const activeGridVideoIds = ref([]);
 const activeAudioVideoId = ref(null);
 
@@ -511,9 +544,21 @@ onMounted(() => {
             <div id="units-grid" class="relative z-10 scroll-mt-6 space-y-8 py-8 sm:space-y-10 sm:py-12">
                 <CatalogRow v-if="liveByViewers.length" :title="$t('catalog.live_now')" :subtitle="$t('catalog.live_summary', { units: liveByViewers.length, viewers: totalLiveViewers })">
                     <template #action>
-                        <Button as-child variant="link" size="sm" class="ml-auto shrink-0">
-                            <Link :href="mvUrl(liveByViewers.slice(0, 9).map((s) => s.video_id))">{{ $t('catalog.watch_all') }} <ChevronRight /></Link>
-                        </Button>
+                        <div class="ml-auto flex items-center gap-1.5 shrink-0">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="h-8 gap-1.5 text-xs font-mono"
+                                :title="$t('catalog.manage_visibility')"
+                                @click="showVisibilityModal = true"
+                            >
+                                <SlidersHorizontal class="size-3.5" />
+                                <span class="hidden sm:inline">Filter Visibilitas</span>
+                            </Button>
+                            <Button as-child variant="link" size="sm" class="shrink-0">
+                                <Link :href="mvUrl(liveByViewers.slice(0, 9).map((s) => s.video_id))">{{ $t('catalog.watch_all') }} <ChevronRight /></Link>
+                            </Button>
+                        </div>
                     </template>
                     <CatalogCard
                         v-for="s in liveByViewers"
@@ -524,6 +569,7 @@ onMounted(() => {
                         :in-tray="inTray(s.video_id)"
                         @toggle-tray="toggleTray"
                         @detail="detail = $event"
+                        @hide="hideOfficer"
                     />
                 </CatalogRow>
 
@@ -668,6 +714,7 @@ onMounted(() => {
                             :in-tray="inTray(s.video_id)"
                             @toggle-tray="toggleTray"
                             @detail="detail = $event"
+                            @hide="hideOfficer"
                         />
                     </template>
                     <div
@@ -705,6 +752,7 @@ onMounted(() => {
                         :in-tray="inTray(s.video_id)"
                         @toggle-tray="toggleTray"
                         @detail="detail = $event"
+                        @hide="hideOfficer"
                     />
                 </CatalogRow>
             </div>
@@ -813,6 +861,13 @@ onMounted(() => {
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
+        <!-- OFFICER VISIBILITY MODAL -->
+        <OfficerVisibilityModal
+            :open="showVisibilityModal"
+            :initial-officers="allOfficersList"
+            @update:open="showVisibilityModal = $event"
+            @close="showVisibilityModal = false"
+        />
     </div>
 </template>
 

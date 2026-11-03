@@ -177,12 +177,15 @@
     "scroll_left": "Scroll left",
     "scroll_right": "Scroll right",
     "patrol_by_dept": "Patrol by department",
-    "no_live_units": "No {dept} units live right now"
+    "no_live_units": "No {dept} units live right now",
+    "hide_officer": "Hide this officer",
+    "manage_visibility": "Manage Officer Visibility"
   },
   "officer_detail": {
     "watch": "Watch",
     "in_multiview": "In multiview",
-    "multiview": "Multiview"
+    "multiview": "Multiview",
+    "hide_officer": "Hide This Officer"
   },
   "multiview_tile": {
     "replay": "REPLAY",

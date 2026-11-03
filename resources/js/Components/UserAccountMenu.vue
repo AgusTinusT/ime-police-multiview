@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { useI18n } from "vue-i18n";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
+import OfficerVisibilityModal from "@/Components/OfficerVisibilityModal.vue";
 import { OfficerAvatar } from "@/Components/tactical";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
@@ -24,6 +25,7 @@ import {
     Scissors,
     Settings,
     ShieldCheck,
+    SlidersHorizontal,
     User,
 } from "@lucide/vue";
 
@@ -36,6 +38,7 @@ const isAdmin = computed(() => {
 });
 
 const showOfficerClaimModal = ref(false);
+const showVisibilityModal = ref(false);
 
 const handleLogout = () => {
     router.post("/logout");
@@ -223,6 +226,20 @@ const setLanguage = (lang) => {
                                 </div>
                             </Link>
                         </DropdownMenuItem>
+
+                        <!-- Manage Officer Visibility -->
+                        <DropdownMenuItem
+                            class="flex items-center px-3 py-2 text-foreground gap-2.5 cursor-pointer"
+                            @select="showVisibilityModal = true"
+                        >
+                            <SlidersHorizontal class="size-4 text-muted-foreground shrink-0" />
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium">{{ $t("catalog.manage_visibility") }}</span>
+                                <span class="text-xs text-muted-foreground font-normal">
+                                    Atur perwira yang disembunyikan
+                                </span>
+                            </div>
+                        </DropdownMenuItem>
                     </DropdownMenuGroup>
 
                     <DropdownMenuSeparator class="m-0" />
@@ -320,6 +337,19 @@ const setLanguage = (lang) => {
                             </Link>
                         </DropdownMenuItem>
 
+                        <DropdownMenuItem
+                            class="flex items-center px-3 py-2 rounded-lg bg-background border border-border text-foreground gap-2 font-semibold text-xs cursor-pointer"
+                            @select="showVisibilityModal = true"
+                        >
+                            <SlidersHorizontal class="size-4 text-muted-foreground shrink-0" />
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium">{{ $t("catalog.manage_visibility") }}</span>
+                                <span class="text-xs text-muted-foreground font-normal">
+                                    Atur perwira yang disembunyikan
+                                </span>
+                            </div>
+                        </DropdownMenuItem>
+
                         <Button as-child size="sm" class="w-full font-bold text-xs">
                             <Link href="/login">
                                 <LogIn class="size-4" />
@@ -372,6 +402,13 @@ const setLanguage = (lang) => {
         <OfficerClaimModal
             :show="showOfficerClaimModal"
             @close="showOfficerClaimModal = false"
+        />
+
+        <!-- Officer Visibility Management Modal -->
+        <OfficerVisibilityModal
+            :open="showVisibilityModal"
+            @update:open="showVisibilityModal = $event"
+            @close="showVisibilityModal = false"
         />
     </div>
 </template>

@@ -139,6 +139,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Officers blocked/hidden from display by this user.
+     */
+    public function blockedOfficers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Officer::class, 'user_blocked_officers')->withTimestamps();
+    }
+
+    /**
      * Get the user's created video clips.
      */
     public function videoClips(): \Illuminate\Database\Eloquent\Relations\HasMany

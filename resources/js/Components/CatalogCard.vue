@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
-import { Check, Info, Plus } from "@lucide/vue";
+import { Check, EyeOff, Info, Plus } from "@lucide/vue";
 import { computed } from "vue";
 
 import { Badge } from "@/Components/ui/badge";
@@ -16,7 +16,7 @@ const props = defineProps({
     size: { type: String, default: "md" }, // 'md' | 'sm'
 });
 
-const emit = defineEmits(["toggle-tray", "detail"]);
+const emit = defineEmits(["toggle-tray", "detail", "hide"]);
 
 const thumb = computed(
     () => props.stream.thumbnail || `https://i.ytimg.com/vi/${props.stream.video_id}/hqdefault.jpg`,
@@ -53,11 +53,21 @@ const dept = computed(() => props.stream.officer?.department || "");
                 <Button
                     size="icon-sm"
                     variant="secondary"
+                    class="rounded-full bg-background/70 hover:bg-destructive hover:text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                    :aria-label="$t('catalog.hide_officer')"
+                    :title="$t('catalog.hide_officer')"
+                    @click.prevent.stop="emit('hide', stream)"
+                >
+                    <EyeOff class="size-3.5" />
+                </Button>
+                <Button
+                    size="icon-sm"
+                    variant="secondary"
                     class="rounded-full bg-background/70 hover:bg-background"
                     :aria-label="$t('catalog.detail_officer_aria')"
                     @click.prevent.stop="emit('detail', stream)"
                 >
-                    <Info />
+                    <Info class="size-3.5" />
                 </Button>
                 <Button
                     size="icon-sm"
@@ -67,8 +77,8 @@ const dept = computed(() => props.stream.officer?.department || "");
                     :aria-pressed="inTray"
                     @click.prevent.stop="emit('toggle-tray', stream)"
                 >
-                    <Check v-if="inTray" />
-                    <Plus v-else />
+                    <Check v-if="inTray" class="size-3.5" />
+                    <Plus v-else class="size-3.5" />
                 </Button>
             </div>
         </div>

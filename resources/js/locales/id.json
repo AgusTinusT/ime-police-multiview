@@ -177,12 +177,15 @@
     "scroll_left": "Geser ke kiri",
     "scroll_right": "Geser ke kanan",
     "patrol_by_dept": "Patroli per departemen",
-    "no_live_units": "Belum ada unit {dept} yang live"
+    "no_live_units": "Belum ada unit {dept} yang live",
+    "hide_officer": "Sembunyikan perwira ini",
+    "manage_visibility": "Kelola Visibilitas Perwira"
   },
   "officer_detail": {
     "watch": "Tonton",
     "in_multiview": "Di multiview",
-    "multiview": "Multiview"
+    "multiview": "Multiview",
+    "hide_officer": "Sembunyikan Perwira Ini"
   },
   "multiview_tile": {
     "replay": "REKAMAN",

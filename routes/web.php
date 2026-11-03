@@ -367,5 +367,17 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/recommended-sites')->
     Route::delete('/{site}', [RecommendedSiteController::class, 'destroy']);
 });
 
+// 9. User Blocked / Hidden Officers API
+use App\Http\Controllers\UserBlockedOfficerController;
+
+Route::middleware('auth')->prefix('api/v1/user/blocked-officers')->group(function () {
+    Route::get('/', [UserBlockedOfficerController::class, 'index'])->name('user.blocked_officers.index');
+    Route::post('/', [UserBlockedOfficerController::class, 'store'])->name('user.blocked_officers.store');
+    Route::post('/sync', [UserBlockedOfficerController::class, 'sync'])->name('user.blocked_officers.sync');
+    Route::delete('/all', [UserBlockedOfficerController::class, 'destroyAll'])->name('user.blocked_officers.destroy_all');
+    Route::delete('/{officer}', [UserBlockedOfficerController::class, 'destroy'])->name('user.blocked_officers.destroy');
+});
+
+
 
 
