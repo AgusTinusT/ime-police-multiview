@@ -2,7 +2,8 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import axios from "axios";
-import { LogIn, LogOut, Pencil, Plus, Users } from "@lucide/vue";
+import { toast } from "vue-sonner";
+import { Loader2, LogIn, LogOut, Pencil, Plus, Trash2, Users } from "@lucide/vue";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,6 +12,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { LiveBadge } from "@/Components/tactical";
@@ -105,6 +116,32 @@ const onSquadForked = (forkedSquad) => {
     fetchMySquads();
     emit("select-squad", forkedSquad);
 };
+
+const onSquadDeleted = (deletedId) => {
+    fetchMySquads();
+    if (props.activeSquad?.id === deletedId) {
+        emit("clear-squad");
+    }
+};
+
+const showDeleteActiveConfirm = ref(false);
+const isDeletingActive = ref(false);
+
+const handleDeleteActiveSquad = async () => {
+    if (!props.activeSquad?.id) return;
+    isDeletingActive.value = true;
+    try {
+        await axios.delete(`/api/v1/squads/${props.activeSquad.id}`);
+        toast.success("Squad berhasil dihapus.");
+        emit("clear-squad");
+        fetchMySquads();
+    } catch (err) {
+        toast.error(err.response?.data?.message || "Gagal menghapus squad.");
+    } finally {
+        isDeletingActive.value = false;
+        showDeleteActiveConfirm.value = false;
+    }
+};
 </script>
 
 <template>
@@ -143,6 +180,14 @@ const onSquadForked = (forkedSquad) => {
                 >
                     <Pencil class="size-3.5" />
                     <span>{{ activeSquad.is_owner ? 'Ubah Squad' : 'Fork & Edit Squad' }}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    v-if="currentUser && activeSquad.is_owner"
+                    class="gap-2 cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive"
+                    @click="showDeleteActiveConfirm = true"
+                >
+                    <Trash2 class="size-3.5" />
+                    <span>{{ $t('squad.delete_button') }}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     class="gap-2 cursor-pointer text-warning"
@@ -231,6 +276,7 @@ const onSquadForked = (forkedSquad) => {
         :initial-officers="dialogOfficers"
         @saved="onSquadSaved"
         @forked="onSquadForked"
+        @deleted="onSquadDeleted"
     />
 
     <!-- Guest Auth Modal -->
@@ -238,4 +284,29 @@ const onSquadForked = (forkedSquad) => {
         :is-open="showAuthModal"
         @close="showAuthModal = false"
     />
+
+    <!-- ALERT DIALOG: DELETE ACTIVE SQUAD CONFIRMATION -->
+    <AlertDialog :open="showDeleteActiveConfirm" @update:open="showDeleteActiveConfirm = $event">
+        <AlertDialogContent class="font-mono text-xs z-[70]">
+            <AlertDialogHeader>
+                <AlertDialogTitle class="text-sm font-bold uppercase font-mono">
+                    {{ $t('squad.delete_confirm_title') }}
+                </AlertDialogTitle>
+                <AlertDialogDescription class="text-xs">
+                    Apakah Anda yakin ingin menghapus squad aktif <strong>"{{ activeSquad?.name }}"</strong>? Tindakan ini tidak dapat dibatalkan.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter class="gap-2">
+                <AlertDialogCancel :disabled="isDeletingActive">Batal</AlertDialogCancel>
+                <AlertDialogAction
+                    class="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold"
+                    :disabled="isDeletingActive"
+                    @click="handleDeleteActiveSquad"
+                >
+                    <Loader2 v-if="isDeletingActive" class="size-3.5 motion-safe:animate-spin mr-1.5" />
+                    {{ isDeletingActive ? "Menghapus..." : $t('squad.delete_confirm_action') }}
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
 </template>

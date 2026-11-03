@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
-import { GitFork, Loader2, Plus, Save, Search, UserPlus, X } from "@lucide/vue";
+import { GitFork, Loader2, Plus, Save, Search, Trash2, UserPlus, X } from "@lucide/vue";
 import {
     Dialog,
     DialogContent,
@@ -11,6 +11,16 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/Components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
@@ -39,7 +49,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["update:open", "saved", "forked"]);
+const emit = defineEmits(["update:open", "saved", "forked", "deleted"]);
 
 const name = ref("");
 const description = ref("");
@@ -206,6 +216,26 @@ const handleSave = async () => {
     }
 };
 
+const showDeleteConfirm = ref(false);
+const isDeleting = ref(false);
+const showForkConfirm = ref(false);
+
+const handleDelete = async () => {
+    if (!props.squad?.id) return;
+    isDeleting.value = true;
+    try {
+        await axios.delete(`/api/v1/squads/${props.squad.id}`);
+        toast.success("Squad berhasil dihapus.");
+        emit("deleted", props.squad.id);
+        emit("update:open", false);
+    } catch (err) {
+        toast.error(err.response?.data?.message || "Gagal menghapus squad.");
+    } finally {
+        isDeleting.value = false;
+        showDeleteConfirm.value = false;
+    }
+};
+
 const handleForkAndEdit = async () => {
     if (!props.squad?.id) return;
     isSubmitting.value = true;
@@ -223,6 +253,7 @@ const handleForkAndEdit = async () => {
         errors.value.general = err.response?.data?.message || "Gagal melakukan fork squad.";
     } finally {
         isSubmitting.value = false;
+        showForkConfirm.value = false;
     }
 };
 </script>
@@ -261,7 +292,7 @@ const handleForkAndEdit = async () => {
                     size="sm"
                     class="gap-1.5 w-full font-mono text-xs"
                     :disabled="isSubmitting"
-                    @click="handleForkAndEdit"
+                    @click="showForkConfirm = true"
                 >
                     <GitFork class="size-3.5" />
                     <span>{{ $t('squad.fork_and_edit') }}</span>
@@ -446,13 +477,13 @@ const handleForkAndEdit = async () => {
                                     <div class="flex items-center gap-1.5 shrink-0">
                                         <span
                                             v-if="cand.is_online"
-                                            class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-success/20 text-success border border-success/30 uppercase tracking-wider"
+                                            class="text-xs px-1.5 py-0.5 rounded-full font-bold bg-success/20 text-success border border-success/30 uppercase tracking-wider"
                                         >
                                             10-8 Live
                                         </span>
                                         <span
                                             v-else
-                                            class="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-muted text-muted-foreground border border-border uppercase tracking-wider"
+                                            class="text-xs px-1.5 py-0.5 rounded-full font-bold bg-muted text-muted-foreground border border-border uppercase tracking-wider"
                                         >
                                             10-7 Off
                                         </span>
@@ -471,30 +502,96 @@ const handleForkAndEdit = async () => {
                     </p>
                 </div>
 
-                <DialogFooter class="gap-2 sm:gap-0 pt-2">
+                <DialogFooter class="gap-2 sm:gap-2 pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between">
                     <Button
+                        v-if="isEditing && isOwner"
                         type="button"
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        class="text-xs font-mono"
-                        @click="emit('update:open', false)"
+                        class="gap-1.5 text-xs font-mono text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer justify-center sm:justify-start"
+                        :disabled="isSubmitting || isDeleting"
+                        @click="showDeleteConfirm = true"
                     >
-                        Batal
+                        <Trash2 class="size-3.5" />
+                        <span>{{ $t('squad.delete_button') }}</span>
                     </Button>
-                    <Button
-                        v-if="!isEditing || isOwner"
-                        type="submit"
-                        size="sm"
-                        :disabled="isSubmitting"
-                        class="gap-1.5 text-xs font-mono"
-                    >
-                        <Loader2 v-if="isSubmitting" class="size-3.5 motion-safe:animate-spin" />
-                        <Save v-else class="size-3.5" />
-                        <span>{{ isSubmitting ? $t('squad.saving') : $t('squad.save_button') }}</span>
-                    </Button>
+                    <div v-else class="hidden sm:block" />
+
+                    <div class="flex items-center gap-2 justify-end">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            class="text-xs font-mono"
+                            @click="emit('update:open', false)"
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            v-if="!isEditing || isOwner"
+                            type="submit"
+                            size="sm"
+                            :disabled="isSubmitting || isDeleting"
+                            class="gap-1.5 text-xs font-mono"
+                        >
+                            <Loader2 v-if="isSubmitting" class="size-3.5 motion-safe:animate-spin" />
+                            <Save v-else class="size-3.5" />
+                            <span>{{ isSubmitting ? $t('squad.saving') : $t('squad.save_button') }}</span>
+                        </Button>
+                    </div>
                 </DialogFooter>
             </form>
         </DialogContent>
     </Dialog>
+
+    <!-- ALERT DIALOG: DELETE CONFIRMATION -->
+    <AlertDialog :open="showDeleteConfirm" @update:open="showDeleteConfirm = $event">
+        <AlertDialogContent class="font-mono text-xs z-[70]">
+            <AlertDialogHeader>
+                <AlertDialogTitle class="text-sm font-bold uppercase font-mono">
+                    {{ $t('squad.delete_confirm_title') }}
+                </AlertDialogTitle>
+                <AlertDialogDescription class="text-xs">
+                    Apakah Anda yakin ingin menghapus squad <strong>"{{ name }}"</strong>? Tindakan ini tidak dapat dibatalkan.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter class="gap-2">
+                <AlertDialogCancel :disabled="isDeleting">Batal</AlertDialogCancel>
+                <AlertDialogAction
+                    class="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold"
+                    :disabled="isDeleting"
+                    @click="handleDelete"
+                >
+                    <Loader2 v-if="isDeleting" class="size-3.5 motion-safe:animate-spin mr-1.5" />
+                    {{ isDeleting ? "Menghapus..." : $t('squad.delete_confirm_action') }}
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+
+    <!-- ALERT DIALOG: FORK CONFIRMATION -->
+    <AlertDialog :open="showForkConfirm" @update:open="showForkConfirm = $event">
+        <AlertDialogContent class="font-mono text-xs z-[70]">
+            <AlertDialogHeader>
+                <AlertDialogTitle class="text-sm font-bold uppercase font-mono">
+                    {{ $t('squad.fork_confirm_title') }}
+                </AlertDialogTitle>
+                <AlertDialogDescription class="text-xs">
+                    Apakah Anda ingin menduplikasi squad <strong>"{{ squad?.name }}"</strong> ke dalam koleksi squad pribadi Anda?
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter class="gap-2">
+                <AlertDialogCancel :disabled="isSubmitting">Batal</AlertDialogCancel>
+                <AlertDialogAction
+                    class="font-bold"
+                    :disabled="isSubmitting"
+                    @click="handleForkAndEdit"
+                >
+                    <Loader2 v-if="isSubmitting" class="size-3.5 motion-safe:animate-spin mr-1.5" />
+                    {{ isSubmitting ? "Menduplikasi..." : $t('squad.fork_confirm_action') }}
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
 </template>
 

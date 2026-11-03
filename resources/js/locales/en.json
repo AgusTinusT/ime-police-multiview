@@ -227,7 +227,15 @@
     "save_success": "Squad saved successfully.",
     "members_offline": "{count} squad members are currently offline.",
     "no_live_members": "All squad members are currently offline.",
-    "not_found": "Squad not found or private."
+    "not_found": "Squad not found or private.",
+    "delete_button": "Delete Squad",
+    "delete_confirm_title": "Delete Squad?",
+    "delete_confirm_desc": "Are you sure you want to delete this squad? This action cannot be undone.",
+    "delete_confirm_action": "Yes, Delete Squad",
+    "delete_success": "Squad deleted successfully.",
+    "fork_confirm_title": "Fork Squad?",
+    "fork_confirm_desc": "Do you want to fork this squad into your personal squads collection?",
+    "fork_confirm_action": "Yes, Fork Squad"
   },
   "ranking": {
     "title": "Officer Rankings",

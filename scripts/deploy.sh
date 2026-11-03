@@ -33,6 +33,12 @@ main() {
         git checkout -- package-lock.json
     fi
 
+    # Reset bootstrap/cache/.gitignore jika sempat tersentuh otomatis di server
+    if ! git diff --quiet -- bootstrap/cache/.gitignore 2>/dev/null; then
+        echo "==> bootstrap/cache/.gitignore diubah di server, dikembalikan ke versi git"
+        git checkout -- bootstrap/cache/.gitignore 2>/dev/null || true
+    fi
+
     # Local edits to tracked files would be overwritten or block the pull.
     if ! git diff --quiet || ! git diff --cached --quiet; then
         echo "!! Ada perubahan lokal pada file yang dilacak git. Batalkan atau simpan dulu:" >&2

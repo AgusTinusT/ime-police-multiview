@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
-import { GitFork, Pencil, Users } from "@lucide/vue";
+import { GitFork, Pencil, Trash2, Users } from "@lucide/vue";
 import { computed } from "vue";
 
 import { LiveBadge, OfficerAvatar } from "@/Components/tactical";
@@ -13,7 +13,7 @@ const props = defineProps({
     liveStreams: { type: Array, default: () => [] },
 });
 
-const emit = defineEmits(["fork", "edit"]);
+const emit = defineEmits(["fork", "edit", "delete"]);
 
 const officers = computed(() => props.squad.officers || []);
 
@@ -77,9 +77,21 @@ const overflowCount = computed(() => Math.max(0, officers.value.length - 5));
                     :title="$t('squad.edit_button')"
                     @click.prevent.stop="emit('edit', squad)"
                 >
-                    <Pencil />
+                    <Pencil class="size-3.5" />
                 </Button>
                 <Button
+                    v-if="squad.is_owner"
+                    size="icon-sm"
+                    variant="secondary"
+                    class="rounded-full bg-background/70 hover:bg-destructive hover:text-destructive-foreground"
+                    :aria-label="$t('squad.delete_button')"
+                    :title="$t('squad.delete_button')"
+                    @click.prevent.stop="emit('delete', squad)"
+                >
+                    <Trash2 class="size-3.5" />
+                </Button>
+                <Button
+                    v-if="!squad.is_owner"
                     size="icon-sm"
                     variant="secondary"
                     class="rounded-full bg-background/70 hover:bg-primary hover:text-primary-foreground"
@@ -87,7 +99,7 @@ const overflowCount = computed(() => Math.max(0, officers.value.length - 5));
                     :title="$t('squad.fork_button')"
                     @click.prevent.stop="emit('fork', squad)"
                 >
-                    <GitFork />
+                    <GitFork class="size-3.5" />
                 </Button>
             </div>
 

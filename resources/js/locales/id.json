@@ -227,7 +227,15 @@
     "save_success": "Squad berhasil disimpan.",
     "members_offline": "{count} anggota squad sedang offline.",
     "no_live_members": "Semua anggota squad sedang offline.",
-    "not_found": "Squad tidak ditemukan atau bersifat privat."
+    "not_found": "Squad tidak ditemukan atau bersifat privat.",
+    "delete_button": "Hapus Squad",
+    "delete_confirm_title": "Hapus Squad?",
+    "delete_confirm_desc": "Apakah Anda yakin ingin menghapus squad ini? Tindakan ini tidak dapat dibatalkan.",
+    "delete_confirm_action": "Ya, Hapus Squad",
+    "delete_success": "Squad berhasil dihapus.",
+    "fork_confirm_title": "Duplikasi (Fork) Squad?",
+    "fork_confirm_desc": "Apakah Anda ingin menduplikasi squad ini ke dalam koleksi squad pribadi Anda?",
+    "fork_confirm_action": "Ya, Duplikasi Squad"
   },
   "ranking": {
     "title": "Ranking Perwira",

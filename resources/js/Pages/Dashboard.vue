@@ -1,9 +1,19 @@
 <script setup>
 import { Head, Link, usePage } from "@inertiajs/vue3";
-import { ChevronRight, MonitorPlay } from "@lucide/vue";
+import { ChevronRight, Loader2, MonitorPlay } from "@lucide/vue";
 import { computed, ref, onMounted } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
 
 // Refactored Sub-Components
 import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
@@ -364,13 +374,24 @@ const fetchPublicSquads = async () => {
     }
 };
 
-const handleForkSquad = async (squad) => {
+const squadToFork = ref(null);
+const showForkConfirm = ref(false);
+const isForking = ref(false);
+
+const handleForkSquad = (squad) => {
     if (!page.props.auth?.user) {
         showSquadAuthModal.value = true;
         return;
     }
+    squadToFork.value = squad;
+    showForkConfirm.value = true;
+};
+
+const confirmForkSquad = async () => {
+    if (!squadToFork.value) return;
+    isForking.value = true;
     try {
-        const res = await axios.post(`/api/v1/squads/${squad.id}/fork`);
+        const res = await axios.post(`/api/v1/squads/${squadToFork.value.id}/fork`);
         toast.success("Squad berhasil di-fork.");
         const newSquad = res.data?.data;
         if (newSquad?.slug) {
@@ -378,7 +399,40 @@ const handleForkSquad = async (squad) => {
         }
     } catch (err) {
         toast.error(err.response?.data?.message || "Gagal melakukan fork squad.");
+    } finally {
+        isForking.value = false;
+        showForkConfirm.value = false;
     }
+};
+
+const squadToDelete = ref(null);
+const showDeleteConfirm = ref(false);
+const isDeletingSquad = ref(false);
+
+const handleDeleteSquad = (squad) => {
+    squadToDelete.value = squad;
+    showDeleteConfirm.value = true;
+};
+
+const confirmDeleteSquad = async () => {
+    if (!squadToDelete.value) return;
+    isDeletingSquad.value = true;
+    try {
+        await axios.delete(`/api/v1/squads/${squadToDelete.value.id}`);
+        toast.success("Squad berhasil dihapus.");
+        fetchMySquads();
+        fetchPublicSquads();
+    } catch (err) {
+        toast.error(err.response?.data?.message || "Gagal menghapus squad.");
+    } finally {
+        isDeletingSquad.value = false;
+        showDeleteConfirm.value = false;
+    }
+};
+
+const onSquadDeleted = () => {
+    fetchMySquads();
+    fetchPublicSquads();
 };
 
 // Admin-managed announcement banner (shown above the hero carousel).
@@ -486,6 +540,7 @@ onMounted(() => {
                         :live-streams="streams"
                         @fork="handleForkSquad"
                         @edit="openEditSquad"
+                        @delete="handleDeleteSquad"
                     />
                 </CatalogRow>
 
@@ -502,6 +557,7 @@ onMounted(() => {
                         :live-streams="streams"
                         @fork="handleForkSquad"
                         @edit="openEditSquad"
+                        @delete="handleDeleteSquad"
                     />
                 </CatalogRow>
 
@@ -705,7 +761,58 @@ onMounted(() => {
             v-model:open="showSquadDialog"
             :squad="editingSquad"
             @saved="onSquadSaved"
+            @deleted="onSquadDeleted"
         />
+
+        <!-- ALERT DIALOG: FORK CONFIRMATION -->
+        <AlertDialog :open="showForkConfirm" @update:open="showForkConfirm = $event">
+            <AlertDialogContent class="font-mono text-xs z-[70]">
+                <AlertDialogHeader>
+                    <AlertDialogTitle class="text-sm font-bold uppercase font-mono">
+                        {{ $t('squad.fork_confirm_title') }}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription class="text-xs">
+                        Apakah Anda ingin menduplikasi squad <strong>"{{ squadToFork?.name }}"</strong> ke dalam koleksi squad pribadi Anda?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter class="gap-2">
+                    <AlertDialogCancel :disabled="isForking">Batal</AlertDialogCancel>
+                    <AlertDialogAction
+                        class="font-bold"
+                        :disabled="isForking"
+                        @click="confirmForkSquad"
+                    >
+                        <Loader2 v-if="isForking" class="size-3.5 motion-safe:animate-spin mr-1.5" />
+                        {{ isForking ? "Menduplikasi..." : $t('squad.fork_confirm_action') }}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <!-- ALERT DIALOG: DELETE SQUAD CONFIRMATION -->
+        <AlertDialog :open="showDeleteConfirm" @update:open="showDeleteConfirm = $event">
+            <AlertDialogContent class="font-mono text-xs z-[70]">
+                <AlertDialogHeader>
+                    <AlertDialogTitle class="text-sm font-bold uppercase font-mono">
+                        {{ $t('squad.delete_confirm_title') }}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription class="text-xs">
+                        Apakah Anda yakin ingin menghapus squad <strong>"{{ squadToDelete?.name }}"</strong>? Tindakan ini tidak dapat dibatalkan.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter class="gap-2">
+                    <AlertDialogCancel :disabled="isDeletingSquad">Batal</AlertDialogCancel>
+                    <AlertDialogAction
+                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold"
+                        :disabled="isDeletingSquad"
+                        @click="confirmDeleteSquad"
+                    >
+                        <Loader2 v-if="isDeletingSquad" class="size-3.5 motion-safe:animate-spin mr-1.5" />
+                        {{ isDeletingSquad ? "Menghapus..." : $t('squad.delete_confirm_action') }}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
 </template>
 
