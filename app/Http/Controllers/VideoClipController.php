@@ -20,6 +20,14 @@ class VideoClipController extends Controller
     {
         return Inertia::render('Clipper', [
             'initialUrl' => $request->query('url', ''),
+            'meta' => [
+                'title' => 'Tactical Video Clipper — Studio Potong & Unduh Video YouTube',
+                'description' => 'Alat pemotong dan pengunduh video YouTube untuk arsip klip patroli dan konten komunitas polisi IME Roleplay.',
+                'image' => asset('images/car-police-crash.jpg'),
+                'url' => url('/clipper'),
+                'canonical' => url('/clipper'),
+                'type' => 'website',
+            ],
         ]);
     }
 

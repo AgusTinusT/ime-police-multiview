@@ -128,6 +128,14 @@ class PoliceCommandController extends Controller
             'recommendedSites' => \App\Models\RecommendedSite::where('is_active', true)
                 ->orderBy('sort_order')->orderBy('id')->get(),
             'lastSyncedAt' => now()->toIso8601String(),
+            'meta' => [
+                'title' => 'Pusat Komando Multiview & Bodycam Perwira Polisi — IME Roleplay',
+                'description' => 'Pantau live stream bodycam perwira kepolisian IME Roleplay (LSPD, BCSO, SASP, SAPR) secara serentak dalam mode multiview interaktif.',
+                'image' => asset('images/cars-police-twopov.jpg'),
+                'url' => url('/'),
+                'canonical' => url('/'),
+                'type' => 'website',
+            ],
         ]);
     }
 
@@ -245,6 +253,14 @@ class PoliceCommandController extends Controller
             'initialReplays' => $recentReplays,
             'deptStats' => $deptStats,
             'lastSyncedAt' => now()->toIso8601String(),
+            'meta' => [
+                'title' => 'Tactical Multiview Theater — Pantau Banyak POV Siaran Polisi Sekaligus',
+                'description' => 'Panggung pemantauan multiview hingga 12 live stream bodycam perwira polisi bersamaan dengan audio switcher, squad selector, dan live chat terintegrasi.',
+                'image' => asset('images/cars-police-twopov.jpg'),
+                'url' => url('/multiview'),
+                'canonical' => url('/multiview'),
+                'type' => 'website',
+            ],
         ]);
     }
 
@@ -543,6 +559,14 @@ class PoliceCommandController extends Controller
             'initialOfficers' => $allOfficers->values(),
             'deptStats' => $deptStats,
             'lastSyncedAt' => now()->toIso8601String(),
+            'meta' => [
+                'title' => 'Direktori Perwira Kepolisian — Roster LSPD, BCSO, SASP & SAPR',
+                'description' => 'Daftar lengkap perwira kepolisian aktif IME Roleplay. Cari perwira berdasarkan nama, badge, callsign, dan instansi kedinasan.',
+                'image' => asset('images/car-police-officer.jpg'),
+                'url' => url('/officers'),
+                'canonical' => url('/officers'),
+                'type' => 'website',
+            ],
         ]);
     }
 
@@ -599,6 +623,14 @@ class PoliceCommandController extends Controller
             'officers' => $allOfficers->values(),
             'initialClips' => $dbClips->values(),
             'lastSyncedAt' => now()->toIso8601String(),
+            'meta' => [
+                'title' => 'TacClips — Klip Video Aksi & Patroli Taktis Kepolisian IME RP',
+                'description' => 'Koleksi klip video aksi, pengejaran (pursuit), baku tembak (10-13), dan momen taktis terbaik perwira kepolisian IME Roleplay.',
+                'image' => asset('images/car-police-crash.jpg'),
+                'url' => url('/action-clips'),
+                'canonical' => url('/action-clips'),
+                'type' => 'website',
+            ],
         ]);
     }
 
@@ -787,6 +819,13 @@ class PoliceCommandController extends Controller
         return Inertia::render('About', [
             'deptStats' => $deptStats,
             'appVersion' => '2.4.0-Pro',
+            'meta' => [
+                'title' => 'Tentang Sistem Police Tactical Multiview — IME Roleplay',
+                'description' => 'Informasi platform agregator live stream dan pemantauan terpadu perwira kepolisian IME Roleplay.',
+                'url' => url('/about'),
+                'canonical' => url('/about'),
+                'type' => 'website',
+            ],
         ]);
     }
 
@@ -797,6 +836,13 @@ class PoliceCommandController extends Controller
     {
         return Inertia::render('Feedback', [
             'prefillType' => $request->query('type', 'CHANNEL_REQUEST'),
+            'meta' => [
+                'title' => 'Kirim Masukan & Saran — Tactical Police Multiview',
+                'description' => 'Bantu kami meningkatkan platform dengan memberikan masukan, laporan masalah, atau permintaan kanal dinas.',
+                'url' => url('/feedback'),
+                'canonical' => url('/feedback'),
+                'type' => 'website',
+            ],
         ]);
     }
 
@@ -807,6 +853,13 @@ class PoliceCommandController extends Controller
     {
         return Inertia::render('Faq', [
             'appVersion' => '2.4.0-Pro',
+            'meta' => [
+                'title' => 'FAQ & Panduan Penggunaan — Police Tactical Multiview',
+                'description' => 'Pertanyaan yang sering diajukan seputar fitur multiview, bio-link perwira, pemotongan video (clipper), dan pusat komando.',
+                'url' => url('/faq'),
+                'canonical' => url('/faq'),
+                'type' => 'website',
+            ],
         ]);
     }
 
@@ -822,6 +875,13 @@ class PoliceCommandController extends Controller
     {
         return Inertia::render('Updates', [
             'appVersion' => '2.4.0-Pro',
+            'meta' => [
+                'title' => 'Catatan Pembaruan & Changelog — Tactical Command Center',
+                'description' => 'Riwayat rilis fitur baru, optimasi performa, dan pembaruan sistem Police Tactical Multiview.',
+                'url' => url('/updates'),
+                'canonical' => url('/updates'),
+                'type' => 'website',
+            ],
         ]);
     }
 
@@ -1137,6 +1197,14 @@ class PoliceCommandController extends Controller
             ],
             'currentPeriodText' => $currentPeriodText,
             'previousPeriodText' => $previousPeriodText,
+            'meta' => [
+                'title' => 'Peringkat & Jam Dinas Perwira — Statistik Patroli Bulanan IME RP',
+                'description' => 'Peringkat keaktifan patroli dan rekapitulasi jam dinas bulanan perwira polisi IME Roleplay. Statistik transparan dan objektif.',
+                'image' => asset('images/cars-police-twopov.jpg'),
+                'url' => url('/ranking'),
+                'canonical' => url('/ranking'),
+                'type' => 'website',
+            ],
         ]);
     }
 

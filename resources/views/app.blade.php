@@ -6,37 +6,71 @@
         <meta name="color-scheme" content="dark">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        @if (isset($page['props']['meta']))
-            <title>{{ $page['props']['meta']['title'] ?? 'IME RP — SASP Police Duty' }}</title>
-            <meta name="description" content="{{ $page['props']['meta']['description'] ?? '' }}">
-            <meta property="og:title" content="{{ $page['props']['meta']['title'] ?? '' }}">
-            <meta property="og:description" content="{{ $page['props']['meta']['description'] ?? '' }}">
-            <meta property="og:image" content="{{ $page['props']['meta']['image'] ?? '/images/icons/icon-512x512.png' }}">
-            <meta property="og:url" content="{{ $page['props']['meta']['url'] ?? url()->current() }}">
-            <meta property="og:type" content="profile">
-            <meta name="twitter:card" content="summary_large_image">
-            <meta name="twitter:title" content="{{ $page['props']['meta']['title'] ?? '' }}">
-            <meta name="twitter:description" content="{{ $page['props']['meta']['description'] ?? '' }}">
-            <meta name="twitter:image" content="{{ $page['props']['meta']['image'] ?? '/images/icons/icon-512x512.png' }}">
-            @if (!empty($page['props']['meta']['noindex']))
-                <meta name="robots" content="noindex, nofollow">
-            @else
-                <meta name="robots" content="index, follow">
-            @endif
-        @else
-            <title inertia>IME RP — SASP Police Duty</title>
+        @php
+            $meta = $page['props']['meta'] ?? [];
+            $metaTitle = $meta['title'] ?? 'IME RP — SASP Police Duty | Live Officer Bodycam & Multiview';
+            $metaDesc = $meta['description'] ?? 'Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay (LSPD, BCSO, SASP, SAPR). Pantau seluruh siaran langsung perwira patroli secara multiview interaktif.';
+            $metaImage = $meta['image'] ?? asset('images/icons/icon-512x512.png');
+            $metaUrl = $meta['url'] ?? url()->current();
+            $metaType = $meta['type'] ?? 'website';
+            $canonicalUrl = $meta['canonical'] ?? url()->current();
+            $isNoIndex = !empty($meta['noindex']);
 
-            <!-- SEO Meta Tags -->
-            <meta name="description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay (LSPD, BCSO, SASP, SAPR). Pantau seluruh siaran langsung perwira patroli secara multiview interaktif.">
-            <meta name="keywords" content="IME RP, Police Duty, SASP, LSPD, BCSO, SAPR, Multiview, FiveM, GTA V Roleplay">
-            <meta name="robots" content="index, follow">
+            $siteGraph = [
+                '@type' => 'WebSite',
+                '@id' => url('/') . '/#website',
+                'url' => url('/'),
+                'name' => 'IME Police Duty Multiview',
+                'description' => 'Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay',
+                'publisher' => [
+                    '@type' => 'Organization',
+                    'name' => 'SASP Tactical Command Center',
+                    'url' => url('/'),
+                    'logo' => asset('images/icons/icon-512x512.png'),
+                ],
+                'potentialAction' => [
+                    '@type' => 'SearchAction',
+                    'target' => url('/officers') . '?q={search_term_string}',
+                    'query-input' => 'required name=search_term_string',
+                ],
+            ];
 
-            <!-- OpenGraph Social Media Meta Tags -->
-            <meta property="og:title" content="IME RP — SASP Police Duty | Live Officer Bodycam">
-            <meta property="og:description" content="Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay.">
-            <meta property="og:type" content="website">
-            <meta property="og:image" content="/images/icons/icon-512x512.png">
-        @endif
+            $graph = [$siteGraph];
+            if (!empty($meta['jsonld'])) {
+                $graph[] = $meta['jsonld'];
+            }
+
+            $structuredData = [
+                '@context' => 'https://schema.org',
+                '@graph' => $graph,
+            ];
+        @endphp
+
+        <title inertia>{{ $metaTitle }}</title>
+        <meta name="description" content="{{ $metaDesc }}">
+        <meta name="keywords" content="IME RP, Police Duty, SASP, LSPD, BCSO, SAPR, Multiview, FiveM, GTA V Roleplay, Bodycam Polisi">
+        <link rel="canonical" href="{{ $canonicalUrl }}">
+        <meta name="robots" content="{{ $isNoIndex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' }}">
+
+        <!-- OpenGraph Social Media Meta Tags -->
+        <meta property="og:site_name" content="IME Police Duty Multiview">
+        <meta property="og:locale" content="id_ID">
+        <meta property="og:type" content="{{ $metaType }}">
+        <meta property="og:title" content="{{ $metaTitle }}">
+        <meta property="og:description" content="{{ $metaDesc }}">
+        <meta property="og:image" content="{{ $metaImage }}">
+        <meta property="og:url" content="{{ $metaUrl }}">
+
+        <!-- Twitter Card Meta Tags -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $metaTitle }}">
+        <meta name="twitter:description" content="{{ $metaDesc }}">
+        <meta name="twitter:image" content="{{ $metaImage }}">
+
+        <!-- Structured Data (JSON-LD) for Search Engines -->
+        <script type="application/ld+json">
+        {!! json_encode($structuredData, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+        </script>
 
         <!-- Favicon / Browser Icon (With Cache Buster) -->
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ filemtime(public_path('favicon.ico')) }}">

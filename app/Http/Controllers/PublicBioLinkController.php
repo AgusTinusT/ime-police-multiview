@@ -207,6 +207,27 @@ class PublicBioLinkController extends Controller
                     'description' => $metaDescription,
                     'image' => $metaImage,
                     'url' => url('/@' . $profile->slug),
+                    'canonical' => url('/@' . $profile->slug),
+                    'type' => 'profile',
+                    'jsonld' => [
+                        '@type' => 'ProfilePage',
+                        'dateCreated' => $profile->created_at ? $profile->created_at->toAtomString() : null,
+                        'dateModified' => $profile->updated_at ? $profile->updated_at->toAtomString() : null,
+                        'mainEntity' => [
+                            '@type' => 'Person',
+                            'name' => $officer->officer_name,
+                            'alternateName' => $officer->streamer_name,
+                            'identifier' => $officer->badge_number,
+                            'jobTitle' => $officer->rankRelation?->rank_title ?: $officer->rank,
+                            'worksFor' => [
+                                '@type' => 'Organization',
+                                'name' => $officer->agency?->agency_name ?: $officer->department,
+                            ],
+                            'image' => $officer->public_avatar_url,
+                            'description' => $profile->bio_tagline,
+                            'url' => url('/@' . $profile->slug),
+                        ],
+                    ],
                 ],
             ];
         });

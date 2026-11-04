@@ -7,7 +7,12 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\OfficerSelfProfileController;
+use App\Http\Controllers\SitemapController;
 use Inertia\Inertia;
+
+// SEO Sitemap for Search Engines
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/sitemap', fn () => redirect('/sitemap.xml', 301));
 
 // Main Police Tactical Command Center Dashboard
 Route::get('/', [PoliceCommandController::class, 'dashboard'])->name('home');
