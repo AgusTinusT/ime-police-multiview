@@ -15,6 +15,7 @@
             $metaType = $meta['type'] ?? 'website';
             $canonicalUrl = $meta['canonical'] ?? url()->current();
             $isNoIndex = !empty($meta['noindex']);
+            $googleVerification = config('services.google.site_verification', env('GOOGLE_SITE_VERIFICATION'));
 
             $siteGraph = [
                 '@type' => 'WebSite',
@@ -51,6 +52,10 @@
         <meta name="keywords" content="IME RP, Police Duty, SASP, LSPD, BCSO, SAPR, Multiview, FiveM, GTA V Roleplay, Bodycam Polisi">
         <link rel="canonical" href="{{ $canonicalUrl }}">
         <meta name="robots" content="{{ $isNoIndex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' }}">
+
+        @if (!empty($googleVerification))
+            <meta name="google-site-verification" content="{{ $googleVerification }}">
+        @endif
 
         <!-- OpenGraph Social Media Meta Tags -->
         <meta property="og:site_name" content="IME Police Duty Multiview">
