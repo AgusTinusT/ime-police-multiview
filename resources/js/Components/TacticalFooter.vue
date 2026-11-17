@@ -178,6 +178,17 @@ const toggleLanguage = () => {
                                     <ExternalLink class="size-3" />
                                 </a>
                             </li>
+                            <li>
+                                <a
+                                    href="https://discord.gg/gkaXxWpwhA"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="text-muted-foreground hover:text-foreground transition inline-flex items-center gap-1 py-0.5"
+                                >
+                                    <span>{{ $t("footer.discord_server") }}</span>
+                                    <ExternalLink class="size-3" />
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>

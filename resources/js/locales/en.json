@@ -88,7 +88,8 @@
     "col_for_officers": "For officers",
     "col_help": "Help",
     "officer_bio_link": "Officer bio-link",
-    "github_repo": "GitHub (Contribute)"
+    "github_repo": "GitHub (Contribute)",
+    "discord_server": "Discord Server"
   },
   "nav": {
     "dashboard": "Home",
