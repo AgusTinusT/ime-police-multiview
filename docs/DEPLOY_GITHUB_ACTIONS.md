@@ -76,6 +76,53 @@ Salin semua baris hasilnya. Kalau SSH tidak di port 22, awal setiap barisnya dit
   sudo chmod 440 /etc/sudoers.d/ime-police-deploy && sudo visudo -c
   ```
 
+## Staging
+
+Staging adalah salinan kedua di VPS yang sama, dengan folder, database, `.env`, dan subdomain sendiri. Session, cache, dan queue memakai driver `database`, jadi database terpisah otomatis memisahkan semuanya dari production.
+
+1. **Buat branch `staging`** dari komputer Anda:
+
+   ```bash
+   git push origin main:staging
+   ```
+
+2. **Arahkan DNS subdomain** staging (record A) ke IP VPS. Kalau production lewat Cloudflare, lakukan hal yang sama untuk staging.
+
+3. **Jalankan skrip setup di VPS**, dari folder production. Ganti domain-nya:
+
+   ```bash
+   cd /var/www/ime-police-multiview && git pull origin main
+   bash scripts/setup-staging.sh --domain staging.domain-anda.com
+   ```
+
+   Skrip ini mengerjakan semuanya:
+   - clone ke `/var/www/ime-police-staging` dan membuat database `ime_police_staging` beserta user-nya, dengan password acak;
+   - menyalin `.env` dari production lalu mengubah nilai yang wajib berbeda;
+   - mengatur izin folder, lalu menjalankan deploy pertama;
+   - membuat konfigurasi nginx dan memasang SSL dengan Certbot bila production juga memakai Certbot.
+
+   Nilai `.env` yang diubah:
+
+   | Nilai | Tujuan |
+   |---|---|
+   | `APP_URL`, `APP_ENV=staging` | alamat dan mode staging |
+   | database | database staging sendiri |
+   | cookie session, prefix cache | tidak bercampur dengan production |
+   | `MAIL_MAILER=log` | email tidak benar-benar terkirim |
+   | webhook Discord dan Google Analytics dikosongkan | tidak ada notifikasi atau data analytics dari staging |
+
+   Opsi tambahan:
+   - `--copy-data`: salin isi database production ke staging. File unggahan tidak ikut disalin.
+   - `--workers`: pasang worker queue staging (clipper dan sync) di Supervisor. Hanya perlu kalau staging harus memproses klip atau sync.
+
+   Skrip ini aman dijalankan ulang. Langkah yang sudah selesai dilewati.
+
+4. **Isi Secret `VPS_PATH_STAGING`** dengan `/var/www/ime-police-staging`. Secret lain dipakai bersama dengan production.
+
+Setelah itu `git push origin staging` otomatis men-deploy ke staging. Untuk membawa perubahan ke production, merge `staging` ke `main` lalu push.
+
+Scheduler (sync YouTube, backup, reset bulanan) **sengaja tidak dipasang** untuk staging, supaya tidak memakai kuota API atau menjalankan tugas ganda. Jalankan `php artisan schedule:run` secara manual di folder staging bila perlu.
+
 ## Menjalankan deploy
 
 - Otomatis: push ke `main` atau `staging`.
