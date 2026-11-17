@@ -1,0 +1,267 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@plugin '@tailwindcss/forms';
+
+@custom-variant dark (&:is(.dark *));
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source not '../../docs';
+@source not '../../*.md';
+@source not '../../tests';
+
+:root,
+.dark {
+  --background: #020617;
+  --foreground: #f1f5f9;
+  --card: #0f172a;
+  --card-foreground: #f1f5f9;
+  --popover: #0f172a;
+  --popover-foreground: #f1f5f9;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #e2e8f0;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f1f5f9;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #1e293b;
+  --input: #334155;
+  --ring: #3b82f6;
+  --radius: 0.5rem;
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #06b6d4;
+  --chart-5: #ef4444;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: #1e293b;
+  --sidebar-ring: #3b82f6;
+
+  /* Token tambahan proyek */
+  --success: #10b981;
+  --success-foreground: #022c22;
+  --warning: #f59e0b;
+  --warning-foreground: #451a03;
+  --info: #06b6d4;
+  --info-foreground: #083344;
+  --live: #ef4444;
+  --live-foreground: #ffffff;
+  --dept-lspd: #3b82f6;
+  --dept-bcso: #f59e0b;
+  --dept-sasp: #cbd5e1;
+  --dept-sapr: #10b981;
+  --hud-line: rgba(59, 130, 246, 0.4);
+  --rank-silver: #e2e8f0;
+  --rank-silver-foreground: #020617;
+  --rank-bronze: #ea580c;
+  --rank-bronze-foreground: #ffffff;
+
+  /* Bio-link theme highlight (support/donation); themes override it locally */
+  --highlight: #f59e0b;
+  --highlight-foreground: #451a03;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-live: var(--live);
+  --color-live-foreground: var(--live-foreground);
+
+  --color-dept-lspd: var(--dept-lspd);
+  --color-dept-bcso: var(--dept-bcso);
+  --color-dept-sasp: var(--dept-sasp);
+  --color-dept-sapr: var(--dept-sapr);
+  --color-hud: var(--hud-line);
+  --color-rank-silver: var(--rank-silver);
+  --color-rank-silver-foreground: var(--rank-silver-foreground);
+  --color-rank-bronze: var(--rank-bronze);
+  --color-rank-bronze-foreground: var(--rank-bronze-foreground);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-heading: "Rajdhani", sans-serif;
+  --font-tactical: "Rajdhani", sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  h1, h2, h3, h4, h5, h6, .font-heading, .font-tactical {
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* 🔴 TAMBAHKAN DESIGN PATTERN / REUSABLE STYLES DI SINI */
+
+@utility tactical-frame {
+  --tf-cut: 12px;
+  --tf-border: 1px;
+  --tf-shape: polygon(var(--tf-cut) 0, 100% 0, 100% calc(100% - var(--tf-cut)), calc(100% - var(--tf-cut)) 100%, 0 100%, 0 var(--tf-cut));
+  position: relative;
+  padding: var(--tf-border);
+  /* Raw tokens (not --color-*): those are resolved at :root, so local theme overrides would be ignored. */
+  background: var(--tf-color, var(--primary));
+  @supports not (clip-path: polygon(0 0)) {
+    border-radius: var(--radius-lg);
+  }
+  @supports (clip-path: polygon(0 0)) {
+    clip-path: var(--tf-shape);
+  }
+  &[data-variant='hero'] {
+    --tf-cut: 24px;
+  }
+  &[data-variant='tag'] {
+    --tf-cut: 6px;
+    --tf-border: 0px;
+    background: color-mix(in oklab, var(--tf-color, var(--primary)) 15%, transparent);
+  }
+}
+
+@utility tactical-frame-inner {
+  height: 100%;
+  background: var(--card);
+  @supports (clip-path: polygon(0 0)) {
+    clip-path: var(--tf-shape);
+  }
+  [data-variant='tag'] > & {
+    background: transparent;
+  }
+}
+
+@utility hud-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--hud-line) 10%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--hud-line) 10%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@utility hud-corners {
+  position: relative;
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+  }
+  &::before {
+    background-image:
+      linear-gradient(to right, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to bottom, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to left, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to bottom, var(--hud-line) 2px, transparent 2px);
+    background-position: top left, top left, top right, top right;
+  }
+  &::after {
+    background-image:
+      linear-gradient(to right, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to top, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to left, var(--hud-line) 2px, transparent 2px),
+      linear-gradient(to top, var(--hud-line) 2px, transparent 2px);
+    background-position: bottom left, bottom left, bottom right, bottom right;
+  }
+}
+
+@utility scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+  &::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+
+@utility reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  &.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

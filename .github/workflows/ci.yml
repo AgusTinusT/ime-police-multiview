@@ -1,0 +1,53 @@
+name: CI
+
+# Push ke main/staging menjalankan CI lewat deploy.yml (deploy hanya jalan bila CI lulus),
+# jadi di sini cukup pull request dan pemanggilan dari workflow lain.
+on:
+  pull_request:
+    branches: [main, staging]
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, bcmath, sqlite3, pdo_sqlite
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      # Build sebelum test: halaman Inertia/Blade butuh public/build/manifest.json
+      - name: Run UI lint & Vite build
+        run: npm run check
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          # storage/ tidak dilacak git; checkout baru tidak punya folder cache/view/session
+          mkdir -p storage/app/public storage/framework/{cache/data,sessions,views,testing} storage/logs bootstrap/cache
+
+      - name: Run PHPUnit tests
+        run: php artisan test

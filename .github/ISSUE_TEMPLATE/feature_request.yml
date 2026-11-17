@@ -1,0 +1,21 @@
+name: Usulan fitur
+description: Ide untuk fitur baru atau perbaikan
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Masalah yang ingin diselesaikan
+      description: Siapa yang membutuhkan (officer, dispatcher, admin, pengunjung) dan kenapa?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Usulan solusi
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatif yang sudah dipertimbangkan

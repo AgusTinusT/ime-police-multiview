@@ -1,0 +1,1138 @@
+<script setup>
+import CustomVideoPlayer from "@/Components/CustomVideoPlayer.vue";
+import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
+import { Head, Link, usePage } from "@inertiajs/vue3";
+import axios from "axios";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { toast } from "vue-sonner";
+import {
+    Home,
+    ChevronUp,
+    ChevronDown,
+    Scissors,
+    ExternalLink,
+    Trash2,
+    Video,
+    Clock,
+} from "@lucide/vue";
+import { Button } from "@/Components/ui/button";
+import { Badge } from "@/Components/ui/badge";
+import { Input } from "@/Components/ui/input";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/Components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
+import { EmptyState } from "@/Components/tactical";
+
+const props = defineProps({
+    officers: {
+        type: Array,
+        default: () => [],
+    },
+    initialClips: {
+        type: Array,
+        default: () => [],
+    },
+    lastSyncedAt: {
+        type: String,
+        default: "",
+    },
+});
+
+const page = usePage();
+const authUser = computed(() => page.props.auth?.user);
+const isAdmin = computed(
+    () => !!authUser.value?.is_admin || authUser.value?.role === "admin",
+);
+const canAccessClipper = computed(() => {
+    if (!authUser.value) return false;
+    const r = (authUser.value.role || "").toLowerCase();
+    return r === "clips" || r === "admin" || !!authUser.value.is_admin;
+});
+
+const openInClipper = (clip) => {
+    if (!clip) return;
+    const videoUrl =
+        clip.youtube_url ||
+        (clip.video_id
+            ? `https://www.youtube.com/watch?v=${clip.video_id}`
+            : "");
+    const startSec = clip.start_seconds || 0;
+    const endSec = clip.end_seconds || 60;
+    const title = clip.title || "";
+
+    const targetUrl = `/clipper?url=${encodeURIComponent(videoUrl)}&start=${encodeURIComponent(startSec)}&end=${encodeURIComponent(endSec)}&title=${encodeURIComponent(title)}`;
+    window.open(targetUrl, "_blank");
+};
+
+// STORAGE & LOCAL STATE
+const STORAGE_KEY = "ime_focus_community_clips";
+const VIEW_MODE_KEY = "ime_clips_view_mode";
+
+const saveCustomClips = (clipsList) => {
+    if (typeof window === "undefined") return;
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(clipsList));
+    } catch (e) {
+        // Silently handle storage error
+    }
+};
+
+// Initialize clips exclusively from MySQL database props.initialClips
+const clips = ref(props.initialClips || []);
+
+// ADD NEW TACCLIP MODAL STATE
+const isAddModalOpen = ref(false);
+const isSubmittingClip = ref(false);
+const newClipForm = ref({
+    youtube_url: "",
+    title: "",
+    start_time: "00:00:10",
+    end_time: "00:01:00",
+    officer_id: "",
+    creator_name: "",
+});
+
+const closeAddModal = () => {
+    isAddModalOpen.value = false;
+};
+
+const parseTimestampToSeconds = (input) => {
+    if (!input) return 0;
+    if (typeof input === "number") return input;
+    const str = String(input).trim();
+    if (!isNaN(str) && !str.includes(":")) return parseInt(str, 10);
+    const parts = str.split(":").map((n) => parseInt(n, 10) || 0);
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    if (parts.length === 1) return parts[0];
+    return 0;
+};
+
+const submitNewClip = async () => {
+    if (!newClipForm.value.youtube_url.trim()) {
+        toast.warning("Mohon masukkan URL video YouTube.");
+        return;
+    }
+    if (!newClipForm.value.title.trim()) {
+        toast.warning("Mohon masukkan judul momen aksi.");
+        return;
+    }
+
+    const startSec = parseTimestampToSeconds(newClipForm.value.start_time);
+    const endSec = parseTimestampToSeconds(newClipForm.value.end_time);
+
+    if (endSec <= startSec) {
+        toast.warning("Waktu Selesai harus lebih besar dari Waktu Mulai.");
+        return;
+    }
+
+    if (endSec - startSec > 600) {
+        toast.warning("Durasi klip maksimal 10 menit (600 detik).");
+        return;
+    }
+
+    isSubmittingClip.value = true;
+    try {
+        const selectedOfficer = props.officers.find(
+            (o) => o.id === parseInt(newClipForm.value.officer_id, 10),
+        );
+
+        const response = await axios.post("/api/v1/tac-clips", {
+            youtube_url: newClipForm.value.youtube_url,
+            title: newClipForm.value.title,
+            start_seconds: startSec,
+            end_seconds: endSec,
+            officer_id: selectedOfficer ? selectedOfficer.id : null,
+            officer_name: selectedOfficer
+                ? selectedOfficer.officer_name
+                : null,
+            officer_handle: selectedOfficer ? selectedOfficer.handle : null,
+            creator_name:
+                newClipForm.value.creator_name ||
+                (authUser.value ? authUser.value.name : "Guest"),
+        });
+
+        if (response.data && response.data.clip) {
+            clips.value.unshift(response.data.clip);
+            saveCustomClips(clips.value);
+            activeShortIndex.value = 0;
+            closeAddModal();
+            showToast(
+                "TacClip momen aksi berhasil ditambahkan dan dapat dilihat publik!",
+            );
+        }
+    } catch (err) {
+        const msg = err.response?.data?.message || "Gagal menyimpan TacClip.";
+        toast.error(msg);
+    } finally {
+        isSubmittingClip.value = false;
+    }
+};
+
+// VIEW MODE STATE: 'shorts' (16:9 Cinema Reels Feed) vs 'grid' (Grid Galeri)
+const loadInitialViewMode = () => {
+    if (typeof window === "undefined") return "shorts";
+    return localStorage.getItem(VIEW_MODE_KEY) || "shorts";
+};
+
+const viewMode = ref(loadInitialViewMode());
+
+// PURGE LEGACY LOCALSTORAGE STORAGE_KEY IF PRESENT
+onMounted(() => {
+    if (typeof window !== "undefined") {
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch (e) {}
+    }
+});
+
+// FILTERS & SEARCH STATE
+const searchQuery = ref("");
+const selectedDepartment = ref("ALL"); // 'ALL', 'LSPD', 'BCSO', 'SASP', 'SAPR'
+const scopeFilter = ref("all"); // 'all', 'my_clips'
+const sortBy = ref("newest"); // 'newest', 'oldest', 'duration'
+
+// PAGINATION & LAZY LOADING (FOR GRID MODE)
+const visibleCount = ref(12);
+
+const loadMore = () => {
+    visibleCount.value += 12;
+};
+
+watch([searchQuery, selectedDepartment, scopeFilter, sortBy], () => {
+    visibleCount.value = 12;
+    activeShortIndex.value = 0;
+});
+
+// TIME FORMATTING HELPERS
+const formatTime = (seconds) => {
+    if (isNaN(seconds) || seconds === null || seconds < 0) return "00:00";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    const pad = (num) => String(num).padStart(2, "0");
+    if (h > 0) {
+        return `${h}:${pad(m)}:${pad(s)}`;
+    }
+    return `${pad(m)}:${pad(s)}`;
+};
+
+// AUTHORIZATION CHECK FOR DELETING CLIP
+const canDeleteClip = (clip) => {
+    if (!clip) return false;
+    if (isAdmin.value) return true;
+    if (authUser.value && clip.user_id && clip.user_id === authUser.value.id)
+        return true;
+    if (
+        authUser.value &&
+        clip.creator_name &&
+        authUser.value.name &&
+        clip.creator_name.trim().toLowerCase() ===
+            authUser.value.name.trim().toLowerCase()
+    ) {
+        return true;
+    }
+    return true; // Guests can also delete local items
+};
+
+const pendingDeleteClipId = ref(null);
+
+const deleteClip = (clipId) => {
+    const clipTarget = clips.value.find((c) => c.id === clipId);
+    if (clipTarget && !canDeleteClip(clipTarget)) {
+        toast.warning("Anda tidak memiliki izin untuk menghapus klip ini!");
+        return;
+    }
+    pendingDeleteClipId.value = clipId;
+};
+
+const confirmDeleteClip = async () => {
+    const clipId = pendingDeleteClipId.value;
+    pendingDeleteClipId.value = null;
+    if (!clipId) return;
+
+    try {
+        await axios.delete(`/api/v1/tac-clips/${clipId}`);
+    } catch (e) {
+        // Silently fallback if deletion fails
+    }
+    clips.value = clips.value.filter((c) => c.id !== clipId);
+    saveCustomClips(clips.value);
+    if (
+        activeShortIndex.value >= filteredClips.value.length &&
+        activeShortIndex.value > 0
+    ) {
+        activeShortIndex.value--;
+    }
+    showToast("Klip berhasil dihapus dari komunitas");
+};
+
+// FILTERED & SORTED CLIPS COMPUTED
+const filteredClips = computed(() => {
+    let list = [...clips.value];
+
+    // 1. Scope Filter (Semua vs Klip Saya)
+    if (scopeFilter.value === "my_clips") {
+        if (!authUser.value) {
+            list = [];
+        } else {
+            list = list.filter((c) => canDeleteClip(c));
+        }
+    }
+
+    // 2. Department Filter
+    if (selectedDepartment.value !== "ALL") {
+        const dept = selectedDepartment.value.toUpperCase();
+        list = list.filter((c) => {
+            if (!c.officer_name && !c.officer_handle) return true;
+            const matchedOfficer = props.officers.find(
+                (o) =>
+                    (c.officer_id && o.id === c.officer_id) ||
+                    (c.officer_name &&
+                        o.officer_name?.toLowerCase() ===
+                            c.officer_name?.toLowerCase()) ||
+                    (c.officer_handle &&
+                        o.handle?.toLowerCase() ===
+                            c.officer_handle?.toLowerCase()),
+            );
+            if (!matchedOfficer) return true;
+            if (dept === "SAPR")
+                return ["SAPR", "PARK RANGER"].includes(
+                    matchedOfficer.department?.toUpperCase(),
+                );
+            return matchedOfficer.department?.toUpperCase() === dept;
+        });
+    }
+
+    // 3. Search Query
+    if (searchQuery.value.trim()) {
+        const q = searchQuery.value.toLowerCase().trim();
+        list = list.filter(
+            (c) =>
+                (c.title || "").toLowerCase().includes(q) ||
+                (c.creator_name || "").toLowerCase().includes(q) ||
+                (c.officer_name || "").toLowerCase().includes(q) ||
+                (c.officer_handle || "").toLowerCase().includes(q),
+        );
+    }
+
+    // 4. Sorting
+    if (sortBy.value === "oldest") {
+        list.sort((a, b) => (a.id || 0) - (b.id || 0));
+    } else if (sortBy.value === "duration") {
+        list.sort(
+            (a, b) =>
+                b.end_seconds -
+                b.start_seconds -
+                (a.end_seconds - a.start_seconds),
+        );
+    } else {
+        // 'newest'
+        list.sort((a, b) => (b.id || 0) - (a.id || 0));
+    }
+
+    return list;
+});
+
+const hasMoreClips = computed(() => {
+    return visibleCount.value < filteredClips.value.length;
+});
+
+// INTERSECTION OBSERVER FOR INFINITE SCROLL (GRID MODE)
+const sentinelRef = ref(null);
+let observer = null;
+
+onMounted(() => {
+    if ("IntersectionObserver" in window) {
+        observer = new IntersectionObserver(
+            (entries) => {
+                if (
+                    entries[0].isIntersecting &&
+                    hasMoreClips.value &&
+                    viewMode.value === "grid"
+                ) {
+                    loadMore();
+                }
+            },
+            { rootMargin: "300px" },
+        );
+        if (sentinelRef.value) {
+            observer.observe(sentinelRef.value);
+        }
+    }
+});
+
+onUnmounted(() => {
+    if (observer) observer.disconnect();
+});
+
+// TOAST NOTIFICATION LOGIC
+const toastText = ref("");
+const toastVisible = ref(false);
+let toastTimeout = null;
+
+const showToast = (msg) => {
+    toastText.value = msg;
+    toastVisible.value = true;
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+        toastVisible.value = false;
+    }, 2200);
+};
+
+// MODAL EMBED PLAYER FOR GRID MODE
+const iframeKey = ref(0);
+
+const replayClip = () => {
+    iframeKey.value++;
+    shortKey.value++;
+};
+
+// 16:9 CLEAN CINEMA FEED MODE LOGIC & KEYBOARD NAV
+const activeShortIndex = ref(0);
+const shortKey = ref(0);
+const isMuted = ref(false);
+const progressPercentage = ref(0);
+let progressInterval = null;
+
+const toggleMute = () => {
+    isMuted.value = !isMuted.value;
+    shortKey.value++;
+};
+
+const currentShortClip = computed(() => {
+    if (filteredClips.value.length === 0) return null;
+    const index = Math.max(
+        0,
+        Math.min(activeShortIndex.value, filteredClips.value.length - 1),
+    );
+    return filteredClips.value[index];
+});
+
+const currentClipAvatar = computed(() => {
+    const clip = currentShortClip.value;
+    if (!clip) return "";
+
+    if (clip.avatar_url && !clip.avatar_url.includes("dicebear")) {
+        return clip.avatar_url;
+    }
+
+    const clipName = (clip.officer_name || "").trim();
+    const clipHandle = (clip.officer_handle || clip.handle || "").trim();
+    const clipNameLower = clipName.toLowerCase();
+    const clipHandleLower = clipHandle.toLowerCase().replace("@", "");
+    const isGenericPatrol =
+        !clipName ||
+        clipNameLower === "patrol unit" ||
+        clipHandleLower === "patrolunit";
+
+    if (props.officers && props.officers.length > 0) {
+        if (clip.officer_id) {
+            const foundById = props.officers.find(
+                (o) => Number(o.id) === Number(clip.officer_id),
+            );
+            if (foundById && foundById.avatar_url) {
+                return foundById.avatar_url;
+            }
+        }
+
+        if (!isGenericPatrol) {
+            const foundByExactMatch = props.officers.find((o) => {
+                const offHandle = (o.handle || "")
+                    .toLowerCase()
+                    .replace("@", "")
+                    .trim();
+                const offName = (o.officer_name || "").toLowerCase().trim();
+                const offStreamer = (o.streamer_name || "")
+                    .toLowerCase()
+                    .trim();
+
+                if (
+                    clipHandleLower &&
+                    offHandle &&
+                    clipHandleLower === offHandle
+                )
+                    return true;
+                if (clipNameLower && offName && clipNameLower === offName)
+                    return true;
+                if (
+                    clipNameLower &&
+                    offStreamer &&
+                    clipNameLower === offStreamer
+                )
+                    return true;
+
+                return false;
+            });
+
+            if (foundByExactMatch && foundByExactMatch.avatar_url) {
+                return foundByExactMatch.avatar_url;
+            }
+        }
+    }
+
+    if (clip.avatar_url && !clip.avatar_url.includes("dicebear")) {
+        return clip.avatar_url;
+    }
+    if (clip.officer_avatar && !clip.officer_avatar.includes("dicebear")) {
+        return clip.officer_avatar;
+    }
+    if (clip.avatar && !clip.avatar.includes("dicebear")) {
+        return clip.avatar;
+    }
+
+    const seed = !isGenericPatrol
+        ? clip.officer_name || clip.officer_handle || "PatrolUnit"
+        : "PatrolUnit";
+    return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}`;
+});
+
+const handleAvatarError = (e) => {
+    const clip = currentShortClip.value;
+    const seed = clip?.officer_name || clip?.officer_handle || "PatrolUnit";
+    e.target.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}`;
+};
+
+const startProgressTimer = () => {
+    if (progressInterval) clearInterval(progressInterval);
+    progressPercentage.value = 0;
+    const clip = currentShortClip.value;
+    if (!clip) return;
+    const duration = Math.max(
+        1,
+        (clip.end_seconds || 60) - (clip.start_seconds || 0),
+    );
+    const startTime = Date.now();
+    progressInterval = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        const pct = Math.min(100, (elapsed / duration) * 100);
+        progressPercentage.value = pct;
+        if (pct >= 100) {
+            clearInterval(progressInterval);
+        }
+    }, 100);
+};
+
+watch(
+    [currentShortClip, shortKey],
+    () => {
+        startProgressTimer();
+    },
+    { immediate: true },
+);
+
+const nextShort = () => {
+    if (activeShortIndex.value < filteredClips.value.length - 1) {
+        activeShortIndex.value++;
+        shortKey.value++;
+    }
+};
+
+const prevShort = () => {
+    if (activeShortIndex.value > 0) {
+        activeShortIndex.value--;
+        shortKey.value++;
+    }
+};
+
+const handleKeydown = (e) => {
+    if (viewMode.value !== "shorts") return;
+    if (
+        ["input", "textarea", "select"].includes(
+            document.activeElement?.tagName?.toLowerCase(),
+        )
+    )
+        return;
+
+    if (e.key === "ArrowDown" || e.key === "PageDown" || e.key === "j") {
+        e.preventDefault();
+        nextShort();
+    } else if (e.key === "ArrowUp" || e.key === "PageUp" || e.key === "k") {
+        e.preventDefault();
+        prevShort();
+    } else if (e.key === "r") {
+        replayClip();
+    } else if (e.key === "m") {
+        toggleMute();
+    }
+};
+
+let wheelCoolDown = false;
+const handleWheel = (e) => {
+    if (viewMode.value !== "shorts" || wheelCoolDown) return;
+    if (Math.abs(e.deltaY) < 30) return;
+
+    wheelCoolDown = true;
+    if (e.deltaY > 0) {
+        nextShort();
+    } else {
+        prevShort();
+    }
+    setTimeout(() => {
+        wheelCoolDown = false;
+    }, 600);
+};
+
+let touchStartY = 0;
+let touchEndY = 0;
+
+const handleTouchStart = (e) => {
+    if (viewMode.value !== "shorts") return;
+    if (e.touches && e.touches.length > 0) {
+        touchStartY = e.touches[0].clientY;
+    }
+};
+
+const handleTouchMove = (e) => {
+    if (viewMode.value !== "shorts") return;
+    if (e.cancelable) {
+        e.preventDefault();
+    }
+};
+
+const handleTouchEnd = (e) => {
+    if (viewMode.value !== "shorts") return;
+    if (e.changedTouches && e.changedTouches.length > 0) {
+        touchEndY = e.changedTouches[0].clientY;
+        handleSwipeGesture();
+    }
+};
+
+const handleSwipeGesture = () => {
+    const swipeThreshold = 50;
+    const diffY = touchStartY - touchEndY;
+
+    if (Math.abs(diffY) > swipeThreshold) {
+        if (diffY > 0) {
+            nextShort();
+        } else {
+            prevShort();
+        }
+    }
+};
+
+onMounted(() => {
+    window.addEventListener("keydown", handleKeydown);
+    if (typeof document !== "undefined") {
+        document.body.style.overscrollBehavior = "none";
+        document.documentElement.style.overscrollBehavior = "none";
+    }
+});
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", handleKeydown);
+    if (progressInterval) clearInterval(progressInterval);
+    if (typeof document !== "undefined") {
+        document.body.style.overscrollBehavior = "";
+        document.documentElement.style.overscrollBehavior = "";
+    }
+});
+</script>
+
+<template>
+    <Head title="TacClips — Galeri Momen Aksi Kepolisian - IME Roleplay" />
+
+    <!-- MINIMALIST FULLSCREEN CINEMA FEED CONTAINER -->
+    <div
+        @wheel="handleWheel"
+        @touchstart="handleTouchStart"
+        @touchmove.prevent="handleTouchMove"
+        @touchend="handleTouchEnd"
+        class="relative w-screen h-screen h-dvh bg-background text-foreground font-sans overflow-hidden flex items-center justify-center p-0 m-0 select-none overscroll-none touch-none"
+        style="touch-action: none; overscroll-behavior: none"
+    >
+        <!-- FLOATING TOP-LEFT HOME ICON BUTTON -->
+        <Button
+            as-child
+            variant="outline"
+            size="icon"
+            class="fixed top-3 left-3 sm:top-4 sm:left-4 z-50 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-card/90 shadow-lg landscape:top-2 landscape:left-2"
+            title="Kembali ke Beranda"
+            aria-label="Kembali ke Beranda"
+        >
+            <Link href="/">
+                <Home class="w-4 h-4" />
+            </Link>
+        </Button>
+
+        <!-- FLOATING MIDDLE-RIGHT SCROLL CONTROL BUTTONS (DESKTOP ONLY) -->
+        <div
+            v-if="filteredClips.length > 0"
+            class="hidden sm:flex fixed right-4 top-1/2 -translate-y-1/2 z-50 flex-col gap-2.5 items-center"
+        >
+            <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                @click="prevShort"
+                :disabled="activeShortIndex === 0"
+                class="w-10 h-10 rounded-full bg-card/90 shadow-lg"
+                aria-label="Klip Sebelumnya"
+                title="Klip Sebelumnya (Panah Atas / Wheel Up)"
+            >
+                <ChevronUp class="w-4 h-4" />
+            </Button>
+
+            <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                @click="nextShort"
+                :disabled="activeShortIndex === filteredClips.length - 1"
+                class="w-10 h-10 rounded-full bg-card/90 shadow-lg"
+                aria-label="Klip Selanjutnya"
+                title="Klip Selanjutnya (Panah Bawah / Wheel Down)"
+            >
+                <ChevronDown class="w-4 h-4" />
+            </Button>
+        </div>
+
+        <!-- MAIN STAGE AREA (NO OVERLAYS ON VIDEO) -->
+        <div
+            v-if="filteredClips.length > 0"
+            class="relative w-full h-full flex flex-col items-center justify-between sm:justify-center p-2 sm:p-4 pt-12 sm:pt-4 pb-16 sm:pb-3 landscape:pl-12 sm:landscape:pl-16 max-w-[1600px] mx-auto space-y-2 min-h-0"
+        >
+            <!-- TOP / MIDDLE ROW: VIDEO & DETAILS COLUMN + SIDE ACTIONS COLUMN -->
+            <div
+                class="flex items-center justify-center gap-3 sm:gap-5 w-full min-h-0 my-auto"
+            >
+                <!-- VIDEO & DETAILS COLUMN -->
+                <div
+                    class="flex-1 max-w-[1380px] w-full flex flex-col gap-1.5 sm:gap-2 min-w-0"
+                >
+                    <!-- TACTICAL VIDEO FRAME CONTAINER -->
+                    <div
+                        class="relative w-full aspect-3/3 sm:aspect-video max-h-[calc(100dvh-175px)] sm:max-h-[calc(100dvh-105px)] landscape:max-h-[calc(100dvh-60px)] rounded-xl border border-border shadow-2xl overflow-hidden bg-background flex items-center justify-center"
+                    >
+                        <CustomVideoPlayer
+                            v-if="currentShortClip"
+                            :key="`${currentShortClip.id}-${shortKey}`"
+                            :youtube-id="currentShortClip.video_id"
+                            :title="currentShortClip.title"
+                            :start-seconds="currentShortClip.start_seconds || 0"
+                            :end-seconds="currentShortClip.end_seconds || 0"
+                            :autoplay="true"
+                            :muted="isMuted"
+                            :zoom-mobile="true"
+                            @muted-change="(val) => (isMuted = val)"
+                            class="w-full h-full"
+                        />
+                    </div>
+
+                    <!-- BOTTOM DETAILS ROW -->
+                    <div
+                        v-if="currentShortClip"
+                        class="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 px-0.5 text-left font-sans shrink-0"
+                    >
+                        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                            <div
+                                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-border overflow-hidden bg-card shrink-0 flex items-center justify-center"
+                            >
+                                <img
+                                    :src="currentClipAvatar"
+                                    :alt="
+                                        currentShortClip.officer_name ||
+                                        'Officer'
+                                    "
+                                    referrerpolicy="no-referrer"
+                                    @error="handleAvatarError"
+                                    class="w-full h-full object-cover rounded-full"
+                                />
+                            </div>
+
+                            <!-- Details: Officer, Title, Creator -->
+                            <div class="flex flex-col min-w-0 flex-1">
+                                <div
+                                    class="flex items-center gap-1.5 sm:gap-2 flex-wrap"
+                                >
+                                    <span
+                                        class="text-xs font-semibold text-foreground font-mono"
+                                    >
+                                        {{
+                                            currentShortClip.officer_name ||
+                                            currentShortClip.officer_handle ||
+                                            "@PatrolUnit"
+                                        }}
+                                    </span>
+                                    <span
+                                        class="text-xs text-muted-foreground font-mono truncate"
+                                    >
+                                        • Ditandai oleh
+                                        <span class="text-foreground/80">{{
+                                            currentShortClip.creator_name ||
+                                            "Guest"
+                                        }}</span>
+                                    </span>
+                                </div>
+                                <h2
+                                    class="text-xs sm:text-sm font-medium text-foreground line-clamp-2 leading-snug"
+                                >
+                                    {{ currentShortClip.title }}
+                                </h2>
+                            </div>
+                        </div>
+
+                        <!-- MOBILE ACTIONS & TAGS / TIMESTAMP -->
+                        <div
+                            class="flex items-center justify-between sm:justify-end gap-2 shrink-0 font-mono text-xs"
+                        >
+                            <!-- ACTION BUTTONS INLINE FOR MOBILE ONLY (< sm) -->
+                            <div
+                                class="flex sm:hidden items-center gap-1.5 border-r border-border pr-2"
+                            >
+                                <Button
+                                    v-if="canAccessClipper"
+                                    type="button"
+                                    variant="outline"
+                                    size="icon-sm"
+                                    @click="openInClipper(currentShortClip)"
+                                    class="w-7 h-7 rounded-full"
+                                    aria-label="ClipStudio"
+                                    title="ClipStudio"
+                                >
+                                    <Scissors class="w-3.5 h-3.5" />
+                                </Button>
+
+                                <Button
+                                    as-child
+                                    variant="outline"
+                                    size="icon-sm"
+                                    class="w-7 h-7 rounded-full"
+                                    aria-label="YouTube"
+                                    title="YouTube"
+                                >
+                                    <a
+                                        :href="`https://www.youtube.com/watch?v=${currentShortClip.video_id}&t=${currentShortClip.start_seconds}s`"
+                                        target="_blank"
+                                    >
+                                        <ExternalLink class="w-3.5 h-3.5" />
+                                    </a>
+                                </Button>
+
+                                <Button
+                                    v-if="canDeleteClip(currentShortClip)"
+                                    type="button"
+                                    variant="outline"
+                                    size="icon-sm"
+                                    @click="deleteClip(currentShortClip.id)"
+                                    class="w-7 h-7 rounded-full text-muted-foreground hover:text-destructive"
+                                    aria-label="Hapus"
+                                    title="Hapus"
+                                >
+                                    <Trash2 class="w-3.5 h-3.5" />
+                                </Button>
+                            </div>
+
+                            <Badge
+                                variant="outline"
+                                class="text-xs font-mono text-muted-foreground"
+                            >
+                                #{{
+                                    currentShortClip.officer_name
+                                        ? currentShortClip.officer_name.replace(
+                                              /\s+/g,
+                                              "",
+                                          )
+                                        : "PoliceRoleplay"
+                                }}
+                            </Badge>
+                            <Badge
+                                variant="outline"
+                                class="text-xs font-mono text-muted-foreground gap-1"
+                            >
+                                <Clock class="w-3 h-3" />
+                                {{ formatTime(currentShortClip.start_seconds) }}
+                                -
+                                {{ formatTime(currentShortClip.end_seconds) }}
+                            </Badge>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SIDE ACTIONS COLUMN (DESKTOP ONLY) -->
+                <div
+                    v-if="currentShortClip"
+                    class="hidden sm:flex flex-col items-center gap-3 shrink-0 font-mono py-1 self-center"
+                >
+                    <!-- OPEN & CUT IN CLIPPER -->
+                    <div
+                        v-if="canAccessClipper"
+                        class="flex flex-col items-center space-y-1"
+                    >
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            @click="openInClipper(currentShortClip)"
+                            class="w-10 h-10 rounded-full bg-card/80 shadow-md"
+                            aria-label="Buka & Potong di ClipStudio"
+                            title="Buka & Potong di ClipStudio (Halaman Baru)"
+                        >
+                            <Scissors class="w-4 h-4" />
+                        </Button>
+                        <span class="text-xs font-mono text-muted-foreground"
+                            >Clipper</span
+                        >
+                    </div>
+
+                    <!-- OPEN ON YOUTUBE FULL -->
+                    <div class="flex flex-col items-center space-y-1">
+                        <Button
+                            as-child
+                            variant="outline"
+                            size="icon"
+                            class="w-10 h-10 rounded-full bg-card/80 shadow-md"
+                            aria-label="Buka video penuh di YouTube"
+                            title="Buka video penuh di YouTube"
+                        >
+                            <a
+                                :href="`https://www.youtube.com/watch?v=${currentShortClip.video_id}&t=${currentShortClip.start_seconds}s`"
+                                target="_blank"
+                            >
+                                <ExternalLink class="w-4 h-4" />
+                            </a>
+                        </Button>
+                        <span class="text-xs font-mono text-muted-foreground"
+                            >Full</span
+                        >
+                    </div>
+
+                    <!-- DELETE BUTTON (IF AUTHORIZED) -->
+                    <div
+                        v-if="canDeleteClip(currentShortClip)"
+                        class="flex flex-col items-center space-y-1"
+                    >
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            @click="deleteClip(currentShortClip.id)"
+                            class="w-10 h-10 rounded-full bg-card/80 text-muted-foreground hover:text-destructive shadow-md"
+                            aria-label="Hapus klip ini"
+                            title="Hapus klip ini"
+                        >
+                            <Trash2 class="w-4 h-4" />
+                        </Button>
+                        <span class="text-xs font-mono text-muted-foreground"
+                            >Hapus</span
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMPTY STATE FOR SHORTS FEED -->
+        <EmptyState
+            v-else
+            :icon="Video"
+            title="BELUM ADA KLIP DITEMUKAN"
+            description="Belum ada klip momen aksi yang ditandai oleh komunitas."
+        />
+    </div>
+
+    <!-- MINIMALIST TOAST NOTIFICATION -->
+    <div
+        :class="[
+            'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card/95 backdrop-blur-md border border-border text-foreground px-4 py-2 rounded-full text-xs font-mono shadow-xl transition-all duration-300 pointer-events-none flex items-center gap-2',
+            toastVisible
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-6',
+        ]"
+    >
+        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+        <span>{{ toastText }}</span>
+    </div>
+
+    <!-- MODAL TAMBAH TACCLIP BARU -->
+    <Dialog v-model:open="isAddModalOpen">
+        <DialogContent class="sm:max-w-lg">
+            <DialogHeader>
+                <DialogTitle
+                    class="flex items-center gap-2 font-tactical uppercase tracking-wider"
+                >
+                    <span
+                        class="w-2.5 h-2.5 rounded-full bg-primary motion-safe:animate-pulse"
+                    ></span>
+                    <span>Tambah TacClip Momen Aksi Baru</span>
+                </DialogTitle>
+            </DialogHeader>
+
+            <div class="space-y-4 text-xs">
+                <div class="space-y-1">
+                    <label
+                        class="block font-mono font-semibold text-foreground uppercase"
+                    >
+                        URL Video YouTube
+                        <span class="text-destructive">*</span>
+                    </label>
+                    <Input
+                        v-model="newClipForm.youtube_url"
+                        type="url"
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        class="h-9 text-xs font-mono"
+                    />
+                </div>
+
+                <div class="space-y-1">
+                    <label
+                        class="block font-mono font-semibold text-foreground uppercase"
+                    >
+                        Judul Momen Aksi
+                        <span class="text-destructive">*</span>
+                    </label>
+                    <Input
+                        v-model="newClipForm.title"
+                        type="text"
+                        placeholder="Contoh: Pursuit 10-80 Sektor Downtown Los Santos"
+                        class="h-9 text-xs"
+                    />
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label
+                            class="block font-mono font-semibold text-foreground uppercase"
+                        >
+                            Waktu Mulai (IN)
+                            <span class="text-destructive">*</span>
+                        </label>
+                        <Input
+                            v-model="newClipForm.start_time"
+                            type="text"
+                            placeholder="00:00:10"
+                            class="h-9 text-xs font-mono text-center font-bold"
+                        />
+                        <span
+                            class="text-xs text-muted-foreground block font-mono"
+                            >Format: HH:MM:SS atau Detik</span
+                        >
+                    </div>
+                    <div class="space-y-1">
+                        <label
+                            class="block font-mono font-semibold text-foreground uppercase"
+                        >
+                            Waktu Selesai (OUT)
+                            <span class="text-destructive">*</span>
+                        </label>
+                        <Input
+                            v-model="newClipForm.end_time"
+                            type="text"
+                            placeholder="00:01:00"
+                            class="h-9 text-xs font-mono text-center font-bold"
+                        />
+                        <span
+                            class="text-xs text-muted-foreground block font-mono"
+                            >Maksimal 10 menit (600s)</span
+                        >
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label
+                        class="block font-mono font-semibold text-foreground uppercase"
+                    >
+                        Petugas / Officer Terkait (Opsional)
+                    </label>
+                    <select
+                        v-model="newClipForm.officer_id"
+                        class="w-full h-9 rounded-md bg-background border border-input px-3 py-1.5 text-xs text-foreground focus:border-ring focus:outline-hidden cursor-pointer"
+                    >
+                        <option value="">-- Pilih Petugas / Officer --</option>
+                        <option
+                            v-for="off in officers"
+                            :key="off.id"
+                            :value="off.id"
+                        >
+                            {{ off.department }} • {{ off.officer_name }} ({{
+                                off.callsign
+                            }})
+                        </option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label
+                        class="block font-mono font-semibold text-foreground uppercase"
+                    >
+                        Ditandai Oleh / Nama Pengirim (Opsional)
+                    </label>
+                    <Input
+                        v-model="newClipForm.creator_name"
+                        type="text"
+                        placeholder="Nama panggilan Anda..."
+                        class="h-9 text-xs font-mono"
+                    />
+                </div>
+            </div>
+
+            <DialogFooter class="pt-3 border-t border-border font-mono text-xs">
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    @click="closeAddModal"
+                >
+                    Batal
+                </Button>
+                <Button
+                    type="button"
+                    size="sm"
+                    @click="submitNewClip"
+                    :disabled="isSubmittingClip"
+                    class="font-bold"
+                >
+                    <span v-if="isSubmittingClip">MEMPROSES...</span>
+                    <span v-else>PUBLIKASIKAN TACCLIP</span>
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <!-- KONFIRMASI HAPUS KLIP -->
+    <AlertDialog
+        :open="pendingDeleteClipId !== null"
+        @update:open="
+            (val) => {
+                if (!val) pendingDeleteClipId = null;
+            }
+        "
+    >
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Hapus Klip Momen Aksi?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Apakah Anda yakin ingin menghapus klip momen aksi ini secara
+                    permanen dari komunitas?
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel @click="pendingDeleteClipId = null">
+                    Batal
+                </AlertDialogCancel>
+                <AlertDialogAction
+                    class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    @click="confirmDeleteClip"
+                >
+                    Hapus
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR & BOTTOM SHEET DRAWER -->
+    <TacticalMobileBottomNav />
+</template>

@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+Allow: /multiview
+Allow: /officers
+Allow: /ranking
+Allow: /action-clips
+Allow: /clipper
+Allow: /bio-link
+Allow: /faq
+Allow: /about
+Allow: /updates
+Allow: /feedback
+Allow: /@*
+
+# Disallow administrative, API & private user account panels
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /settings
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+Disallow: /reset-password/
+Disallow: /email/
+
+Sitemap: https://policeduty.sasp-motionliferp.com/sitemap.xml

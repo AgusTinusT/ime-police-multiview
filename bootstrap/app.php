@@ -1,0 +1,46 @@
+<?php
+
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )
+    ->withCommands([
+        __DIR__.'/../app/Console/Commands',
+    ])
+    ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
+
+        $middleware->web(append: [
+            \App\Http\Middleware\EnsureNotBanned::class,
+            \Illuminate\Session\Middleware\AuthenticateSession::class,
+            \App\Http\Middleware\HandleInertiaRequests::class,
+            // Capped: one Link entry per JS chunk overflowed nginx's 4–8 KB
+            // header buffer (502). The HTML still preloads every chunk.
+            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::using(8),
+        ]);
+
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\EnsureIsAdmin::class,
+            'officer' => \App\Http\Middleware\EnsureIsOfficer::class,
+            'not_banned' => \App\Http\Middleware\EnsureNotBanned::class,
+            'can_trim' => \App\Http\Middleware\CanTrimVideoMiddleware::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'api/v1/sync',
+            'api/v1/telemetry',
+            'api/v1/hero-slides/*/event',
+        ]);
+    })
+    ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->shouldRenderJsonWhen(
+            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+        );
+    })->create();

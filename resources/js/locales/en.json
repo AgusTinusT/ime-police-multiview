@@ -1,0 +1,345 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search...",
+    "syncing": "Syncing...",
+    "sync_live_feeds": "Sync Live Feeds",
+    "all_units": "All Units",
+    "departments": "Departments"
+  },
+  "dashboard": {
+    "title": "IME RP — SASP Police Duty | Live Officer Bodycam & Discovery Hub",
+    "active_officers": "On-Duty Officers: {count} Units",
+    "hero_description": "Tactical monitoring hub & live streaming officer bodycams in the field. Monitor live YouTube broadcasts from LSPD, BCSO, SASP, and SAPR officers simultaneously in interactive multiview mode.",
+    "btn_open_multi_bodycam": "Open Multi-Bodycam",
+    "btn_explore_feeds": "Explore Bodycam Feeds",
+    "grid_monitor": "SAN ANDREAS GRID MONITOR",
+    "live_metrics": "LIVE METRICS",
+    "on_duty_feeds": "ACTIVE BODYCAM FEEDS",
+    "active": "Active",
+    "divisions": "Divisions",
+    "total_officers": "TOTAL OFFICERS",
+    "officers_unit": "Officers",
+    "replay_archive": "ARCHIVE & REPLAY",
+    "videos_unit": "Videos",
+    "transmission_feed": "BROADCAST TRANSMISSION",
+    "transmission_log": "[DISPATCH]: Bodycam stream connected. Switching to Multiview Theater for synchronized grid display.",
+    "recommended_sites_title": "Recommended websites",
+    "recommended_sites_subtitle": "Explore other IME Police roleplay platforms.",
+    "visit_site": "Visit website"
+  },
+  "multiview": {
+    "title_default": "Multiview (10-8 Live Officer Feeds) – IME RP Multiview",
+    "title_watching": "Watching: {officer} ({dept}) – IME RP Multiview",
+    "title_category": "Category: {category} – IME RP Multiview",
+    "title_search": "Search: {query} – IME RP Multiview",
+    "theater_mode": "Theater Mode",
+    "data_saver": "Saver Mode",
+    "all_units": "All Units"
+  },
+  "leaderboard": {
+    "title": "Top Streamer of IME Police",
+    "subtitle": "Highest appreciation for Los Santos law enforcement officers who loyally dedicate their patrol streaming hours on YouTube. Broadcast hours are automatically calculated based on accumulated 10-8 (On Duty) stream durations this month.",
+    "rank_1_gold": "#1 CHIEF OF ON-AIR",
+    "rank_2_silver": "RANK #2 SILVER",
+    "rank_3_bronze": "RANK #3 BRONZE",
+    "badge_gold": "GOLD",
+    "status_live": "10-8 LIVE STREAMING",
+    "status_live_viewers": "10-8 PATROL LIVE ({count})",
+    "status_standby": "10-7 STANDBY",
+    "total_duration": "Total Patrol Duration:",
+    "record_duration": "Stream Hours Record:",
+    "average": "Average: {avg}",
+    "percent_from_top": "{percent}% from #1",
+    "peak_top": "100% Peak",
+    "watch_live": "Watch Stream",
+    "youtube_channel": "YouTube Channel",
+    "reset_cycle": "Reset Cycle: {days} Days Left"
+  },
+  "stream_slimles": {
+    "dispatch_feed_title": "DISPATCH FEED: LIVE PATROLS & REPLAYS",
+    "dispatch_feed_subtitle": "Combined monitoring channel for 10-8 (On Duty) live streams and archived patrol recordings of San Andreas officers.",
+    "all_filter": "All ({count})",
+    "live_filter": "Live ({count})",
+    "replay_filter": "Replays ({count})",
+    "showing_count": "Showing {count} Patrol Streams",
+    "empty_title": "No patrol broadcasts or recordings found.",
+    "empty_subtitle": "Try changing the filter or tap Sync Live Feeds button."
+  },
+  "sub_support": {
+    "badge_title": "ROAD TO 1,000 SUBS",
+    "subtitle": "Support active San Andreas officers reaching the 1k Subscribers milestone who went live in the last 3 days. Hitting 1,000 subscribers helps officers with monetization and unlocking advanced YouTube features.",
+    "active_list_title": "ACTIVE OFFICERS LIST (< 1K SUBS)",
+    "live_3_days": "LIVE IN LAST 3 DAYS",
+    "showing_officers": "Showing {count} active officers",
+    "view_all_officers": "View All Officers",
+    "support_btn": "Support",
+    "feature_active_officers": "Active Officers",
+    "feature_active_officers_desc": "Active live streaming within the last 3 days",
+    "feature_community_support": "Free Community Support",
+    "feature_community_support_desc": "1-click to open officer YouTube channel."
+  },
+  "footer": {
+    "tagline": "IME RP Police Duty Multiview — Tactical Officer Bodycam Monitoring Platform",
+    "copyright": "© 2026 IME RP Police Duty. All rights reserved.",
+    "disclaimer": "This platform was built to enhance the visibility of San Andreas streamers & officers.",
+    "col_explore": "Explore",
+    "col_for_officers": "For officers",
+    "col_help": "Help",
+    "officer_bio_link": "Officer bio-link"
+  },
+  "nav": {
+    "dashboard": "Home",
+    "multiview": "Multiview",
+    "directory": "Officer Directory",
+    "ranking": "Ranking",
+    "clips": "TacClips",
+    "officers": "Officers",
+    "clip_studio": "Clip Studio",
+    "more": "More",
+    "my_biolink": "My bio-link",
+    "updates": "Updates",
+    "about": "About",
+    "faq": "FAQ",
+    "feedback": "Send feedback"
+  },
+  "visibility_panel": {
+    "title": "MANAGE OFFICER VISIBILITY",
+    "shown": "Shown",
+    "hidden": "Hidden",
+    "priority": "Priority",
+    "search_placeholder": "Search officer, callsign, department...",
+    "reset": "↺ Reset",
+    "all_depts": "All Depts",
+    "no_officers_found": "No officers matched your search criteria."
+  },
+  "directory": {
+    "title": "SAN ANDREAS OFFICER DIRECTORY",
+    "subtitle": "Official roster of all registered LSPD, BCSO, SASP, and SAPR law enforcement personnel in the IME Roleplay community.",
+    "search_placeholder": "Search officer name, callsign, or badge...",
+    "filter_all": "All Units",
+    "filter_live": "10-8 Live Only",
+    "status_online": "10-8 Live Patrol",
+    "status_offline": "10-7 Standby / Off Duty",
+    "add_officer": "Add New Officer",
+    "total_officers": "Total Officers",
+    "active_now": "10-8 Live Patrols"
+  },
+  "feedback": {
+    "title": "FEEDBACK & BUG REPORT CENTER",
+    "subtitle": "Help us improve the IME RP Police Duty Terminal platform. Report technical bugs, document typos, or request new features.",
+    "cat_bug": "Bug Report",
+    "cat_typo": "Data / Typo Correction",
+    "cat_feature": "Feature Request",
+    "cat_other": "Other Inquiry",
+    "sender_name": "Sender Name",
+    "sender_name_ph": "Your Name / Callsign...",
+    "email": "Email Address",
+    "email_ph": "name@email.com",
+    "submit": "Submit Feedback",
+    "submitting": "Submitting...",
+    "success_toast": "Thank you! Your feedback report has been successfully submitted."
+  },
+  "faq": {
+    "title": "OPERATIONAL MANUAL & FAQS",
+    "subtitle": "Find tactical guidelines, radio frequency allocations, bodycam troubleshooting, and officer registration rules.",
+    "search_placeholder": "Type keyword (e.g. #imepolice, Focus Mode, TAC Radio)...",
+    "quick_keywords": "Quick Keywords:",
+    "sop_count": "SOP DOCUMENTS",
+    "search_results": "Search results: {query} ({count} documents)",
+    "showing_count": "Showing {count} SOP documents"
+  },
+  "about": {
+    "title": "ABOUT THE PLATFORM",
+    "hero_statement": "Building a patrol monitoring hub that respects your time.",
+    "hero_description": "This platform was born out of a simple need: providing an integrated bodycam monitoring hub that respects viewer and command focus, eliminates navigation friction, and delivers an uninterrupted multiview experience.",
+    "badge_tag": "ABOUT THE PLATFORM"
+  },
+  "catalog": {
+    "live_now": "Live now",
+    "live_summary": "{units} units · {viewers} watching",
+    "watch_all": "Watch all",
+    "active_incident": "Active incident · {name}",
+    "active_incident_subtitle": "One incident, every angle",
+    "watch_povs": "Watch {count} POVs",
+    "top_10_patrols": "Top 10 patrols this month",
+    "top_10_patrols_last_month": "Top 10 patrols last month",
+    "dept_patrol": "{dept} Patrol",
+    "recent_replays": "Recent replays",
+    "pov_selected": "{count} POVs selected",
+    "clear_tray": "Clear",
+    "open_multiview": "Open multiview",
+    "detail_officer_aria": "Officer details",
+    "add_to_multiview": "Add to multiview",
+    "remove_from_multiview": "Remove from multiview",
+    "watching_title": "{count} watching · {title}",
+    "scroll_left": "Scroll left",
+    "scroll_right": "Scroll right",
+    "patrol_by_dept": "Patrol by department",
+    "no_live_units": "No {dept} units live right now",
+    "hide_officer": "Hide this officer",
+    "manage_visibility": "Manage Officer Visibility"
+  },
+  "officer_detail": {
+    "watch": "Watch",
+    "in_multiview": "In multiview",
+    "multiview": "Multiview",
+    "hide_officer": "Hide This Officer"
+  },
+  "multiview_tile": {
+    "replay": "REPLAY",
+    "offline": "OFFLINE",
+    "mute": "Mute",
+    "unmute": "Listen to this POV",
+    "make_main": "Make main",
+    "close_pov": "Close POV",
+    "watch_as_main": "Watch {name} as main",
+    "pov_fallback": "POV"
+  },
+  "squad": {
+    "title": "Squad",
+    "community_squads": "Community Squads",
+    "community_subtitle": "Officer rosters curated by the community to watch together",
+    "menu": "Squad",
+    "my_squads": "My Squads",
+    "my_squads_subtitle": "Your custom collections of officers to monitor",
+    "no_squads": "No squads yet",
+    "active_squad": "Active Squad: {name}",
+    "exit_squad": "Exit Squad",
+    "save_current_pov": "Save current POVs as Squad",
+    "login_to_create": "Sign in to create a squad",
+    "dialog_title_create": "Save New Squad",
+    "dialog_title_edit": "Edit Squad",
+    "dialog_desc": "Group your favorite officers together for quick multiview monitoring.",
+    "name_label": "Squad Name",
+    "name_placeholder": "e.g. SWAT Alpha 5",
+    "desc_label": "Description (Optional)",
+    "desc_placeholder": "e.g. Night patrol units across Los Santos",
+    "visibility_label": "Visibility",
+    "visibility_private": "Private (only you)",
+    "visibility_public": "Public (visible on dashboard)",
+    "officers_label": "Squad Members ({count})",
+    "officers_min_hint": "Select at least 1 officer",
+    "save_button": "Save Squad",
+    "saving": "Saving...",
+    "fork_button": "Fork Squad",
+    "edit_button": "Edit squad",
+    "fork_and_edit": "Fork & Edit",
+    "fork_success": "Squad successfully forked to your private collection.",
+    "save_success": "Squad saved successfully.",
+    "members_offline": "{count} squad members are currently offline.",
+    "no_live_members": "All squad members are currently offline.",
+    "not_found": "Squad not found or private.",
+    "delete_button": "Delete Squad",
+    "delete_confirm_title": "Delete Squad?",
+    "delete_confirm_desc": "Are you sure you want to delete this squad? This action cannot be undone.",
+    "delete_confirm_action": "Yes, Delete Squad",
+    "delete_success": "Squad deleted successfully.",
+    "fork_confirm_title": "Fork Squad?",
+    "fork_confirm_desc": "Do you want to fork this squad into your personal squads collection?",
+    "fork_confirm_action": "Yes, Fork Squad"
+  },
+  "ranking": {
+    "title": "Officer Rankings",
+    "subtitle": "Leaderboards for operational achievements, patrol duty hours, and community support for San Andreas officers.",
+    "period": "Period: {period}",
+    "reset_cycle": "Reset Cycle: {days} Days Left",
+    "tabs": {
+      "duty_month": "This Month",
+      "duty_last_month": "Last Month",
+      "subscribers": "Top Subscribers",
+      "road_to_1k": "Road to 1K",
+      "recently_on_duty": "Recently On Duty"
+    },
+    "columns": {
+      "rank": "#",
+      "officer": "Officer",
+      "department": "Department",
+      "hours": "Total Hours",
+      "subscribers": "Subscribers",
+      "progress": "Target 1K",
+      "last_duty": "Last Duty",
+      "channel": "Channel"
+    },
+    "empty": {
+      "duty_month": "No patrol duty hours recorded for this month yet.",
+      "duty_last_month": "No patrol duty hours recorded for last month.",
+      "subscribers": "No officer subscriber data available.",
+      "road_to_1k": "No officers in the Road to 1K category.",
+      "recently_on_duty": "No recent duty activity recorded."
+    },
+    "podium": {
+      "rank_1": "Rank #1",
+      "rank_2": "Rank #2",
+      "rank_3": "Rank #3"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your account details, officer duty profile, and tactical bio-link.",
+    "tab_account": "Account",
+    "tab_officer": "Officer profile",
+    "tab_biolink": "Bio-link",
+    "avatar_card_title": "Profile photo",
+    "avatar_card_desc": "Photos are retrieved from your YouTube channel. Some officers use their real faces on their channels; you can hide this photo from public pages, directory, ranking, bio-link, and Multiview. The photo will be replaced with a default symbol.",
+    "avatar_hide_label": "Hide my profile photo",
+    "avatar_status_visible": "Shown on public pages.",
+    "avatar_status_hidden": "Hidden — default symbol is used across all pages.",
+    "avatar_update_success": "Profile photo visibility updated successfully.",
+    "avatar_update_error": "Failed to update profile photo visibility."
+  },
+  "admin": {
+    "officer_form": {
+      "avatar_url": "Profile Photo URL",
+      "hide_avatar_label": "Hide this officer's profile photo",
+      "hide_avatar_desc": "Photo is replaced with a default symbol on public pages, directory, ranking, bio-link, and Multiview. Admins still see the real photo."
+    }
+  },
+  "officer": {
+    "hiatus_badge": "Hiatus",
+    "hiatus_tooltip": "Not live for > {days} days"
+  },
+  "biolink_promo": {
+    "hero_title": "One link for everything you build.",
+    "hero_subtitle": "Share /@you on your live stream — donations, social links, and patrol partners all in one hub.",
+    "cta_officer": "I am an officer — start verification",
+    "cta_example": "View examples",
+    "open_example": "Open /@{slug}",
+    "features_title": "What can you share on your page?",
+    "features_donation_title": "Support & Donations",
+    "features_donation_desc": "Saweria, Trakteer, BagiBagi, Tako, Sociabuzz with prominent donation buttons.",
+    "features_social_title": "Social Media",
+    "features_social_desc": "Link your Instagram, TikTok, YouTube channel, and community Discord server.",
+    "features_partners_title": "Patrol Partners",
+    "features_partners_desc": "Showcase your squad partners with live on-duty stream telemetry.",
+    "themes_title": "Tactical Theme Presets",
+    "themes_subtitle": "Authentic law enforcement backdrops and accents engineered for high readability and contrast.",
+    "verify_title": "Why do you need verification?",
+    "verify_points": [
+      "Only you can update your bio at /@you — no impersonators.",
+      "Official law enforcement badge displayed on the page as proof of identity.",
+      "Patrol partners are verified officers linked directly across the network."
+    ],
+    "faq_title": "Frequently Asked Questions",
+    "faq": [
+      {
+        "q": "Do I have to pay?",
+        "a": "No, this official bio-link hub is 100% free for all law enforcement officers."
+      },
+      {
+        "q": "How long does verification take?",
+        "a": "Once your YouTube channel token is verified, your profile activates in minutes."
+      },
+      {
+        "q": "What happens if I retire?",
+        "a": "Your public page is safely flagged as 'Unclaimed' and links are temporarily paused."
+      },
+      {
+        "q": "Can I change my /@ slug?",
+        "a": "Yes, with SASP command approval, at most once every 90 days."
+      }
+    ],
+    "footer_cta_title": "Launch your official tactical bio-link today."
+  }
+}

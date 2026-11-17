@@ -1,0 +1,487 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Officer;
+use App\Models\Agency;
+use App\Models\Rank;
+use App\Models\Division;
+use App\Models\Certification;
+use App\Models\ActiveStream;
+use App\Jobs\SyncOfficerStreamsJob;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class OfficerManagementController extends Controller
+{
+    /**
+     * List all officers from database with search & department filters.
+     */
+    public function index(Request $request)
+    {
+        $query = Officer::with(['agency', 'rankRelation', 'division', 'certifications', 'user:id,name,email,role,status', 'bioProfile', 'activeStream:id,officer_id,video_id,status']);
+
+        if ($request->filled('dept') && $request->dept !== 'ALL') {
+            $query->where('department', $request->dept);
+        }
+
+        if ($request->filled('search')) {
+            $search = strtolower($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(officer_name) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(streamer_name) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(callsign) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(handle) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(badge_number) LIKE ?', ["%{$search}%"])
+                  ->orWhereRaw('LOWER(station) LIKE ?', ["%{$search}%"]);
+            });
+        }
+
+        $officers = $query->orderBy('department')->orderBy('rank')->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $officers,
+            'count' => $officers->count(),
+        ]);
+    }
+
+    /**
+     * Store a newly created officer in MySQL database.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'handle' => 'required|string|max:100',
+            'streamer_name' => 'required|string|max:150',
+            'officer_name' => 'required|string|max:150',
+            'callsign' => 'required|string|max:50',
+            'department' => 'required|string|max:50',
+            'rank' => 'nullable|string|max:100',
+            'badge_number' => 'nullable|string|max:50',
+            'station' => 'nullable|string|in:71,72,Central',
+            'agency_id' => 'nullable|exists:agencies,id',
+            'rank_id' => 'nullable|exists:ranks,id',
+            'division_id' => 'nullable|exists:divisions,id',
+            'duty_status' => 'nullable|string|max:50',
+            'channel_id' => 'nullable|string|max:64',
+            'avatar_url' => 'nullable|string|max:500',
+            'avatar_is_custom' => 'sometimes|boolean',
+            'avatar_hidden' => 'sometimes|boolean',
+            'is_active' => 'nullable|boolean',
+            'monthly_duty_minutes' => 'nullable|integer|min:0',
+            'bypass_hashtag_check' => 'nullable|boolean',
+        ]);
+
+        $handle = trim($validated['handle']);
+        if (!str_starts_with($handle, '@')) {
+            $handle = '@' . $handle;
+        }
+        $validated['handle'] = $handle;
+
+        // Resolve real YouTube channel info if possible
+        if (!empty($handle)) {
+            try {
+                $scraper = app(\App\Services\YouTubeScraperService::class);
+                $info = $scraper->fetchChannelInfo($handle);
+                if ($info && !empty($info['channel_id'])) {
+                    $validated['channel_id'] = $info['channel_id'];
+                    if (!empty($info['avatar_url']) && empty($validated['avatar_url'])) {
+                        $validated['avatar_url'] = $info['avatar_url'];
+                    }
+                    if (isset($info['subscriber_count'])) {
+                        $validated['subscriber_count'] = $info['subscriber_count'];
+                        $validated['subscriber_count_text'] = $info['subscriber_count_text'] ?? null;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Fallback to auto-generated if network check fails
+            }
+        }
+
+        // Auto-generate unique channel_id if still empty
+        if (empty($validated['channel_id'])) {
+            $validated['channel_id'] = 'UC_' . Str::slug(str_replace('@', '', $handle), '_') . '_' . substr(md5($handle . time()), 0, 8);
+        }
+
+        // Auto avatar if empty
+        if (empty($validated['avatar_url'])) {
+            $seed = Str::slug($handle);
+            $validated['avatar_url'] = "https://api.dicebear.com/7.x/bottts/svg?seed={$seed}";
+        }
+
+        // Backward compatibility mapping for department and rank
+        if (!empty($validated['agency_id'])) {
+            $agency = Agency::find($validated['agency_id']);
+            if ($agency) {
+                $validated['department'] = $agency->agency_code;
+            }
+        }
+        if (!empty($validated['rank_id'])) {
+            $rankModel = Rank::find($validated['rank_id']);
+            if ($rankModel) {
+                $validated['rank'] = $rankModel->rank_title;
+            }
+        }
+
+        $validated['rank'] = $validated['rank'] ?? 'Officer';
+        $validated['badge_number'] = $validated['badge_number'] ?? '#000';
+        $validated['station'] = $validated['station'] ?? 'Central';
+        $validated['duty_status'] = $validated['duty_status'] ?? '10-8 (On-Duty)';
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['bypass_hashtag_check'] = $request->boolean('bypass_hashtag_check', false);
+        $validated['monthly_duty_minutes'] = $request->input('monthly_duty_minutes', 0);
+
+        if ($request->has('avatar_is_custom')) {
+            $validated['avatar_is_custom'] = $request->boolean('avatar_is_custom');
+        } elseif (!empty($request->avatar_url) && !str_contains($request->avatar_url, 'dicebear')) {
+            $validated['avatar_is_custom'] = true;
+        } else {
+            $validated['avatar_is_custom'] = false;
+        }
+
+        // Check if handle or channel_id already exists
+        $existing = Officer::where('handle', $validated['handle'])
+            ->orWhere('channel_id', $validated['channel_id'])
+            ->first();
+
+        if ($existing) {
+            $existing->update($validated);
+            $officer = $existing;
+        } else {
+            $officer = Officer::create($validated);
+        }
+
+        // Non-blocking stream sync trigger (if queue driver is active)
+        try {
+            if (config('queue.default') !== 'sync') {
+                SyncOfficerStreamsJob::dispatch();
+            }
+        } catch (\Throwable $e) {
+            // Ignore queue dispatch error to prevent slowing down HTTP store response
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Officer {$officer->officer_name} ({$officer->callsign}) successfully added to database.",
+            'data' => $officer->load(['agency', 'rankRelation', 'division', 'certifications']),
+        ], 201);
+    }
+
+    /**
+     * Update an existing officer in MySQL database.
+     */
+    public function update(Request $request, $id)
+    {
+        $officer = Officer::findOrFail($id);
+
+        $validated = $request->validate([
+            'handle' => 'required|string|max:100',
+            'streamer_name' => 'required|string|max:150',
+            'officer_name' => 'required|string|max:150',
+            'callsign' => 'required|string|max:50',
+            'department' => 'required|string|max:50',
+            'rank' => 'nullable|string|max:100',
+            'badge_number' => 'nullable|string|max:50',
+            'station' => 'nullable|string|in:71,72,Central',
+            'agency_id' => 'nullable|exists:agencies,id',
+            'rank_id' => 'nullable|exists:ranks,id',
+            'division_id' => 'nullable|exists:divisions,id',
+            'duty_status' => 'nullable|string|max:50',
+            'channel_id' => 'nullable|string|max:64',
+            'avatar_url' => 'nullable|string|max:500',
+            'avatar_is_custom' => 'sometimes|boolean',
+            'avatar_hidden' => 'sometimes|boolean',
+            'is_active' => 'nullable|boolean',
+            'monthly_duty_minutes' => 'nullable|integer|min:0',
+            'bypass_hashtag_check' => 'nullable|boolean',
+        ]);
+
+        $handle = trim($validated['handle']);
+        if (!str_starts_with($handle, '@')) {
+            $handle = '@' . $handle;
+        }
+        $validated['handle'] = $handle;
+
+        // Backward compatibility mapping for department and rank
+        if (!empty($validated['agency_id'])) {
+            $agency = Agency::find($validated['agency_id']);
+            if ($agency) {
+                $validated['department'] = $agency->agency_code;
+            }
+        }
+        if (!empty($validated['rank_id'])) {
+            $rankModel = Rank::find($validated['rank_id']);
+            if ($rankModel) {
+                $validated['rank'] = $rankModel->rank_title;
+            }
+        }
+
+        if ($request->has('bypass_hashtag_check')) {
+            $validated['bypass_hashtag_check'] = $request->boolean('bypass_hashtag_check');
+        }
+
+        if ($request->has('avatar_is_custom')) {
+            $validated['avatar_is_custom'] = $request->boolean('avatar_is_custom');
+        } elseif (array_key_exists('avatar_url', $validated) && $validated['avatar_url'] !== $officer->avatar_url) {
+            $validated['avatar_is_custom'] = true;
+        }
+
+        $beforeState = [
+            'officer_name' => $officer->officer_name,
+            'callsign' => $officer->callsign,
+            'rank' => $officer->rank,
+            'department' => $officer->department,
+        ];
+
+        $avatarHiddenChanged = array_key_exists('avatar_hidden', $validated) && (bool) $officer->avatar_hidden !== (bool) $validated['avatar_hidden'];
+        $oldAvatarHidden = (bool) $officer->avatar_hidden;
+        $newAvatarHidden = array_key_exists('avatar_hidden', $validated) ? (bool) $validated['avatar_hidden'] : $oldAvatarHidden;
+
+        $officer->update($validated);
+
+        if ($avatarHiddenChanged) {
+            $adminUser = \Illuminate\Support\Facades\Auth::user();
+            $adminName = $adminUser ? $adminUser->name : 'Admin';
+            \App\Services\AuditLogger::log(
+                'officer.avatar_hidden_changed',
+                'officer',
+                $officer->id,
+                ['avatar_hidden' => $oldAvatarHidden],
+                ['avatar_hidden' => $newAvatarHidden],
+                "Admin {$adminName} mengubah visibilitas foto profil officer"
+            );
+        }
+
+        if ($officer->bioProfile) {
+            \App\Services\BioProfileService::invalidatePublicCache($officer->bioProfile->slug);
+        }
+
+        // PRD v3 T-19: If officer is claimed, log admin override
+        if ($officer->user_id !== null) {
+            \App\Services\AuditLogger::log(
+                'officer.admin_override',
+                'officer',
+                $officer->id,
+                $beforeState,
+                $validated,
+                'Admin melakukan penyesuaian/override manual pada data perwira yang sudah terikat pemilik'
+            );
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Officer {$officer->officer_name} updated successfully.",
+            'data' => $officer->load(['agency', 'rankRelation', 'division', 'certifications']),
+        ]);
+    }
+
+    /**
+     * Adjust accumulated monthly duty minutes for an officer.
+     */
+    public function adjustDuty(Request $request, $id)
+    {
+        $officer = Officer::findOrFail($id);
+
+        $validated = $request->validate([
+            'action' => 'nullable|string|in:add,subtract,set',
+            'minutes' => 'required|integer',
+        ]);
+
+        $action = $validated['action'] ?? 'set';
+        $minutes = (int) $validated['minutes'];
+
+        $currentMinutes = (int) ($officer->monthly_duty_minutes ?? 0);
+
+        if ($action === 'add') {
+            $newMinutes = max(0, $currentMinutes + abs($minutes));
+        } else if ($action === 'subtract') {
+            $newMinutes = max(0, $currentMinutes - abs($minutes));
+        } else {
+            $newMinutes = max(0, $minutes);
+        }
+
+        $officer->monthly_duty_minutes = $newMinutes;
+        $officer->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Waktu akumulasi patroli {$officer->officer_name} diperbarui menjadi {$newMinutes} menit (" . round($newMinutes / 60, 1) . " jam).",
+            'monthly_duty_minutes' => $newMinutes,
+            'data' => $officer,
+        ]);
+    }
+
+    /**
+     * Toggle hashtag check bypass for an officer.
+     */
+    public function toggleHashtagBypass(Request $request, $id)
+    {
+        $officer = Officer::findOrFail($id);
+        
+        if ($request->has('bypass_hashtag_check')) {
+            $officer->bypass_hashtag_check = $request->boolean('bypass_hashtag_check');
+        } else {
+            $officer->bypass_hashtag_check = !$officer->bypass_hashtag_check;
+        }
+        
+        $officer->save();
+
+        $statusStr = $officer->bypass_hashtag_check ? 'AKTIF (Bypass Hashtag / Validasi Selalu Lolos)' : 'NONAKTIF (Wajib Hashtag Valid)';
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Bypass hashtag valid untuk {$officer->officer_name} sekarang: {$statusStr}.",
+            'bypass_hashtag_check' => $officer->bypass_hashtag_check,
+            'data' => $officer,
+        ]);
+    }
+
+    /**
+     * Toggle the active status of an officer.
+     */
+    public function toggle($id)
+    {
+        $officer = Officer::findOrFail($id);
+        $officer->is_active = !$officer->is_active;
+        $officer->save();
+
+        // If deactivated, mark active streams as ended / delete them
+        if (!$officer->is_active && !empty($officer->channel_id)) {
+            ActiveStream::where('channel_id', $officer->channel_id)->delete();
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Officer {$officer->officer_name} is now " . ($officer->is_active ? 'ACTIVE' : 'DISABLED'),
+            'is_active' => $officer->is_active,
+            'data' => $officer,
+        ]);
+    }
+
+    /**
+     * Delete an officer permanently from database.
+     */
+    public function destroy($id)
+    {
+        $officer = Officer::findOrFail($id);
+        
+        // Remove any associated active streams
+        ActiveStream::where('channel_id', $officer->channel_id)->delete();
+
+        $name = $officer->officer_name;
+        $callsign = $officer->callsign;
+        
+        $officer->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Officer {$name} ({$callsign}) deleted successfully.",
+        ]);
+    }
+
+    /**
+     * Render the dedicated standalone Inertia Admin Hub page.
+     */
+    public function adminPage(Request $request)
+    {
+        $officersCount = Officer::count();
+        $activeOfficersCount = Officer::where('is_active', true)->count();
+        $lspdCount = Officer::where('is_active', true)->where('department', 'LSPD')->count();
+        $bcsoCount = Officer::where('is_active', true)->where('department', 'BCSO')->count();
+        $saspCount = Officer::where('is_active', true)->where('department', 'SASP')->count();
+        $saprCount = Officer::where('is_active', true)->whereIn('department', ['SAPR', 'PARK RANGER'])->count();
+        $liveCount = ActiveStream::where('status', 'LIVE')->count();
+
+        $agenciesMaster = Agency::with(['ranks', 'divisions'])->get();
+        $usersList = \App\Models\User::where('status', 'active')->orderBy('name')->get(['id', 'name', 'email', 'role']);
+        $pendingClaimsCount = \App\Models\OfficerClaim::where('status', 'pending')->count();
+
+        return \Inertia\Inertia::render('Admin/OfficerManagement', [
+            'stats' => [
+                'total_officers' => $officersCount,
+                'active_officers' => $activeOfficersCount,
+                'live_streams' => $liveCount,
+                'lspd' => $lspdCount,
+                'bcso' => $bcsoCount,
+                'sasp' => $saspCount,
+                'sapr' => $saprCount,
+                'pending_claims' => $pendingClaimsCount,
+            ],
+            'agenciesMaster' => $agenciesMaster,
+            'usersList' => $usersList,
+        ]);
+    }
+
+    /**
+     * Check and verify a YouTube channel / handle in real-time.
+     */
+    public function checkChannel(Request $request, \App\Services\YouTubeScraperService $scraper)
+    {
+        $request->validate([
+            'handle' => 'required|string|max:255',
+        ]);
+
+        $info = $scraper->fetchChannelInfo($request->handle);
+
+        if (!$info) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'YouTube channel not found or inaccessible. Please verify the handle or URL.',
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $info,
+        ]);
+    }
+
+    /**
+     * Trigger live stream crawling on-demand.
+     */
+    public function syncStreams(\App\Services\YouTubeScraperService $scraper)
+    {
+        try {
+            $job = new SyncOfficerStreamsJob();
+            app()->call([$job, 'handle']);
+
+            $liveCount = ActiveStream::where('status', 'LIVE')->count();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Live stream synchronization complete. Found {$liveCount} units currently LIVE on patrol.",
+                'live_count' => $liveCount,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Manual stream sync failed: " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to sync live streams: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Trigger subscriber count update on-demand.
+     */
+    public function syncSubscribers()
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('officer:sync-subscribers');
+            $output = \Illuminate\Support\Facades\Artisan::output();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'YouTube subscriber count synchronization completed successfully.',
+                'output' => $output,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Manual subscriber sync failed: " . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update subscriber counts: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+}
