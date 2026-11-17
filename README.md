@@ -73,6 +73,15 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the branc
 
 To report a security issue, **do not open a public issue**; follow [SECURITY.md](SECURITY.md).
 
+## Support & Donate
+
+If this project helps you or your community, you can support ongoing development and server costs via:
+
+- **GitHub:** [@AgusTinusT](https://github.com/AgusTinusT)
+- **BagiBagi:** [bagibagi.co/Gusti-Aidan](https://bagibagi.co/Gusti-Aidan)
+
+Non-code contributions (bug reports, feature ideas, and testing) are equally appreciated.
+
 ## Deployment
 
 Pushing to `main` deploys to production and pushing to `staging` deploys to staging, after CI passes. See [docs/DEPLOY_GITHUB_ACTIONS.md](docs/DEPLOY_GITHUB_ACTIONS.md). A production `.env` template is in `.env.production.example`.

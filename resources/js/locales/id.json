@@ -139,7 +139,9 @@
     "col_explore": "Jelajahi",
     "col_for_officers": "Untuk perwira",
     "col_help": "Bantuan",
-    "officer_bio_link": "Bio-link perwira"
+    "officer_bio_link": "Bio-link perwira",
+    "github_repo": "GitHub (Kontribusi)",
+    "discord_server": "Discord Server"
   },
   "nav": {
     "dashboard": "Beranda",
