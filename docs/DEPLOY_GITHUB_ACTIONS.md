@@ -86,16 +86,28 @@ Staging adalah salinan kedua di VPS yang sama, dengan folder, database, `.env`, 
    git push origin main:staging
    ```
 
-2. **Arahkan DNS subdomain** staging (record A) ke IP VPS. Kalau production lewat Cloudflare, lakukan hal yang sama untuk staging.
+2. **Staging baru di subdomain:** arahkan DNS subdomain staging (record A) ke IP VPS. Kalau production lewat Cloudflare, lakukan hal yang sama untuk staging. Lewati langkah ini kalau staging sudah dilayani lewat `IP:port`.
 
-3. **Jalankan skrip setup di VPS**, dari folder production. Ganti domain-nya:
+3. **Jalankan skrip setup di VPS**, dari folder production. Pilih salah satu:
 
    ```bash
    cd /var/www/ime-police-multiview && git pull origin main
+
+   # staging baru di subdomain (membuat nginx dan SSL)
    bash scripts/setup-staging.sh --domain staging.domain-anda.com
+
+   # staging yang SUDAH ADA dan dilayani lewat IP:port (nginx tidak disentuh)
+   bash scripts/setup-staging.sh --url http://IP_VPS:4545
    ```
 
-   Skrip ini mengerjakan semuanya:
+   Untuk staging yang sudah ada, database dan `.env`-nya **tidak diubah**, kecuali `APP_URL`. Skrip hanya:
+   - memindahkan folder ke branch `staging`;
+   - memberi peringatan untuk nilai yang sama dengan production, misalnya webhook Discord atau email yang benar-benar terkirim;
+   - **berhenti** kalau staging ternyata memakai database production.
+
+   Tambahkan `--apply-env` untuk menerapkan nilai aman staging (pada tabel di bawah) secara otomatis.
+
+   Untuk staging baru, skrip ini mengerjakan semuanya:
    - clone ke `/var/www/ime-police-staging` dan membuat database `ime_police_staging` beserta user-nya, dengan password acak;
    - menyalin `.env` dari production lalu mengubah nilai yang wajib berbeda;
    - mengatur izin folder, lalu menjalankan deploy pertama;

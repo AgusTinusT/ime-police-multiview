@@ -2,10 +2,14 @@
 # Siapkan lingkungan staging di VPS yang sama dengan production (sekali jalan).
 # Jalankan di VPS sebagai user deploy (bukan root); sudo dipakai bila perlu.
 #
-#   bash scripts/setup-staging.sh --domain staging.domain-anda.com [opsi]
+#   bash scripts/setup-staging.sh --domain staging.domain-anda.com [opsi]   # staging baru di subdomain
+#   bash scripts/setup-staging.sh --url http://IP:4545                       # staging yang sudah ada
 #
 # Opsi:
-#   --domain <host>      subdomain staging (wajib)
+#   --domain <host>      subdomain staging; nginx dan SSL dibuat untuk domain ini
+#   --url <url>          APP_URL staging bila tidak memakai --domain (mis. http://IP:4545);
+#                        nginx tidak disentuh
+#   --apply-env          paksa nilai khusus staging di .env yang SUDAH ADA (lihat apply_staging_env)
 #   --dir <folder>       folder staging           (default: /var/www/ime-police-staging)
 #   --prod-dir <folder>  folder production         (default: /var/www/ime-police-multiview)
 #   --db <nama>          database staging          (default: ime_police_staging)
@@ -14,13 +18,14 @@
 #   --workers            pasang worker queue staging di Supervisor (clipper + sync)
 #   --no-nginx           jangan buat konfigurasi nginx
 #
-# Aman dijalankan ulang: langkah yang sudah selesai dilewati. .env staging yang sudah ada
-# tidak ditimpa, kecuali nilai yang wajib berbeda dari production (lihat apply_staging_env).
+# Aman dijalankan ulang dan aman untuk staging yang sudah berjalan: bila .env staging sudah ada,
+# database dan .env-nya TIDAK diubah (kecuali --apply-env); skrip hanya memeriksa dan memberi
+# peringatan bila ada nilai yang berbahaya, mis. database yang sama dengan production.
 set -Eeuo pipefail
 
-domain="" dir="/var/www/ime-police-staging" prod_dir="/var/www/ime-police-multiview"
+domain="" url="" dir="/var/www/ime-police-staging" prod_dir="/var/www/ime-police-multiview"
 db="ime_police_staging" db_user="ime_staging"
-copy_data=false workers=false nginx=true
+copy_data=false workers=false nginx=true apply_env=false
 branch="staging"
 
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
@@ -30,6 +35,8 @@ fail() { printf '\033[1;31m[gagal] %s\033[0m\n' "$*" >&2; exit 1; }
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --domain) domain="${2:?}"; shift 2 ;;
+        --url) url="${2:?}"; shift 2 ;;
+        --apply-env) apply_env=true; shift ;;
         --dir) dir="${2:?}"; shift 2 ;;
         --prod-dir) prod_dir="${2:?}"; shift 2 ;;
         --db) db="${2:?}"; shift 2 ;;
@@ -37,12 +44,14 @@ while [[ $# -gt 0 ]]; do
         --copy-data) copy_data=true; shift ;;
         --workers) workers=true; shift ;;
         --no-nginx) nginx=false; shift ;;
-        -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) fail "Opsi tidak dikenal: $1" ;;
     esac
 done
 
-[[ -n "$domain" ]] || fail "--domain wajib diisi, mis. --domain staging.domain-anda.com"
+[[ -n "$domain" || -n "$url" ]] || fail "Isi --domain staging.domain-anda.com atau --url http://IP:PORT"
+[[ -n "$url" ]] || url="https://$domain"
+[[ -n "$domain" ]] || nginx=false
 [[ "$(id -u)" -ne 0 ]] || fail "Jalankan sebagai user deploy (mis. turnipserver), bukan root."
 [[ "$db" =~ ^[A-Za-z0-9_]+$ && "$db_user" =~ ^[A-Za-z0-9_]+$ ]] || fail "Nama database/user hanya boleh huruf, angka, dan _."
 [[ -f "$prod_dir/.env" ]] || fail "Production tidak ditemukan di $prod_dir (.env tidak ada)."
@@ -79,36 +88,59 @@ echo "OK ($remote_url)"
 step "2. Clone ke $dir"
 if [[ -d "$dir/.git" ]]; then
     echo "Sudah ada, dilewati."
+elif [[ -d "$dir" && -n "$(ls -A "$dir" 2>/dev/null)" ]]; then
+    fail "$dir sudah berisi file tapi bukan repo git. Pindahkan dulu (mis. mv $dir $dir.lama), lalu jalankan ulang; .env lama bisa disalin kembali sesudahnya."
 else
     sudo install -d -o "$USER" -g www-data "$dir"
     git clone --branch "$branch" "$remote_url" "$dir"
 fi
 cd "$dir"
-[[ "$(git rev-parse --abbrev-ref HEAD)" == "$branch" ]] || git checkout "$branch"
-
-step "3. Database $db"
-db_pass_file="$dir/storage/.staging-db-password"
-mkdir -p storage
-if [[ -f .env ]] && [[ "$(env_get .env DB_DATABASE)" == "$db" ]] && [[ -n "$(env_get .env DB_PASSWORD)" ]]; then
-    db_pass="$(env_get .env DB_PASSWORD)"
-elif [[ -f "$db_pass_file" ]]; then
-    db_pass="$(cat "$db_pass_file")"
-else
-    db_pass="$(openssl rand -hex 20)"
-    (umask 077; printf '%s' "$db_pass" > "$db_pass_file")
+if [[ "$(git rev-parse --abbrev-ref HEAD)" != "$branch" ]]; then
+    git diff --quiet && git diff --cached --quiet \
+        || fail "Ada perubahan lokal di $dir; tidak bisa pindah ke branch $branch. Cek: git status"
+    echo "Pindah dari branch $(git rev-parse --abbrev-ref HEAD) ke $branch."
+    git fetch origin "$branch"
+    git checkout "$branch" 2>/dev/null || git checkout -b "$branch" --track "origin/$branch"
 fi
-sudo mysql <<SQL
+
+existing_env=false
+[[ -f .env ]] && existing_env=true
+
+if $existing_env; then
+    step "3. Database (staging yang sudah ada)"
+    db="$(env_get .env DB_DATABASE)"
+    db_user="$(env_get .env DB_USERNAME)"
+    db_pass="$(env_get .env DB_PASSWORD)"
+    echo "Memakai database dari .env staging: $db (user $db_user). Tidak ada yang diubah."
+else
+    step "3. Database $db"
+    db_pass_file="$dir/storage/.staging-db-password"
+    mkdir -p storage
+    if [[ -f "$db_pass_file" ]]; then
+        db_pass="$(cat "$db_pass_file")"
+    else
+        db_pass="$(openssl rand -hex 20)"
+        (umask 077; printf '%s' "$db_pass" > "$db_pass_file")
+    fi
+    sudo mysql <<SQL
 CREATE DATABASE IF NOT EXISTS \`$db\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS '$db_user'@'localhost' IDENTIFIED BY '$db_pass';
 ALTER USER '$db_user'@'localhost' IDENTIFIED BY '$db_pass';
 GRANT ALL PRIVILEGES ON \`$db\`.* TO '$db_user'@'localhost';
 FLUSH PRIVILEGES;
 SQL
-echo "Database dan user siap (password tersimpan di .env staging)."
+    echo "Database dan user siap (password tersimpan di .env staging)."
+fi
+
+# Pengaman utama: staging tidak boleh memakai database production (migrate staging akan
+# mengubah data asli).
+if [[ -z "$db" || "$db" == "$prod_db" ]]; then
+    fail "Staging memakai database production ($prod_db). Ubah DB_DATABASE di $dir/.env ke database terpisah, lalu jalankan ulang."
+fi
 
 step "4. .env staging"
-if [[ -f .env ]]; then
-    echo ".env sudah ada; hanya nilai khusus staging yang dipastikan."
+if $existing_env; then
+    echo ".env sudah ada."
 else
     cp "$prod_dir/.env" .env
     env_set .env APP_KEY ""
@@ -124,7 +156,6 @@ apply_staging_env() {
     env_set .env APP_NAME "\"${app_name:-App} (Staging)\""
     env_set .env APP_ENV staging
     env_set .env APP_DEBUG false
-    env_set .env APP_URL "https://$domain"
     env_set .env DB_DATABASE "$db"
     env_set .env DB_USERNAME "$db_user"
     env_set .env DB_PASSWORD "$db_pass"
@@ -138,8 +169,25 @@ apply_staging_env() {
     env_set .env GA_MEASUREMENT_ID ""
     env_set .env GOOGLE_SITE_VERIFICATION ""
 }
-apply_staging_env
-rm -f "$db_pass_file"
+env_set .env APP_URL "$url"
+if ! $existing_env || $apply_env; then
+    apply_staging_env
+    echo "Nilai khusus staging diterapkan (APP_URL=$url, database $db, email ke log, webhook kosong)."
+else
+    # .env lama dibiarkan; beri tahu nilai yang sama dengan production
+    for key in DISCORD_FEEDBACK_WEBHOOK DISCORD_TACTICAL_WEBHOOK_URL GA_MEASUREMENT_ID; do
+        value="$(env_get .env "$key")"
+        if [[ -n "$value" && "$value" == "$(env_get "$prod_dir/.env" "$key")" ]]; then
+            warn "$key di staging sama dengan production (notifikasi/analytics staging ikut tercampur)."
+        fi
+    done
+    [[ "$(env_get .env MAIL_MAILER)" == "log" ]] \
+        || warn "MAIL_MAILER staging bukan 'log': email dari staging benar-benar terkirim."
+    [[ "$(env_get .env SESSION_COOKIE)" != "$(env_get "$prod_dir/.env" SESSION_COOKIE)" ]] \
+        || warn "SESSION_COOKIE staging sama dengan production."
+    echo "Jalankan ulang dengan --apply-env untuk menerapkan nilai aman staging secara otomatis."
+fi
+rm -f "$dir/storage/.staging-db-password"
 
 step "5. Izin folder"
 mkdir -p storage/app/public storage/framework/{cache/data,sessions,views} storage/logs bootstrap/cache
@@ -252,15 +300,12 @@ SUP
     sudo supervisorctl update
 fi
 
+printf '\n\033[1;32mStaging siap: %s\033[0m\n\nLangkah berikutnya:\n' "$url"
+[[ -z "$domain" ]] || echo "  - DNS: record A \"$domain\" -> IP VPS ini (lewat Cloudflare bila production juga)."
 cat <<DONE
-
-$(printf '\033[1;32m')Staging siap: https://$domain$(printf '\033[0m')
-
-Langkah berikutnya:
-  1. DNS: record A "$domain" -> IP VPS ini (lewat Cloudflare bila production juga lewat Cloudflare).
-  2. GitHub Secret VPS_PATH_STAGING = $dir
-     Setelah itu setiap "git push origin staging" otomatis deploy ke sini.
-  3. Scheduler (sync YouTube, backup, reset bulanan) SENGAJA tidak dipasang untuk staging,
-     supaya tidak memakai kuota API atau menjalankan tugas ganda. Jalankan manual bila perlu:
-       php artisan schedule:run
+  - GitHub Secret VPS_PATH_STAGING = $dir
+    Setelah itu setiap "git push origin staging" otomatis deploy ke sini.
+  - Scheduler (sync YouTube, backup, reset bulanan) SENGAJA tidak dipasang untuk staging,
+    supaya tidak memakai kuota API atau menjalankan tugas ganda. Jalankan manual bila perlu:
+      php artisan schedule:run
 DONE
