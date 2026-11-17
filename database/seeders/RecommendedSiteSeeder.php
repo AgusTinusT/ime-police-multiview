@@ -47,6 +47,24 @@ class RecommendedSiteSeeder extends Seeder
                 'sort_order' => 1,
             ]
         );
+
+        RecommendedSite::updateOrCreate(
+            ['url' => 'https://mdt.xpp.wtf/'],
+            [
+                'name' => 'TANGAN KANAN XPP',
+                'badge' => 'XPP',
+                'poster_name' => 'TANGAN KANAN XPP',
+                'poster_subtitle' => 'MDT / CAD Specialist',
+                'poster_image_url' => '/images/recommended/xpp-sprite.jpg',
+                'background_image_url' => '/images/recommended/xpp-background.jpg',
+                'cta_text' => 'Kunjungi website',
+                'description' => 'Spesialis dokumentasi Incident Report & MDT / CAD minimalis untuk GTA RP (Alta PD, LSPD, BCSO, SASP). Dirancang cepat, akurat secara hukum, dan patuh standar 5W+1H dalam Bahasa Indonesia & Inggris.',
+                'chips' => ['MDT / CAD', 'Incident Report', '5W+1H'],
+                'is_featured' => true,
+                'is_active' => true,
+                'sort_order' => 2,
+            ]
+        );
     }
 }
 
