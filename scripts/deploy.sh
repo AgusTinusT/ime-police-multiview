@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Update this checkout from origin/main and rebuild it.
-# Works in both VPS folders (ime-police-staging and ime-police-multiview):
+# Update this checkout from origin and rebuild it.
 #
-#   cd /path/to/ime-police-staging && bash scripts/deploy.sh
+#   bash scripts/deploy.sh [options]
 #
 # Options:
-#   --maintenance  show the maintenance page while it runs
-#   --force        rebuild even when there are no new commits
+#   --branch <name>  git branch to deploy (default: main)
+#   --maintenance    show the maintenance page while it runs
+#   --force          rebuild even when there are no new commits
 #
 # Composer and npm reinstall only when their lock file differs from what was
 # last installed in this folder.
@@ -15,12 +15,33 @@ set -euo pipefail
 # Everything runs inside main(): bash parses the whole function before running
 # it, so the pull below can safely replace this file.
 main() {
-    local branch="main" maintenance=false force=false arg
-    for arg in "$@"; do
-        case "$arg" in
-            --maintenance) maintenance=true ;;
-            --force) force=true ;;
-            *) echo "Opsi tidak dikenal: $arg" >&2; exit 1 ;;
+    local branch="main" maintenance=false force=false
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --branch)
+                branch="${2:?--branch membutuhkan nama branch}"
+                shift 2
+                ;;
+            --branch=*)
+                branch="${1#*=}"
+                shift
+                ;;
+            --maintenance)
+                maintenance=true
+                shift
+                ;;
+            --force)
+                force=true
+                shift
+                ;;
+            -h|--help)
+                sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+                exit 0
+                ;;
+            *)
+                echo "Opsi tidak dikenal: $1" >&2
+                exit 1
+                ;;
         esac
     done
 
