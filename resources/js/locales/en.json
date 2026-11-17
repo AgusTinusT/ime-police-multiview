@@ -87,7 +87,8 @@
     "col_explore": "Explore",
     "col_for_officers": "For officers",
     "col_help": "Help",
-    "officer_bio_link": "Officer bio-link"
+    "officer_bio_link": "Officer bio-link",
+    "github_repo": "GitHub (Contribute)"
   },
   "nav": {
     "dashboard": "Home",

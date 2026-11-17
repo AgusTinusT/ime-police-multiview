@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
-import { Globe } from "@lucide/vue";
+import { ExternalLink, Globe } from "@lucide/vue";
 
 const { locale } = useI18n();
 
@@ -167,6 +167,17 @@ const toggleLanguage = () => {
                                     {{ $t("nav.feedback") }}
                                 </Link>
                             </li>
+                            <li>
+                                <a
+                                    href="https://github.com/AgusTinusT/ime-police-multiview"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="text-muted-foreground hover:text-foreground transition inline-flex items-center gap-1 py-0.5"
+                                >
+                                    <span>{{ $t("footer.github_repo") }}</span>
+                                    <ExternalLink class="size-3" />
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -210,8 +221,12 @@ const toggleLanguage = () => {
                 </p>
                 <p class="text-xs text-muted-foreground font-mono">
                     Developed with ❤️ by
-                    <span class="text-primary font-bold"
-                        >Gusti Aidan (Agus Tinus Turnip)</span
+                    <a
+                        href="https://github.com/AgusTinusT"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-primary font-bold hover:underline"
+                        >Gusti Aidan (Agus Tinus Turnip)</a
                     >
                 </p>
             </div>
