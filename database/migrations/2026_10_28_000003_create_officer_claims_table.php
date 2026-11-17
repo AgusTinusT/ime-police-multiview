@@ -24,14 +24,15 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected', 'expired', 'cancelled'])->default('pending');
             
-            // Generated columns to enforce maximum 1 pending claim per officer and per user at DB level
+            // Generated columns to enforce maximum 1 pending claim per officer and per user at DB level.
+            // CASE (bukan IF) supaya sama-sama jalan di MySQL dan SQLite (test/CI); hasilnya identik.
             $table->unsignedBigInteger('pending_officer_lock')
-                ->virtualAs("IF(status = 'pending', officer_id, NULL)")
+                ->virtualAs("CASE WHEN status = 'pending' THEN officer_id END")
                 ->nullable();
             $table->unique('pending_officer_lock', 'uq_one_pending_per_officer');
 
             $table->unsignedBigInteger('pending_user_lock')
-                ->virtualAs("IF(status = 'pending', user_id, NULL)")
+                ->virtualAs("CASE WHEN status = 'pending' THEN user_id END")
                 ->nullable();
             $table->unique('pending_user_lock', 'uq_one_pending_per_user');
 

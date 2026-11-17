@@ -107,6 +107,10 @@ class HiatusStatusTest extends TestCase
      */
     public function test_dashboard_filters_out_hiatus_and_ranking_keeps_hiatus(): void
     {
+        // Ranking bulan ini hanya menghitung menit dinas bila last_duty_at di bulan berjalan.
+        // Kunci waktu di akhir bulan supaya "25 hari lalu" tetap di bulan yang sama, apa pun tanggal test dijalankan.
+        $this->travelTo(now()->endOfMonth()->setTime(12, 0));
+
         $activeOfficer = Officer::create([
             'officer_name' => 'Ofc. Active Guy',
             'streamer_name' => 'Active Guy',

@@ -1,5 +1,7 @@
 name: Deploy
 
+# Push ke main -> production, push ke staging -> staging. Deploy hanya jalan setelah CI lulus.
+# Daftar Secrets dan cara mendapatkannya: docs/DEPLOY_GITHUB_ACTIONS.md
 on:
   push:
     branches: [main, staging]
@@ -13,51 +15,83 @@ on:
           - staging
           - production
 
+permissions:
+  contents: read
+
 jobs:
-  deploy-staging:
-    if: github.ref == 'refs/heads/staging' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: ci
     runs-on: ubuntu-latest
-    environment: staging
+    timeout-minutes: 30
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
+    # Satu deploy per environment dalam satu waktu; push berikutnya menunggu, tidak membatalkan
+    concurrency:
+      group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
+      cancel-in-progress: false
+
+    env:
+      TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+      VPS_PATH_PRODUCTION: ${{ secrets.VPS_PATH_PRODUCTION }}
+      VPS_PATH_STAGING: ${{ secrets.VPS_PATH_STAGING }}
 
     steps:
-      - name: Deploy to staging VPS
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_PATH: ${{ secrets.VPS_PATH_STAGING }}
+      - name: Cek Secrets
+        id: config
         run: |
-          if [ -z "$VPS_HOST" ] || [ -z "$VPS_USER" ] || [ -z "$VPS_SSH_KEY" ] || [ -z "$VPS_PATH" ]; then
-            echo "Skipping deploy: VPS_HOST, VPS_USER, VPS_SSH_KEY, or VPS_PATH_STAGING secret is not configured."
-            exit 0
+          if [ "$TARGET" = "production" ]; then
+            path="$VPS_PATH_PRODUCTION"; branch="main"; flags="--maintenance"
+          else
+            path="$VPS_PATH_STAGING"; branch="staging"; flags=""
           fi
-          mkdir -p ~/.ssh
+
+          missing=""
+          for name in VPS_HOST VPS_USER VPS_SSH_KEY VPS_KNOWN_HOSTS; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          [ -n "$path" ] || missing="$missing VPS_PATH_$(echo "$TARGET" | tr a-z A-Z)"
+
+          if [ -n "$missing" ]; then
+            if [ "$TARGET" = "staging" ]; then
+              # Staging opsional: belum disiapkan berarti dilewati, tapi terlihat jelas di ringkasan
+              echo "::warning::Deploy staging dilewati; Secrets belum diisi:$missing"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "::error::Deploy $TARGET gagal; Secrets belum diisi:$missing (lihat docs/DEPLOY_GITHUB_ACTIONS.md)"
+            exit 1
+          fi
+
+          {
+            echo "skip=false"
+            echo "path=$path"
+            echo "branch=$branch"
+            echo "flags=$flags"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Siapkan SSH
+        if: steps.config.outputs.skip != 'true'
+        run: |
+          install -m 700 -d ~/.ssh
           printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "cd '$VPS_PATH' && bash scripts/deploy.sh --branch staging"
+          # Sidik jari server disimpan di Secret, bukan diambil saat deploy (mencegah server palsu)
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host vps\n  HostName %s\n  User %s\n  Port %s\n  IdentityFile ~/.ssh/deploy_key\n  IdentitiesOnly yes\n  StrictHostKeyChecking yes\n  BatchMode yes\n  ServerAliveInterval 30\n' \
+            "$VPS_HOST" "$VPS_USER" "$VPS_PORT" > ~/.ssh/config
+          ssh vps 'echo "Tersambung ke $(hostname) sebagai $(whoami)"'
 
-  deploy-production:
-    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
-    runs-on: ubuntu-latest
-    environment: production
-
-    steps:
-      - name: Deploy to production VPS
+      - name: Deploy ke ${{ env.TARGET }}
+        if: steps.config.outputs.skip != 'true'
         env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_PATH: ${{ secrets.VPS_PATH_PRODUCTION }}
-        run: |
-          if [ -z "$VPS_HOST" ] || [ -z "$VPS_USER" ] || [ -z "$VPS_SSH_KEY" ] || [ -z "$VPS_PATH" ]; then
-            echo "Skipping deploy: VPS_HOST, VPS_USER, VPS_SSH_KEY, or VPS_PATH_PRODUCTION secret is not configured."
-            exit 0
-          fi
-          mkdir -p ~/.ssh
-          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "cd '$VPS_PATH' && bash scripts/deploy.sh --branch main --maintenance"
+          DEPLOY_PATH: ${{ steps.config.outputs.path }}
+          DEPLOY_BRANCH: ${{ steps.config.outputs.branch }}
+          DEPLOY_FLAGS: ${{ steps.config.outputs.flags }}
+        run: ssh vps "cd '$DEPLOY_PATH' && bash scripts/deploy.sh --branch '$DEPLOY_BRANCH' $DEPLOY_FLAGS"
