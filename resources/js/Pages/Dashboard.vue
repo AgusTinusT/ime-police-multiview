@@ -35,6 +35,7 @@ import CatalogCard from "@/Components/CatalogCard.vue";
 import CatalogRow from "@/Components/CatalogRow.vue";
 import ClipCatalogCard from "@/Components/ClipCatalogCard.vue";
 import SupportCatalogCard from "@/Components/SupportCatalogCard.vue";
+import NewOfficerCard from "@/Components/NewOfficerCard.vue";
 import OfficerDetailModal from "@/Components/OfficerDetailModal.vue";
 import { Toaster } from "@/Components/ui/sonner";
 import { useYouTubePlayer } from "@/Composables/useYouTubePlayer";
@@ -66,6 +67,10 @@ const props = defineProps({
         default: () => ({}),
     },
     supportOfficers: {
+        type: Array,
+        default: () => [],
+    },
+    newOfficers: {
         type: Array,
         default: () => [],
     },
@@ -184,6 +189,11 @@ const roadTo1kOfficers = computed(() => {
         .sort((a, b) => (Number(b.subscriber_count) || 0) - (Number(a.subscriber_count) || 0))
         .slice(0, 12);
 });
+
+// Officer yang baru ditambahkan (<= 14 hari) — server sudah memfilter batas waktunya.
+const recentlyAddedOfficers = computed(() =>
+    (props.newOfficers || []).filter((o) => !isOfficerDisabled(o)),
+);
 
 // Multiview tray: pick POVs from any row, then open them together.
 const tray = ref([]);
@@ -570,6 +580,19 @@ onMounted(() => {
                         @toggle-tray="toggleTray"
                         @detail="detail = $event"
                         @hide="hideOfficer"
+                    />
+                </CatalogRow>
+
+                <!-- Officer baru ditambahkan (tampil 14 hari sejak masuk database) -->
+                <CatalogRow
+                    v-if="recentlyAddedOfficers.length"
+                    title="Officer baru bergabung"
+                    :subtitle="`${recentlyAddedOfficers.length} officer ditambahkan dalam 14 hari terakhir`"
+                >
+                    <NewOfficerCard
+                        v-for="o in recentlyAddedOfficers"
+                        :key="`new-${o.id}`"
+                        :officer="o"
                     />
                 </CatalogRow>
 

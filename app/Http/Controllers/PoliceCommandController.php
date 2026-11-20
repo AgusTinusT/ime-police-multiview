@@ -123,6 +123,7 @@ class PoliceCommandController extends Controller
             'deptStats' => $deptStats,
             'monthlyLeaderboard' => $this->getMonthlyLeaderboard(10, true),
             'supportOfficers' => $this->getSupportOfficers(),
+            'newOfficers' => $this->getNewOfficers(),
             // Ship recommended sites with the initial payload so the row paints
             // on first render instead of after an extra round trip.
             'recommendedSites' => \App\Models\RecommendedSite::where('is_active', true)
@@ -1242,6 +1243,40 @@ class PoliceCommandController extends Controller
     /**
      * Get active officers with under 1,000 YouTube subscribers for the Road to 1K Support Grid.
      */
+    /**
+     * Officer yang baru ditambahkan ke database dalam config('police.new_officer_days')
+     * hari terakhir (default 14). Setelah lewat batas itu, otomatis hilang dari daftar.
+     */
+    public function getNewOfficers(): array
+    {
+        $days = config('police.new_officer_days', 14);
+        $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->flip();
+
+        return Officer::where('is_active', true)
+            ->where('created_at', '>=', now()->subDays($days))
+            ->orderByDesc('created_at')
+            ->take(20)
+            ->get()
+            ->map(function ($officer) use ($liveChannelIds, $days) {
+                return [
+                    'id' => $officer->id,
+                    'officer_name' => $officer->officer_name,
+                    'streamer_name' => ltrim($officer->handle ?: $officer->streamer_name, '@'),
+                    'callsign' => $officer->callsign,
+                    'department' => $officer->department,
+                    'rank' => $officer->rank,
+                    'avatar_url' => $officer->public_avatar_url,
+                    'is_live_now' => $liveChannelIds->has($officer->channel_id),
+                    'youtube_url' => $officer->youtube_url,
+                    'created_at' => $officer->created_at->toIso8601String(),
+                    'days_since_added' => (int) $officer->created_at->diffInDays(now()),
+                    'days_remaining' => max(0, $days - (int) $officer->created_at->diffInDays(now())),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
     public function getSupportOfficers(): array
     {
         $liveStreams = ActiveStream::where('status', 'LIVE')->get()->keyBy('channel_id');
