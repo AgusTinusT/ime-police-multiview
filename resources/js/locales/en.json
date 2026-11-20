@@ -169,12 +169,7 @@
     "top_10_patrols_last_month": "Top 10 patrols last month",
     "dept_patrol": "{dept} Patrol",
     "recent_replays": "Recent replays",
-    "pov_selected": "{count} POVs selected",
-    "clear_tray": "Clear",
-    "open_multiview": "Open multiview",
     "detail_officer_aria": "Officer details",
-    "add_to_multiview": "Add to multiview",
-    "remove_from_multiview": "Remove from multiview",
     "watching_title": "{count} watching · {title}",
     "scroll_left": "Scroll left",
     "scroll_right": "Scroll right",
@@ -185,7 +180,7 @@
   },
   "officer_detail": {
     "watch": "Watch",
-    "in_multiview": "In multiview",
+    "watch_youtube": "Watch on YouTube",
     "multiview": "Multiview",
     "hide_officer": "Hide This Officer"
   },

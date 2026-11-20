@@ -169,12 +169,7 @@
     "top_10_patrols_last_month": "Top 10 patroli bulan lalu",
     "dept_patrol": "Patroli {dept}",
     "recent_replays": "Rekaman terbaru",
-    "pov_selected": "{count} POV dipilih",
-    "clear_tray": "Kosongkan",
-    "open_multiview": "Buka multiview",
     "detail_officer_aria": "Detail officer",
-    "add_to_multiview": "Tambah ke multiview",
-    "remove_from_multiview": "Keluarkan dari multiview",
     "watching_title": "{count} menonton · {title}",
     "scroll_left": "Geser ke kiri",
     "scroll_right": "Geser ke kanan",
@@ -185,7 +180,7 @@
   },
   "officer_detail": {
     "watch": "Tonton",
-    "in_multiview": "Di multiview",
+    "watch_youtube": "Tonton di YouTube",
     "multiview": "Multiview",
     "hide_officer": "Sembunyikan Perwira Ini"
   },

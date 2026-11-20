@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, usePage } from "@inertiajs/vue3";
-import { ChevronRight, Loader2, MonitorPlay, SlidersHorizontal } from "@lucide/vue";
+import { ChevronRight, Loader2, SlidersHorizontal } from "@lucide/vue";
 import { computed, ref, onMounted } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
@@ -131,8 +131,9 @@ const deptOf = (s) => {
     const d = (s?.officer?.department || s?.department || "").toUpperCase();
     return d === "PARK RANGER" ? "SAPR" : d;
 };
-const nameOf = (s) => s.officer?.officer_name || s.officer?.streamer_name || s.officer_name || "Officer";
 const mvUrl = (ids) => `/multiview?v=${ids.filter(Boolean).join(",")}`;
+// Klik kartu langsung membuka live/VOD di YouTube.
+const ytUrl = (s) => `https://www.youtube.com/watch?v=${s.video_id}`;
 const liveByViewers = computed(() =>
     [...visibleStreams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0)),
 );
@@ -195,13 +196,6 @@ const recentlyAddedOfficers = computed(() =>
     (props.newOfficers || []).filter((o) => !isOfficerDisabled(o)),
 );
 
-// Multiview tray: pick POVs from any row, then open them together.
-const tray = ref([]);
-const inTray = (id) => tray.value.some((t) => t.video_id === id);
-const toggleTray = (s) => {
-    if (inTray(s.video_id)) tray.value = tray.value.filter((t) => t.video_id !== s.video_id);
-    else if (tray.value.length < 9) tray.value = [...tray.value, s];
-};
 const detail = ref(null);
 const recentReplayStreams = computed(() => {
     const list = [...(recentReplays.value || [])].filter((r) => !isOfficerDisabled(r));
@@ -574,10 +568,8 @@ onMounted(() => {
                         v-for="s in liveByViewers"
                         :key="`live-${s.video_id}`"
                         :stream="s"
-                        :href="mvUrl([s.video_id])"
+                        :href="ytUrl(s)"
                         kind="live"
-                        :in-tray="inTray(s.video_id)"
-                        @toggle-tray="toggleTray"
                         @detail="detail = $event"
                         @hide="hideOfficer"
                     />
@@ -731,11 +723,9 @@ onMounted(() => {
                             v-for="s in activeDeptStreams"
                             :key="`dept-${activeDept}-${s.video_id}`"
                             :stream="s"
-                            :href="mvUrl([s.video_id])"
+                            :href="ytUrl(s)"
                             kind="live"
                             size="sm"
-                            :in-tray="inTray(s.video_id)"
-                            @toggle-tray="toggleTray"
                             @detail="detail = $event"
                             @hide="hideOfficer"
                         />
@@ -769,11 +759,9 @@ onMounted(() => {
                         v-for="s in recentReplayStreams.slice(0, 15)"
                         :key="`rep-${s.video_id}`"
                         :stream="s"
-                        :href="mvUrl([s.video_id])"
+                        :href="ytUrl(s)"
                         kind="replay"
                         size="sm"
-                        :in-tray="inTray(s.video_id)"
-                        @toggle-tray="toggleTray"
                         @detail="detail = $event"
                         @hide="hideOfficer"
                     />
@@ -801,25 +789,8 @@ onMounted(() => {
         <OfficerDetailModal
             :stream="detail"
             :streams="streams"
-            :in-tray="!!detail && inTray(detail.video_id)"
             @close="detail = null"
-            @toggle-tray="toggleTray"
         />
-        <div
-            v-if="tray.length"
-            class="fixed inset-x-3 bottom-36 z-40 sm:bottom-20 md:inset-x-auto md:bottom-5 md:left-1/2 md:w-140 md:-translate-x-1/2"
-        >
-            <div class="flex items-center gap-3 rounded-xl border border-border bg-popover p-2 pl-4 text-popover-foreground shadow-lg">
-                <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold">{{ $t('catalog.pov_selected', { count: tray.length }) }}</p>
-                    <p class="truncate text-xs text-muted-foreground">{{ tray.map(nameOf).join(", ") }}</p>
-                </div>
-                <Button variant="ghost" size="sm" class="shrink-0" @click="tray = []">{{ $t('catalog.clear_tray') }}</Button>
-                <Button as-child size="sm" class="shrink-0">
-                    <Link :href="mvUrl(tray.map((t) => t.video_id))"><MonitorPlay /> {{ $t('catalog.open_multiview') }}</Link>
-                </Button>
-            </div>
-        </div>
 
         <Toaster rich-colors position="top-right" />
 

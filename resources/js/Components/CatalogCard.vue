@@ -1,6 +1,5 @@
 <script setup>
-import { Link } from "@inertiajs/vue3";
-import { Check, EyeOff, Info, Plus } from "@lucide/vue";
+import { EyeOff, Info } from "@lucide/vue";
 import { computed } from "vue";
 
 import { Badge } from "@/Components/ui/badge";
@@ -12,11 +11,10 @@ const props = defineProps({
     stream: { type: Object, required: true },
     href: { type: String, required: true },
     kind: { type: String, default: "live" }, // 'live' | 'replay'
-    inTray: { type: Boolean, default: false },
     size: { type: String, default: "md" }, // 'md' | 'sm'
 });
 
-const emit = defineEmits(["toggle-tray", "detail", "hide"]);
+const emit = defineEmits(["detail", "hide"]);
 
 const thumb = computed(
     () => props.stream.thumbnail || `https://i.ytimg.com/vi/${props.stream.video_id}/hqdefault.jpg`,
@@ -28,8 +26,10 @@ const dept = computed(() => props.stream.officer?.department || "");
 </script>
 
 <template>
-    <Link
+    <a
         :href="href"
+        target="_blank"
+        rel="noopener"
         :class="cn(
             'catalog-card group relative block shrink-0 snap-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
             size === 'sm' ? 'w-52 sm:w-64' : 'w-60 sm:w-72',
@@ -69,17 +69,6 @@ const dept = computed(() => props.stream.officer?.department || "");
                 >
                     <Info class="size-3.5" />
                 </Button>
-                <Button
-                    size="icon-sm"
-                    :variant="inTray ? 'default' : 'secondary'"
-                    :class="cn('rounded-full', !inTray && 'bg-background/70 hover:bg-primary hover:text-primary-foreground')"
-                    :aria-label="inTray ? $t('catalog.remove_from_multiview') : $t('catalog.add_to_multiview')"
-                    :aria-pressed="inTray"
-                    @click.prevent.stop="emit('toggle-tray', stream)"
-                >
-                    <Check v-if="inTray" class="size-3.5" />
-                    <Plus v-else class="size-3.5" />
-                </Button>
             </div>
         </div>
 
@@ -97,7 +86,7 @@ const dept = computed(() => props.stream.officer?.department || "");
                 </span>
             </div>
         </div>
-    </Link>
+    </a>
 </template>
 
 <style scoped>

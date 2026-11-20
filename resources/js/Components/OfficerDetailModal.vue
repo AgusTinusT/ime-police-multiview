@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
-import { Check, ExternalLink, EyeOff, Play, Plus } from "@lucide/vue";
+import { ExternalLink, EyeOff, Play } from "@lucide/vue";
 import { computed } from "vue";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
 
@@ -17,10 +17,9 @@ import {
 const props = defineProps({
     stream: { type: Object, default: null },
     streams: { type: Array, default: () => [] },
-    inTray: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(["close", "toggle-tray"]);
+const emit = defineEmits(["close"]);
 
 const { hideOfficer } = useOfficerFilter();
 
@@ -51,17 +50,12 @@ const mvUrl = (ids) => `/multiview?v=${ids.filter(Boolean).join(",")}`;
                 <LiveBadge v-if="isLive" :viewers="stream.viewers_count" class="absolute left-4 top-4" />
                 <div class="absolute inset-x-4 bottom-4 flex flex-wrap gap-2">
                     <Button as-child>
-                        <Link :href="mvUrl([stream.video_id])"><Play /> {{ $t('officer_detail.watch') }}</Link>
-                    </Button>
-                    <Button variant="secondary" :aria-pressed="inTray" @click="emit('toggle-tray', stream)">
-                        <Check v-if="inTray" />
-                        <Plus v-else />
-                        {{ inTray ? $t('officer_detail.in_multiview') : $t('officer_detail.multiview') }}
+                        <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" rel="noopener">
+                            <Play /> {{ $t('officer_detail.watch_youtube') }}
+                        </a>
                     </Button>
                     <Button as-child variant="outline">
-                        <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" rel="noopener">
-                            <ExternalLink /> YouTube
-                        </a>
+                        <Link :href="mvUrl([stream.video_id])"><ExternalLink /> {{ $t('officer_detail.multiview') }}</Link>
                     </Button>
                     <Button
                         variant="ghost"
