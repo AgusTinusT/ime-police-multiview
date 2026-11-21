@@ -143,6 +143,11 @@
     "github_repo": "GitHub (Kontribusi)",
     "discord_server": "Discord Server"
   },
+  "donate": {
+    "short": "Dukung",
+    "title": "Dukung IME Police Duty",
+    "hint": "Traktir kopi developer lewat BagiBagi"
+  },
   "nav": {
     "dashboard": "Beranda",
     "multiview": "Multiview",

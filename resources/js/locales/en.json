@@ -91,6 +91,11 @@
     "github_repo": "GitHub (Contribute)",
     "discord_server": "Discord Server"
   },
+  "donate": {
+    "short": "Support",
+    "title": "Support IME Police Duty",
+    "hint": "Buy the developer a coffee on BagiBagi"
+  },
   "nav": {
     "dashboard": "Home",
     "multiview": "Multiview",
