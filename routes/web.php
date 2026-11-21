@@ -18,6 +18,10 @@ Route::get('/sitemap', fn () => redirect('/sitemap.xml', 301));
 Route::get('/', [PoliceCommandController::class, 'dashboard'])->name('home');
 Route::get('/dashboard', [PoliceCommandController::class, 'dashboard'])->name('dashboard');
 Route::get('/multiview', [PoliceCommandController::class, 'multiview'])->name('multiview');
+// Single-POV watch page (YouTube-style layout)
+Route::get('/watch/{videoId}', [PoliceCommandController::class, 'watch'])
+    ->where('videoId', '[A-Za-z0-9_-]{11}')
+    ->name('watch');
 
 // Dedicated Standalone Pages
 Route::get('/officers', [PoliceCommandController::class, 'officers'])->name('officers.index');

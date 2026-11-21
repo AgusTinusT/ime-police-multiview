@@ -1,4 +1,5 @@
 <script setup>
+import { Link } from "@inertiajs/vue3";
 import { EyeOff, Info } from "@lucide/vue";
 import { computed } from "vue";
 
@@ -26,10 +27,8 @@ const dept = computed(() => props.stream.officer?.department || "");
 </script>
 
 <template>
-    <a
+    <Link
         :href="href"
-        target="_blank"
-        rel="noopener"
         :class="cn(
             'catalog-card group relative block shrink-0 snap-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
             size === 'sm' ? 'w-52 sm:w-64' : 'w-60 sm:w-72',
@@ -86,7 +85,7 @@ const dept = computed(() => props.stream.officer?.department || "");
                 </span>
             </div>
         </div>
-    </a>
+    </Link>
 </template>
 
 <style scoped>

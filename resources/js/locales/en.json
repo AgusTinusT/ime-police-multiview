@@ -178,6 +178,23 @@
     "hide_officer": "Hide this officer",
     "manage_visibility": "Manage Officer Visibility"
   },
+  "watch": {
+    "watching": "{count} watching",
+    "replay": "Replay",
+    "open_youtube": "Open on YouTube",
+    "open_multiview": "Multiview",
+    "channel": "Channel",
+    "tab_info": "Info",
+    "tab_chat": "Live chat",
+    "tab_more": "More",
+    "chat_title": "Live chat",
+    "chat_unavailable": "Live chat is only available while the stream is live.",
+    "more_live": "More live",
+    "recent_replays": "Recent replays",
+    "nothing_else": "No other streams right now.",
+    "show_more": "Show more",
+    "show_less": "Show less"
+  },
   "officer_detail": {
     "watch": "Watch",
     "watch_youtube": "Watch on YouTube",
@@ -190,6 +207,7 @@
     "mute": "Mute",
     "unmute": "Listen to this POV",
     "make_main": "Make main",
+    "open_watch": "Watch on watch page",
     "close_pov": "Close POV",
     "watch_as_main": "Watch {name} as main",
     "pov_fallback": "POV"

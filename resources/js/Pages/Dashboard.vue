@@ -132,8 +132,8 @@ const deptOf = (s) => {
     return d === "PARK RANGER" ? "SAPR" : d;
 };
 const mvUrl = (ids) => `/multiview?v=${ids.filter(Boolean).join(",")}`;
-// Klik kartu langsung membuka live/VOD di YouTube.
-const ytUrl = (s) => `https://www.youtube.com/watch?v=${s.video_id}`;
+// Klik kartu membuka halaman tonton (layout ala YouTube) di situs sendiri.
+const watchUrl = (s) => `/watch/${s.video_id}`;
 const liveByViewers = computed(() =>
     [...visibleStreams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0)),
 );
@@ -568,7 +568,7 @@ onMounted(() => {
                         v-for="s in liveByViewers"
                         :key="`live-${s.video_id}`"
                         :stream="s"
-                        :href="ytUrl(s)"
+                        :href="watchUrl(s)"
                         kind="live"
                         @detail="detail = $event"
                         @hide="hideOfficer"
@@ -723,7 +723,7 @@ onMounted(() => {
                             v-for="s in activeDeptStreams"
                             :key="`dept-${activeDept}-${s.video_id}`"
                             :stream="s"
-                            :href="ytUrl(s)"
+                            :href="watchUrl(s)"
                             kind="live"
                             size="sm"
                             @detail="detail = $event"
@@ -759,7 +759,7 @@ onMounted(() => {
                         v-for="s in recentReplayStreams.slice(0, 15)"
                         :key="`rep-${s.video_id}`"
                         :stream="s"
-                        :href="ytUrl(s)"
+                        :href="watchUrl(s)"
                         kind="replay"
                         size="sm"
                         @detail="detail = $event"

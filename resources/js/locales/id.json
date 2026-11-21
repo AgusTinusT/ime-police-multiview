@@ -178,6 +178,23 @@
     "hide_officer": "Sembunyikan perwira ini",
     "manage_visibility": "Kelola Visibilitas Perwira"
   },
+  "watch": {
+    "watching": "{count} menonton",
+    "replay": "Rekaman",
+    "open_youtube": "Buka di YouTube",
+    "open_multiview": "Multiview",
+    "channel": "Channel",
+    "tab_info": "Info",
+    "tab_chat": "Live chat",
+    "tab_more": "Lainnya",
+    "chat_title": "Live chat",
+    "chat_unavailable": "Live chat hanya tersedia saat siaran berlangsung.",
+    "more_live": "Live lainnya",
+    "recent_replays": "Rekaman terbaru",
+    "nothing_else": "Belum ada siaran lain saat ini.",
+    "show_more": "Selengkapnya",
+    "show_less": "Sembunyikan"
+  },
   "officer_detail": {
     "watch": "Tonton",
     "watch_youtube": "Tonton di YouTube",
@@ -190,6 +207,7 @@
     "mute": "Bisukan",
     "unmute": "Dengarkan POV ini",
     "make_main": "Jadikan utama",
+    "open_watch": "Tonton di halaman watch",
     "close_pov": "Tutup POV",
     "watch_as_main": "Tonton {name} sebagai utama",
     "pov_fallback": "POV"
