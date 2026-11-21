@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ActiveStream;
 use App\Models\Officer;
+use App\Models\TacClip;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -78,6 +79,38 @@ class WatchPageTest extends TestCase
             ->component('Watch')
             ->where('stream.video_id', 'ZZZZZZZZZZZ')
             ->where('stream.officer', null));
+    }
+
+    public function test_watch_page_lists_tacclips_and_reads_start_and_clip_params(): void
+    {
+        $alpha = $this->officer('Alpha');
+        $this->liveStream($alpha, 'AAAAAAAAAAA');
+
+        $make = fn (string $video, int $start, bool $approved = true) => TacClip::create([
+            'officer_id' => $alpha->id,
+            'video_id' => $video,
+            'title' => "Momen {$video} {$start}",
+            'start_seconds' => $start,
+            'end_seconds' => $start + 30,
+            'officer_name' => 'Alpha',
+            'creator_name' => 'Tester',
+            'is_approved' => $approved,
+        ]);
+
+        $later = $make('AAAAAAAAAAA', 300);
+        $make('AAAAAAAAAAA', 60);
+        $make('AAAAAAAAAAA', 90, false); // not approved: hidden
+        $make('OTHERVIDEO1', 10);         // same officer, other video
+
+        $this->get("/watch/AAAAAAAAAAA?t=295&clip={$later->id}")->assertInertia(fn (Assert $page) => $page
+            ->component('Watch')
+            ->has('clips', 2)
+            ->where('clips.0.start_seconds', 60)
+            ->where('clips.1.start_seconds', 300)
+            ->has('officerClips', 1)
+            ->where('officerClips.0.video_id', 'OTHERVIDEO1')
+            ->where('startAt', 295)
+            ->where('highlightClipId', $later->id));
     }
 
     public function test_invalid_video_id_returns_404(): void
