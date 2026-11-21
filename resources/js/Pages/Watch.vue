@@ -69,6 +69,24 @@ const onClipCreated = (clip) => {
     momentClips.value = [...momentClips.value, clip].sort((a, b) => a.start_seconds - b.start_seconds);
     activeClipId.value = clip.id;
 };
+// Description: collapse only when it would actually be clipped. Short but
+// multi-line text ("Main game o3o\n\nBisa donasi sini\nhttps://...") used to lose
+// its last lines to line-clamp-3 with no "Show more" button, since the toggle
+// only looked at length.
+const DESC_CLAMP_LINES = 3;
+const descCollapsible = computed(() => {
+    const text = props.stream.description || "";
+    return text.length > 160 || text.split("\n").length > DESC_CLAMP_LINES;
+});
+// Plain-text links (donation pages, socials) become clickable; everything else stays text.
+const URL_RE = /(https?:\/\/[^\s<>"']+)/g;
+const descParts = computed(() =>
+    (props.stream.description || "")
+        .split(URL_RE)
+        .filter((part) => part !== "")
+        .map((part) => (/^https?:\/\//.test(part) ? { text: part, url: part } : { text: part, url: null })),
+);
+
 const chatSrc = computed(() => props.stream.live_chat_url || "");
 const youtubeWatchUrl = computed(() => `https://www.youtube.com/watch?v=${props.stream.video_id}`);
 const channelUrl = computed(() => {
@@ -199,10 +217,16 @@ onUnmounted(() => {
                         <p
                             v-if="stream.description"
                             class="mt-2 whitespace-pre-line break-words text-muted-foreground"
-                            :class="descOpen ? '' : 'line-clamp-3'"
-                        >{{ stream.description }}</p>
+                            :class="descCollapsible && !descOpen ? 'line-clamp-3' : ''"
+                        ><template v-for="(part, i) in descParts" :key="i"><a
+                            v-if="part.url"
+                            :href="part.url"
+                            target="_blank"
+                            rel="noopener noreferrer nofollow"
+                            class="text-primary hover:underline"
+                        >{{ part.text }}</a><template v-else>{{ part.text }}</template></template></p>
                         <button
-                            v-if="stream.description && stream.description.length > 160"
+                            v-if="descCollapsible"
                             type="button"
                             class="mt-1 text-xs font-semibold text-foreground hover:underline"
                             @click="descOpen = !descOpen"
