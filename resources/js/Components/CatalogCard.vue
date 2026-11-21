@@ -12,7 +12,7 @@ const props = defineProps({
     stream: { type: Object, required: true },
     href: { type: String, required: true },
     kind: { type: String, default: "live" }, // 'live' | 'replay'
-    size: { type: String, default: "md" }, // 'md' | 'sm'
+    size: { type: String, default: "md" }, // 'md' | 'sm' | 'fill'
 });
 
 const emit = defineEmits(["detail", "hide"]);
@@ -31,7 +31,10 @@ const dept = computed(() => props.stream.officer?.department || "");
         :href="href"
         :class="cn(
             'catalog-card group relative block shrink-0 snap-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
-            size === 'sm' ? 'w-52 sm:w-64' : 'w-60 sm:w-72',
+            size === 'sm' && 'w-52 sm:w-64',
+            size === 'md' && 'w-60 sm:w-72',
+            // 'fill': scrolls like 'md' on phones, stretches to its grid cell on md+
+            size === 'fill' && 'catalog-card--fill w-60 sm:w-72 md:w-full',
         )"
     >
         <div class="relative aspect-video overflow-hidden rounded-md bg-muted">
@@ -72,7 +75,7 @@ const dept = computed(() => props.stream.officer?.department || "");
         </div>
 
         <div class="px-1 pt-2">
-            <p class="line-clamp-1 text-sm font-semibold text-foreground">
+            <p :class="cn('line-clamp-1 font-semibold text-foreground', size === 'fill' ? 'text-sm md:text-base' : 'text-sm')">
                 {{ kind === "replay" ? stream.title : name }}
             </p>
             <div class="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -102,6 +105,10 @@ const dept = computed(() => props.stream.officer?.department || "");
     }
     .catalog-card:hover img {
         box-shadow: 0 12px 30px color-mix(in oklab, var(--color-background) 80%, transparent);
+    }
+    /* Big grid cards would overlap their neighbours at 1.06 */
+    .catalog-card--fill:hover {
+        transform: scale(1.02);
     }
 }
 .catalog-card:focus-visible {

@@ -175,6 +175,7 @@
     "scroll_right": "Geser ke kanan",
     "patrol_by_dept": "Patroli per departemen",
     "no_live_units": "Belum ada unit {dept} yang live",
+    "all_depts": "Semua",
     "hide_officer": "Sembunyikan perwira ini",
     "manage_visibility": "Kelola Visibilitas Perwira"
   },
@@ -243,6 +244,9 @@
     "community_subtitle": "Daftar perwira buatan penonton & komunitas untuk dipantau bersama",
     "menu": "Squad",
     "my_squads": "Squad Saya",
+    "squads_title": "Squad",
+    "squads_subtitle": "Squad milikmu dan squad komunitas untuk dipantau bersama",
+    "owned_badge": "Milik saya",
     "my_squads_subtitle": "Koleksi squad perwira yang Anda buat untuk dipantau bersama",
     "no_squads": "Belum ada squad",
     "active_squad": "Squad Aktif: {name}",

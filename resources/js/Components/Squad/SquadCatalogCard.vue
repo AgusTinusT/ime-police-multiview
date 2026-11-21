@@ -120,6 +120,7 @@ const overflowCount = computed(() => Math.max(0, officers.value.length - 5));
 
         <div class="px-1 pt-2">
             <p class="truncate text-xs text-muted-foreground">
+                <span v-if="squad.is_owner" class="mr-1 font-semibold text-primary">{{ $t('squad.owned_badge') }} ·</span>
                 <span class="inline-flex items-center gap-1"><Users class="size-3" /> {{ officers.length }}</span>
                 <span v-if="overflowCount"> (+{{ overflowCount }})</span>
                 · {{ squad.owner_name }}
