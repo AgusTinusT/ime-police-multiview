@@ -5,7 +5,6 @@ import AccountLanguageSwitch from "@/Components/AccountLanguageSwitch.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import OfficerVisibilityModal from "@/Components/OfficerVisibilityModal.vue";
 import { OfficerAvatar } from "@/Components/tactical";
-import { DONATE_URL } from "@/lib/siteLinks";
 import { Badge } from "@/Components/ui/badge";
 import {
     DropdownMenu,
@@ -125,14 +124,14 @@ const rowClass =
                     </DropdownMenuItem>
 
                     <DropdownMenuItem as-child class="p-0">
-                        <a :href="DONATE_URL" target="_blank" rel="noopener noreferrer" :class="donateCardClass">
+                        <Link href="/dukung" :class="donateCardClass">
                             <Heart class="size-4 shrink-0 fill-current" />
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-bold">{{ $t("donate.title") }}</p>
                                 <p class="truncate text-xs font-normal text-live/80">{{ $t("donate.hint") }}</p>
                             </div>
                             <ChevronRight class="size-4 shrink-0" />
-                        </a>
+                        </Link>
                     </DropdownMenuItem>
 
                     <!-- Plain rows -->
@@ -201,14 +200,14 @@ const rowClass =
                     </DropdownMenuItem>
 
                     <DropdownMenuItem as-child class="p-0">
-                        <a :href="DONATE_URL" target="_blank" rel="noopener noreferrer" :class="donateCardClass">
+                        <Link href="/dukung" :class="donateCardClass">
                             <Heart class="size-4 shrink-0 fill-current" />
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-bold">{{ $t("donate.title") }}</p>
                                 <p class="truncate text-xs font-normal text-live/80">{{ $t("donate.hint") }}</p>
                             </div>
                             <ChevronRight class="size-4 shrink-0" />
-                        </a>
+                        </Link>
                     </DropdownMenuItem>
 
                     <div class="pt-1">
