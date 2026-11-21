@@ -1,25 +1,19 @@
 <script setup>
 import { ChevronLeft, ChevronRight } from "@lucide/vue";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 import { Button } from "@/Components/ui/button";
 import { cn } from "@/lib/utils";
 
-const props = defineProps({
+defineProps({
     title: { type: String, required: true },
     subtitle: { type: String, default: "" },
     // Few items: lay the cards out as a grid that fills the row on md+ instead
     // of a horizontal track. Children should size themselves with w-full at md+.
     fillCols: { type: Number, default: 0 },
-    // Two rows side by side on md+: trim the page gutter on the inner edge.
-    flush: { type: String, default: null }, // null | 'start' | 'end'
 });
 
-const pad = computed(() => {
-    if (props.flush === "end") return "pl-3 pr-3 sm:pl-6 sm:pr-6 md:pr-3 lg:pl-12 lg:pr-3";
-    if (props.flush === "start") return "pl-3 pr-3 sm:pl-6 sm:pr-6 md:pl-3 lg:pl-3 lg:pr-12";
-    return "px-3 sm:px-6 lg:px-12";
-});
+const pad = "px-3 sm:px-6 lg:px-12";
 
 const track = ref(null);
 const canLeft = ref(false);

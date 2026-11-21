@@ -160,13 +160,6 @@ const liveFiltered = computed(() => {
 watch(liveDeptChips, (chips) => {
     if (selectedDept.value && !chips.some((c) => c.dept === selectedDept.value)) selectedDept.value = null;
 });
-// 1-3 units live: a separate "Baru selesai" row sits beside the live row (stacked on
-// phones) so the band isn't mostly empty. Not while a department filter is active.
-const liveFillReplays = computed(() => {
-    if (selectedDept.value || liveFiltered.value.length > 3) return [];
-    return recentReplayStreams.value.slice(0, 10);
-});
-const liveBesideReplays = computed(() => liveFillReplays.value.length > 0);
 // Officers with no patrol hours yet this month would only show "0 Jam".
 const top10 = computed(() =>
     (props.monthlyLeaderboard?.all_top || []).filter((o) => Number(o.total_hours_num) > 0).slice(0, 10),
@@ -205,11 +198,6 @@ const recentReplayStreams = computed(() => {
         );
         return timeA - timeB;
     });
-});
-// "Rekaman terbaru" skips replays already shown at the end of the live row.
-const replayRowStreams = computed(() => {
-    const shown = new Set(liveFillReplays.value.map((r) => r.video_id));
-    return recentReplayStreams.value.filter((r) => !shown.has(r.video_id)).slice(0, 15);
 });
 // Cinematic Default Hero Slides (Fallback when database hero_slides has 0 active slides)
 const defaultHeroSlides = computed(() => [
@@ -556,15 +544,10 @@ onMounted(() => {
 
             <!-- SECTION 2: Catalog rows (Netflix-style browsing) -->
             <div id="units-grid" class="relative z-10 scroll-mt-6 space-y-8 py-8 sm:space-y-10 sm:py-12">
-                <div
-                    v-if="liveByViewers.length"
-                    :class="liveBesideReplays && 'flex flex-col gap-8 sm:gap-10 md:flex-row md:gap-0'"
-                >
                 <CatalogRow
+                    v-if="liveByViewers.length"
                     :title="$t('catalog.live_now')"
                     :subtitle="$t('catalog.live_summary', { units: liveByViewers.length, viewers: totalLiveViewers })"
-                    :flush="liveBesideReplays ? 'end' : null"
-                    :class="liveBesideReplays && 'md:max-w-[60%] md:min-w-md md:shrink-0'"
                 >
                     <template v-if="liveDeptChips.length > 1" #filters>
                         <div role="tablist" :aria-label="$t('catalog.patrol_by_dept')" class="no-scrollbar flex items-center gap-4 overflow-x-auto">
@@ -626,26 +609,6 @@ onMounted(() => {
                         @hide="hideOfficer"
                     />
                 </CatalogRow>
-
-                <!-- Few live: streams that just ended get their own row beside the live row -->
-                <CatalogRow
-                    v-if="liveBesideReplays"
-                    :title="$t('catalog.just_ended')"
-                    :subtitle="$t('catalog.just_ended_subtitle')"
-                    flush="start"
-                    class="min-w-0 md:flex-1 md:border-l md:border-border"
-                >
-                    <CatalogCard
-                        v-for="r in liveFillReplays"
-                        :key="`ended-${r.video_id}`"
-                        :stream="r"
-                        :href="watchUrl(r)"
-                        kind="replay"
-                        @detail="detail = $event"
-                        @hide="hideOfficer"
-                    />
-                </CatalogRow>
-                </div>
 
                 <!-- Top 10 patroli bulan ini -->
                 <CatalogRow
@@ -766,9 +729,9 @@ onMounted(() => {
                     />
                 </CatalogRow>
 
-                <CatalogRow v-if="replayRowStreams.length" :title="$t('catalog.recent_replays')">
+                <CatalogRow v-if="recentReplayStreams.length" :title="$t('catalog.recent_replays')">
                     <CatalogCard
-                        v-for="s in replayRowStreams"
+                        v-for="s in recentReplayStreams.slice(0, 15)"
                         :key="`rep-${s.video_id}`"
                         :stream="s"
                         :href="watchUrl(s)"
