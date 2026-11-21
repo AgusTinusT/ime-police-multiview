@@ -101,16 +101,16 @@ const handleResize = () => {
 
 const isScrolled = ref(false);
 const handleScroll = () => {
-    isScrolled.value = window.scrollY > 40;
+    // Low threshold: the flat header is transparent, so morph before content slides under it.
+    isScrolled.value = window.scrollY > 8;
 };
 
 onMounted(() => {
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("resize", handleResize);
-    if (props.transparentAtTop) {
-        handleScroll();
-        window.addEventListener("scroll", handleScroll, { passive: true });
-    }
+    // Every page: flat header at the top, floating pill once the page scrolls.
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
 });
 
 onUnmounted(() => {
@@ -122,15 +122,23 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <!-- 1. TOP HEADER: floating pill inside a page-width container.
-         Total height is fixed (h-16 / sm:h-[76px]) so pages can offset by it. -->
-    <header class="pointer-events-none sticky top-0 z-40 px-2 pt-2 sm:px-4 sm:pt-3 lg:px-8">
+    <!-- 1. TOP HEADER: flat and full-width at the top of the page, turns into a
+         floating pill inside a page-width container once the page scrolls.
+         Total height is fixed (h-16 / sm:h-[76px]) in both states so pages can
+         offset by it and nothing jumps when it morphs. -->
+    <header
+        :class="cn(
+            'pointer-events-none sticky top-0 z-40 px-2 pt-2 transition-colors duration-300 sm:px-4 sm:pt-3 lg:px-8',
+            // Keep nav legible over the dashboard hero image while flat.
+            transparentAtTop && !isScrolled && 'bg-linear-to-b from-background/80 to-transparent',
+        )"
+    >
         <div
             :class="cn(
-                'pointer-events-auto mx-auto flex h-14 w-full max-w-(--breakpoint-2xl) items-center justify-between gap-2 rounded-full border pl-2 pr-2 shadow-lg backdrop-blur-xl transition-colors duration-300 sm:h-16 sm:pl-3 sm:pr-3',
-                transparentAtTop && !isScrolled
-                    ? 'border-foreground/10 bg-background/40 shadow-black/20'
-                    : 'border-border bg-background/80 shadow-black/30',
+                'pointer-events-auto mx-auto flex h-14 w-full max-w-(--breakpoint-2xl) items-center justify-between gap-2 border pl-2 pr-2 transition-all duration-300 sm:h-16 sm:pl-3 sm:pr-3',
+                isScrolled
+                    ? 'rounded-full border-border bg-background/80 shadow-lg shadow-black/30 backdrop-blur-xl'
+                    : 'rounded-none border-transparent bg-transparent shadow-none',
             )"
         >
             <!-- Left Area: Branding & Logo -->
