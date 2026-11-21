@@ -975,11 +975,18 @@ class PoliceCommandController extends Controller
     {
         $support = config('support');
 
-        $costs = collect($support['monthly_costs'] ?? [])->map(fn ($c) => [
-            'label' => $c['label'],
-            'note' => $c['note'] ?? null,
-            'amount' => isset($c['amount']) ? (int) $c['amount'] : null,
-        ])->values();
+        $costs = collect($support['monthly_costs'] ?? [])->map(function ($c) {
+            $sponsor = $c['sponsor'] ?? null;
+
+            return [
+                'label' => $c['label'],
+                'note' => $c['note'] ?? null,
+                // Sponsored lines cost the project nothing.
+                'amount' => $sponsor ? 0 : (isset($c['amount']) ? (int) $c['amount'] : null),
+                'sponsor' => $sponsor,
+                'covered_by' => $c['covered_by'] ?? null,
+            ];
+        })->values();
 
         $goals = collect($support['goals'] ?? [])->map(function ($g) {
             $target = isset($g['target']) ? (int) $g['target'] : null;
@@ -1008,6 +1015,7 @@ class PoliceCommandController extends Controller
             'updatedAt' => $support['updated_at'] ?? null,
             'monthlyCosts' => $costs,
             'monthlyTotal' => $monthlyTotal,
+            'costsNote' => $support['costs_note'] ?? null,
             'goals' => $goals,
             'perks' => collect($support['perks'] ?? [])->map(fn ($p) => [
                 'icon' => $p['icon'] ?? 'heart',

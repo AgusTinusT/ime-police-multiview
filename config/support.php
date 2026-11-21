@@ -23,26 +23,28 @@ return [
     'discord_url' => 'https://discord.gg/gkaXxWpwhA',
 
     // Tanggal terakhir angka di bawah diperbarui (YYYY-MM-DD).
-    'updated_at' => null,
+    'updated_at' => '2026-11-21',
 
     // Biaya rutin per bulan.
+    //  'covered_by' => siapa yang sudah menanggung biaya ini (tampil sebagai label).
+    //  'sponsor'    => biaya digratiskan pihak lain; amount diabaikan dan
+    //                  baris tampil "Disponsori ..." alih-alih nominal.
     'monthly_costs' => [
         [
             'label' => 'VPS server aplikasi & database',
             'note' => 'Menjalankan situs, sinkronisasi live stream tiap menit, dan penyimpanan data perwira.',
-            'amount' => null,
+            'amount' => 50000,
+            'covered_by' => 'Ditanggung pengembang',
         ],
         [
             'label' => 'Domain & SSL',
-            'note' => 'Alamat situs dan sertifikat keamanan (dihitung per bulan).',
-            'amount' => null,
-        ],
-        [
-            'label' => 'Backup & penyimpanan klip',
-            'note' => 'Cadangan database harian dan ruang penyimpanan hasil potongan Clip Studio.',
-            'amount' => null,
+            'note' => 'Alamat situs dan sertifikat keamanan.',
+            'sponsor' => 'MotionLife / IME Roleplay',
         ],
     ],
+
+    // Catatan di bawah tabel biaya: menjelaskan ke mana donasi difokuskan.
+    'costs_note' => 'Biaya server saat ini sudah ditanggung pengembang, jadi donasi kamu difokuskan untuk hadiah event komunitas.',
 
     // Apa yang didapat pendukung. Contoh awal: sesuaikan dengan yang benar-benar
     // bisa diberikan, karena halaman menampilkannya sebagai janji ke donatur.
@@ -81,20 +83,12 @@ return [
     // Target pendanaan berikutnya, tampil berurutan.
     'goals' => [
         [
-            'key' => 'vps-upgrade-tacclips',
-            'title' => 'Upgrade VPS: simpan seluruh TacClips',
-            'description' => 'Saat ini TacClips hanya menandai detik di video YouTube, sehingga klip hilang bila video asli dihapus atau diprivat. Dengan VPS dan penyimpanan lebih besar, setiap momen aksi bisa diarsipkan permanen di server sendiri.',
+            'key' => 'event-top-patrol',
+            'title' => 'Event komunitas: hadiah Top 1–3 patroli',
+            'description' => 'Hadiah bulanan untuk perwira peringkat 1–3 di "Top 10 patroli bulan ini", sebagai apresiasi bagi yang paling rajin bertugas dan siaran. Seluruh donasi saat ini dialokasikan ke hadiah event ini.',
             'target' => null,
             'collected' => 0,
             'status' => 'active',
-        ],
-        [
-            'key' => 'event-top-patrol',
-            'title' => 'Event komunitas: hadiah Top 1–3 patroli',
-            'description' => 'Hadiah bulanan untuk perwira peringkat 1–3 di "Top 10 patroli bulan ini", sebagai apresiasi bagi yang paling rajin bertugas dan siaran.',
-            'target' => null,
-            'collected' => 0,
-            'status' => 'planned',
         ],
     ],
 ];

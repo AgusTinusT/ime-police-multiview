@@ -31,6 +31,7 @@ const props = defineProps({
     updatedAt: { type: String, default: null },
     monthlyCosts: { type: Array, default: () => [] },
     monthlyTotal: { type: Number, default: null },
+    costsNote: { type: String, default: null },
     goals: { type: Array, default: () => [] },
     perks: { type: Array, default: () => [] },
     supporters: { type: Array, default: () => [] },
@@ -53,7 +54,7 @@ const STATUS = {
     planned: { label: "Berikutnya", variant: "secondary", icon: Calendar },
     funded: { label: "Tercapai", variant: "success", icon: BadgeCheck },
 };
-const GOAL_ICON = { "vps-upgrade-tacclips": Server, "event-top-patrol": Trophy };
+const GOAL_ICON = { "event-top-patrol": Trophy, "storage-tacclips": Server };
 
 const PERK_ICON = { heart: Heart, badge: BadgeCheck, discord: MessageCircle, sparkles: Sparkles };
 
@@ -105,7 +106,7 @@ const otherWays = computed(() =>
                 <PageHeader
                     eyebrow="Dukungan"
                     title="Dukung IME Police Duty"
-                    description="Platform ini proyek komunitas nirlaba tanpa iklan. Semua biaya server ditanggung sendiri, dan setiap dukungan dipakai untuk menjaga situs tetap jalan serta membangun fitur berikutnya. Berikut rinciannya secara terbuka."
+                    description="Platform ini proyek komunitas nirlaba tanpa iklan. Pengeluarannya kami tampilkan secara terbuka di bawah, beserta ke mana setiap dukungan dipakai."
                 />
                 <div class="flex flex-wrap items-center gap-3">
                     <Button v-if="donateUrl" as-child size="lg" class="rounded-full">
@@ -139,12 +140,22 @@ const otherWays = computed(() =>
                                 <p class="text-sm font-semibold text-foreground">{{ cost.label }}</p>
                                 <p v-if="cost.note" class="text-xs text-muted-foreground">{{ cost.note }}</p>
                             </div>
-                            <span
-                                class="shrink-0 text-right font-mono text-sm"
-                                :class="cost.amount === null ? 'text-muted-foreground' : 'font-semibold text-foreground'"
-                            >
-                                {{ cost.amount === null ? PENDING : `${rupiah(cost.amount)}/bln` }}
-                            </span>
+                            <div class="flex shrink-0 flex-col items-end gap-1 text-right">
+                                <Badge v-if="cost.sponsor" variant="success" class="gap-1">
+                                    <HandHeart class="size-3" /> Disponsori {{ cost.sponsor }}
+                                </Badge>
+                                <template v-else>
+                                    <span
+                                        class="font-mono text-sm"
+                                        :class="cost.amount === null ? 'text-muted-foreground' : 'font-semibold text-foreground'"
+                                    >
+                                        {{ cost.amount === null ? PENDING : `${rupiah(cost.amount)}/bln` }}
+                                    </span>
+                                    <Badge v-if="cost.covered_by" variant="secondary" class="gap-1">
+                                        <BadgeCheck class="size-3" /> {{ cost.covered_by }}
+                                    </Badge>
+                                </template>
+                            </div>
                         </div>
                         <div class="flex items-center justify-between gap-4 bg-muted/40 px-4 py-3 sm:px-5">
                             <span class="text-sm font-bold text-foreground">Total per bulan</span>
@@ -154,6 +165,13 @@ const otherWays = computed(() =>
                         </div>
                     </CardContent>
                 </Card>
+                <p
+                    v-if="costsNote"
+                    class="flex items-start gap-2 rounded-xl border border-live/30 bg-live/10 px-4 py-3 text-sm text-foreground"
+                >
+                    <Heart class="mt-0.5 size-4 shrink-0 fill-current text-live" />
+                    <span>{{ costsNote }}</span>
+                </p>
             </section>
 
             <!-- Funding goals -->
