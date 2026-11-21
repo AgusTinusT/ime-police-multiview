@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import { usePage, Link } from "@inertiajs/vue3";
 
 import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
@@ -10,8 +10,23 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
-import { ChevronDown, Clapperboard, House, LayoutGrid, Scissors, Users } from "@lucide/vue";
+import {
+    ChevronDown,
+    CircleQuestionMark,
+    Clapperboard,
+    Ellipsis,
+    Heart,
+    House,
+    Info,
+    LayoutGrid,
+    Link2,
+    Megaphone,
+    MessageSquareWarning,
+    Scissors,
+    Users,
+} from "@lucide/vue";
 import { cn } from "@/lib/utils";
+import { DONATE_URL } from "@/lib/siteLinks";
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 
@@ -52,6 +67,17 @@ const isUrlActive = (path) => {
     }
     return url.startsWith(path);
 };
+
+// "More" menu: secondary pages. /feedback is pinned on top as the report entry.
+const moreLinks = [
+    { href: "/updates", label: "nav.updates", icon: Megaphone },
+    { href: "/faq", label: "nav.faq", icon: CircleQuestionMark },
+    { href: "/about", label: "nav.about", icon: Info },
+    { href: "/bio-link", label: "nav.bio_link", icon: Link2 },
+];
+const moreActive = computed(() =>
+    ["/feedback", ...moreLinks.map((l) => l.href)].some((href) => isUrlActive(href)),
+);
 
 // Bottom Sheet Mobile Drawer State
 const isBottomSheetOpen = ref(false);
@@ -252,11 +278,75 @@ onUnmounted(() => {
                             BETA
                         </Badge>
                     </Link>
+
+                    <!-- More: secondary pages (report/feedback, updates, help) -->
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <button
+                                type="button"
+                                :class="
+                                    cn(
+                                        'px-2.5 py-1.5 text-xs lg:px-3.5 lg:py-2 lg:text-sm font-medium rounded-full transition shrink-0 flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                                        moreActive
+                                            ? 'text-primary bg-primary/15 ring-1 ring-primary/60 font-bold'
+                                            : 'text-foreground/80 hover:text-foreground hover:bg-foreground/10',
+                                    )
+                                "
+                                :title="$t('nav.more')"
+                            >
+                                <Ellipsis class="hidden size-4 lg:block" />
+                                <span>{{ $t("nav.more") }}</span>
+                                <ChevronDown class="size-3.5 opacity-70" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            align="end"
+                            :side-offset="10"
+                            class="w-64 rounded-2xl border-foreground/10 bg-popover/95 p-2 font-sans backdrop-blur-xl"
+                        >
+                            <DropdownMenuItem as-child class="p-0">
+                                <Link
+                                    href="/feedback"
+                                    class="mb-1 flex w-full cursor-pointer items-center gap-3 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2.5 text-primary focus:bg-primary/20"
+                                >
+                                    <MessageSquareWarning class="size-4 shrink-0" />
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-bold">{{ $t("nav.feedback") }}</p>
+                                        <p class="truncate text-xs font-normal text-primary/80">{{ $t("nav.feedback_hint") }}</p>
+                                    </div>
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem v-for="item in moreLinks" :key="item.href" as-child class="p-0">
+                                <Link
+                                    :href="item.href"
+                                    :class="cn(
+                                        'flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium',
+                                        isUrlActive(item.href) ? 'text-primary' : 'text-foreground/90',
+                                    )"
+                                >
+                                    <component :is="item.icon" class="size-4 shrink-0 text-muted-foreground" />
+                                    <span>{{ $t(item.label) }}</span>
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </nav>
             </div>
 
-            <!-- Right Area: User Account Menu -->
-            <div class="flex items-center space-x-2 shrink-0">
+            <!-- Right Area: Donate + User Account Menu -->
+            <div class="flex items-center gap-2 shrink-0">
+                <!-- Donate: icon-only on tablets, labelled from lg; phones get it in the account menu -->
+                <a
+                    :href="DONATE_URL"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="hidden h-10 shrink-0 items-center gap-1.5 rounded-full border border-live/40 bg-live/15 px-3 text-sm font-semibold text-live transition-colors hover:bg-live/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex"
+                    :title="$t('donate.title')"
+                    :aria-label="$t('donate.title')"
+                >
+                    <Heart class="size-4 shrink-0 fill-current" />
+                    <span class="hidden lg:inline">{{ $t("donate.short") }}</span>
+                </a>
                 <UserAccountMenu />
             </div>
         </div>

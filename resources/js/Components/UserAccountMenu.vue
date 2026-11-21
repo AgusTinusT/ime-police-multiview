@@ -5,6 +5,7 @@ import AccountLanguageSwitch from "@/Components/AccountLanguageSwitch.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import OfficerVisibilityModal from "@/Components/OfficerVisibilityModal.vue";
 import { OfficerAvatar } from "@/Components/tactical";
+import { DONATE_URL } from "@/lib/siteLinks";
 import { Badge } from "@/Components/ui/badge";
 import {
     DropdownMenu,
@@ -16,6 +17,7 @@ import {
 import {
     ChevronDown,
     ChevronRight,
+    Heart,
     Link2,
     LogIn,
     LogOut,
@@ -41,6 +43,8 @@ const handleLogout = () => {
 // Shared look for the pill trigger, the highlighted cards and the plain rows.
 const triggerClass =
     "flex h-10 shrink-0 items-center gap-2 rounded-full border border-foreground/10 bg-foreground/5 pl-1 pr-3 text-sm font-semibold text-foreground outline-none transition-colors hover:bg-foreground/10 focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:border-primary/60 data-[state=open]:bg-primary/10";
+const donateCardClass =
+    "flex w-full cursor-pointer items-center gap-3 rounded-xl border border-live/40 bg-live/10 px-3 py-2.5 text-live focus:bg-live/20 focus:text-live";
 const rowClass =
     "flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/90";
 </script>
@@ -120,6 +124,17 @@ const rowClass =
                         <ChevronRight class="size-4 shrink-0 text-primary" />
                     </DropdownMenuItem>
 
+                    <DropdownMenuItem as-child class="p-0">
+                        <a :href="DONATE_URL" target="_blank" rel="noopener noreferrer" :class="donateCardClass">
+                            <Heart class="size-4 shrink-0 fill-current" />
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-bold">{{ $t("donate.title") }}</p>
+                                <p class="truncate text-xs font-normal text-live/80">{{ $t("donate.hint") }}</p>
+                            </div>
+                            <ChevronRight class="size-4 shrink-0" />
+                        </a>
+                    </DropdownMenuItem>
+
                     <!-- Plain rows -->
                     <div class="pt-1">
                         <DropdownMenuItem as-child class="p-0">
@@ -183,6 +198,17 @@ const rowClass =
                             </div>
                             <ChevronRight class="size-4 shrink-0" />
                         </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem as-child class="p-0">
+                        <a :href="DONATE_URL" target="_blank" rel="noopener noreferrer" :class="donateCardClass">
+                            <Heart class="size-4 shrink-0 fill-current" />
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-bold">{{ $t("donate.title") }}</p>
+                                <p class="truncate text-xs font-normal text-live/80">{{ $t("donate.hint") }}</p>
+                            </div>
+                            <ChevronRight class="size-4 shrink-0" />
+                        </a>
                     </DropdownMenuItem>
 
                     <div class="pt-1">
