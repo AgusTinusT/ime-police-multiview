@@ -90,7 +90,7 @@ onUnmounted(() => {
         <div class="mx-auto w-full max-w-[1800px] lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6 lg:px-6 lg:py-6">
             <!-- Primary column -->
             <div class="min-w-0">
-                <div class="sticky top-0 z-20 bg-black lg:static lg:overflow-hidden lg:rounded-xl">
+                <div class="sticky top-0 z-20 bg-background lg:static lg:overflow-hidden lg:rounded-xl">
                     <div class="aspect-video w-full">
                         <iframe
                             :key="stream.video_id"

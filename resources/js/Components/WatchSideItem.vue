@@ -28,7 +28,7 @@ const name = computed(
             <LiveBadge v-if="live" class="absolute bottom-1 left-1" />
             <span
                 v-else-if="stream.streamed_at"
-                class="absolute bottom-1 right-1 rounded-sm bg-background/80 px-1 text-[10px] font-medium text-foreground"
+                class="absolute bottom-1 right-1 rounded-sm bg-background/80 px-1 text-xs font-medium text-foreground"
             >{{ stream.streamed_at }}</span>
         </span>
         <span class="min-w-0 flex-1 py-0.5">
