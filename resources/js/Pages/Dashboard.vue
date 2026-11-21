@@ -185,6 +185,8 @@ const roadTo1kOfficers = computed(() => {
 const recentlyAddedOfficers = computed(() =>
     (props.newOfficers || []).filter((o) => !isOfficerDisabled(o)),
 );
+// 1-3 new officers: compact horizontal cards spread across the row (empty list hides the row).
+const newOfficersCompact = computed(() => recentlyAddedOfficers.value.length <= 3);
 
 const detail = ref(null);
 const recentReplayStreams = computed(() => {
@@ -612,16 +614,60 @@ onMounted(() => {
                     />
                 </CatalogRow>
 
+                <!-- Top 10 patroli bulan ini -->
+                <CatalogRow
+                    v-if="top10.length"
+                    :title="monthlyLeaderboard?.is_previous_period ? $t('catalog.top_10_patrols_last_month') : $t('catalog.top_10_patrols')"
+                    :subtitle="monthlyLeaderboard?.period_text || ''"
+                >
+                    <a
+                        v-for="o in top10"
+                        :key="`top-${o.id}`"
+                        :href="o.youtube_url || '/officers'"
+                        :target="o.youtube_url ? '_blank' : null"
+                        rel="noopener"
+                        class="group relative flex h-40 w-44 shrink-0 snap-start items-end rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:h-48 sm:w-52"
+                    >
+                        <span class="rank-number -mr-6 select-none text-9xl font-extrabold leading-none" aria-hidden="true">{{ o.rank }}</span>
+                        <span class="relative aspect-2/3 w-28 overflow-hidden rounded-md bg-muted motion-safe:transition-transform motion-safe:duration-300 group-hover:scale-105 sm:w-32">
+                            <img
+                                v-if="o.avatar_url && !brokenTopAvatars.has(o.id)"
+                                :src="o.avatar_url"
+                                :alt="o.officer_name"
+                                loading="lazy"
+                                class="size-full object-cover"
+                                @error="markTopAvatarBroken(o.id)"
+                            />
+                            <div
+                                v-else
+                                class="flex size-full items-center justify-center bg-card/60"
+                            >
+                                <OfficerAvatar
+                                    :name="o.officer_name"
+                                    size="lg"
+                                />
+                            </div>
+                            <span class="absolute inset-x-0 bottom-0 bg-linear-to-t from-background/90 to-transparent p-2">
+                                <span class="block truncate text-xs font-semibold text-foreground">{{ o.officer_name }}</span>
+                                <span class="block text-xs text-muted-foreground">{{ o.total_hours }}</span>
+                            </span>
+                            <LiveBadge v-if="o.is_live" class="absolute left-1.5 top-1.5" />
+                        </span>
+                    </a>
+                </CatalogRow>
+
                 <!-- Officer baru ditambahkan (tampil 14 hari sejak masuk database) -->
                 <CatalogRow
                     v-if="recentlyAddedOfficers.length"
                     title="Officer baru bergabung"
                     :subtitle="`${recentlyAddedOfficers.length} officer ditambahkan dalam 14 hari terakhir`"
+                    :fill-cols="newOfficersCompact ? recentlyAddedOfficers.length : 0"
                 >
                     <NewOfficerCard
                         v-for="o in recentlyAddedOfficers"
                         :key="`new-${o.id}`"
                         :officer="o"
+                        :compact="newOfficersCompact"
                     />
                 </CatalogRow>
 
@@ -669,47 +715,6 @@ onMounted(() => {
                         :key="site.id"
                         :site="site"
                     />
-                </CatalogRow>
-
-                <CatalogRow
-                    v-if="top10.length"
-                    :title="monthlyLeaderboard?.is_previous_period ? $t('catalog.top_10_patrols_last_month') : $t('catalog.top_10_patrols')"
-                    :subtitle="monthlyLeaderboard?.period_text || ''"
-                >
-                    <a
-                        v-for="o in top10"
-                        :key="`top-${o.id}`"
-                        :href="o.youtube_url || '/officers'"
-                        :target="o.youtube_url ? '_blank' : null"
-                        rel="noopener"
-                        class="group relative flex h-40 w-44 shrink-0 snap-start items-end rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:h-48 sm:w-52"
-                    >
-                        <span class="rank-number -mr-6 select-none text-9xl font-extrabold leading-none" aria-hidden="true">{{ o.rank }}</span>
-                        <span class="relative aspect-2/3 w-28 overflow-hidden rounded-md bg-muted motion-safe:transition-transform motion-safe:duration-300 group-hover:scale-105 sm:w-32">
-                            <img
-                                v-if="o.avatar_url && !brokenTopAvatars.has(o.id)"
-                                :src="o.avatar_url"
-                                :alt="o.officer_name"
-                                loading="lazy"
-                                class="size-full object-cover"
-                                @error="markTopAvatarBroken(o.id)"
-                            />
-                            <div
-                                v-else
-                                class="flex size-full items-center justify-center bg-card/60"
-                            >
-                                <OfficerAvatar
-                                    :name="o.officer_name"
-                                    size="lg"
-                                />
-                            </div>
-                            <span class="absolute inset-x-0 bottom-0 bg-linear-to-t from-background/90 to-transparent p-2">
-                                <span class="block truncate text-xs font-semibold text-foreground">{{ o.officer_name }}</span>
-                                <span class="block text-xs text-muted-foreground">{{ o.total_hours }}</span>
-                            </span>
-                            <LiveBadge v-if="o.is_live" class="absolute left-1.5 top-1.5" />
-                        </span>
-                    </a>
                 </CatalogRow>
 
                 <CatalogRow
