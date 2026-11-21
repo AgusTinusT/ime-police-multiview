@@ -126,7 +126,8 @@ onUnmounted(() => {
         <div class="mx-auto w-full max-w-[1800px] lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6 lg:px-6 lg:py-6">
             <!-- Primary column -->
             <div class="min-w-0">
-                <div class="sticky top-0 z-20 bg-background lg:static lg:overflow-hidden lg:rounded-xl">
+                <!-- Sticks just under the floating header (h-16 / sm:76px) on phones -->
+                <div class="sticky top-16 z-20 bg-background sm:top-[76px] lg:static lg:overflow-hidden lg:rounded-xl">
                     <div class="aspect-video w-full">
                         <iframe
                             :key="stream.video_id"
