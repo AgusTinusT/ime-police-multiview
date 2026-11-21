@@ -44,6 +44,24 @@ class SupportPageTest extends TestCase
             ->where('monthlyCosts.1.amount', null));
     }
 
+    public function test_sponsored_cost_counts_as_zero_and_keeps_labels(): void
+    {
+        config([
+            'support.monthly_costs' => [
+                ['label' => 'VPS', 'amount' => 50000, 'covered_by' => 'Ditanggung pengembang'],
+                ['label' => 'Domain', 'sponsor' => 'MotionLife'],
+            ],
+            'support.costs_note' => 'Donasi untuk event.',
+        ]);
+
+        $this->get('/dukung')->assertInertia(fn (Assert $page) => $page
+            ->where('monthlyTotal', 50000)
+            ->where('monthlyCosts.0.covered_by', 'Ditanggung pengembang')
+            ->where('monthlyCosts.1.amount', 0)
+            ->where('monthlyCosts.1.sponsor', 'MotionLife')
+            ->where('costsNote', 'Donasi untuk event.'));
+    }
+
     public function test_old_support_urls_redirect(): void
     {
         $this->get('/donate')->assertRedirect('/dukung');
