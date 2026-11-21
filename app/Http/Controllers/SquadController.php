@@ -76,7 +76,7 @@ class SquadController extends Controller
     {
         $officers = Cache::remember('squads.available_officers', 30, function () {
             return Officer::with('activeStream:id,officer_id,status')
-                ->where('is_active', true)
+                ->roster()
                 ->orderBy('department')
                 ->orderBy('rank')
                 ->get()
