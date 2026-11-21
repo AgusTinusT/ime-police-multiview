@@ -518,6 +518,7 @@ const VALID_TABS = [
     "requests",
     "hero",
     "squads",
+    "recommended",
 ];
 
 const getTabFromUrl = () => {
