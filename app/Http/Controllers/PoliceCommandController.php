@@ -266,6 +266,140 @@ class PoliceCommandController extends Controller
     }
 
     /**
+     * Halaman tonton satu POV dengan layout ala YouTube.
+     * Video dicari di live stream dulu, lalu cache replay, lalu riwayat stream.
+     */
+    public function watch(Request $request, string $videoId)
+    {
+        $host = $request->getHost();
+
+        $liveStreams = ActiveStream::with('officer')
+            ->where('status', 'LIVE')
+            ->where(function ($q) {
+                $q->whereHas('officer', fn ($o) => $o->where('is_active', true))
+                  ->orWhereDoesntHave('officer');
+            })
+            ->orderByDesc('viewers_count')
+            ->get()
+            ->unique('video_id')
+            ->map(fn ($s) => $this->mapWatchStream($s, $host, true))
+            ->values();
+
+        $replays = collect($this->getSortedRecentReplays());
+
+        $current = $liveStreams->firstWhere('video_id', $videoId);
+
+        if (! $current) {
+            $replay = $replays->firstWhere('video_id', $videoId);
+            if ($replay) {
+                $current = array_merge($replay, ['is_live' => false, 'live_chat_url' => null]);
+            }
+        }
+
+        if (! $current) {
+            $past = ActiveStream::with('officer')->where('video_id', $videoId)->latest()->first();
+            $current = $past
+                ? $this->mapWatchStream($past, $host, false)
+                : [
+                    // Video tidak dikenal: tetap putar, tanpa info officer.
+                    'video_id' => $videoId,
+                    'title' => 'Siaran Patroli',
+                    'thumbnail' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
+                    'description' => '',
+                    'viewers_count' => 0,
+                    'is_live' => false,
+                    'live_chat_url' => null,
+                    'officer' => null,
+                ];
+        }
+
+        $officerName = $current['officer']['officer_name'] ?? null;
+        $title = $current['title'] ?? 'Siaran Patroli';
+        $officerId = $current['officer']['id'] ?? null;
+
+        // TacClips: momen dari video ini, plus momen lain dari officer yang sama.
+        $clips = TacClip::where('is_approved', true)
+            ->where('video_id', $videoId)
+            ->orderBy('start_seconds')
+            ->take(50)
+            ->get()
+            ->map(fn ($c) => $this->mapWatchClip($c))
+            ->values();
+
+        $officerClips = $officerId
+            ? TacClip::where('is_approved', true)
+                ->where('officer_id', $officerId)
+                ->where('video_id', '!=', $videoId)
+                ->latest()
+                ->take(12)
+                ->get()
+                ->map(fn ($c) => $this->mapWatchClip($c))
+                ->values()
+            : collect();
+
+        return Inertia::render('Watch', [
+            'stream' => $current,
+            'clips' => $clips,
+            'officerClips' => $officerClips,
+            // ?t=95 starts the player at 95s; ?clip=ID highlights that TacClip.
+            'startAt' => max(0, (int) $request->query('t', 0)),
+            'highlightClipId' => $request->filled('clip') ? (int) $request->query('clip') : null,
+            'liveStreams' => $liveStreams->reject(fn ($s) => $s['video_id'] === $videoId)->values(),
+            'replays' => $replays->reject(fn ($r) => ($r['video_id'] ?? null) === $videoId)->take(12)->values(),
+            'meta' => [
+                'title' => $officerName ? "{$officerName} — {$title}" : $title,
+                'description' => 'Tonton POV bodycam perwira IME Roleplay dengan live chat terintegrasi.',
+                'image' => $current['thumbnail'] ?? "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
+                'url' => url("/watch/{$videoId}"),
+                'canonical' => url("/watch/{$videoId}"),
+                'type' => 'video.other',
+            ],
+        ]);
+    }
+
+    private function mapWatchClip(TacClip $clip): array
+    {
+        return [
+            'id' => $clip->id,
+            'video_id' => $clip->video_id,
+            'title' => $clip->title,
+            'start_seconds' => (int) $clip->start_seconds,
+            'end_seconds' => (int) $clip->end_seconds,
+            'officer_name' => $clip->officer_name,
+            'creator_name' => $clip->creator_name ?: 'Guest',
+            'likes_count' => (int) $clip->likes_count,
+        ];
+    }
+
+    private function mapWatchStream(ActiveStream $stream, string $host, bool $isLive): array
+    {
+        $officer = $stream->officer;
+
+        return [
+            'video_id' => $stream->video_id,
+            'title' => $stream->title ?? 'Patrol Stream',
+            'thumbnail' => $stream->thumbnail_url ?: "https://i.ytimg.com/vi/{$stream->video_id}/hqdefault.jpg",
+            'description' => $stream->description ?? '',
+            'viewers_count' => $stream->viewers_count ?? 0,
+            'is_live' => $isLive,
+            'live_chat_url' => $isLive
+                ? "https://www.youtube.com/live_chat?v={$stream->video_id}&embed_domain={$host}&dark_theme=1"
+                : null,
+            'officer' => $officer ? [
+                'id' => $officer->id,
+                'officer_name' => $officer->officer_name,
+                'streamer_name' => $officer->streamer_name,
+                'callsign' => $officer->callsign,
+                'department' => $officer->department,
+                'rank' => $officer->rank,
+                'avatar_url' => $officer->public_avatar_url,
+                'subscriber_count_text' => $officer->subscriber_count_text,
+                'youtube_url' => $officer->youtube_url,
+            ] : null,
+        ];
+    }
+
+    /**
      * API: Get Active Streams & Telemetry
      */
     public function apiStreams(Request $request)

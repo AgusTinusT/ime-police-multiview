@@ -41,6 +41,7 @@ import {
     Maximize,
     Menu,
     MessageSquare,
+    MonitorPlay,
     PanelRight,
     Plus,
     SlidersHorizontal,
@@ -1114,6 +1115,15 @@ onUnmounted(() => {
                                         >
                                             <Volume2 v-if="audioId === id" />
                                             <VolumeX v-else />
+                                        </Button>
+                                        <Button
+                                            as-child
+                                            size="icon-xs"
+                                            variant="ghost"
+                                            :aria-label="$t('multiview_tile.open_watch')"
+                                            :title="$t('multiview_tile.open_watch')"
+                                        >
+                                            <Link :href="`/watch/${id}`"><MonitorPlay /></Link>
                                         </Button>
                                         <Button
                                             v-if="layoutMode !== 'focus' || focusId !== id"

@@ -50,12 +50,15 @@ const mvUrl = (ids) => `/multiview?v=${ids.filter(Boolean).join(",")}`;
                 <LiveBadge v-if="isLive" :viewers="stream.viewers_count" class="absolute left-4 top-4" />
                 <div class="absolute inset-x-4 bottom-4 flex flex-wrap gap-2">
                     <Button as-child>
-                        <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" rel="noopener">
-                            <Play /> {{ $t('officer_detail.watch_youtube') }}
-                        </a>
+                        <Link :href="`/watch/${stream.video_id}`"><Play /> {{ $t('officer_detail.watch') }}</Link>
+                    </Button>
+                    <Button as-child variant="secondary">
+                        <Link :href="mvUrl([stream.video_id])">{{ $t('officer_detail.multiview') }}</Link>
                     </Button>
                     <Button as-child variant="outline">
-                        <Link :href="mvUrl([stream.video_id])"><ExternalLink /> {{ $t('officer_detail.multiview') }}</Link>
+                        <a :href="`https://www.youtube.com/watch?v=${stream.video_id}`" target="_blank" rel="noopener">
+                            <ExternalLink /> YouTube
+                        </a>
                     </Button>
                     <Button
                         variant="ghost"
