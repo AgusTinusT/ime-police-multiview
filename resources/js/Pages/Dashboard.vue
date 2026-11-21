@@ -511,7 +511,7 @@ onMounted(() => {
 
             <!-- CINEMATIC HERO SLIDER CAROUSEL (Netflix Style) — pulled behind
                  the header only when no announcement is shown above it. -->
-            <div :class="announcements.length ? 'mt-4' : '-mt-[57px] sm:-mt-[65px]'">
+            <div :class="announcements.length ? 'mt-4' : '-mt-16 sm:-mt-[76px]'">
                 <HeroCarousel :slides="effectiveHeroSlides" />
             </div>
 

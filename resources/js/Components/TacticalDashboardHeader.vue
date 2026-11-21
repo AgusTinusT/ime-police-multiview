@@ -10,7 +10,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
-import { ChevronDown } from "@lucide/vue";
+import { ChevronDown, Clapperboard, House, LayoutGrid, Scissors, Users } from "@lucide/vue";
 import { cn } from "@/lib/utils";
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
@@ -96,15 +96,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <!-- 1. TOP HEADER (DESKTOP FULL & MOBILE COMPACT) -->
-    <header
-        class="border-b px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 sticky top-0 z-40 transition-colors duration-300"
-        :class="transparentAtTop && !isScrolled
-            ? 'bg-gradient-to-b from-black/80 to-transparent border-transparent'
-            : 'bg-background/90 backdrop-blur-md border-border'"
-    >
+    <!-- 1. TOP HEADER: floating pill inside a page-width container.
+         Total height is fixed (h-16 / sm:h-[76px]) so pages can offset by it. -->
+    <header class="pointer-events-none sticky top-0 z-40 px-2 pt-2 sm:px-4 sm:pt-3 lg:px-8">
         <div
-            class="max-w-(--breakpoint-2xl) mx-auto w-full flex items-center justify-between gap-2"
+            :class="cn(
+                'pointer-events-auto mx-auto flex h-14 w-full max-w-(--breakpoint-2xl) items-center justify-between gap-2 rounded-full border pl-2 pr-2 shadow-lg backdrop-blur-xl transition-colors duration-300 sm:h-16 sm:pl-3 sm:pr-3',
+                transparentAtTop && !isScrolled
+                    ? 'border-foreground/10 bg-background/40 shadow-black/20'
+                    : 'border-border bg-background/80 shadow-black/30',
+            )"
         >
             <!-- Left Area: Branding & Logo -->
             <div
@@ -117,11 +118,11 @@ onUnmounted(() => {
                     :aria-label="$t('nav.dashboard')"
                 >
                     <div
-                        class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-md bg-card border border-border group-hover:border-primary/50 p-1 overflow-hidden transition"
+                        class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-card border border-border group-hover:border-primary/50 p-1 overflow-hidden transition"
                     >
                         <img
                             :src="logoSaspColor"
-                            class="w-full h-full object-contain rounded-sm"
+                            class="w-full h-full object-contain rounded-full"
                             alt="SASP Badge"
                         />
                     </div>
@@ -143,19 +144,36 @@ onUnmounted(() => {
                 <div class="h-5 w-px bg-border hidden md:block"></div>
 
                 <!-- Desktop Navigation Links (>= md) -->
-                <nav class="hidden md:flex items-center space-x-1 shrink-0">
+                <nav class="hidden md:flex items-center gap-1 shrink-0">
+                    <Link
+                        href="/"
+                        :class="
+                            cn(
+                                'hidden xl:flex px-3.5 py-2 text-sm font-medium rounded-full transition shrink-0 items-center gap-1.5',
+                                isUrlActive('/')
+                                    ? 'text-primary bg-primary/15 ring-1 ring-primary/60'
+                                    : 'text-foreground/80 hover:text-foreground hover:bg-foreground/10',
+                            )
+                        "
+                        :title="$t('nav.dashboard')"
+                    >
+                        <House class="size-4" />
+                        <span>{{ $t("nav.dashboard") }}</span>
+                    </Link>
+
                     <Link
                         href="/multiview"
                         :class="
                             cn(
-                                'px-3 py-1.5 text-xs font-bold rounded-md transition shrink-0 flex items-center gap-1.5',
+                                'px-2.5 py-1.5 text-xs lg:px-3.5 lg:py-2 lg:text-sm font-medium rounded-full transition shrink-0 flex items-center gap-1.5',
                                 isUrlActive('/multiview')
-                                    ? 'text-primary-foreground bg-primary'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                                    ? 'text-primary bg-primary/15 ring-1 ring-primary/60'
+                                    : 'text-foreground/80 hover:text-foreground hover:bg-foreground/10',
                             )
                         "
                         :title="$t('nav.multiview')"
                     >
+                        <LayoutGrid class="hidden size-4 lg:block" />
                         <span>{{ $t("nav.multiview") }}</span>
                     </Link>
 
@@ -163,14 +181,15 @@ onUnmounted(() => {
                         href="/action-clips"
                         :class="
                             cn(
-                                'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0',
+                                'px-2.5 py-1.5 text-xs lg:px-3.5 lg:py-2 lg:text-sm font-medium rounded-full transition shrink-0 flex items-center gap-1.5',
                                 isUrlActive('/action-clips') || isUrlActive('/clips')
-                                    ? 'text-primary-foreground bg-primary font-bold'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                                    ? 'text-primary bg-primary/15 ring-1 ring-primary/60 font-bold'
+                                    : 'text-foreground/80 hover:text-foreground hover:bg-foreground/10',
                             )
                         "
                         :title="$t('nav.clips')"
                     >
+                        <Clapperboard class="hidden size-4 lg:block" />
                         <span>{{ $t("nav.clips") }}</span>
                     </Link>
 
@@ -181,14 +200,15 @@ onUnmounted(() => {
                                 type="button"
                                 :class="
                                     cn(
-                                        'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0 flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                                        'px-2.5 py-1.5 text-xs lg:px-3.5 lg:py-2 lg:text-sm font-medium rounded-full transition shrink-0 flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
                                         isUrlActive('/officers') || isUrlActive('/ranking')
-                                            ? 'text-primary-foreground bg-primary font-bold'
-                                            : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                                            ? 'text-primary bg-primary/15 ring-1 ring-primary/60 font-bold'
+                                            : 'text-foreground/80 hover:text-foreground hover:bg-foreground/10',
                                     )
                                 "
                                 :title="$t('nav.officers')"
                             >
+                                <Users class="hidden size-4 lg:block" />
                                 <span>{{ $t("nav.officers") }}</span>
                                 <ChevronDown class="size-3.5 opacity-70" />
                             </button>
@@ -218,14 +238,15 @@ onUnmounted(() => {
                         href="/clipper"
                         :class="
                             cn(
-                                'px-3 py-1.5 text-xs font-medium rounded-md transition shrink-0 flex items-center gap-1.5',
+                                'px-2.5 py-1.5 text-xs lg:px-3.5 lg:py-2 lg:text-sm font-medium rounded-full transition shrink-0 flex items-center gap-1.5',
                                 isUrlActive('/clipper')
-                                    ? 'text-primary-foreground bg-primary font-bold'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                                    ? 'text-primary bg-primary/15 ring-1 ring-primary/60 font-bold'
+                                    : 'text-foreground/80 hover:text-foreground hover:bg-foreground/10',
                             )
                         "
                         :title="$t('nav.clip_studio')"
                     >
+                        <Scissors class="hidden size-4 lg:block" />
                         <span>{{ $t("nav.clip_studio") }}</span>
                         <Badge variant="success" class="px-1.5 py-0 font-mono font-extrabold">
                             BETA
