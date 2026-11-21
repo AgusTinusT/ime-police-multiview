@@ -104,7 +104,9 @@
     "updates": "Updates",
     "about": "About",
     "faq": "FAQ",
-    "feedback": "Send feedback"
+    "feedback": "Send feedback",
+    "feedback_hint": "Report a bug, idea, or data issue",
+    "bio_link": "Officer bio-link"
   },
   "visibility_panel": {
     "title": "MANAGE OFFICER VISIBILITY",

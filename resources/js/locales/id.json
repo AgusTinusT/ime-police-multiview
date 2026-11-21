@@ -156,7 +156,9 @@
     "updates": "Pembaruan",
     "about": "Tentang",
     "faq": "FAQ",
-    "feedback": "Kirim masukan"
+    "feedback": "Kirim masukan",
+    "feedback_hint": "Laporkan bug, saran, atau masalah data",
+    "bio_link": "Bio-link perwira"
   },
   "catalog": {
     "live_now": "Sedang live",
