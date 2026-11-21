@@ -177,6 +177,7 @@
     "no_live_units": "Belum ada unit {dept} yang live",
     "all_depts": "Semua",
     "just_ended": "Baru selesai",
+    "just_ended_subtitle": "Rekaman siaran yang baru berakhir",
     "hide_officer": "Sembunyikan perwira ini",
     "manage_visibility": "Kelola Visibilitas Perwira"
   },

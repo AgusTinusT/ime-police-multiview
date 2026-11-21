@@ -1,16 +1,24 @@
 <script setup>
 import { ChevronLeft, ChevronRight } from "@lucide/vue";
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import { Button } from "@/Components/ui/button";
 import { cn } from "@/lib/utils";
 
-defineProps({
+const props = defineProps({
     title: { type: String, required: true },
     subtitle: { type: String, default: "" },
     // Few items: lay the cards out as a grid that fills the row on md+ instead
     // of a horizontal track. Children should size themselves with w-full at md+.
     fillCols: { type: Number, default: 0 },
+    // Two rows side by side on md+: trim the page gutter on the inner edge.
+    flush: { type: String, default: null }, // null | 'start' | 'end'
+});
+
+const pad = computed(() => {
+    if (props.flush === "end") return "pl-3 pr-3 sm:pl-6 sm:pr-6 md:pr-3 lg:pl-12 lg:pr-3";
+    if (props.flush === "start") return "pl-3 pr-3 sm:pl-6 sm:pr-6 md:pl-3 lg:pl-3 lg:pr-12";
+    return "px-3 sm:px-6 lg:px-12";
 });
 
 const track = ref(null);
@@ -54,19 +62,20 @@ const gridCols = {
 
 <template>
     <section class="group/row relative">
-        <div class="mb-2 flex items-baseline gap-3 px-3 sm:px-6 lg:px-12">
+        <div :class="cn('mb-2 flex items-baseline gap-3', pad)">
             <h2 class="shrink-0 whitespace-nowrap text-lg font-bold tracking-tight text-foreground sm:text-xl">{{ title }}</h2>
             <span v-if="subtitle" class="min-w-0 truncate text-xs text-muted-foreground sm:text-sm">{{ subtitle }}</span>
             <slot name="action" />
         </div>
-        <div v-if="$slots.filters" class="mb-1 px-3 sm:px-6 lg:px-12">
+        <div v-if="$slots.filters" :class="cn('mb-1', pad)">
             <slot name="filters" />
         </div>
         <div class="relative">
             <div
                 ref="track"
                 :class="cn(
-                    'no-scrollbar -my-6 flex snap-x gap-2 overflow-x-auto scroll-px-3 px-3 py-6 sm:gap-3 sm:scroll-px-6 sm:px-6 lg:scroll-px-12 lg:px-12',
+                    'no-scrollbar -my-6 flex snap-x gap-2 overflow-x-auto scroll-px-3 py-6 sm:gap-3 sm:scroll-px-6 lg:scroll-px-12',
+                    pad,
                     fillCols && ['md:grid md:overflow-visible md:gap-4', gridCols[fillCols]],
                 )"
                 @scroll.passive="updateArrows"
