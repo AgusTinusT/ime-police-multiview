@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import { ChevronRight, Loader2, SlidersHorizontal } from "@lucide/vue";
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, watch } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
@@ -149,38 +149,28 @@ const deptGroups = computed(() => {
         };
     });
 });
-const totalDeptLive = computed(() =>
-    deptGroups.value.reduce((acc, curr) => acc + curr.count, 0),
-);
+// Department filter on the "Sedang live" row (null = semua departemen).
 const selectedDept = ref(null);
-const activeDept = computed({
-    get() {
-        if (selectedDept.value && DEPARTMENTS.includes(selectedDept.value)) {
-            return selectedDept.value;
-        }
-        // Default: dept with most live streams (tiebreak: LSPD -> BCSO -> SASP -> SAPR)
-        let maxCount = -1;
-        let chosen = DEPARTMENTS[0];
-        for (const stat of deptGroups.value) {
-            if (stat.count > maxCount) {
-                maxCount = stat.count;
-                chosen = stat.dept;
-            }
-        }
-        return chosen;
-    },
-    set(val) {
-        selectedDept.value = val;
-    },
+const liveDeptChips = computed(() => deptGroups.value.filter((g) => g.count > 0));
+const liveFiltered = computed(() => {
+    const group = selectedDept.value && deptGroups.value.find((g) => g.dept === selectedDept.value);
+    return group ? group.items : liveByViewers.value;
 });
-const activeDeptStreams = computed(() => {
-    const found = deptGroups.value.find((s) => s.dept === activeDept.value);
-    return found ? found.items : [];
+// If the chosen department goes offline, fall back to all units.
+watch(liveDeptChips, (chips) => {
+    if (selectedDept.value && !chips.some((c) => c.dept === selectedDept.value)) selectedDept.value = null;
 });
+// 1-3 live units fill the row width with larger cards instead of leaving it mostly empty.
+const liveFillCols = computed(() => (liveFiltered.value.length <= 3 ? liveFiltered.value.length : 0));
 // Officers with no patrol hours yet this month would only show "0 Jam".
 const top10 = computed(() =>
     (props.monthlyLeaderboard?.all_top || []).filter((o) => Number(o.total_hours_num) > 0).slice(0, 10),
 );
+// Avatar URLs can expire (YouTube CDN); show the initials card instead of an empty tile.
+const brokenTopAvatars = ref(new Set());
+const markTopAvatarBroken = (id) => {
+    brokenTopAvatars.value = new Set(brokenTopAvatars.value).add(id);
+};
 const roadTo1kOfficers = computed(() => {
     if (!Array.isArray(props.supportOfficers) || !props.supportOfficers.length) {
         return [];
@@ -375,6 +365,14 @@ const fetchMySquads = async () => {
     }
 };
 
+// One squad row: the user's own squads first, then public ones they don't own.
+// A public squad of the user's would otherwise show up twice.
+const allSquads = computed(() => {
+    const mine = mySquads.value.map((s) => ({ ...s, is_owner: true }));
+    const mineIds = new Set(mine.map((s) => s.id));
+    return [...mine, ...publicSquads.value.filter((s) => !mineIds.has(s.id))];
+});
+
 const openEditSquad = (squad) => {
     editingSquad.value = squad;
     showSquadDialog.value = true;
@@ -546,7 +544,45 @@ onMounted(() => {
 
             <!-- SECTION 2: Catalog rows (Netflix-style browsing) -->
             <div id="units-grid" class="relative z-10 scroll-mt-6 space-y-8 py-8 sm:space-y-10 sm:py-12">
-                <CatalogRow v-if="liveByViewers.length" :title="$t('catalog.live_now')" :subtitle="$t('catalog.live_summary', { units: liveByViewers.length, viewers: totalLiveViewers })">
+                <CatalogRow
+                    v-if="liveByViewers.length"
+                    :title="$t('catalog.live_now')"
+                    :subtitle="$t('catalog.live_summary', { units: liveByViewers.length, viewers: totalLiveViewers })"
+                    :fill-cols="liveFillCols"
+                >
+                    <template v-if="liveDeptChips.length > 1" #filters>
+                        <div role="tablist" :aria-label="$t('catalog.patrol_by_dept')" class="no-scrollbar flex items-center gap-4 overflow-x-auto">
+                            <button
+                                type="button"
+                                role="tab"
+                                :aria-selected="!selectedDept"
+                                :class="[
+                                    'flex shrink-0 items-center gap-1.5 border-b-2 pb-0.5 text-sm font-semibold transition-colors',
+                                    !selectedDept ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
+                                ]"
+                                @click="selectedDept = null"
+                            >
+                                {{ $t('catalog.all_depts') }}
+                                <span class="text-xs font-normal text-muted-foreground">{{ liveByViewers.length }}</span>
+                            </button>
+                            <button
+                                v-for="stat in liveDeptChips"
+                                :key="`dept-chip-${stat.dept}`"
+                                type="button"
+                                role="tab"
+                                :aria-selected="selectedDept === stat.dept"
+                                :class="[
+                                    'flex shrink-0 items-center gap-1.5 border-b-2 pb-0.5 text-sm font-semibold transition-colors',
+                                    selectedDept === stat.dept ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
+                                ]"
+                                @click="selectedDept = stat.dept"
+                            >
+                                <span class="size-1.5 rounded-full" :class="deptDot[stat.dept]" />
+                                {{ stat.dept }}
+                                <span class="text-xs font-normal text-muted-foreground">{{ stat.count }}</span>
+                            </button>
+                        </div>
+                    </template>
                     <template #action>
                         <div class="ml-auto flex items-center gap-1.5 shrink-0">
                             <Button
@@ -560,16 +596,17 @@ onMounted(() => {
                                 <span class="hidden sm:inline">Filter Visibilitas</span>
                             </Button>
                             <Button as-child variant="link" size="sm" class="shrink-0">
-                                <Link :href="mvUrl(liveByViewers.slice(0, 9).map((s) => s.video_id))">{{ $t('catalog.watch_all') }} <ChevronRight /></Link>
+                                <Link :href="mvUrl(liveFiltered.slice(0, 9).map((s) => s.video_id))">{{ $t('catalog.watch_all') }} <ChevronRight /></Link>
                             </Button>
                         </div>
                     </template>
                     <CatalogCard
-                        v-for="s in liveByViewers"
+                        v-for="s in liveFiltered"
                         :key="`live-${s.video_id}`"
                         :stream="s"
                         :href="watchUrl(s)"
                         kind="live"
+                        :size="liveFillCols ? 'fill' : 'md'"
                         @detail="detail = $event"
                         @hide="hideOfficer"
                     />
@@ -588,31 +625,14 @@ onMounted(() => {
                     />
                 </CatalogRow>
 
-                <!-- Squad Saya (SQD-01) -->
+                <!-- Squad: milik saya dulu, lalu squad komunitas (tanpa duplikat) -->
                 <CatalogRow
-                    v-if="mySquads.length"
-                    :title="$t('squad.my_squads')"
-                    :subtitle="$t('squad.my_squads_subtitle')"
+                    v-if="allSquads.length"
+                    :title="mySquads.length ? $t('squad.squads_title') : $t('squad.community_squads')"
+                    :subtitle="mySquads.length ? $t('squad.squads_subtitle') : $t('squad.community_subtitle')"
                 >
                     <SquadCatalogCard
-                        v-for="sq in mySquads"
-                        :key="sq.id"
-                        :squad="sq"
-                        :live-streams="streams"
-                        @fork="handleForkSquad"
-                        @edit="openEditSquad"
-                        @delete="handleDeleteSquad"
-                    />
-                </CatalogRow>
-
-                <!-- Squad Komunitas (SQ-02) -->
-                <CatalogRow
-                    v-if="publicSquads.length"
-                    :title="$t('squad.community_squads')"
-                    :subtitle="$t('squad.community_subtitle')"
-                >
-                    <SquadCatalogCard
-                        v-for="sq in publicSquads"
+                        v-for="sq in allSquads"
                         :key="sq.id"
                         :squad="sq"
                         :live-streams="streams"
@@ -667,11 +687,12 @@ onMounted(() => {
                         <span class="rank-number -mr-6 select-none text-9xl font-extrabold leading-none" aria-hidden="true">{{ o.rank }}</span>
                         <span class="relative aspect-2/3 w-28 overflow-hidden rounded-md bg-muted motion-safe:transition-transform motion-safe:duration-300 group-hover:scale-105 sm:w-32">
                             <img
-                                v-if="o.avatar_url"
+                                v-if="o.avatar_url && !brokenTopAvatars.has(o.id)"
                                 :src="o.avatar_url"
                                 :alt="o.officer_name"
                                 loading="lazy"
                                 class="size-full object-cover"
+                                @error="markTopAvatarBroken(o.id)"
                             />
                             <div
                                 v-else
@@ -689,53 +710,6 @@ onMounted(() => {
                             <LiveBadge v-if="o.is_live" class="absolute left-1.5 top-1.5" />
                         </span>
                     </a>
-                </CatalogRow>
-
-                <CatalogRow
-                    v-if="totalDeptLive > 0"
-                    :title="$t('catalog.patrol_by_dept')"
-                >
-                    <template #action>
-                        <div role="tablist" class="no-scrollbar ml-2 flex items-center gap-4 overflow-x-auto">
-                            <button
-                                v-for="stat in deptGroups"
-                                :key="`dept-chip-${stat.dept}`"
-                                type="button"
-                                role="tab"
-                                :aria-selected="activeDept === stat.dept"
-                                :class="[
-                                    'flex shrink-0 items-center gap-1.5 border-b-2 pb-0.5 text-sm font-semibold transition-colors',
-                                    activeDept === stat.dept
-                                        ? 'border-foreground text-foreground'
-                                        : 'border-transparent text-muted-foreground hover:text-foreground',
-                                ]"
-                                @click="activeDept = stat.dept"
-                            >
-                                <span class="size-1.5 rounded-full" :class="deptDot[stat.dept]" />
-                                {{ stat.dept }}
-                                <span class="text-xs font-normal text-muted-foreground">{{ stat.count }}</span>
-                            </button>
-                        </div>
-                    </template>
-
-                    <template v-if="activeDeptStreams.length">
-                        <CatalogCard
-                            v-for="s in activeDeptStreams"
-                            :key="`dept-${activeDept}-${s.video_id}`"
-                            :stream="s"
-                            :href="watchUrl(s)"
-                            kind="live"
-                            size="sm"
-                            @detail="detail = $event"
-                            @hide="hideOfficer"
-                        />
-                    </template>
-                    <div
-                        v-else
-                        class="flex w-72 shrink-0 snap-start items-center justify-center rounded-md border border-dashed border-border bg-muted/30 p-6 text-center text-sm text-muted-foreground"
-                    >
-                        {{ $t('catalog.no_live_units', { dept: activeDept }) }}
-                    </div>
                 </CatalogRow>
 
                 <CatalogRow
