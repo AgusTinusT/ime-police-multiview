@@ -16,6 +16,7 @@ import {
 } from "@lucide/vue";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
+import { DONATE_URL } from "@/lib/siteLinks";
 import { Card, CardContent } from "@/Components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import {
@@ -347,7 +348,7 @@ const techStack = [
                             <div class="pt-2 flex flex-wrap items-center gap-3">
                                 <Button
                                     as="a"
-                                    href="https://bagibagi.co/Gusti-Aidan"
+                                    :href="DONATE_URL"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     title="Dukung developer via BagiBagi"

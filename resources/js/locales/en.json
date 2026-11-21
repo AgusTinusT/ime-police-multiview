@@ -91,6 +91,11 @@
     "github_repo": "GitHub (Contribute)",
     "discord_server": "Discord Server"
   },
+  "donate": {
+    "short": "Support",
+    "title": "Support IME Police Duty",
+    "hint": "Server costs, goals & ways to contribute"
+  },
   "nav": {
     "dashboard": "Home",
     "multiview": "Multiview",
@@ -104,7 +109,9 @@
     "updates": "Updates",
     "about": "About",
     "faq": "FAQ",
-    "feedback": "Send feedback"
+    "feedback": "Send feedback",
+    "feedback_hint": "Report a bug, idea, or data issue",
+    "bio_link": "Officer bio-link"
   },
   "visibility_panel": {
     "title": "MANAGE OFFICER VISIBILITY",

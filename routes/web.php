@@ -40,6 +40,9 @@ Route::get('/changelog', function () {
     return redirect()->route('updates');
 })->name('changelog');
 Route::get('/feedback', [PoliceCommandController::class, 'feedbackPage'])->name('feedback');
+Route::get('/dukung', [PoliceCommandController::class, 'supportPage'])->name('support');
+Route::get('/support', fn () => redirect()->route('support', status: 301));
+Route::get('/donate', fn () => redirect()->route('support', status: 301));
 
 // Admin direct slash route (hidden access)
 Route::get('/admin', function () {

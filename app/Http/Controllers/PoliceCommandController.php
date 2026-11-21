@@ -967,6 +967,76 @@ class PoliceCommandController extends Controller
     /**
      * Dedicated Page: Citizen & Dispatcher Reporting Portal.
      */
+    /**
+     * Dedicated Page: support / donation with transparent costs and funding goals.
+     * All numbers come from config/support.php.
+     */
+    public function supportPage()
+    {
+        $support = config('support');
+
+        $costs = collect($support['monthly_costs'] ?? [])->map(function ($c) {
+            $sponsor = $c['sponsor'] ?? null;
+
+            return [
+                'label' => $c['label'],
+                'note' => $c['note'] ?? null,
+                // Sponsored lines cost the project nothing.
+                'amount' => $sponsor ? 0 : (isset($c['amount']) ? (int) $c['amount'] : null),
+                'sponsor' => $sponsor,
+                'covered_by' => $c['covered_by'] ?? null,
+            ];
+        })->values();
+
+        $goals = collect($support['goals'] ?? [])->map(function ($g) {
+            $target = isset($g['target']) ? (int) $g['target'] : null;
+            $collected = (int) ($g['collected'] ?? 0);
+
+            return [
+                'key' => $g['key'],
+                'title' => $g['title'],
+                'description' => $g['description'] ?? '',
+                'target' => $target,
+                'collected' => $collected,
+                'percent' => $target ? min(100, (int) floor($collected / $target * 100)) : null,
+                'status' => in_array($g['status'] ?? '', ['active', 'planned', 'funded'], true) ? $g['status'] : 'planned',
+            ];
+        })->values();
+
+        // Total only when every line has a number; a partial sum would read as the full cost.
+        $monthlyTotal = $costs->isNotEmpty() && $costs->every(fn ($c) => $c['amount'] !== null)
+            ? $costs->sum('amount')
+            : null;
+
+        return Inertia::render('Support', [
+            'donateUrl' => $support['donate_url'] ?? null,
+            'githubUrl' => $support['github_url'] ?? null,
+            'discordUrl' => $support['discord_url'] ?? null,
+            'updatedAt' => $support['updated_at'] ?? null,
+            'monthlyCosts' => $costs,
+            'monthlyTotal' => $monthlyTotal,
+            'costsNote' => $support['costs_note'] ?? null,
+            'goals' => $goals,
+            'perks' => collect($support['perks'] ?? [])->map(fn ($p) => [
+                'icon' => $p['icon'] ?? 'heart',
+                'title' => $p['title'],
+                'description' => $p['description'] ?? '',
+                'who' => $p['who'] ?? null,
+            ])->values(),
+            'supporters' => collect($support['supporters'] ?? [])->map(fn ($s) => [
+                'name' => $s['name'],
+                'note' => $s['note'] ?? null,
+            ])->values(),
+            'meta' => [
+                'title' => 'Dukung IME Police Duty — Biaya, Target & Cara Berkontribusi',
+                'description' => 'Rincian biaya operasional, target pendanaan berikutnya, dan cara mendukung platform komunitas IME Police Duty: donasi, kontribusi GitHub, atau laporan masukan.',
+                'url' => url('/dukung'),
+                'canonical' => url('/dukung'),
+                'type' => 'website',
+            ],
+        ]);
+    }
+
     public function feedbackPage(Request $request)
     {
         return Inertia::render('Feedback', [
