@@ -26,7 +26,6 @@ import {
     Users,
 } from "@lucide/vue";
 import { cn } from "@/lib/utils";
-import { DONATE_URL } from "@/lib/siteLinks";
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 
@@ -344,17 +343,15 @@ onUnmounted(() => {
             <!-- Right Area: Donate + User Account Menu -->
             <div class="flex items-center gap-2 shrink-0">
                 <!-- Donate: icon-only on tablets, labelled from lg; phones get it in the account menu -->
-                <a
-                    :href="DONATE_URL"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                <Link
+                    href="/dukung"
                     class="hidden h-10 shrink-0 items-center gap-1.5 rounded-full border border-live/40 bg-live/15 px-3 text-sm font-semibold text-live transition-colors hover:bg-live/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex"
                     :title="$t('donate.title')"
                     :aria-label="$t('donate.title')"
                 >
                     <Heart class="size-4 shrink-0 fill-current" />
                     <span class="hidden lg:inline">{{ $t("donate.short") }}</span>
-                </a>
+                </Link>
                 <UserAccountMenu />
             </div>
         </div>
