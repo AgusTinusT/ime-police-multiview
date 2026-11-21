@@ -610,6 +610,21 @@ onMounted(() => {
                     />
                 </CatalogRow>
 
+                <!-- Officer baru ditambahkan (tampil 14 hari sejak masuk database) -->
+                <CatalogRow
+                    v-if="recentlyAddedOfficers.length"
+                    title="Officer baru bergabung"
+                    :subtitle="`${recentlyAddedOfficers.length} officer ditambahkan dalam 14 hari terakhir`"
+                    :fill-cols="newOfficersCompact ? recentlyAddedOfficers.length : 0"
+                >
+                    <NewOfficerCard
+                        v-for="o in recentlyAddedOfficers"
+                        :key="`new-${o.id}`"
+                        :officer="o"
+                        :compact="newOfficersCompact"
+                    />
+                </CatalogRow>
+
                 <!-- Top 10 patroli bulan ini -->
                 <CatalogRow
                     v-if="top10.length"
@@ -652,18 +667,16 @@ onMounted(() => {
                     </a>
                 </CatalogRow>
 
-                <!-- Officer baru ditambahkan (tampil 14 hari sejak masuk database) -->
+                <!-- Website Rekomendasi (REC-01) -->
                 <CatalogRow
-                    v-if="recentlyAddedOfficers.length"
-                    title="Officer baru bergabung"
-                    :subtitle="`${recentlyAddedOfficers.length} officer ditambahkan dalam 14 hari terakhir`"
-                    :fill-cols="newOfficersCompact ? recentlyAddedOfficers.length : 0"
+                    v-if="recommendedSites.length"
+                    :title="$t('dashboard.recommended_sites_title')"
+                    :subtitle="$t('dashboard.recommended_sites_subtitle')"
                 >
-                    <NewOfficerCard
-                        v-for="o in recentlyAddedOfficers"
-                        :key="`new-${o.id}`"
-                        :officer="o"
-                        :compact="newOfficersCompact"
+                    <RecommendedSiteCard
+                        v-for="site in recommendedSites"
+                        :key="site.id"
+                        :site="site"
                     />
                 </CatalogRow>
 
@@ -697,19 +710,6 @@ onMounted(() => {
                         v-for="c in communityClips"
                         :key="`clip-${c.id}`"
                         :clip="c"
-                    />
-                </CatalogRow>
-
-                <!-- Website Rekomendasi (REC-01) -->
-                <CatalogRow
-                    v-if="recommendedSites.length"
-                    :title="$t('dashboard.recommended_sites_title')"
-                    :subtitle="$t('dashboard.recommended_sites_subtitle')"
-                >
-                    <RecommendedSiteCard
-                        v-for="site in recommendedSites"
-                        :key="site.id"
-                        :site="site"
                     />
                 </CatalogRow>
 
