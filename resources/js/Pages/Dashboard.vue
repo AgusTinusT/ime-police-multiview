@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, usePage } from "@inertiajs/vue3";
-import { ChevronRight, Loader2, SlidersHorizontal } from "@lucide/vue";
+import { ChevronRight, History, Loader2, SlidersHorizontal } from "@lucide/vue";
 import { computed, ref, onMounted, watch } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
@@ -160,8 +160,14 @@ const liveFiltered = computed(() => {
 watch(liveDeptChips, (chips) => {
     if (selectedDept.value && !chips.some((c) => c.dept === selectedDept.value)) selectedDept.value = null;
 });
-// 1-3 live units fill the row width with larger cards instead of leaving it mostly empty.
-const liveFillCols = computed(() => (liveFiltered.value.length <= 3 ? liveFiltered.value.length : 0));
+// Few units live: top the row up with streams that just ended so it doesn't sit
+// mostly empty. Only on the unfiltered view; a department filter shows just that dept.
+const LIVE_ROW_TARGET = 8;
+const liveFillReplays = computed(() => {
+    if (selectedDept.value) return [];
+    const missing = LIVE_ROW_TARGET - liveFiltered.value.length;
+    return missing > 2 ? recentReplayStreams.value.slice(0, missing) : [];
+});
 // Officers with no patrol hours yet this month would only show "0 Jam".
 const top10 = computed(() =>
     (props.monthlyLeaderboard?.all_top || []).filter((o) => Number(o.total_hours_num) > 0).slice(0, 10),
@@ -185,6 +191,8 @@ const roadTo1kOfficers = computed(() => {
 const recentlyAddedOfficers = computed(() =>
     (props.newOfficers || []).filter((o) => !isOfficerDisabled(o)),
 );
+// 1-3 new officers: compact horizontal cards spread across the row (empty list hides the row).
+const newOfficersCompact = computed(() => recentlyAddedOfficers.value.length <= 3);
 
 const detail = ref(null);
 const recentReplayStreams = computed(() => {
@@ -198,6 +206,11 @@ const recentReplayStreams = computed(() => {
         );
         return timeA - timeB;
     });
+});
+// "Rekaman terbaru" skips replays already shown at the end of the live row.
+const replayRowStreams = computed(() => {
+    const shown = new Set(liveFillReplays.value.map((r) => r.video_id));
+    return recentReplayStreams.value.filter((r) => !shown.has(r.video_id)).slice(0, 15);
 });
 // Cinematic Default Hero Slides (Fallback when database hero_slides has 0 active slides)
 const defaultHeroSlides = computed(() => [
@@ -548,7 +561,6 @@ onMounted(() => {
                     v-if="liveByViewers.length"
                     :title="$t('catalog.live_now')"
                     :subtitle="$t('catalog.live_summary', { units: liveByViewers.length, viewers: totalLiveViewers })"
-                    :fill-cols="liveFillCols"
                 >
                     <template v-if="liveDeptChips.length > 1" #filters>
                         <div role="tablist" :aria-label="$t('catalog.patrol_by_dept')" class="no-scrollbar flex items-center gap-4 overflow-x-auto">
@@ -606,10 +618,69 @@ onMounted(() => {
                         :stream="s"
                         :href="watchUrl(s)"
                         kind="live"
-                        :size="liveFillCols ? 'fill' : 'md'"
                         @detail="detail = $event"
                         @hide="hideOfficer"
                     />
+                    <template v-if="liveFillReplays.length">
+                        <div
+                            class="flex w-24 shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-border px-2 text-center text-xs font-medium text-muted-foreground"
+                            aria-hidden="true"
+                        >
+                            <History class="size-4" />
+                            {{ $t('catalog.just_ended') }}
+                        </div>
+                        <CatalogCard
+                            v-for="r in liveFillReplays"
+                            :key="`live-rep-${r.video_id}`"
+                            :stream="r"
+                            :href="watchUrl(r)"
+                            kind="replay"
+                            @detail="detail = $event"
+                            @hide="hideOfficer"
+                        />
+                    </template>
+                </CatalogRow>
+
+                <!-- Top 10 patroli bulan ini -->
+                <CatalogRow
+                    v-if="top10.length"
+                    :title="monthlyLeaderboard?.is_previous_period ? $t('catalog.top_10_patrols_last_month') : $t('catalog.top_10_patrols')"
+                    :subtitle="monthlyLeaderboard?.period_text || ''"
+                >
+                    <a
+                        v-for="o in top10"
+                        :key="`top-${o.id}`"
+                        :href="o.youtube_url || '/officers'"
+                        :target="o.youtube_url ? '_blank' : null"
+                        rel="noopener"
+                        class="group relative flex h-40 w-44 shrink-0 snap-start items-end rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:h-48 sm:w-52"
+                    >
+                        <span class="rank-number -mr-6 select-none text-9xl font-extrabold leading-none" aria-hidden="true">{{ o.rank }}</span>
+                        <span class="relative aspect-2/3 w-28 overflow-hidden rounded-md bg-muted motion-safe:transition-transform motion-safe:duration-300 group-hover:scale-105 sm:w-32">
+                            <img
+                                v-if="o.avatar_url && !brokenTopAvatars.has(o.id)"
+                                :src="o.avatar_url"
+                                :alt="o.officer_name"
+                                loading="lazy"
+                                class="size-full object-cover"
+                                @error="markTopAvatarBroken(o.id)"
+                            />
+                            <div
+                                v-else
+                                class="flex size-full items-center justify-center bg-card/60"
+                            >
+                                <OfficerAvatar
+                                    :name="o.officer_name"
+                                    size="lg"
+                                />
+                            </div>
+                            <span class="absolute inset-x-0 bottom-0 bg-linear-to-t from-background/90 to-transparent p-2">
+                                <span class="block truncate text-xs font-semibold text-foreground">{{ o.officer_name }}</span>
+                                <span class="block text-xs text-muted-foreground">{{ o.total_hours }}</span>
+                            </span>
+                            <LiveBadge v-if="o.is_live" class="absolute left-1.5 top-1.5" />
+                        </span>
+                    </a>
                 </CatalogRow>
 
                 <!-- Officer baru ditambahkan (tampil 14 hari sejak masuk database) -->
@@ -617,11 +688,13 @@ onMounted(() => {
                     v-if="recentlyAddedOfficers.length"
                     title="Officer baru bergabung"
                     :subtitle="`${recentlyAddedOfficers.length} officer ditambahkan dalam 14 hari terakhir`"
+                    :fill-cols="newOfficersCompact ? recentlyAddedOfficers.length : 0"
                 >
                     <NewOfficerCard
                         v-for="o in recentlyAddedOfficers"
                         :key="`new-${o.id}`"
                         :officer="o"
+                        :compact="newOfficersCompact"
                     />
                 </CatalogRow>
 
@@ -672,47 +745,6 @@ onMounted(() => {
                 </CatalogRow>
 
                 <CatalogRow
-                    v-if="top10.length"
-                    :title="monthlyLeaderboard?.is_previous_period ? $t('catalog.top_10_patrols_last_month') : $t('catalog.top_10_patrols')"
-                    :subtitle="monthlyLeaderboard?.period_text || ''"
-                >
-                    <a
-                        v-for="o in top10"
-                        :key="`top-${o.id}`"
-                        :href="o.youtube_url || '/officers'"
-                        :target="o.youtube_url ? '_blank' : null"
-                        rel="noopener"
-                        class="group relative flex h-40 w-44 shrink-0 snap-start items-end rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:h-48 sm:w-52"
-                    >
-                        <span class="rank-number -mr-6 select-none text-9xl font-extrabold leading-none" aria-hidden="true">{{ o.rank }}</span>
-                        <span class="relative aspect-2/3 w-28 overflow-hidden rounded-md bg-muted motion-safe:transition-transform motion-safe:duration-300 group-hover:scale-105 sm:w-32">
-                            <img
-                                v-if="o.avatar_url && !brokenTopAvatars.has(o.id)"
-                                :src="o.avatar_url"
-                                :alt="o.officer_name"
-                                loading="lazy"
-                                class="size-full object-cover"
-                                @error="markTopAvatarBroken(o.id)"
-                            />
-                            <div
-                                v-else
-                                class="flex size-full items-center justify-center bg-card/60"
-                            >
-                                <OfficerAvatar
-                                    :name="o.officer_name"
-                                    size="lg"
-                                />
-                            </div>
-                            <span class="absolute inset-x-0 bottom-0 bg-linear-to-t from-background/90 to-transparent p-2">
-                                <span class="block truncate text-xs font-semibold text-foreground">{{ o.officer_name }}</span>
-                                <span class="block text-xs text-muted-foreground">{{ o.total_hours }}</span>
-                            </span>
-                            <LiveBadge v-if="o.is_live" class="absolute left-1.5 top-1.5" />
-                        </span>
-                    </a>
-                </CatalogRow>
-
-                <CatalogRow
                     v-if="roadTo1kOfficers.length"
                     title="Road to 1K: dukung mereka"
                 >
@@ -728,9 +760,9 @@ onMounted(() => {
                     />
                 </CatalogRow>
 
-                <CatalogRow v-if="recentReplayStreams.length" :title="$t('catalog.recent_replays')">
+                <CatalogRow v-if="replayRowStreams.length" :title="$t('catalog.recent_replays')">
                     <CatalogCard
-                        v-for="s in recentReplayStreams.slice(0, 15)"
+                        v-for="s in replayRowStreams"
                         :key="`rep-${s.video_id}`"
                         :stream="s"
                         :href="watchUrl(s)"

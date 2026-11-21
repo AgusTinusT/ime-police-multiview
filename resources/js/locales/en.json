@@ -176,6 +176,7 @@
     "patrol_by_dept": "Patrol by department",
     "no_live_units": "No {dept} units live right now",
     "all_depts": "All",
+    "just_ended": "Just ended",
     "hide_officer": "Hide this officer",
     "manage_visibility": "Manage Officer Visibility"
   },
