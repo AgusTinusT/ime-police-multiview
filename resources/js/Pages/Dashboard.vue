@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, usePage } from "@inertiajs/vue3";
-import { ChevronRight, Loader2, SlidersHorizontal } from "@lucide/vue";
+import { ChevronRight, History, Loader2, SlidersHorizontal } from "@lucide/vue";
 import { computed, ref, onMounted, watch } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
@@ -160,8 +160,14 @@ const liveFiltered = computed(() => {
 watch(liveDeptChips, (chips) => {
     if (selectedDept.value && !chips.some((c) => c.dept === selectedDept.value)) selectedDept.value = null;
 });
-// 1-3 live units fill the row width with larger cards instead of leaving it mostly empty.
-const liveFillCols = computed(() => (liveFiltered.value.length <= 3 ? liveFiltered.value.length : 0));
+// Few units live: top the row up with streams that just ended so it doesn't sit
+// mostly empty. Only on the unfiltered view; a department filter shows just that dept.
+const LIVE_ROW_TARGET = 8;
+const liveFillReplays = computed(() => {
+    if (selectedDept.value) return [];
+    const missing = LIVE_ROW_TARGET - liveFiltered.value.length;
+    return missing > 2 ? recentReplayStreams.value.slice(0, missing) : [];
+});
 // Officers with no patrol hours yet this month would only show "0 Jam".
 const top10 = computed(() =>
     (props.monthlyLeaderboard?.all_top || []).filter((o) => Number(o.total_hours_num) > 0).slice(0, 10),
@@ -200,6 +206,11 @@ const recentReplayStreams = computed(() => {
         );
         return timeA - timeB;
     });
+});
+// "Rekaman terbaru" skips replays already shown at the end of the live row.
+const replayRowStreams = computed(() => {
+    const shown = new Set(liveFillReplays.value.map((r) => r.video_id));
+    return recentReplayStreams.value.filter((r) => !shown.has(r.video_id)).slice(0, 15);
 });
 // Cinematic Default Hero Slides (Fallback when database hero_slides has 0 active slides)
 const defaultHeroSlides = computed(() => [
@@ -550,7 +561,6 @@ onMounted(() => {
                     v-if="liveByViewers.length"
                     :title="$t('catalog.live_now')"
                     :subtitle="$t('catalog.live_summary', { units: liveByViewers.length, viewers: totalLiveViewers })"
-                    :fill-cols="liveFillCols"
                 >
                     <template v-if="liveDeptChips.length > 1" #filters>
                         <div role="tablist" :aria-label="$t('catalog.patrol_by_dept')" class="no-scrollbar flex items-center gap-4 overflow-x-auto">
@@ -608,10 +618,27 @@ onMounted(() => {
                         :stream="s"
                         :href="watchUrl(s)"
                         kind="live"
-                        :size="liveFillCols ? 'fill' : 'md'"
                         @detail="detail = $event"
                         @hide="hideOfficer"
                     />
+                    <template v-if="liveFillReplays.length">
+                        <div
+                            class="flex w-24 shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-border px-2 text-center text-xs font-medium text-muted-foreground"
+                            aria-hidden="true"
+                        >
+                            <History class="size-4" />
+                            {{ $t('catalog.just_ended') }}
+                        </div>
+                        <CatalogCard
+                            v-for="r in liveFillReplays"
+                            :key="`live-rep-${r.video_id}`"
+                            :stream="r"
+                            :href="watchUrl(r)"
+                            kind="replay"
+                            @detail="detail = $event"
+                            @hide="hideOfficer"
+                        />
+                    </template>
                 </CatalogRow>
 
                 <!-- Top 10 patroli bulan ini -->
@@ -733,9 +760,9 @@ onMounted(() => {
                     />
                 </CatalogRow>
 
-                <CatalogRow v-if="recentReplayStreams.length" :title="$t('catalog.recent_replays')">
+                <CatalogRow v-if="replayRowStreams.length" :title="$t('catalog.recent_replays')">
                     <CatalogCard
-                        v-for="s in recentReplayStreams.slice(0, 15)"
+                        v-for="s in replayRowStreams"
                         :key="`rep-${s.video_id}`"
                         :stream="s"
                         :href="watchUrl(s)"
