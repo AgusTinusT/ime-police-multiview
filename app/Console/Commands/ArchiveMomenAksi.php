@@ -14,7 +14,10 @@ use Illuminate\Console\Command;
  */
 class ArchiveMomenAksi extends Command
 {
-    protected $signature = 'momen:archive {--backfill : Queue never-archived moments from the last MOMEN_ARCHIVE_DAYS days} {--limit=20 : Max moments queued per run}';
+    protected $signature = 'momen:archive
+        {--backfill : Queue never-archived moments from the last MOMEN_ARCHIVE_DAYS days}
+        {--redo=* : Moment IDs to archive again (deletes their current file first)}
+        {--limit=20 : Max moments queued per run}';
 
     protected $description = 'Queue Momen Aksi 720p archives to object storage (pending, retries, optional backfill)';
 
@@ -28,6 +31,22 @@ class ArchiveMomenAksi extends Command
 
         $days = (int) config('momen.archive_days', 30);
 
+        // Re-archive specific moments (e.g. a file cut from the wrong part of a live stream).
+        foreach (TacClip::whereIn('id', array_map('intval', (array) $this->option('redo')))->get() as $momen) {
+            if ($momen->archive_disk && $momen->archive_path) {
+                \Illuminate\Support\Facades\Storage::disk($momen->archive_disk)->delete($momen->archive_path);
+            }
+            $momen->update([
+                'archive_status' => TacClip::ARCHIVE_PENDING,
+                'archive_path' => null,
+                'archive_size' => null,
+                'archive_attempts' => 0,
+                'archive_error' => null,
+                'archived_at' => null,
+            ]);
+            $this->info("Momen #{$momen->id}: file lama dihapus, diarsipkan ulang.");
+        }
+
         if ($this->option('backfill')) {
             $marked = TacClip::whereNull('archive_status')
                 ->where('created_at', '>=', now()->subDays($days))
@@ -35,6 +54,7 @@ class ArchiveMomenAksi extends Command
             $this->info("Backfill: {$marked} momen ditandai untuk diarsipkan.");
         }
 
+        // "unavailable" (members-only, private, removed) is never picked up again.
         $ids = TacClip::where(function ($q) {
             $q->where('archive_status', TacClip::ARCHIVE_PENDING)
                 ->orWhere(fn ($f) => $f->where('archive_status', TacClip::ARCHIVE_FAILED)

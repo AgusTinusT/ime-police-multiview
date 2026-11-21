@@ -35,25 +35,40 @@ class MomenArchiveTest extends TestCase
         ], $attrs));
     }
 
-    /** Fake trimmer: writes a few bytes to the output path like yt-dlp would. */
-    private function fakeClipper(bool $live, ?string $failWith = null): void
+    /**
+     * Real YouTubeClipperService::trimToFile policy with the network calls faked.
+     *
+     * @param  array<bool>  $liveChecks  successive isLiveStream() answers
+     * @param  string|null  $dvrError  make the DVR cut throw this
+     * @param  string|null  $vodError  make the VOD cut throw this
+     */
+    private function fakeClipper(array $liveChecks, ?string $dvrError = null, ?string $vodError = null, bool $expectDvr = false, bool $expectVod = false): void
     {
-        $mock = Mockery::mock(YouTubeClipperService::class);
-        $mock->shouldReceive('isLiveStream')->andReturn($live);
-        $write = function ($clip, string $path) use ($failWith) {
-            if ($failWith) {
-                throw new \RuntimeException($failWith);
+        $mock = Mockery::mock(YouTubeClipperService::class)->makePartial();
+        $mock->shouldReceive('isLiveStream')->andReturnValues($liveChecks);
+
+        $cut = fn (?string $error) => function ($clip, string $path) use ($error) {
+            if ($error) {
+                throw new \RuntimeException($error);
             }
             file_put_contents($path, 'fake-mp4-bytes');
         };
-        if ($live) {
-            $mock->shouldReceive('trimLiveStreamDvr')->once()->andReturnUsing($write);
-            $mock->shouldNotReceive('trimStandardVod');
-        } else {
-            $mock->shouldNotReceive('trimLiveStreamDvr');
-            $mock->shouldReceive('trimStandardVod')->once()->andReturnUsing($write);
-        }
+
+        $expectDvr
+            ? $mock->shouldReceive('trimLiveStreamDvr')->once()->andReturnUsing($cut($dvrError))
+            : $mock->shouldNotReceive('trimLiveStreamDvr');
+        $expectVod
+            ? $mock->shouldReceive('trimStandardVod')->once()->andReturnUsing($cut($vodError))
+            : $mock->shouldNotReceive('trimStandardVod');
+
         $this->app->instance(YouTubeClipperService::class, $mock);
+    }
+
+    private function runJob(TacClip $momen): TacClip
+    {
+        (new ArchiveMomenJob($momen->id))->handle(app(YouTubeClipperService::class));
+
+        return $momen->fresh();
     }
 
     public function test_creating_a_moment_queues_its_archive_immediately(): void
@@ -86,12 +101,9 @@ class MomenArchiveTest extends TestCase
 
     public function test_live_moment_is_cut_from_the_dvr_buffer_and_stored(): void
     {
-        $this->fakeClipper(live: true);
-        $momen = $this->momen();
+        $this->fakeClipper([true], expectDvr: true);
+        $momen = $this->runJob($this->momen());
 
-        (new ArchiveMomenJob($momen->id))->handle(app(YouTubeClipperService::class));
-
-        $momen->refresh();
         $this->assertSame(TacClip::ARCHIVE_STORED, $momen->archive_status);
         $this->assertSame('s3', $momen->archive_disk);
         Storage::disk('s3')->assertExists($momen->archive_path);
@@ -103,25 +115,70 @@ class MomenArchiveTest extends TestCase
 
     public function test_vod_moment_uses_the_section_downloader(): void
     {
-        $this->fakeClipper(live: false);
-        $momen = $this->momen();
+        $this->fakeClipper([false], expectVod: true);
 
-        (new ArchiveMomenJob($momen->id))->handle(app(YouTubeClipperService::class));
-
-        $this->assertSame(TacClip::ARCHIVE_STORED, $momen->fresh()->archive_status);
+        $this->assertSame(TacClip::ARCHIVE_STORED, $this->runJob($this->momen())->archive_status);
     }
 
-    public function test_failure_is_recorded_for_a_retry(): void
+    public function test_live_dvr_failure_never_falls_back_to_a_live_edge_recording(): void
     {
-        $this->fakeClipper(live: false, failWith: 'Video members-only');
-        $momen = $this->momen();
+        // Still live after the DVR failure: yt-dlp would record from the live edge
+        // (footage after the moment), so the cut must fail and be retried instead.
+        $this->fakeClipper([true, true], dvrError: 'HTTP 404 segment', expectDvr: true, expectVod: false);
+        $momen = $this->runJob($this->momen());
 
-        (new ArchiveMomenJob($momen->id))->handle(app(YouTubeClipperService::class));
+        $this->assertSame(TacClip::ARCHIVE_FAILED, $momen->archive_status);
+        $this->assertStringContainsString('DVR', $momen->archive_error);
+        $this->assertNull($momen->archive_path);
+    }
 
-        $momen->refresh();
+    public function test_stream_that_ended_during_the_dvr_cut_is_cut_from_the_vod(): void
+    {
+        $this->fakeClipper([true, false], dvrError: 'stream ended', expectDvr: true, expectVod: true);
+
+        $this->assertSame(TacClip::ARCHIVE_STORED, $this->runJob($this->momen())->archive_status);
+    }
+
+    public function test_members_only_video_is_marked_unavailable_and_not_retried(): void
+    {
+        $this->fakeClipper([false], vodError: 'ERROR: [youtube] OmP29OQcXR0: Join this channel to get access to members-only content', expectVod: true);
+        $momen = $this->runJob($this->momen());
+
+        $this->assertSame(TacClip::ARCHIVE_UNAVAILABLE, $momen->archive_status);
+        $this->assertSame(1, $momen->archive_attempts);
+
+        Queue::fake();
+        TacClip::whereKey($momen->id)->update(['updated_at' => now()->subHour()]);
+        $this->artisan('momen:archive')->assertSuccessful();
+        Queue::assertNothingPushed();
+    }
+
+    public function test_transient_failure_is_recorded_for_a_retry(): void
+    {
+        $this->fakeClipper([false], vodError: 'Connection reset by peer', expectVod: true);
+        $momen = $this->runJob($this->momen());
+
         $this->assertSame(TacClip::ARCHIVE_FAILED, $momen->archive_status);
         $this->assertSame(1, $momen->archive_attempts);
-        $this->assertStringContainsString('members-only', $momen->archive_error);
+    }
+
+    public function test_redo_deletes_the_wrong_file_and_requeues(): void
+    {
+        Queue::fake();
+        Storage::disk('s3')->put('momen/2026/11/wrong.mp4', 'wrong-part');
+        $momen = $this->momen([
+            'archive_status' => TacClip::ARCHIVE_STORED, 'archive_disk' => 's3',
+            'archive_path' => 'momen/2026/11/wrong.mp4', 'archived_at' => now(), 'archive_attempts' => 1,
+        ]);
+
+        $this->artisan("momen:archive --redo={$momen->id}")->assertSuccessful();
+
+        Storage::disk('s3')->assertMissing('momen/2026/11/wrong.mp4');
+        $momen->refresh();
+        $this->assertSame(TacClip::ARCHIVE_PENDING, $momen->archive_status);
+        $this->assertNull($momen->archive_path);
+        $this->assertSame(0, $momen->archive_attempts);
+        Queue::assertPushed(ArchiveMomenJob::class, fn ($job) => $job->tacClipId === $momen->id);
     }
 
     public function test_scheduler_queues_pending_and_retryable_moments_only(): void
