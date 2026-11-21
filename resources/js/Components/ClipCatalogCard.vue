@@ -27,7 +27,7 @@ const thumbUrl = computed(() => {
 
 <template>
     <Link
-        href="/action-clips"
+        :href="`/watch/${clip.video_id}?t=${clip.start_seconds || 0}&clip=${clip.id}`"
         class="catalog-card group relative block w-52 shrink-0 snap-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:w-64"
     >
         <div class="relative aspect-video overflow-hidden rounded-md bg-muted">

@@ -1,10 +1,13 @@
 <script setup>
 import { Head, Link, router } from "@inertiajs/vue3";
-import { ExternalLink, LayoutGrid, MessageSquareOff } from "@lucide/vue";
+import { ExternalLink, LayoutGrid, MessageSquareOff, Scissors } from "@lucide/vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
+import WatchClipDialog from "@/Components/WatchClipDialog.vue";
+import WatchClipList from "@/Components/WatchClipList.vue";
 import WatchSideItem from "@/Components/WatchSideItem.vue";
+import { useWatchPlayer } from "@/Composables/useWatchPlayer";
 import { DeptBadge, LiveBadge, OfficerAvatar } from "@/Components/tactical";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
@@ -15,6 +18,10 @@ const props = defineProps({
     stream: { type: Object, required: true },
     liveStreams: { type: Array, default: () => [] },
     replays: { type: Array, default: () => [] },
+    clips: { type: Array, default: () => [] },
+    officerClips: { type: Array, default: () => [] },
+    startAt: { type: Number, default: 0 },
+    highlightClipId: { type: Number, default: null },
 });
 
 const REFRESH_MS = 60_000;
@@ -26,12 +33,42 @@ const officerName = computed(
     () => officer.value?.officer_name || officer.value?.streamer_name || "Officer",
 );
 
-const origin = ref("");
+// enablejsapi lets the page read the playhead (Clip) and seek to TacClips.
 const playerSrc = computed(
     () =>
-        `https://www.youtube.com/embed/${props.stream.video_id}?autoplay=1&playsinline=1&rel=0&modestbranding=1` +
-        (origin.value ? `&origin=${encodeURIComponent(origin.value)}` : ""),
+        `https://www.youtube.com/embed/${props.stream.video_id}?autoplay=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1` +
+        (props.startAt ? `&start=${props.startAt}` : "") +
+        `&origin=${encodeURIComponent(window.location.origin)}`,
 );
+const playerEl = ref(null);
+const { getCurrentTime, seekTo } = useWatchPlayer(playerEl);
+
+// TacClips: local copy so a freshly saved clip shows up without a reload.
+const momentClips = ref([...props.clips]);
+watch(() => props.clips, (v) => {
+    momentClips.value = [...v];
+});
+const activeClipId = ref(props.highlightClipId);
+watch(() => props.highlightClipId, (v) => {
+    activeClipId.value = v;
+});
+
+const playClip = (clip) => {
+    activeClipId.value = clip.id;
+    seekTo(clip.start_seconds);
+    playerEl.value?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+};
+
+const clipOpen = ref(false);
+const markAt = ref(0);
+const openClip = () => {
+    markAt.value = getCurrentTime();
+    clipOpen.value = true;
+};
+const onClipCreated = (clip) => {
+    momentClips.value = [...momentClips.value, clip].sort((a, b) => a.start_seconds - b.start_seconds);
+    activeClipId.value = clip.id;
+};
 const chatSrc = computed(() => props.stream.live_chat_url || "");
 const youtubeWatchUrl = computed(() => `https://www.youtube.com/watch?v=${props.stream.video_id}`);
 const channelUrl = computed(() => {
@@ -63,8 +100,7 @@ const syncMq = () => {
 let refreshTimer = null;
 
 onMounted(() => {
-    origin.value = window.location.origin;
-    mq = window.matchMedia("(min-width: 1024px)");
+    mq =window.matchMedia("(min-width: 1024px)");
     syncMq();
     mq.addEventListener("change", syncMq);
     // Keep the "more live" list fresh without touching the player.
@@ -94,6 +130,7 @@ onUnmounted(() => {
                     <div class="aspect-video w-full">
                         <iframe
                             :key="stream.video_id"
+                            ref="playerEl"
                             :src="playerSrc"
                             :title="stream.title"
                             class="size-full"
@@ -126,6 +163,9 @@ onUnmounted(() => {
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
+                            <Button size="sm" variant="secondary" class="rounded-full" @click="openClip">
+                                <Scissors /> {{ $t('watch_clips.clip') }}
+                            </Button>
                             <Button v-if="channelUrl" as-child size="sm" class="rounded-full">
                                 <a :href="channelUrl" target="_blank" rel="noopener">{{ $t('watch.channel') }}</a>
                             </Button>
@@ -169,14 +209,40 @@ onUnmounted(() => {
                             {{ descOpen ? $t('watch.show_less') : $t('watch.show_more') }}
                         </button>
                     </div>
+
+                    <!-- Desktop: TacClips under the description -->
+                    <div v-if="isDesktop" class="mt-6 grid gap-6 xl:grid-cols-2">
+                        <section>
+                            <h2 class="mb-2 text-sm font-bold text-foreground">{{ $t('watch_clips.moments_here') }}</h2>
+                            <WatchClipList v-if="momentClips.length" :clips="momentClips" :active-id="activeClipId" @seek="playClip" />
+                            <p v-else class="text-sm text-muted-foreground">{{ $t('watch_clips.empty') }}</p>
+                        </section>
+                        <section v-if="officerClips.length">
+                            <h2 class="mb-2 text-sm font-bold text-foreground">{{ $t('watch_clips.moments_officer', { name: officerName }) }}</h2>
+                            <WatchClipList :clips="officerClips" :same-video="false" />
+                        </section>
+                    </div>
                 </div>
 
                 <!-- Phones & tablets: tabs under the player -->
-                <Tabs v-if="!isDesktop" default-value="more" class="mt-4 px-3 pb-24 sm:px-4">
+                <Tabs v-if="!isDesktop" :default-value="highlightClipId || momentClips.length ? 'moments' : 'more'" class="mt-4 px-3 pb-24 sm:px-4">
                     <TabsList class="w-full">
                         <TabsTrigger value="more" class="flex-1">{{ $t('watch.tab_more') }}</TabsTrigger>
+                        <TabsTrigger value="moments" class="flex-1">
+                            {{ $t('watch_clips.tab_moments') }}<span v-if="momentClips.length" class="ml-1 text-muted-foreground">{{ momentClips.length }}</span>
+                        </TabsTrigger>
                         <TabsTrigger value="chat" class="flex-1">{{ $t('watch.tab_chat') }}</TabsTrigger>
                     </TabsList>
+                    <TabsContent value="moments" class="mt-3 space-y-5">
+                        <section>
+                            <WatchClipList v-if="momentClips.length" :clips="momentClips" :active-id="activeClipId" @seek="playClip" />
+                            <p v-else class="text-sm text-muted-foreground">{{ $t('watch_clips.empty') }}</p>
+                        </section>
+                        <section v-if="officerClips.length">
+                            <h2 class="mb-2 text-sm font-bold text-foreground">{{ $t('watch_clips.moments_officer', { name: officerName }) }}</h2>
+                            <WatchClipList :clips="officerClips" :same-video="false" />
+                        </section>
+                    </TabsContent>
                     <TabsContent value="chat" class="mt-3">
                         <iframe
                             v-if="chatSrc"
@@ -246,5 +312,14 @@ onUnmounted(() => {
                 </p>
             </aside>
         </div>
+
+        <WatchClipDialog
+            v-model:open="clipOpen"
+            :stream="stream"
+            :mark-at="markAt"
+            :get-current-time="getCurrentTime"
+            :seek-to="seekTo"
+            @created="onClipCreated"
+        />
     </TacticalLayout>
 </template>

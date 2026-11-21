@@ -315,9 +315,35 @@ class PoliceCommandController extends Controller
 
         $officerName = $current['officer']['officer_name'] ?? null;
         $title = $current['title'] ?? 'Siaran Patroli';
+        $officerId = $current['officer']['id'] ?? null;
+
+        // TacClips: momen dari video ini, plus momen lain dari officer yang sama.
+        $clips = TacClip::where('is_approved', true)
+            ->where('video_id', $videoId)
+            ->orderBy('start_seconds')
+            ->take(50)
+            ->get()
+            ->map(fn ($c) => $this->mapWatchClip($c))
+            ->values();
+
+        $officerClips = $officerId
+            ? TacClip::where('is_approved', true)
+                ->where('officer_id', $officerId)
+                ->where('video_id', '!=', $videoId)
+                ->latest()
+                ->take(12)
+                ->get()
+                ->map(fn ($c) => $this->mapWatchClip($c))
+                ->values()
+            : collect();
 
         return Inertia::render('Watch', [
             'stream' => $current,
+            'clips' => $clips,
+            'officerClips' => $officerClips,
+            // ?t=95 starts the player at 95s; ?clip=ID highlights that TacClip.
+            'startAt' => max(0, (int) $request->query('t', 0)),
+            'highlightClipId' => $request->filled('clip') ? (int) $request->query('clip') : null,
             'liveStreams' => $liveStreams->reject(fn ($s) => $s['video_id'] === $videoId)->values(),
             'replays' => $replays->reject(fn ($r) => ($r['video_id'] ?? null) === $videoId)->take(12)->values(),
             'meta' => [
@@ -329,6 +355,20 @@ class PoliceCommandController extends Controller
                 'type' => 'video.other',
             ],
         ]);
+    }
+
+    private function mapWatchClip(TacClip $clip): array
+    {
+        return [
+            'id' => $clip->id,
+            'video_id' => $clip->video_id,
+            'title' => $clip->title,
+            'start_seconds' => (int) $clip->start_seconds,
+            'end_seconds' => (int) $clip->end_seconds,
+            'officer_name' => $clip->officer_name,
+            'creator_name' => $clip->creator_name ?: 'Guest',
+            'likes_count' => (int) $clip->likes_count,
+        ];
     }
 
     private function mapWatchStream(ActiveStream $stream, string $host, bool $isLive): array

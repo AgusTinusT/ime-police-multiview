@@ -11,6 +11,7 @@ import {
     ChevronDown,
     Scissors,
     ExternalLink,
+    MonitorPlay,
     Trash2,
     Video,
     Clock,
@@ -812,6 +813,19 @@ onUnmounted(() => {
                                     variant="outline"
                                     size="icon-sm"
                                     class="w-7 h-7 rounded-full"
+                                    aria-label="Tonton siaran penuh"
+                                    title="Tonton siaran penuh"
+                                >
+                                    <Link :href="`/watch/${currentShortClip.video_id}?t=${currentShortClip.start_seconds || 0}&clip=${currentShortClip.id}`">
+                                        <MonitorPlay class="w-3.5 h-3.5" />
+                                    </Link>
+                                </Button>
+
+                                <Button
+                                    as-child
+                                    variant="outline"
+                                    size="icon-sm"
+                                    class="w-7 h-7 rounded-full"
                                     aria-label="YouTube"
                                     title="YouTube"
                                 >
@@ -887,6 +901,23 @@ onUnmounted(() => {
                         <span class="text-xs font-mono text-muted-foreground"
                             >Clipper</span
                         >
+                    </div>
+
+                    <!-- WATCH FULL STREAM ON THE WATCH PAGE -->
+                    <div class="flex flex-col items-center space-y-1">
+                        <Button
+                            as-child
+                            variant="outline"
+                            size="icon"
+                            class="w-10 h-10 rounded-full bg-card/80 shadow-md"
+                            aria-label="Tonton siaran penuh"
+                            title="Tonton siaran penuh"
+                        >
+                            <Link :href="`/watch/${currentShortClip.video_id}?t=${currentShortClip.start_seconds || 0}&clip=${currentShortClip.id}`">
+                                <MonitorPlay class="w-4 h-4" />
+                            </Link>
+                        </Button>
+                        <span class="text-xs font-mono text-muted-foreground">Siaran</span>
                     </div>
 
                     <!-- OPEN ON YOUTUBE FULL -->
