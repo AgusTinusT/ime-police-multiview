@@ -338,6 +338,37 @@ class OfficerManagementController extends Controller
     }
 
     /**
+     * Show or hide an officer on public rosters (is_listed). Unlisted officers are
+     * non-personnel accounts that only back a bio-link: hidden from the dashboard,
+     * directory, ranking, multiview, squads and stream sync, bio-link unaffected.
+     */
+    public function toggleListed(Request $request, $id)
+    {
+        $officer = Officer::findOrFail($id);
+
+        $officer->is_listed = $request->has('is_listed')
+            ? $request->boolean('is_listed')
+            : ! $officer->is_listed;
+        $officer->save();
+
+        // Drop any live card right away instead of waiting for the next sync.
+        if (! $officer->is_listed) {
+            ActiveStream::where('officer_id', $officer->id)->delete();
+        }
+
+        $statusStr = $officer->is_listed
+            ? 'tampil di daftar perwira'
+            : 'disembunyikan dari daftar perwira (non-personel, bio-link tetap aktif)';
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "{$officer->officer_name} sekarang {$statusStr}.",
+            'is_listed' => $officer->is_listed,
+            'data' => $officer,
+        ]);
+    }
+
+    /**
      * Toggle the active status of an officer.
      */
     public function toggle($id)

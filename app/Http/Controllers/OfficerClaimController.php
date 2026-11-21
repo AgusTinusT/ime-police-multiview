@@ -144,7 +144,7 @@ class OfficerClaimController extends Controller
      */
     public function unclaimedOfficers(): JsonResponse
     {
-        $officers = Officer::where('is_active', true)
+        $officers = Officer::roster()
             ->whereNull('user_id')
             ->orderBy('callsign')
             ->get(['id', 'officer_name', 'streamer_name', 'callsign', 'department', 'rank', 'avatar_url']);

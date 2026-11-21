@@ -30,10 +30,11 @@ class SyncOfficerStreamsJob implements ShouldQueue
      */
     public function handle(YouTubeScraperService $scraper): void
     {
-        // Purge any active stream records belonging to disabled officers
-        ActiveStream::whereHas('officer', fn($q) => $q->where('is_active', false))->delete();
+        // Purge any active stream records belonging to disabled or unlisted
+        // (non-personnel, bio-link only) officers.
+        ActiveStream::whereHas('officer', fn($q) => $q->where('is_active', false)->orWhere('is_listed', false))->delete();
 
-        $officers = Officer::where('is_active', true)->get();
+        $officers = Officer::roster()->get();
         if ($officers->isEmpty()) {
             return;
         }
@@ -137,7 +138,7 @@ class SyncOfficerStreamsJob implements ShouldQueue
         // Warm up Cinema Hub replays cache in the background
         try {
             $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->toArray();
-            $unmatchedOfficers = Officer::where('is_active', true)
+            $unmatchedOfficers = Officer::roster()
                 ->whereNotIn('channel_id', $liveChannelIds)
                 ->get();
 

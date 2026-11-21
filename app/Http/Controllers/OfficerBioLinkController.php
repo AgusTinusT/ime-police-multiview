@@ -54,7 +54,7 @@ class OfficerBioLinkController extends Controller
         $profile = BioProfileService::ensureBioProfile($officer);
         $profile->load(['links.recommendedOfficer']);
 
-        $otherOfficers = Officer::where('is_active', true)
+        $otherOfficers = Officer::roster()
             ->where('id', '!=', $officer->id)
             ->orderBy('officer_name', 'asc')
             ->get(['id', 'officer_name', 'streamer_name', 'callsign', 'department', 'avatar_url']);

@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import { ChevronRight, Loader2, SlidersHorizontal } from "@lucide/vue";
-import { computed, ref, onMounted, watch } from "vue";
+import { computed, ref, onMounted } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
 import { useOfficerFilter } from "@/Composables/useOfficerFilter";
@@ -127,39 +127,12 @@ const totalLiveViewers = computed(() =>
 );
 
 // Netflix-style catalog rows
-const deptOf = (s) => {
-    const d = (s?.officer?.department || s?.department || "").toUpperCase();
-    return d === "PARK RANGER" ? "SAPR" : d;
-};
 const mvUrl = (ids) => `/multiview?v=${ids.filter(Boolean).join(",")}`;
 // Klik kartu membuka halaman tonton (layout ala YouTube) di situs sendiri.
 const watchUrl = (s) => `/watch/${s.video_id}`;
 const liveByViewers = computed(() =>
     [...visibleStreams.value].sort((a, b) => (b.viewers_count || 0) - (a.viewers_count || 0)),
 );
-const DEPARTMENTS = ["LSPD", "BCSO", "SASP", "SAPR"];
-const deptDot = { LSPD: "bg-dept-lspd", BCSO: "bg-dept-bcso", SASP: "bg-dept-sasp", SAPR: "bg-dept-sapr" };
-const deptGroups = computed(() => {
-    return DEPARTMENTS.map((dept) => {
-        const items = liveByViewers.value.filter((s) => deptOf(s) === dept);
-        return {
-            dept,
-            items,
-            count: items.length,
-        };
-    });
-});
-// Department filter on the "Sedang live" row (null = semua departemen).
-const selectedDept = ref(null);
-const liveDeptChips = computed(() => deptGroups.value.filter((g) => g.count > 0));
-const liveFiltered = computed(() => {
-    const group = selectedDept.value && deptGroups.value.find((g) => g.dept === selectedDept.value);
-    return group ? group.items : liveByViewers.value;
-});
-// If the chosen department goes offline, fall back to all units.
-watch(liveDeptChips, (chips) => {
-    if (selectedDept.value && !chips.some((c) => c.dept === selectedDept.value)) selectedDept.value = null;
-});
 // Officers with no patrol hours yet this month would only show "0 Jam".
 const top10 = computed(() =>
     (props.monthlyLeaderboard?.all_top || []).filter((o) => Number(o.total_hours_num) > 0).slice(0, 10),
@@ -549,39 +522,6 @@ onMounted(() => {
                     :title="$t('catalog.live_now')"
                     :subtitle="$t('catalog.live_summary', { units: liveByViewers.length, viewers: totalLiveViewers })"
                 >
-                    <template v-if="liveDeptChips.length > 1" #filters>
-                        <div role="tablist" :aria-label="$t('catalog.patrol_by_dept')" class="no-scrollbar flex items-center gap-4 overflow-x-auto">
-                            <button
-                                type="button"
-                                role="tab"
-                                :aria-selected="!selectedDept"
-                                :class="[
-                                    'flex shrink-0 items-center gap-1.5 border-b-2 pb-0.5 text-sm font-semibold transition-colors',
-                                    !selectedDept ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
-                                ]"
-                                @click="selectedDept = null"
-                            >
-                                {{ $t('catalog.all_depts') }}
-                                <span class="text-xs font-normal text-muted-foreground">{{ liveByViewers.length }}</span>
-                            </button>
-                            <button
-                                v-for="stat in liveDeptChips"
-                                :key="`dept-chip-${stat.dept}`"
-                                type="button"
-                                role="tab"
-                                :aria-selected="selectedDept === stat.dept"
-                                :class="[
-                                    'flex shrink-0 items-center gap-1.5 border-b-2 pb-0.5 text-sm font-semibold transition-colors',
-                                    selectedDept === stat.dept ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
-                                ]"
-                                @click="selectedDept = stat.dept"
-                            >
-                                <span class="size-1.5 rounded-full" :class="deptDot[stat.dept]" />
-                                {{ stat.dept }}
-                                <span class="text-xs font-normal text-muted-foreground">{{ stat.count }}</span>
-                            </button>
-                        </div>
-                    </template>
                     <template #action>
                         <div class="ml-auto flex items-center gap-1.5 shrink-0">
                             <Button
@@ -595,12 +535,12 @@ onMounted(() => {
                                 <span class="hidden sm:inline">Filter Visibilitas</span>
                             </Button>
                             <Button as-child variant="link" size="sm" class="shrink-0">
-                                <Link :href="mvUrl(liveFiltered.slice(0, 9).map((s) => s.video_id))">{{ $t('catalog.watch_all') }} <ChevronRight /></Link>
+                                <Link :href="mvUrl(liveByViewers.slice(0, 9).map((s) => s.video_id))">{{ $t('catalog.watch_all') }} <ChevronRight /></Link>
                             </Button>
                         </div>
                     </template>
                     <CatalogCard
-                        v-for="s in liveFiltered"
+                        v-for="s in liveByViewers"
                         :key="`live-${s.video_id}`"
                         :stream="s"
                         :href="watchUrl(s)"

@@ -26,6 +26,8 @@ import {
     Radio,
     Lock,
     Unlock,
+    Eye,
+    EyeOff,
 } from "@lucide/vue";
 
 const props = defineProps({
@@ -45,6 +47,7 @@ const emit = defineEmits([
     "delete",
     "duty",
     "toggle-hashtag",
+    "toggle-listed",
     "bind",
     "slug",
     "unbind",
@@ -54,6 +57,8 @@ const emit = defineEmits([
 
 // Live comes from the eager-loaded ActiveStream; duty_status is only a label.
 const isLive = computed(() => Boolean(props.officer?.active_stream));
+// Rows created before the is_listed column existed come back without it: treat as listed.
+const isListed = computed(() => props.officer?.is_listed !== false);
 
 const formatDutyHours = (minutes) => {
     const min = parseInt(minutes || 0, 10);
@@ -96,6 +101,13 @@ const calcDailyAvg = (minutes) => {
                         class="text-xs font-mono font-bold"
                     >
                         DISABLED
+                    </Badge>
+                    <Badge
+                        v-if="officer && !isListed"
+                        variant="warning"
+                        class="text-xs font-mono font-bold"
+                    >
+                        NON-PERSONEL
                     </Badge>
                 </div>
                 <SheetDescription class="text-xs text-muted-foreground font-mono">
@@ -214,6 +226,30 @@ const calcDailyAvg = (minutes) => {
                                 <Unlock v-if="officer.bypass_hashtag_check" class="size-3 shrink-0" />
                                 <Lock v-else class="size-3 shrink-0" />
                                 <span>{{ officer.bypass_hashtag_check ? "Nonaktifkan" : "Aktifkan Bypass" }}</span>
+                            </Button>
+                        </div>
+
+                        <!-- Non-personnel accounts keep their bio-link but leave every public roster -->
+                        <div class="flex items-center justify-between text-xs pt-2 border-t border-border gap-2">
+                            <div class="min-w-0">
+                                <span class="text-muted-foreground block">Daftar Perwira Publik</span>
+                                <span
+                                    class="font-semibold text-xs"
+                                    :class="isListed ? 'text-foreground' : 'text-warning'"
+                                >
+                                    {{ isListed ? "Tampil di daftar perwira" : "Non-personel: hanya bio-link" }}
+                                </span>
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                @click="emit('toggle-listed', officer)"
+                                class="h-7 shrink-0 text-xs font-mono font-bold gap-1"
+                                :class="isListed ? 'text-muted-foreground' : 'bg-warning/15 text-warning border-warning/40 hover:bg-warning/25'"
+                            >
+                                <EyeOff v-if="isListed" class="size-3 shrink-0" />
+                                <Eye v-else class="size-3 shrink-0" />
+                                <span>{{ isListed ? "Sembunyikan" : "Tampilkan" }}</span>
                             </Button>
                         </div>
                     </div>
