@@ -175,6 +175,23 @@ class YouTubeClipperService
         $relativeFilePath = 'clips/' . $filename;
         $absoluteOutputPath = Storage::disk('public')->path($relativeFilePath);
 
+        $this->trimToFile($clip, $absoluteOutputPath);
+
+        return $relativeFilePath;
+    }
+
+    /**
+     * Cut $clip->start_time..end_time (seconds from the start of the broadcast)
+     * into $outputPath. Shared by Clip Studio and the Momen Aksi archive.
+     *
+     * While the stream is live the cut must come from the DVR segments. The old
+     * fallback to `yt-dlp --download-sections` is NOT used then: on a live stream
+     * yt-dlp ignores the section and records from the live edge onwards, so the
+     * user got footage from after the moment they picked. If DVR fails and the
+     * stream has meanwhile ended, the finished VOD is cut instead.
+     */
+    public function trimToFile(VideoClip $clip, string $outputPath): void
+    {
         $isLive = $this->isLiveStream($clip->youtube_url);
 
         Log::info("YouTubeClipperService processing clip #{$clip->id}", [
@@ -184,18 +201,60 @@ class YouTubeClipperService
             'is_live' => $isLive,
         ]);
 
-        if ($isLive) {
-            try {
-                $this->trimLiveStreamDvr($clip, $absoluteOutputPath);
-                return $relativeFilePath;
-            } catch (\Throwable $e) {
-                Log::warning("HLS DVR Sequence extraction failed for live clip #{$clip->id}, falling back to yt-dlp: " . $e->getMessage());
-            }
+        if (! $isLive) {
+            $this->trimStandardVod($clip, $outputPath);
+
+            return;
         }
 
-        // Standard VOD or Fallback trimming
-        $this->trimStandardVod($clip, $absoluteOutputPath);
-        return $relativeFilePath;
+        try {
+            $this->trimLiveStreamDvr($clip, $outputPath);
+        } catch (\Throwable $e) {
+            if ($this->isLiveStream($clip->youtube_url)) {
+                Log::warning("Live DVR cut failed for clip #{$clip->id}; not falling back to a live-edge recording.", ['error' => $e->getMessage()]);
+                throw new \RuntimeException('Potong live (DVR) gagal: ' . $e->getMessage(), 0, $e);
+            }
+
+            Log::info("Clip #{$clip->id}: stream ended during the DVR cut, cutting the finished VOD instead.");
+            $this->trimStandardVod($clip, $outputPath);
+        }
+    }
+
+    /**
+     * Map a clip range (seconds from broadcast start) to DVR segment numbers.
+     * YouTube numbers live segments from 0 at the start of the broadcast (sq * chunk
+     * equals the time since start), so sq = floor(seconds / chunk).
+     *
+     * @return array{startSq:int, endSq:int, seekOffset:float, duration:float}
+     */
+    public static function planDvrRange(float $start, float $end, float $chunk): array
+    {
+        if ($chunk <= 0) {
+            $chunk = 5.0;
+        }
+        if ($start < 0 || $end <= $start) {
+            throw new \InvalidArgumentException('Rentang waktu klip tidak valid.');
+        }
+
+        $startSq = (int) floor($start / $chunk);
+
+        return [
+            'startSq' => $startSq,
+            'endSq' => (int) ceil($end / $chunk),
+            'seekOffset' => max(0.0, $start - ($startSq * $chunk)),
+            'duration' => max(1.0, $end - $start),
+        ];
+    }
+
+    /**
+     * Errors that will not go away on retry (members-only, private, removed).
+     */
+    public static function isPermanentVideoError(string $message): bool
+    {
+        return (bool) preg_match(
+            '/members-only|join this channel|private video|video is private|video unavailable|has been removed|account associated with this video has been terminated|copyright claim/i',
+            $message,
+        );
     }
 
     /**
@@ -215,6 +274,7 @@ class YouTubeClipperService
         };
 
         // 1. Extract M3U8 Stream URLs via yt-dlp -g with requested format specification
+        //    (same JS runtime as the VOD path; yt-dlp may need it for YouTube's challenges)
         $cmd = [
             $ytDlpBin,
             '-g',
@@ -222,6 +282,7 @@ class YouTubeClipperService
             '--no-playlist',
             '--no-cache-dir',
             '--force-ipv4',
+            '--js-runtimes', $this->resolveJsRuntimeSpec(),
             '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
             $clip->youtube_url,
         ];
@@ -255,12 +316,9 @@ class YouTubeClipperService
         $audioStreamUrl = count($streamUrls) > 1 ? $streamUrls[1] : null;
 
         // 2. Fetch M3U8 content to determine chunk duration & sequence URLs
-        $videoM3u8Content = @file_get_contents($videoStreamUrl);
-        if (!$videoM3u8Content) {
-            throw new \RuntimeException("Failed to download video M3U8 manifest.");
-        }
+        $videoM3u8Content = $this->fetchPlaylist($videoStreamUrl);
 
-        // Parse chunk duration (#EXTINF:5.000 or #EXT-X-TARGETDURATION:5)
+        // Parse chunk duration (#EXTINF:2.000 or #EXT-X-TARGETDURATION:2)
         $chunkDuration = 5.0; // default fallback
         if (preg_match('/#EXTINF:([\d\.]+)/', $videoM3u8Content, $m)) {
             $chunkDuration = (float) $m[1];
@@ -268,18 +326,35 @@ class YouTubeClipperService
             $chunkDuration = (float) $m[1];
         }
 
-        if ($chunkDuration <= 0) {
-            $chunkDuration = 5.0;
-        }
-
-        $startTime = (float) $clip->start_time;
-        $endTime = (float) $clip->end_time;
-        $clipDuration = max(1.0, $endTime - $startTime);
-
         // 3. Calculate sequence range
-        $startSq = (int) floor($startTime / $chunkDuration);
-        $endSq = (int) ceil($endTime / $chunkDuration);
-        $seekOffset = max(0.0, $startTime - ($startSq * $chunkDuration));
+        $plan = self::planDvrRange((float) $clip->start_time, (float) $clip->end_time, $chunkDuration);
+        $startSq = $plan['startSq'];
+        $endSq = $plan['endSq'];
+        $seekOffset = $plan['seekOffset'];
+        $clipDuration = $plan['duration'];
+
+        // The end of the clip may still be ahead of the live edge (e.g. "next 30 s");
+        // those segments 404 until they are produced, so wait for them instead of
+        // failing. Give up if they are further away than the job can wait.
+        $lastSq = self::lastSequenceNumber($videoM3u8Content);
+        if ($lastSq !== null && $endSq > $lastSq) {
+            $waitSeconds = ($endSq - $lastSq) * $chunkDuration;
+            if ($waitSeconds > 300) {
+                throw new \RuntimeException(sprintf(
+                    'Akhir klip %.0f detik di depan siaran live saat ini; tunggu sampai momennya lewat lalu coba lagi.',
+                    $waitSeconds,
+                ));
+            }
+            $deadline = microtime(true) + $waitSeconds + 30;
+            while ($lastSq < $endSq && microtime(true) < $deadline) {
+                sleep((int) max(2, min(10, ceil(($endSq - $lastSq) * $chunkDuration))));
+                $videoM3u8Content = $this->fetchPlaylist($videoStreamUrl);
+                $lastSq = self::lastSequenceNumber($videoM3u8Content) ?? $lastSq;
+            }
+            if ($lastSq < $endSq) {
+                throw new \RuntimeException('Segmen akhir klip belum tersedia di siaran live.');
+            }
+        }
 
         // 4. Construct custom .m3u8 playlist files
         $scratchDir = storage_path('app/scratch_playlists');
@@ -291,7 +366,11 @@ class YouTubeClipperService
         $audioPlaylistPath = null;
 
         if ($audioStreamUrl) {
-            $audioM3u8Content = @file_get_contents($audioStreamUrl);
+            try {
+                $audioM3u8Content = $this->fetchPlaylist($audioStreamUrl);
+            } catch (\Throwable) {
+                $audioM3u8Content = null;
+            }
             if ($audioM3u8Content) {
                 $audioPlaylistPath = $this->buildCustomM3u8($audioM3u8Content, $audioStreamUrl, $startSq, $endSq, $chunkDuration, $scratchDir, "clip_{$clip->id}_a.m3u8");
             }
@@ -336,6 +415,39 @@ class YouTubeClipperService
         if (!$ffmpegProcess->isSuccessful()) {
             throw new \RuntimeException("FFmpeg DVR clipping failed: " . $ffmpegProcess->getErrorOutput());
         }
+    }
+
+    /**
+     * Download an HLS playlist with a timeout (independent of allow_url_fopen).
+     */
+    protected function fetchPlaylist(string $url): string
+    {
+        $response = \Illuminate\Support\Facades\Http::timeout(15)
+            ->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'])
+            ->get($url);
+
+        if (! $response->successful() || trim($response->body()) === '') {
+            throw new \RuntimeException("Failed to download M3U8 manifest (HTTP {$response->status()}).");
+        }
+
+        return $response->body();
+    }
+
+    /**
+     * Highest /sq/N segment number listed in a live playlist (the live edge).
+     */
+    public static function lastSequenceNumber(string $m3u8Content): ?int
+    {
+        if (preg_match_all('#/sq/(\d+)#', $m3u8Content, $m)) {
+            return max(array_map('intval', $m[1]));
+        }
+        if (preg_match('/#EXT-X-MEDIA-SEQUENCE:(\d+)/', $m3u8Content, $seq)) {
+            $count = preg_match_all('/^#EXTINF:/m', $m3u8Content);
+
+            return (int) $seq[1] + max(0, $count - 1);
+        }
+
+        return null;
     }
 
     /**

@@ -50,6 +50,8 @@ class TacClip extends Model
     public const ARCHIVE_STORED = 'stored';
     public const ARCHIVE_FAILED = 'failed';
     public const ARCHIVE_EXPIRED = 'expired';
+    // The video can no longer be cut (members-only, private, removed); not retried.
+    public const ARCHIVE_UNAVAILABLE = 'unavailable';
 
     /**
      * Short-lived signed link to the archived 720p copy, or null when there is none
