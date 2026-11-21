@@ -4,8 +4,8 @@ import { ExternalLink, LayoutGrid, MessageSquareOff, Scissors } from "@lucide/vu
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
-import WatchClipDialog from "@/Components/WatchClipDialog.vue";
-import WatchClipList from "@/Components/WatchClipList.vue";
+import WatchMomenDialog from "@/Components/WatchMomenDialog.vue";
+import WatchMomenList from "@/Components/WatchMomenList.vue";
 import WatchSideItem from "@/Components/WatchSideItem.vue";
 import { useWatchPlayer } from "@/Composables/useWatchPlayer";
 import { DeptBadge, LiveBadge, OfficerAvatar } from "@/Components/tactical";
@@ -33,7 +33,7 @@ const officerName = computed(
     () => officer.value?.officer_name || officer.value?.streamer_name || "Officer",
 );
 
-// enablejsapi lets the page read the playhead (Clip) and seek to TacClips.
+// enablejsapi lets the page read the playhead (Clip) and seek to Momen Aksi.
 const playerSrc = computed(
     () =>
         `https://www.youtube.com/embed/${props.stream.video_id}?autoplay=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1` +
@@ -43,7 +43,7 @@ const playerSrc = computed(
 const playerEl = ref(null);
 const { getCurrentTime, seekTo } = useWatchPlayer(playerEl);
 
-// TacClips: local copy so a freshly saved clip shows up without a reload.
+// Momen Aksi: local copy so a freshly saved clip shows up without a reload.
 const momentClips = ref([...props.clips]);
 watch(() => props.clips, (v) => {
     momentClips.value = [...v];
@@ -211,16 +211,16 @@ onUnmounted(() => {
                         </button>
                     </div>
 
-                    <!-- Desktop: TacClips under the description -->
+                    <!-- Desktop: Momen Aksi under the description -->
                     <div v-if="isDesktop" class="mt-6 grid gap-6 xl:grid-cols-2">
                         <section>
                             <h2 class="mb-2 text-sm font-bold text-foreground">{{ $t('watch_clips.moments_here') }}</h2>
-                            <WatchClipList v-if="momentClips.length" :clips="momentClips" :active-id="activeClipId" @seek="playClip" />
+                            <WatchMomenList v-if="momentClips.length" :clips="momentClips" :active-id="activeClipId" @seek="playClip" />
                             <p v-else class="text-sm text-muted-foreground">{{ $t('watch_clips.empty') }}</p>
                         </section>
                         <section v-if="officerClips.length">
                             <h2 class="mb-2 text-sm font-bold text-foreground">{{ $t('watch_clips.moments_officer', { name: officerName }) }}</h2>
-                            <WatchClipList :clips="officerClips" :same-video="false" />
+                            <WatchMomenList :clips="officerClips" :same-video="false" />
                         </section>
                     </div>
                 </div>
@@ -236,12 +236,12 @@ onUnmounted(() => {
                     </TabsList>
                     <TabsContent value="moments" class="mt-3 space-y-5">
                         <section>
-                            <WatchClipList v-if="momentClips.length" :clips="momentClips" :active-id="activeClipId" @seek="playClip" />
+                            <WatchMomenList v-if="momentClips.length" :clips="momentClips" :active-id="activeClipId" @seek="playClip" />
                             <p v-else class="text-sm text-muted-foreground">{{ $t('watch_clips.empty') }}</p>
                         </section>
                         <section v-if="officerClips.length">
                             <h2 class="mb-2 text-sm font-bold text-foreground">{{ $t('watch_clips.moments_officer', { name: officerName }) }}</h2>
-                            <WatchClipList :clips="officerClips" :same-video="false" />
+                            <WatchMomenList :clips="officerClips" :same-video="false" />
                         </section>
                     </TabsContent>
                     <TabsContent value="chat" class="mt-3">
@@ -314,7 +314,7 @@ onUnmounted(() => {
             </aside>
         </div>
 
-        <WatchClipDialog
+        <WatchMomenDialog
             v-model:open="clipOpen"
             :stream="stream"
             :mark-at="markAt"

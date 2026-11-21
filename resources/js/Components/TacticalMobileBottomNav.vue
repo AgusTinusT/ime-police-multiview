@@ -118,11 +118,11 @@ onUnmounted(() => {
 
                 <!-- TAB 3: TACCLIPS -->
                 <Link
-                    href="/action-clips"
+                    href="/momen"
                     :class="
                         cn(
                             'flex-1 min-h-12 flex flex-col items-center justify-center py-1.5 transition-colors',
-                            isUrlActive('/action-clips') || isUrlActive('/clips')
+                            isUrlActive('/momen')
                                 ? 'text-primary font-bold'
                                 : 'text-muted-foreground hover:text-foreground',
                         )
@@ -131,7 +131,7 @@ onUnmounted(() => {
                     <div class="relative p-0.5">
                         <Video class="size-5" />
                         <span
-                            v-if="isUrlActive('/action-clips') || isUrlActive('/clips')"
+                            v-if="isUrlActive('/momen')"
                             class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
                         ></span>
                     </div>
@@ -195,12 +195,12 @@ onUnmounted(() => {
                 <!-- Navigasi Tambahan List -->
                 <div class="space-y-1">
                     <Link
-                        href="/clipper"
+                        href="/clip-studio"
                         @click="closeBottomSheet"
                         :class="
                             cn(
                                 'flex items-center justify-between p-3 rounded-xl transition-colors font-medium text-xs',
-                                isUrlActive('/clipper')
+                                isUrlActive('/clip-studio')
                                     ? 'bg-primary/15 text-primary border border-primary/30'
                                     : 'bg-background/60 text-foreground hover:bg-accent',
                             )

@@ -211,11 +211,11 @@ onUnmounted(() => {
                     </Link>
 
                     <Link
-                        href="/action-clips"
+                        href="/momen"
                         :class="
                             cn(
                                 'px-2.5 py-1.5 text-xs lg:px-3.5 lg:py-2 lg:text-sm font-medium rounded-full transition shrink-0 flex items-center gap-1.5',
-                                isUrlActive('/action-clips') || isUrlActive('/clips')
+                                isUrlActive('/momen')
                                     ? 'text-primary bg-primary/15 ring-1 ring-primary/60 font-bold'
                                     : 'text-foreground/80 hover:text-foreground hover:bg-foreground/10',
                             )
@@ -268,11 +268,11 @@ onUnmounted(() => {
 
                     <!-- Clip Studio Feature Link -->
                     <Link
-                        href="/clipper"
+                        href="/clip-studio"
                         :class="
                             cn(
                                 'px-2.5 py-1.5 text-xs lg:px-3.5 lg:py-2 lg:text-sm font-medium rounded-full transition shrink-0 flex items-center gap-1.5',
-                                isUrlActive('/clipper')
+                                isUrlActive('/clip-studio')
                                     ? 'text-primary bg-primary/15 ring-1 ring-primary/60 font-bold'
                                     : 'text-foreground/80 hover:text-foreground hover:bg-foreground/10',
                             )

@@ -33,7 +33,7 @@ const emit = defineEmits(["update:open", "created"]);
 
 const page = usePage();
 const authUser = computed(() => page.props.auth?.user || null);
-// Mirrors the access rule on /action-clips: Clipper is for the clips role and admins.
+// Mirrors the access rule on /momen: Clipper is for the clips role and admins.
 const canUseClipper = computed(() => {
     const u = authUser.value;
     if (!u) return false;
@@ -121,7 +121,7 @@ const clipperUrl = computed(() => {
         end: String(endSec.value),
         title: title.value.trim() || props.stream.title || "",
     });
-    return `/clipper?${params.toString()}`;
+    return `/clip-studio?${params.toString()}`;
 });
 </script>
 

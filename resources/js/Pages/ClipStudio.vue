@@ -1,6 +1,6 @@
 <template>
     <TacticalLayout>
-        <Head title="ClipStudio - Tactical Video Clipper & Media Hub" />
+        <Head title="Clip Studio - Tactical Video Clipper & Media Hub" />
 
         <PageContainer class="pt-6 pb-20 space-y-8 font-sans">
             <!-- HEADER / HERO & URL INPUT SECTION -->
@@ -8,8 +8,8 @@
                 <h1
                     class="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground tracking-tight leading-tight uppercase font-tactical"
                 >
-                    ClipStudio —
-                    <span class="text-primary">Tactical Video Trimmer</span>
+                    Clip Studio —
+                    <span class="text-primary">Clip Studio</span>
                 </h1>
                 <p
                     class="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto font-sans leading-relaxed"
@@ -1171,7 +1171,7 @@
         </Dialog>
 
         <!-- UNIFIED CLAIM & VERIFICATION MODAL (CLIPPER & OFFICER REQUEST) -->
-        <ClipperClaimModal
+        <ClipStudioAccessModal
             :show="showRequestClipperModal"
             initial-plan="general"
             @close="showRequestClipperModal = false"
@@ -1471,7 +1471,7 @@
                                 <h3
                                     class="font-bold text-foreground text-sm uppercase tracking-wide font-mono"
                                 >
-                                    Menu Opsi & Ekspor ClipStudio
+                                    Menu Opsi & Ekspor Clip Studio
                                 </h3>
                                 <p class="text-xs text-muted-foreground">
                                     Pengaturan format, kuota & ekspor klip video
@@ -1709,7 +1709,7 @@
 <script setup>
 import DualRangeTrimmer from "@/Components/DualRangeTrimmer.vue";
 import CustomVideoPlayer from "@/Components/CustomVideoPlayer.vue";
-import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
+import ClipStudioAccessModal from "@/Components/ClipStudioAccessModal.vue";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
 import { PageContainer } from "@/Components/tactical";
 import { Alert, AlertDescription } from "@/Components/ui/alert";
