@@ -61,9 +61,6 @@ const gridCols = {
             <span v-if="subtitle" class="min-w-0 truncate text-xs text-muted-foreground sm:text-sm">{{ subtitle }}</span>
             <slot name="action" />
         </div>
-        <div v-if="$slots.filters" :class="cn('mb-1', pad)">
-            <slot name="filters" />
-        </div>
         <div class="relative">
             <div
                 ref="track"
