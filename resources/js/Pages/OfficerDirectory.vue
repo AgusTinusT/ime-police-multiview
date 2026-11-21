@@ -140,6 +140,18 @@ const viewMode = ref("grid"); // 'grid' | 'table'
 
 // Drawer State
 const activeOfficer = ref(null);
+
+// Channel page for the profile drawer: handle first, then a real channel ID
+// (seeded placeholders start with "UC_").
+const activeChannelUrl = computed(() => {
+    const o = activeOfficer.value;
+    if (!o) return null;
+    const handle = String(o.handle || "").trim();
+    if (handle) return `https://www.youtube.com/${handle.startsWith("@") ? handle : `@${handle}`}`;
+    const channelId = String(o.channel_id || "");
+    if (channelId && !channelId.startsWith("UC_")) return `https://www.youtube.com/channel/${channelId}`;
+    return null;
+});
 const isDrawerOpen = ref(false);
 
 // Add Officer Modal State
@@ -1339,7 +1351,17 @@ const liveInDept = computed(() =>
                             <span class="text-muted-foreground"
                                 >Handle YouTube:</span
                             >
-                            <span class="text-primary font-bold">{{
+                            <a
+                                v-if="activeChannelUrl && activeOfficer.handle"
+                                :href="activeChannelUrl"
+                                target="_blank"
+                                rel="noopener"
+                                class="inline-flex items-center gap-1 text-primary font-bold hover:underline"
+                            >
+                                {{ activeOfficer.handle }}
+                                <ExternalLink class="size-3" />
+                            </a>
+                            <span v-else class="text-primary font-bold">{{
                                 activeOfficer.handle || "-"
                             }}</span>
                         </div>
@@ -1392,6 +1414,17 @@ const liveInDept = computed(() =>
                     v-if="activeOfficer"
                     class="p-4 border-t border-border bg-card flex-row items-center justify-end gap-2 font-mono text-xs shrink-0"
                 >
+                    <Button
+                        v-if="activeChannelUrl"
+                        as-child
+                        size="sm"
+                        variant="outline"
+                        class="font-bold text-xs"
+                    >
+                        <a :href="activeChannelUrl" target="_blank" rel="noopener">
+                            <ExternalLink /> BUKA CHANNEL
+                        </a>
+                    </Button>
                     <Button
                         type="button"
                         size="sm"
