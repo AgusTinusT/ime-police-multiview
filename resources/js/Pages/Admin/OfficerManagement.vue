@@ -89,6 +89,7 @@ import {
     ShieldAlert,
     Ban,
     Radio,
+    EyeOff,
 } from "@lucide/vue";
 
 const props = defineProps({
@@ -375,6 +376,30 @@ const toggleHashtagBypass = async (officer) => {
         showToast(
             "Gagal mengubah status bypass hashtag: " +
                 (e.response?.data?.message || e.message),
+            "error",
+        );
+    }
+};
+
+const toggleListed = async (officer) => {
+    const csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content");
+    try {
+        const res = await axios.patch(
+            `/api/v1/officers/${officer.id}/toggle-listed`,
+            {},
+            { headers: { "X-CSRF-TOKEN": csrfToken } },
+        );
+        if (res.data?.status === "success") {
+            officer.is_listed = res.data.is_listed;
+            showToast(res.data.message, "success");
+        } else {
+            showToast(res.data?.message || "Gagal mengubah status daftar perwira", "error");
+        }
+    } catch (e) {
+        showToast(
+            "Gagal mengubah status daftar perwira: " + (e.response?.data?.message || e.message),
             "error",
         );
     }
@@ -1081,6 +1106,9 @@ const filteredOfficers = computed(() => {
         if (selectedStatus.value === "DISABLED" && officer.is_active) {
             return false;
         }
+        if (selectedStatus.value === "UNLISTED" && officer.is_listed !== false) {
+            return false;
+        }
 
         // Search Query
         if (searchQuery.value.trim() !== "") {
@@ -1726,6 +1754,7 @@ onUnmounted(() => {
                                         <SelectItem value="ALL">All Statuses</SelectItem>
                                         <SelectItem value="ACTIVE">Active Only</SelectItem>
                                         <SelectItem value="DISABLED">Disabled Only</SelectItem>
+                                        <SelectItem value="UNLISTED">Non-personel (bio-link saja)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -1816,8 +1845,9 @@ onUnmounted(() => {
                                                 size="md"
                                             />
                                             <div class="min-w-0">
-                                                <div class="font-semibold text-foreground text-sm truncate">
-                                                    {{ officer.officer_name }}
+                                                <div class="flex items-center gap-1.5 font-semibold text-foreground text-sm">
+                                                    <span class="truncate">{{ officer.officer_name }}</span>
+                                                    <Badge v-if="officer.is_listed === false" variant="warning" class="shrink-0 font-mono text-xs">NON-PERSONEL</Badge>
                                                 </div>
                                                 <div class="flex items-center gap-1.5 text-xs text-muted-foreground font-mono flex-wrap">
                                                     <span>{{ officer.callsign }}</span>
@@ -1890,6 +1920,10 @@ onUnmounted(() => {
                                                 <DropdownMenuItem @click="toggleHashtagBypass(officer)" class="gap-2 cursor-pointer">
                                                     <Lock class="size-3.5" />
                                                     <span>Hashtag bypass: {{ officer.bypass_hashtag_check ? "ON" : "OFF" }}</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem @click="toggleListed(officer)" class="gap-2 cursor-pointer">
+                                                    <EyeOff class="size-3.5" />
+                                                    <span>{{ officer.is_listed === false ? "Tampilkan di daftar perwira" : "Sembunyikan (non-personel)" }}</span>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem @click="openEditModal(officer)" class="gap-2 cursor-pointer">
@@ -2425,6 +2459,7 @@ onUnmounted(() => {
             @delete="confirmDeleteOfficer"
             @duty="openDutyModal"
             @toggle-hashtag="toggleHashtagBypass"
+            @toggle-listed="toggleListed"
             @bind="openBindModal"
             @slug="openSlugModal"
             @unbind="openUnbindModal"

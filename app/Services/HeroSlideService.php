@@ -107,7 +107,7 @@ class HeroSlideService
     {
         $topStream = ActiveStream::with(['officer.bioProfile'])
             ->where('status', 'LIVE')
-            ->whereHas('officer', fn ($q) => $q->where('is_active', true))
+            ->whereHas('officer', fn ($q) => $q->roster())
             ->orderByDesc('viewers_count')
             ->first();
 

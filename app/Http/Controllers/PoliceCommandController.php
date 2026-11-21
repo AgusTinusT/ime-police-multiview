@@ -23,7 +23,7 @@ class PoliceCommandController extends Controller
         $activeStreams = ActiveStream::with('officer')
             ->where('status', 'LIVE')
             ->where(function ($q) {
-                $q->whereHas('officer', fn($o) => $o->where('is_active', true))
+                $q->whereHas('officer', fn($o) => $o->roster())
                   ->orWhereDoesntHave('officer');
             })
             ->get()
@@ -76,7 +76,7 @@ class PoliceCommandController extends Controller
         $liveOfficerIds = ActiveStream::where('status', 'LIVE')->pluck('officer_id')->filter()->toArray();
 
         $offlineOfficers = Officer::with('activeStream')
-            ->where('is_active', true)
+            ->roster()
             ->whereNotIn('id', $liveOfficerIds)
             ->orderBy('department')
             ->orderBy('rank')
@@ -106,7 +106,7 @@ class PoliceCommandController extends Controller
 
         // 4. Department Unit Breakdown Stats
         $deptStats = [
-            'total_officers' => Officer::where('is_active', true)->count(),
+            'total_officers' => Officer::roster()->count(),
             'total_live' => $activeStreams->count(),
             'total_offline' => $offlineOfficers->count(),
             'lspd_live' => $activeStreams->where('officer.department', 'LSPD')->count(),
@@ -159,7 +159,7 @@ class PoliceCommandController extends Controller
         $activeStreams = ActiveStream::with('officer')
             ->where('status', 'LIVE')
             ->where(function ($q) {
-                $q->whereHas('officer', fn($o) => $o->where('is_active', true))
+                $q->whereHas('officer', fn($o) => $o->roster())
                   ->orWhereDoesntHave('officer');
             })
             ->get()
@@ -211,7 +211,7 @@ class PoliceCommandController extends Controller
         $liveOfficerIds = ActiveStream::where('status', 'LIVE')->pluck('officer_id')->filter()->toArray();
 
         $offlineOfficers = Officer::with('activeStream')
-            ->where('is_active', true)
+            ->roster()
             ->whereNotIn('id', $liveOfficerIds)
             ->orderBy('department')
             ->orderBy('rank')
@@ -239,7 +239,7 @@ class PoliceCommandController extends Controller
         $recentReplays = $this->getSortedRecentReplays();
 
         $deptStats = [
-            'total_officers' => Officer::where('is_active', true)->count(),
+            'total_officers' => Officer::roster()->count(),
             'total_live' => $activeStreams->count(),
             'total_offline' => $offlineOfficers->count(),
             'lspd_live' => $activeStreams->where('officer.department', 'LSPD')->count(),
@@ -276,7 +276,7 @@ class PoliceCommandController extends Controller
         $liveStreams = ActiveStream::with('officer')
             ->where('status', 'LIVE')
             ->where(function ($q) {
-                $q->whereHas('officer', fn ($o) => $o->where('is_active', true))
+                $q->whereHas('officer', fn ($o) => $o->roster())
                   ->orWhereDoesntHave('officer');
             })
             ->orderByDesc('viewers_count')
@@ -410,7 +410,7 @@ class PoliceCommandController extends Controller
         $activeStreams = ActiveStream::with('officer')
             ->where('status', 'LIVE')
             ->where(function ($q) {
-                $q->whereHas('officer', fn($o) => $o->where('is_active', true))
+                $q->whereHas('officer', fn($o) => $o->roster())
                   ->orWhereDoesntHave('officer');
             })
             ->get()
@@ -462,7 +462,7 @@ class PoliceCommandController extends Controller
         // 2. Offline 10-7 Officer Roster
         $liveOfficerIds = ActiveStream::where('status', 'LIVE')->pluck('officer_id')->filter()->toArray();
         $offlineOfficers = Officer::with('activeStream')
-            ->where('is_active', true)
+            ->roster()
             ->whereNotIn('id', $liveOfficerIds)
             ->orderBy('department')
             ->orderBy('rank')
@@ -492,7 +492,7 @@ class PoliceCommandController extends Controller
 
         // 4. Department Unit Breakdown Stats
         $deptStats = [
-            'total_officers' => Officer::where('is_active', true)->count(),
+            'total_officers' => Officer::roster()->count(),
             'total_live' => $activeStreams->count(),
             'total_offline' => $offlineOfficers->count(),
             'lspd_live' => $activeStreams->where('officer.department', 'LSPD')->count(),
@@ -650,7 +650,7 @@ class PoliceCommandController extends Controller
         $liveOfficerIds = $activeStreams->pluck('officer_id')->filter()->toArray();
 
         $allOfficers = Officer::with(['rankRelation:id,rank_title,level', 'activeStream'])
-            ->where('is_active', true)
+            ->roster()
             ->orderBy('department')
             ->orderBy('rank')
             ->get()
@@ -710,7 +710,7 @@ class PoliceCommandController extends Controller
      */
     public function clipsPage(Request $request)
     {
-        $allOfficers = Officer::where('is_active', true)
+        $allOfficers = Officer::roster()
             ->orderBy('department')
             ->orderBy('rank')
             ->get()
@@ -928,7 +928,7 @@ class PoliceCommandController extends Controller
     public function radioCodes(Request $request)
     {
         $deptStats = [
-            'total_officers' => Officer::where('is_active', true)->count(),
+            'total_officers' => Officer::roster()->count(),
             'total_live' => ActiveStream::where('status', 'LIVE')->count(),
         ];
 
@@ -944,11 +944,11 @@ class PoliceCommandController extends Controller
     public function about(Request $request)
     {
         $deptStats = [
-            'total_officers' => Officer::where('is_active', true)->count(),
+            'total_officers' => Officer::roster()->count(),
             'total_live' => ActiveStream::where('status', 'LIVE')->count(),
-            'lspd_count' => Officer::where('department', 'LSPD')->where('is_active', true)->count(),
-            'bcso_count' => Officer::where('department', 'BCSO')->where('is_active', true)->count(),
-            'sasp_count' => Officer::where('department', 'SASP')->where('is_active', true)->count(),
+            'lspd_count' => Officer::where('department', 'LSPD')->roster()->count(),
+            'bcso_count' => Officer::where('department', 'BCSO')->roster()->count(),
+            'sasp_count' => Officer::where('department', 'SASP')->roster()->count(),
         ];
 
         return Inertia::render('About', [
@@ -1028,7 +1028,7 @@ class PoliceCommandController extends Controller
     {
         $now = now();
         $liveStreams = ActiveStream::where('status', 'LIVE')->get()->keyBy('channel_id');
-        $officers = Officer::with(['rankRelation', 'activeStream'])->where('is_active', true)->get();
+        $officers = Officer::with(['rankRelation', 'activeStream'])->roster()->get();
 
         $buildForMonth = function (\Carbon\CarbonInterface $date, bool $isCurrent) use ($officers, $liveStreams, $limit, $filterHiatus) {
             $daysInMonth = $date->daysInMonth;
@@ -1195,7 +1195,7 @@ class PoliceCommandController extends Controller
         // 2. duty_last_month: previous_monthly_duty_minutes desc (> 0 only, max 50)
         $lastMonthDays = $previousMonth->daysInMonth;
         $dutyLastMonthOfficers = Officer::with(['rankRelation', 'activeStream'])
-            ->where('is_active', true)
+            ->roster()
             ->where('previous_monthly_duty_minutes', '>', 0)
             ->orderByDesc('previous_monthly_duty_minutes')
             ->take(50)
@@ -1241,7 +1241,7 @@ class PoliceCommandController extends Controller
 
         // 3. subscribers: subscriber_count desc (max 50)
         $subscriberOfficers = Officer::with(['rankRelation', 'activeStream'])
-            ->where('is_active', true)
+            ->roster()
             ->orderByDesc('subscriber_count')
             ->take(50)
             ->get();
@@ -1265,7 +1265,7 @@ class PoliceCommandController extends Controller
 
         // 4. road_to_1k: subscriber_count < 1000, desc (closest to 1K first, max 50)
         $roadTo1kOfficers = Officer::with(['rankRelation', 'activeStream'])
-            ->where('is_active', true)
+            ->roster()
             ->where(function ($q) {
                 $q->whereNull('subscriber_count')
                   ->orWhere('subscriber_count', '<', 1000);
@@ -1293,7 +1293,7 @@ class PoliceCommandController extends Controller
 
         // 5. recently_on_duty: last_duty_at desc (not null, max 50)
         $recentlyOnDutyOfficers = Officer::with(['rankRelation', 'activeStream'])
-            ->where('is_active', true)
+            ->roster()
             ->whereNotNull('last_duty_at')
             ->orderByDesc('last_duty_at')
             ->take(50)
@@ -1386,7 +1386,7 @@ class PoliceCommandController extends Controller
         $days = config('police.new_officer_days', 14);
         $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->flip();
 
-        return Officer::where('is_active', true)
+        return Officer::roster()
             ->where('created_at', '>=', now()->subDays($days))
             ->orderByDesc('created_at')
             ->take(20)
@@ -1418,7 +1418,7 @@ class PoliceCommandController extends Controller
         // Query active officers with subscriber_count < 1000 (or null).
         // Eager-load activeStream so is_hiatus doesn't fire per-officer queries.
         $officers = Officer::with('activeStream')
-            ->where('is_active', true)
+            ->roster()
             ->where(function ($q) {
                 $q->whereNull('subscriber_count')
                   ->orWhere('subscriber_count', '<', 1000);
@@ -1427,7 +1427,7 @@ class PoliceCommandController extends Controller
 
         if ($officers->isEmpty()) {
             $officers = Officer::with('activeStream')
-                ->where('is_active', true)
+                ->roster()
                 ->orderBy('subscriber_count', 'asc')
                 ->take(9)
                 ->get();

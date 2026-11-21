@@ -45,6 +45,7 @@ class Officer extends Model
         'subscriber_count_text',
         'avatar_url',
         'is_active',
+        'is_listed',
         'monthly_duty_minutes',
         'last_duty_at',
         'bypass_hashtag_check',
@@ -59,6 +60,7 @@ class Officer extends Model
         'monthly_duty_minutes' => 'integer',
         'last_duty_at' => 'datetime',
         'is_active' => 'boolean',
+        'is_listed' => 'boolean',
         'bypass_hashtag_check' => 'boolean',
         'owner_updated_at' => 'datetime',
         'callsign_changed_at' => 'datetime',
@@ -208,6 +210,16 @@ class Officer extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Officers shown on public rosters (dashboard, directory, ranking, multiview,
+     * squads, stream sync). Excludes non-personnel rows that exist only to back a
+     * bio-link (is_listed = false). Bio-link pages keep using is_active alone.
+     */
+    public function scopeRoster($query)
+    {
+        return $query->where('is_active', true)->where('is_listed', true);
     }
 
     /**
