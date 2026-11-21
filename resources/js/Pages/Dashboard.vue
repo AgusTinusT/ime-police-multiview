@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, usePage } from "@inertiajs/vue3";
-import { ChevronRight, History, Loader2, SlidersHorizontal } from "@lucide/vue";
+import { ChevronRight, Loader2, SlidersHorizontal } from "@lucide/vue";
 import { computed, ref, onMounted, watch } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
@@ -160,14 +160,13 @@ const liveFiltered = computed(() => {
 watch(liveDeptChips, (chips) => {
     if (selectedDept.value && !chips.some((c) => c.dept === selectedDept.value)) selectedDept.value = null;
 });
-// Few units live: top the row up with streams that just ended so it doesn't sit
-// mostly empty. Only on the unfiltered view; a department filter shows just that dept.
-const LIVE_ROW_TARGET = 8;
+// 1-3 units live: a separate "Baru selesai" row sits beside the live row (stacked on
+// phones) so the band isn't mostly empty. Not while a department filter is active.
 const liveFillReplays = computed(() => {
-    if (selectedDept.value) return [];
-    const missing = LIVE_ROW_TARGET - liveFiltered.value.length;
-    return missing > 2 ? recentReplayStreams.value.slice(0, missing) : [];
+    if (selectedDept.value || liveFiltered.value.length > 3) return [];
+    return recentReplayStreams.value.slice(0, 10);
 });
+const liveBesideReplays = computed(() => liveFillReplays.value.length > 0);
 // Officers with no patrol hours yet this month would only show "0 Jam".
 const top10 = computed(() =>
     (props.monthlyLeaderboard?.all_top || []).filter((o) => Number(o.total_hours_num) > 0).slice(0, 10),
@@ -557,10 +556,15 @@ onMounted(() => {
 
             <!-- SECTION 2: Catalog rows (Netflix-style browsing) -->
             <div id="units-grid" class="relative z-10 scroll-mt-6 space-y-8 py-8 sm:space-y-10 sm:py-12">
-                <CatalogRow
+                <div
                     v-if="liveByViewers.length"
+                    :class="liveBesideReplays && 'flex flex-col gap-8 sm:gap-10 md:flex-row md:gap-0'"
+                >
+                <CatalogRow
                     :title="$t('catalog.live_now')"
                     :subtitle="$t('catalog.live_summary', { units: liveByViewers.length, viewers: totalLiveViewers })"
+                    :flush="liveBesideReplays ? 'end' : null"
+                    :class="liveBesideReplays && 'md:max-w-[60%] md:min-w-md md:shrink-0'"
                 >
                     <template v-if="liveDeptChips.length > 1" #filters>
                         <div role="tablist" :aria-label="$t('catalog.patrol_by_dept')" class="no-scrollbar flex items-center gap-4 overflow-x-auto">
@@ -621,25 +625,27 @@ onMounted(() => {
                         @detail="detail = $event"
                         @hide="hideOfficer"
                     />
-                    <template v-if="liveFillReplays.length">
-                        <div
-                            class="flex w-24 shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-border px-2 text-center text-xs font-medium text-muted-foreground"
-                            aria-hidden="true"
-                        >
-                            <History class="size-4" />
-                            {{ $t('catalog.just_ended') }}
-                        </div>
-                        <CatalogCard
-                            v-for="r in liveFillReplays"
-                            :key="`live-rep-${r.video_id}`"
-                            :stream="r"
-                            :href="watchUrl(r)"
-                            kind="replay"
-                            @detail="detail = $event"
-                            @hide="hideOfficer"
-                        />
-                    </template>
                 </CatalogRow>
+
+                <!-- Few live: streams that just ended get their own row beside the live row -->
+                <CatalogRow
+                    v-if="liveBesideReplays"
+                    :title="$t('catalog.just_ended')"
+                    :subtitle="$t('catalog.just_ended_subtitle')"
+                    flush="start"
+                    class="min-w-0 md:flex-1 md:border-l md:border-border"
+                >
+                    <CatalogCard
+                        v-for="r in liveFillReplays"
+                        :key="`ended-${r.video_id}`"
+                        :stream="r"
+                        :href="watchUrl(r)"
+                        kind="replay"
+                        @detail="detail = $event"
+                        @hide="hideOfficer"
+                    />
+                </CatalogRow>
+                </div>
 
                 <!-- Top 10 patroli bulan ini -->
                 <CatalogRow
