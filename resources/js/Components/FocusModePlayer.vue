@@ -285,21 +285,21 @@ const canTrimVideo = computed(() => {
 const openStudioClipper = () => {
     if (!authUser.value) {
         toast.warning(
-            "Akses Studio Clipper Terbatas! Silakan login terlebih dahulu untuk mengakses studio pemotong video.",
+            "Akses Clip Studio Terbatas! Silakan login terlebih dahulu untuk mengakses studio pemotong video.",
         );
         return;
     }
 
     if (!canTrimVideo.value) {
         toast.warning(
-            `Akun Anda (${authUser.value.name}) belum memiliki hak akses Studio Clipper Pro (Diperlukan Role: Clipper atau Admin).`,
+            `Akun Anda (${authUser.value.name}) belum memiliki hak akses Clip Studio (Diperlukan Role: Clipper atau Admin).`,
         );
         return;
     }
 
     if (props.stream?.video_id) {
         const targetUrl = `https://www.youtube.com/watch?v=${props.stream.video_id}`;
-        router.visit(`/clipper?url=${encodeURIComponent(targetUrl)}`);
+        router.visit(`/clip-studio?url=${encodeURIComponent(targetUrl)}`);
     }
 };
 
@@ -810,7 +810,7 @@ const youtubeHandle = computed(() => {
                                         ></span>
                                         <span
                                             class="text-xs font-mono font-semibold text-foreground"
-                                            >Studio Clipper Pro</span
+                                            >Clip Studio</span
                                         >
                                     </div>
                                     <Badge
@@ -846,7 +846,7 @@ const youtubeHandle = computed(() => {
                                 class="w-full gap-2 text-xs font-semibold"
                                 :title="
                                     canTrimVideo
-                                        ? 'Buka Studio Clipper Pro'
+                                        ? 'Buka Clip Studio'
                                         : 'Akses Terbatas (Diperlukan Role Clipper / Admin)'
                                 "
                             >
@@ -854,7 +854,7 @@ const youtubeHandle = computed(() => {
                                     v-if="!canTrimVideo"
                                     class="w-3.5 h-3.5 text-warning"
                                 />
-                                <span>Akses Studio Clipper</span>
+                                <span>Akses Clip Studio</span>
                                 <ArrowRight class="w-3.5 h-3.5" />
                             </Button>
                         </div>

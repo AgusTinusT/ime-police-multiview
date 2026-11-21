@@ -5,7 +5,7 @@ import { Heart, Play } from "@lucide/vue";
 import { cn } from "@/lib/utils";
 import { formatClipTime } from "@/Utils/clipTime";
 
-// TacClip rows for the watch page. Clips of the current video seek the player
+// momen rows for the watch page. Clips of the current video seek the player
 // in place; clips of other videos link to their own watch page.
 defineProps({
     clips: { type: Array, default: () => [] },

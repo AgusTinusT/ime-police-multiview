@@ -137,9 +137,9 @@ const rowClass =
                     <!-- Plain rows -->
                     <div class="pt-1">
                         <DropdownMenuItem as-child class="p-0">
-                            <Link href="/clipper" :class="rowClass">
+                            <Link href="/clip-studio" :class="rowClass">
                                 <Scissors class="size-4 shrink-0 text-muted-foreground" />
-                                <span class="flex-1">Tactical Video Trimmer</span>
+                                <span class="flex-1">Clip Studio</span>
                                 <Badge :variant="user.can_trim_video ? 'success' : 'secondary'" class="font-mono font-bold">
                                     {{ user.can_trim_video ? "PRO" : "Free" }}
                                 </Badge>
@@ -212,9 +212,9 @@ const rowClass =
 
                     <div class="pt-1">
                         <DropdownMenuItem as-child class="p-0">
-                            <Link href="/clipper" :class="rowClass">
+                            <Link href="/clip-studio" :class="rowClass">
                                 <Scissors class="size-4 shrink-0 text-muted-foreground" />
-                                <span class="flex-1">Tactical Trimmer</span>
+                                <span class="flex-1">Clip Studio</span>
                                 <Badge variant="secondary" class="font-mono font-bold">Demo</Badge>
                             </Link>
                         </DropdownMenuItem>

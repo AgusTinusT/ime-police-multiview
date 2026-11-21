@@ -27,7 +27,7 @@ const loadApi = () => {
 
 /**
  * Wraps the watch page's single embed (rendered with enablejsapi=1) so the page
- * can read the playhead for clipping and jump to TacClip timestamps.
+ * can read the playhead for clipping and jump to momen timestamps.
  */
 export function useWatchPlayer(iframeRef) {
     const isReady = ref(false);

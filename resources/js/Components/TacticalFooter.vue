@@ -72,7 +72,7 @@ const toggleLanguage = () => {
                             </li>
                             <li>
                                 <Link
-                                    href="/action-clips"
+                                    href="/momen"
                                     class="text-muted-foreground hover:text-foreground transition block py-0.5"
                                 >
                                     {{ $t("nav.clips") }}
@@ -107,7 +107,7 @@ const toggleLanguage = () => {
                         <ul class="space-y-1.5 text-xs font-medium">
                             <li>
                                 <Link
-                                    href="/clipper"
+                                    href="/clip-studio"
                                     class="text-muted-foreground hover:text-foreground transition inline-flex items-center gap-1.5 py-0.5"
                                 >
                                     <span>{{ $t("nav.clip_studio") }}</span>

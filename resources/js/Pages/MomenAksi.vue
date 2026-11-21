@@ -75,7 +75,7 @@ const openInClipper = (clip) => {
     const endSec = clip.end_seconds || 60;
     const title = clip.title || "";
 
-    const targetUrl = `/clipper?url=${encodeURIComponent(videoUrl)}&start=${encodeURIComponent(startSec)}&end=${encodeURIComponent(endSec)}&title=${encodeURIComponent(title)}`;
+    const targetUrl = `/clip-studio?url=${encodeURIComponent(videoUrl)}&start=${encodeURIComponent(startSec)}&end=${encodeURIComponent(endSec)}&title=${encodeURIComponent(title)}`;
     window.open(targetUrl, "_blank");
 };
 
@@ -173,11 +173,11 @@ const submitNewClip = async () => {
             activeShortIndex.value = 0;
             closeAddModal();
             showToast(
-                "TacClip momen aksi berhasil ditambahkan dan dapat dilihat publik!",
+                "Momen aksi berhasil ditambahkan dan dapat dilihat publik!",
             );
         }
     } catch (err) {
-        const msg = err.response?.data?.message || "Gagal menyimpan TacClip.";
+        const msg = err.response?.data?.message || "Gagal menyimpan momen.";
         toast.error(msg);
     } finally {
         isSubmittingClip.value = false;
@@ -645,7 +645,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head title="TacClips — Galeri Momen Aksi Kepolisian - IME Roleplay" />
+    <Head title="Momen Aksi — Galeri Momen Kepolisian - IME Roleplay" />
 
     <!-- MINIMALIST FULLSCREEN CINEMA FEED CONTAINER -->
     <div
@@ -802,8 +802,8 @@ onUnmounted(() => {
                                     size="icon-sm"
                                     @click="openInClipper(currentShortClip)"
                                     class="w-7 h-7 rounded-full"
-                                    aria-label="ClipStudio"
-                                    title="ClipStudio"
+                                    aria-label="Clip Studio"
+                                    title="Clip Studio"
                                 >
                                     <Scissors class="w-3.5 h-3.5" />
                                 </Button>
@@ -893,8 +893,8 @@ onUnmounted(() => {
                             size="icon"
                             @click="openInClipper(currentShortClip)"
                             class="w-10 h-10 rounded-full bg-card/80 shadow-md"
-                            aria-label="Buka & Potong di ClipStudio"
-                            title="Buka & Potong di ClipStudio (Halaman Baru)"
+                            aria-label="Buka & Potong di Clip Studio"
+                            title="Buka & Potong di Clip Studio (Halaman Baru)"
                         >
                             <Scissors class="w-4 h-4" />
                         </Button>
@@ -998,7 +998,7 @@ onUnmounted(() => {
                     <span
                         class="w-2.5 h-2.5 rounded-full bg-primary motion-safe:animate-pulse"
                     ></span>
-                    <span>Tambah TacClip Momen Aksi Baru</span>
+                    <span>Tambah Momen Aksi Baru</span>
                 </DialogTitle>
             </DialogHeader>
 

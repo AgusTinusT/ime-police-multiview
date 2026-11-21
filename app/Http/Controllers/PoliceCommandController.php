@@ -368,6 +368,8 @@ class PoliceCommandController extends Controller
             'officer_name' => $clip->officer_name,
             'creator_name' => $clip->creator_name ?: 'Guest',
             'likes_count' => (int) $clip->likes_count,
+            'archive_status' => $clip->archive_status,
+            'archive_url' => $clip->archiveUrl(),
         ];
     }
 
@@ -708,7 +710,7 @@ class PoliceCommandController extends Controller
     /**
      * Dedicated Standalone Page: Community Action Clips Gallery (`/clips`).
      */
-    public function clipsPage(Request $request)
+    public function momenPage(Request $request)
     {
         $allOfficers = Officer::roster()
             ->orderBy('department')
@@ -754,16 +756,16 @@ class PoliceCommandController extends Controller
                 ];
             });
 
-        return Inertia::render('Clips', [
+        return Inertia::render('MomenAksi', [
             'officers' => $allOfficers->values(),
             'initialClips' => $dbClips->values(),
             'lastSyncedAt' => now()->toIso8601String(),
             'meta' => [
-                'title' => 'TacClips — Klip Video Aksi & Patroli Taktis Kepolisian IME RP',
+                'title' => 'Momen Aksi — Galeri Momen Patroli Kepolisian IME RP',
                 'description' => 'Koleksi klip video aksi, pengejaran (pursuit), baku tembak (10-13), dan momen taktis terbaik perwira kepolisian IME Roleplay.',
                 'image' => asset('images/car-police-crash.jpg'),
-                'url' => url('/action-clips'),
-                'canonical' => url('/action-clips'),
+                'url' => url('/momen'),
+                'canonical' => url('/momen'),
                 'type' => 'website',
             ],
         ]);
@@ -795,6 +797,9 @@ class PoliceCommandController extends Controller
                     'avatar_url' => $officer ? $officer->public_avatar_url : null,
                     'user_id' => $clip->user_id,
                     'created_at' => $clip->created_at ? $clip->created_at->toIso8601String() : null,
+                    'archive_status' => $clip->archive_status,
+                    'archive_url' => $clip->archiveUrl(),
+                    'archive_expires_at' => $clip->archiveExpiresAt()?->toIso8601String(),
                 ];
             });
 
@@ -868,11 +873,18 @@ class PoliceCommandController extends Controller
             'likes_count' => 0,
             'views_count' => 0,
             'is_approved' => true,
+            'archive_status' => config('momen.archive_enabled') ? TacClip::ARCHIVE_PENDING : null,
         ]);
+
+        // Archive right away: a live stream is cut from its DVR buffer before the
+        // replay can turn members-only. momen:archive retries anything that fails.
+        if (config('momen.archive_enabled')) {
+            \App\Jobs\ArchiveMomenJob::dispatch($clip->id);
+        }
 
         return response()->json([
             'status' => 'success',
-            'message' => 'TacClip momen aksi berhasil ditambahkan dan dapat dilihat oleh seluruh komunitas!',
+            'message' => 'Momen aksi berhasil ditambahkan dan dapat dilihat oleh seluruh komunitas!',
             'clip' => [
                 'id' => $clip->id,
                 'video_id' => $clip->video_id,

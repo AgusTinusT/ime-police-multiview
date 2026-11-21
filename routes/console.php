@@ -33,3 +33,8 @@ Schedule::command('biolinks:flush-views')->everyFiveMinutes()->runInBackground()
 // Tactical Bio-Link: Prune raw link clicks older than 90 days daily at 03:00 AM (T-09)
 Schedule::command('biolinks:prune-clicks --days=90')->dailyAt('03:00');
 
+// Momen Aksi archive (no-op while MOMEN_ARCHIVE_ENABLED=false): queue pending and
+// retryable moments, then drop archive files past MOMEN_ARCHIVE_DAYS (data kept).
+Schedule::command('momen:archive')->everyFiveMinutes()->withoutOverlapping(10);
+Schedule::command('momen:prune-archives')->dailyAt('03:30');
+

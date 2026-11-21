@@ -101,7 +101,7 @@
     "multiview": "Multiview",
     "directory": "Officer Directory",
     "ranking": "Ranking",
-    "clips": "TacClips",
+    "clips": "Action Moments",
     "officers": "Officers",
     "clip_studio": "Clip Studio",
     "more": "More",
@@ -203,14 +203,14 @@
     "show_less": "Show less"
   },
   "watch_clips": {
-    "clip": "Clip",
+    "clip": "Mark moment",
     "moments_here": "Moments from this stream",
     "moments_officer": "More moments from {name}",
     "tab_moments": "Moments",
     "empty": "No moments yet. Mark the action with the Clip button.",
     "by": "by {name}",
     "dialog_title": "Mark an action moment",
-    "dialog_desc": "Save a slice of this stream as a TacClip for the community.",
+    "dialog_desc": "Save a slice of this stream as an action moment for the community.",
     "title_label": "Moment title",
     "title_placeholder": "e.g. Chase through Vinewood",
     "length_label": "Clip length",
@@ -224,7 +224,7 @@
     "creator_placeholder": "Guest",
     "live_note": "Still live: times follow the live position and may shift slightly in the replay.",
     "save": "Save moment",
-    "download": "Download in Clipper",
+    "download": "Download in Clip Studio",
     "clipper_after_live": "Download is available after the stream ends."
   },
   "officer_detail": {

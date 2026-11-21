@@ -1,6 +1,6 @@
 <template>
     <TacticalLayout>
-        <Head title="Paket Layanan & Pricing Clipper - ClipStudio IME Police" />
+        <Head title="Paket Layanan & Pricing Clipper - Clip Studio IME Police" />
 
         <PageContainer class="pt-8 pb-24 space-y-12 font-sans">
             <!-- HERO HEADER SECTION -->
@@ -33,13 +33,13 @@
                     class="pt-2 flex flex-wrap items-center justify-center gap-3"
                 >
                     <Button as-child class="font-bold text-xs uppercase tracking-wider font-tactical">
-                        <Link href="/clipper">
-                            Buka Studio Trimmer
+                        <Link href="/clip-studio">
+                            Buka Clip Studio
                         </Link>
                     </Button>
 
                     <Button as-child variant="outline" class="font-bold text-xs font-sans text-primary">
-                        <Link href="/clipper/police-guide">
+                        <Link href="/clip-studio">
                             Panduan Police Clipper →
                         </Link>
                     </Button>
@@ -166,7 +166,7 @@
 
                         <div class="pt-3 border-t border-border space-y-2">
                             <Button as-child class="w-full font-bold text-xs uppercase tracking-wider font-tactical">
-                                <Link href="/clipper/police-guide">
+                                <Link href="/clip-studio">
                                     Panduan Cara Akses →
                                 </Link>
                             </Button>
@@ -835,13 +835,13 @@
                     Mulai Potong Klip Video Sekarang
                 </h3>
                 <p class="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto">
-                    Gunakan pemutar interaktif ClipStudio untuk memotong momen
+                    Gunakan pemutar interaktif Clip Studio untuk memotong momen
                     streamer favorit Anda secara instan.
                 </p>
                 <div class="pt-1 flex justify-center">
                     <Button as-child class="font-bold text-xs uppercase tracking-wider font-tactical">
-                        <Link href="/clipper">
-                            <span>Buka Studio Trimmer (/clipper) →</span>
+                        <Link href="/clip-studio">
+                            <span>Buka Clip Studio (/clip-studio) →</span>
                         </Link>
                     </Button>
                 </div>
@@ -849,7 +849,7 @@
         </PageContainer>
 
         <!-- Claim & Verification Modal -->
-        <ClipperClaimModal
+        <ClipStudioAccessModal
             :show="claimModalVisible"
             :initial-plan="selectedPlanType"
             @close="claimModalVisible = false"
@@ -867,7 +867,7 @@
 <script setup>
 import { ref } from "vue";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
-import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
+import ClipStudioAccessModal from "@/Components/ClipStudioAccessModal.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import { PageContainer, TacticalFrame } from "@/Components/tactical";
 import { Badge } from "@/Components/ui/badge";

@@ -1074,12 +1074,17 @@ class YouTubeScraperService
                             }
                         }
 
-                        // Filter candidate streams by freshness (< 30 days) AND requiring IME RP / Police content (relevance score >= 3)
-                        $validCandidates = array_values(array_filter($candidateStreams, function ($s) use ($isStreamTooOld, $calculateRelevanceScore) {
-                            if (empty($s['video_id']) || $isStreamTooOld($s['time_text'])) {
+                        // Filter candidate streams: finished (not live or scheduled), fresh (< 30 days),
+                        // IME RP / police content (relevance >= 3) and passing the same patrol check
+                        // as "Sedang live", so a stream rejected there cannot surface here as a replay.
+                        $validCandidates = array_values(array_filter($candidateStreams, function ($s) use ($isStreamTooOld, $calculateRelevanceScore, $officer) {
+                            if (empty($s['video_id']) || ! self::isFinishedStreamTimeText($s['time_text']) || $isStreamTooOld($s['time_text'])) {
                                 return false;
                             }
-                            return $calculateRelevanceScore($s['title']) >= 3;
+                            if ($calculateRelevanceScore($s['title']) < 3) {
+                                return false;
+                            }
+                            return $this->isPolicePatrolStream($s['title'], '', $officer);
                         }));
 
                         if (!empty($validCandidates)) {
@@ -1376,6 +1381,16 @@ class YouTubeScraperService
     }
 
     /**
+     * A finished stream on a channel's Streams tab always carries a relative time
+     * ("Streaming 3 jam yang lalu" / "Streamed 3 hours ago"). Live ("123 sedang
+     * menonton") and scheduled entries do not, so they must not be listed as replays.
+     */
+    public static function isFinishedStreamTimeText(?string $timeText): bool
+    {
+        return (bool) preg_match('/\b(lalu|ago)\b/iu', (string) $timeText);
+    }
+
+    /**
      * Verify whether a live stream title/description represents an active 10-8 Police Duty stream
      * vs a Badside / Non-Police stream.
      */
@@ -1392,6 +1407,13 @@ class YouTubeScraperService
             $rawText = Normalizer::normalize($rawText, Normalizer::FORM_KD) ?? $rawText;
         }
         $text = mb_strtolower(preg_replace('/\p{M}/u', '', $rawText), 'UTF-8');
+
+        // 0. The streamer's own #imepolice tag is an explicit opt-in and wins over
+        //    badside words: "Rampok tapi polisi2an dulu #imepolice" is a patrol, and
+        //    "rampok" can just as well mean chasing robbers.
+        if (preg_match('/#\s*imepolice\b/u', $text)) {
+            return true;
+        }
 
         // 1. Badside / Non-Police Exclusion Signals
         $badsideExclusions = [

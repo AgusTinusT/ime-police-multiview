@@ -26,10 +26,14 @@ Route::get('/watch/{videoId}', [PoliceCommandController::class, 'watch'])
 // Dedicated Standalone Pages
 Route::get('/officers', [PoliceCommandController::class, 'officers'])->name('officers.index');
 Route::get('/ranking', [PoliceCommandController::class, 'rankingPage'])->name('ranking');
-Route::get('/action-clips', [PoliceCommandController::class, 'clipsPage'])->name('clips');
-Route::get('/clips', function () {
-    return redirect()->route('clips');
-});
+// Momen Aksi (community timestamp highlights, formerly "TacClips" at /action-clips)
+Route::get('/momen', [PoliceCommandController::class, 'momenPage'])->name('momen');
+foreach (['/action-clips', '/clips', '/tacclips'] as $legacyMomenPath) {
+    Route::get($legacyMomenPath, fn (\Illuminate\Http\Request $r) => redirect(
+        '/momen' . ($r->getQueryString() ? '?' . $r->getQueryString() : ''),
+        301,
+    ));
+}
 Route::get('/about', [PoliceCommandController::class, 'about'])->name('about');
 Route::get('/faq', [PoliceCommandController::class, 'faqPage'])->name('faq');
 Route::get('/qna', function () {
@@ -140,20 +144,15 @@ Route::post('/api/v1/hero-slides/{slide}/event', [HeroSlideController::class, 'r
 use App\Http\Controllers\VideoClipController;
 use App\Http\Controllers\ClipperRequestController;
 
-// Dedicated Tactical Video Trimmer Workspace Page (Public Teaser & Auth Workspace)
-Route::get('/clipper', [VideoClipController::class, 'clipperPage'])->name('clipper');
-Route::get('/clipper/pricing', function () {
-    return redirect()->route('clipper');
-})->name('clipper.pricing');
-Route::get('/clipper/police-guide', function () {
-    return redirect()->route('clipper');
-})->name('clipper.police-guide');
-Route::get('/police-clipper', function () {
-    return redirect()->route('clipper');
-});
-Route::get('/pricing', function () {
-    return redirect()->route('clipper');
-})->name('pricing');
+// Clip Studio (trim & download, formerly /clipper). Legacy URLs keep their query
+// string (?url=&start=&end=&title= prefills the studio).
+Route::get('/clip-studio', [VideoClipController::class, 'clipStudioPage'])->name('clip-studio');
+foreach (['/clipper', '/clipper/pricing', '/clipper/police-guide', '/clipper-pricing', '/police-clipper', '/pricing'] as $legacyStudioPath) {
+    Route::get($legacyStudioPath, fn (\Illuminate\Http\Request $r) => redirect(
+        '/clip-studio' . ($r->getQueryString() ? '?' . $r->getQueryString() : ''),
+        301,
+    ));
+}
 
 // Public YouTube URL Checker (For Teaser & Interactive Preview)
 Route::post('/api/v1/clips/check-url', [VideoClipController::class, 'checkUrl'])->middleware('throttle:30,1');

@@ -19,9 +19,9 @@ const isFullscreen = ref(false);
 const handleOpenClipper = (e) => {
     const url = e?.detail?.url || "";
     if (url) {
-        router.visit(`/clipper?url=${encodeURIComponent(url)}`);
+        router.visit(`/clip-studio?url=${encodeURIComponent(url)}`);
     } else {
-        router.visit("/clipper");
+        router.visit("/clip-studio");
     }
 };
 
