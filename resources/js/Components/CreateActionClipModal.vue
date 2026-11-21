@@ -82,7 +82,7 @@ const setDurationPreset = (seconds) => {
 const openStudioClipper = () => {
     if (props.stream?.video_id) {
         const targetUrl = `https://www.youtube.com/watch?v=${props.stream.video_id}`;
-        router.visit(`/clipper?url=${encodeURIComponent(targetUrl)}`);
+        router.visit(`/clip-studio?url=${encodeURIComponent(targetUrl)}`);
         emit("close");
     }
 };
@@ -251,7 +251,7 @@ const handleSubmit = () => {
                     @click="openStudioClipper"
                     class="text-xs font-mono text-primary hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                    <span>Buka Pembuat Klip Pro (Studio Clipper)</span>
+                    <span>Buka Pembuat Klip Pro (Clip Studio)</span>
                     <ArrowRight class="w-3.5 h-3.5" />
                 </button>
             </div>

@@ -153,7 +153,7 @@
     "multiview": "Multiview",
     "directory": "Direktori Perwira",
     "ranking": "Ranking",
-    "clips": "TacClips",
+    "clips": "Momen Aksi",
     "officers": "Perwira",
     "clip_studio": "Clip Studio",
     "more": "Lainnya",
@@ -203,14 +203,14 @@
     "show_less": "Sembunyikan"
   },
   "watch_clips": {
-    "clip": "Clip",
+    "clip": "Tandai Momen",
     "moments_here": "Momen dari siaran ini",
     "moments_officer": "Momen lain dari {name}",
     "tab_moments": "Momen",
     "empty": "Belum ada momen. Tandai aksi seru dengan tombol Clip.",
     "by": "oleh {name}",
     "dialog_title": "Tandai momen aksi",
-    "dialog_desc": "Simpan potongan siaran ini sebagai TacClip agar bisa ditonton komunitas.",
+    "dialog_desc": "Simpan potongan siaran ini sebagai Momen Aksi agar bisa ditonton komunitas.",
     "title_label": "Judul momen",
     "title_placeholder": "Contoh: Pengejaran di Vinewood",
     "length_label": "Panjang klip",
@@ -224,7 +224,7 @@
     "creator_placeholder": "Guest",
     "live_note": "Siaran masih live: waktu mengikuti posisi siaran dan bisa sedikit bergeser di rekamannya nanti.",
     "save": "Simpan momen",
-    "download": "Unduh di Clipper",
+    "download": "Unduh di Clip Studio",
     "clipper_after_live": "Unduh tersedia setelah siaran selesai."
   },
   "officer_detail": {

@@ -1,13 +1,13 @@
 <template>
     <TacticalLayout>
-        <Head title="Panduan Hak Akses Police Duty Clipper - ClipStudio IME Police" />
+        <Head title="Panduan Hak Akses Police Duty Clipper - Clip Studio IME Police" />
 
         <PageContainer class="pt-8 pb-24 space-y-10 font-sans">
             <!-- BREADCRUMB NAVIGATION -->
             <nav class="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-                <Link href="/clipper" class="hover:text-foreground transition">Studio Clipper</Link>
+                <Link href="/clip-studio" class="hover:text-foreground transition">Clip Studio</Link>
                 <span>/</span>
-                <Link href="/clipper/pricing" class="hover:text-foreground transition">Pricing & Paket</Link>
+                <Link href="/clip-studio" class="hover:text-foreground transition">Pricing & Paket</Link>
                 <span>/</span>
                 <span class="text-primary font-bold">Panduan Police Duty Clipper</span>
             </nav>
@@ -157,13 +157,13 @@
                             </Badge>
                             <span class="text-xs font-mono text-muted-foreground">Akses Aktif</span>
                         </div>
-                        <h3 class="text-base font-bold text-foreground">Akses Trimmer Aktif & Siap Digunakan</h3>
+                        <h3 class="text-base font-bold text-foreground">Akses Clip Studio Aktif & Siap Digunakan</h3>
                         <p class="text-xs text-muted-foreground leading-relaxed">
-                            Buka halaman <Link href="/clipper" class="text-primary underline hover:text-primary/80">Studio Trimmer (/clipper)</Link>. Status akun Anda otomatis menjadi <strong class="text-foreground">Police Duty Clipper</strong> dengan limit 10 klip/hari dan durasi hingga 5 menit!
+                            Buka halaman <Link href="/clip-studio" class="text-primary underline hover:text-primary/80">Clip Studio (/clip-studio)</Link>. Status akun Anda otomatis menjadi <strong class="text-foreground">Police Duty Clipper</strong> dengan limit 10 klip/hari dan durasi hingga 5 menit!
                         </p>
                         <div class="pt-1">
-                            <Link href="/clipper" class="text-xs text-success font-mono hover:underline flex items-center gap-1 font-bold">
-                                <span>Buka Studio Trimmer Sekarang</span>
+                            <Link href="/clip-studio" class="text-xs text-success font-mono hover:underline flex items-center gap-1 font-bold">
+                                <span>Buka Clip Studio Sekarang</span>
                                 <ArrowRight class="w-3.5 h-3.5" />
                             </Link>
                         </div>
@@ -199,7 +199,7 @@
                         </Link>
                     </Button>
                     <Button as-child variant="secondary" class="font-bold text-xs uppercase tracking-wider font-tactical">
-                        <Link href="/clipper/pricing">
+                        <Link href="/clip-studio">
                             Halaman Pricing & Tarif
                         </Link>
                     </Button>

@@ -243,8 +243,8 @@ const soloStrip = ref(null);
 const siteNav = [
     { href: "/", label: "Beranda" },
     { href: "/multiview", label: "Multiview" },
-    { href: "/clipper", label: "Clip Studio" },
-    { href: "/action-clips", label: "TacClips" },
+    { href: "/clip-studio", label: "Clip Studio" },
+    { href: "/momen", label: "Momen Aksi" },
     { href: "/officers", label: "Direktori Perwira" },
 ];
 

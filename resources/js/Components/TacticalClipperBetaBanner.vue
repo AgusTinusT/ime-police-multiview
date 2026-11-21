@@ -42,7 +42,7 @@ import { ArrowRight, Check } from "@lucide/vue";
                     size="lg"
                     class="px-7 py-3 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider font-tactical"
                 >
-                    <Link href="/clipper">
+                    <Link href="/clip-studio">
                         <span>Buka Studio Sekarang</span>
                         <ArrowRight class="w-4 h-4" />
                     </Link>

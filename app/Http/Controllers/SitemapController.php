@@ -59,13 +59,13 @@ class SitemapController extends Controller
                 'priority' => '0.8',
             ],
             [
-                'loc' => "{$baseUrl}/action-clips",
+                'loc' => "{$baseUrl}/momen",
                 'lastmod' => $now,
                 'changefreq' => 'daily',
                 'priority' => '0.8',
             ],
             [
-                'loc' => "{$baseUrl}/clipper",
+                'loc' => "{$baseUrl}/clip-studio",
                 'lastmod' => $now,
                 'changefreq' => 'weekly',
                 'priority' => '0.7',

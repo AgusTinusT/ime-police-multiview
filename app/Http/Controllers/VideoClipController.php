@@ -16,16 +16,16 @@ class VideoClipController extends Controller
     /**
      * Render the dedicated Tactical Video Clipper workspace page.
      */
-    public function clipperPage(Request $request)
+    public function clipStudioPage(Request $request)
     {
-        return Inertia::render('Clipper', [
+        return Inertia::render('ClipStudio', [
             'initialUrl' => $request->query('url', ''),
             'meta' => [
                 'title' => 'Tactical Video Clipper — Studio Potong & Unduh Video YouTube',
                 'description' => 'Alat pemotong dan pengunduh video YouTube untuk arsip klip patroli dan konten komunitas polisi IME Roleplay.',
                 'image' => asset('images/car-police-crash.jpg'),
-                'url' => url('/clipper'),
-                'canonical' => url('/clipper'),
+                'url' => url('/clip-studio'),
+                'canonical' => url('/clip-studio'),
                 'type' => 'website',
             ],
         ]);
@@ -34,17 +34,17 @@ class VideoClipController extends Controller
     /**
      * Render the dedicated Clipper Plans & Pricing page.
      */
-    public function pricingPage(Request $request)
+    public function clipStudioPricingPage(Request $request)
     {
-        return Inertia::render('ClipperPricing');
+        return Inertia::render('ClipStudioPricing');
     }
 
     /**
      * Render the Police Duty Clipper Guide page.
      */
-    public function policeGuidePage(Request $request)
+    public function clipStudioGuidePage(Request $request)
     {
-        return Inertia::render('PoliceClipperGuide');
+        return Inertia::render('ClipStudioGuide');
     }
 
     /**

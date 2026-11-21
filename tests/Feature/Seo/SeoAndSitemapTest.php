@@ -54,7 +54,8 @@ class SeoAndSitemapTest extends TestCase
         $this->assertStringContainsString('/multiview</loc>', $content);
         $this->assertStringContainsString('/officers</loc>', $content);
         $this->assertStringContainsString('/ranking</loc>', $content);
-        $this->assertStringContainsString('/action-clips</loc>', $content);
+        $this->assertStringContainsString('/momen</loc>', $content);
+        $this->assertStringContainsString('/clip-studio</loc>', $content);
         $this->assertStringContainsString('/bio-link</loc>', $content);
         $this->assertStringContainsString('/faq</loc>', $content);
         $this->assertStringContainsString('/about</loc>', $content);

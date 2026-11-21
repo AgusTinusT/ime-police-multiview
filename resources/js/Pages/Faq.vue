@@ -65,7 +65,7 @@ const faqs = computed(() => (locale.value === "en" ? faqsEn : faqsId));
 const categories = [
     { id: "ALL", name: "Semua Kategori", code: "ALL", icon: LayoutGrid },
     { id: "MULTIVIEW", name: "Multiview & Fitur", code: "MV", icon: Video },
-    { id: "CLIPS", name: "TacClips & Studio Pro", code: "CLIP", icon: Scissors },
+    { id: "CLIPS", name: "Momen Aksi & Clip Studio", code: "CLIP", icon: Scissors },
     { id: "TAC", name: "Radio Taktis (TAC)", code: "TAC", icon: Radio },
     { id: "OFFICERS", name: "Streamer & Registrasi", code: "REG", icon: User },
     { id: "TROUBLESHOOTING", name: "Kendala Teknis", code: "SYS", icon: Wrench },
@@ -75,7 +75,7 @@ const quickKeywords = [
     { label: "# #imepolice", value: "#imepolice" },
     { label: "# Focus Mode", value: "Focus Mode" },
     { label: "# Klip Aksi", value: "Klip" },
-    { label: "# Studio Clipper", value: "Studio Clipper" },
+    { label: "# Clip Studio", value: "Clip Studio" },
     { label: "# TAC Radio", value: "TAC" },
 ];
 

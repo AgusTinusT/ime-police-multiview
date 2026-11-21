@@ -708,7 +708,7 @@ class PoliceCommandController extends Controller
     /**
      * Dedicated Standalone Page: Community Action Clips Gallery (`/clips`).
      */
-    public function clipsPage(Request $request)
+    public function momenPage(Request $request)
     {
         $allOfficers = Officer::roster()
             ->orderBy('department')
@@ -754,16 +754,16 @@ class PoliceCommandController extends Controller
                 ];
             });
 
-        return Inertia::render('Clips', [
+        return Inertia::render('MomenAksi', [
             'officers' => $allOfficers->values(),
             'initialClips' => $dbClips->values(),
             'lastSyncedAt' => now()->toIso8601String(),
             'meta' => [
-                'title' => 'TacClips — Klip Video Aksi & Patroli Taktis Kepolisian IME RP',
+                'title' => 'Momen Aksi — Galeri Momen Patroli Kepolisian IME RP',
                 'description' => 'Koleksi klip video aksi, pengejaran (pursuit), baku tembak (10-13), dan momen taktis terbaik perwira kepolisian IME Roleplay.',
                 'image' => asset('images/car-police-crash.jpg'),
-                'url' => url('/action-clips'),
-                'canonical' => url('/action-clips'),
+                'url' => url('/momen'),
+                'canonical' => url('/momen'),
                 'type' => 'website',
             ],
         ]);
@@ -872,7 +872,7 @@ class PoliceCommandController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'TacClip momen aksi berhasil ditambahkan dan dapat dilihat oleh seluruh komunitas!',
+            'message' => 'Momen aksi berhasil ditambahkan dan dapat dilihat oleh seluruh komunitas!',
             'clip' => [
                 'id' => $clip->id,
                 'video_id' => $clip->video_id,

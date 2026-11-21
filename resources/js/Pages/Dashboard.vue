@@ -18,7 +18,7 @@ import {
 } from "@/Components/ui/alert-dialog";
 
 // Refactored Sub-Components
-import ClipperClaimModal from "@/Components/ClipperClaimModal.vue";
+import ClipStudioAccessModal from "@/Components/ClipStudioAccessModal.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
 import AuthModal from "@/Components/AuthModal.vue";
 import SquadCatalogCard from "@/Components/Squad/SquadCatalogCard.vue";
@@ -33,7 +33,7 @@ import TacticalDashboardHeader from "@/Components/TacticalDashboardHeader.vue";
 import TacticalFooter from "@/Components/TacticalFooter.vue";
 import CatalogCard from "@/Components/CatalogCard.vue";
 import CatalogRow from "@/Components/CatalogRow.vue";
-import ClipCatalogCard from "@/Components/ClipCatalogCard.vue";
+import MomenCatalogCard from "@/Components/MomenCatalogCard.vue";
 import SupportCatalogCard from "@/Components/SupportCatalogCard.vue";
 import NewOfficerCard from "@/Components/NewOfficerCard.vue";
 import OfficerDetailModal from "@/Components/OfficerDetailModal.vue";
@@ -196,21 +196,21 @@ const defaultHeroSlides = computed(() => [
     {
         id: "slide-clips",
         slide_type: "standard",
-        title: "TACTICAL CLIPS STUDIO V2",
+        title: "CLIP STUDIO",
         subtitle:
             "Potong momen aksi pengejaran dan situasi tembak-menembak berkecepatan tinggi langsung dari siaran perwira. Tandai multi-cut dan ekspor video 1080p tanpa watermark ke media sosial.",
         image_desktop_url: "/images/car-police-crash.webp",
         image_mobile_url: "/images/car-police-crash-square.webp",
-        image_alt: "Tactical Clips Studio V2",
+        image_alt: "Clip Studio",
         badge_label: "FITUR BARU • AKSES BETA GRATIS",
         accent: "info",
         cta_primary: {
-            label: "Coba Clips Studio",
-            url: "/clips",
+            label: "Coba Clip Studio",
+            url: "/clip-studio",
         },
         cta_secondary: {
-            label: "Panduan Fitur Clipper",
-            url: "/clipper-pricing",
+            label: "Lihat Momen Aksi",
+            url: "/momen",
         },
     },
     {
@@ -643,10 +643,10 @@ onMounted(() => {
                 >
                     <template #action>
                         <Button as-child variant="link" size="sm" class="ml-auto shrink-0">
-                            <Link href="/action-clips">Lihat semua <ChevronRight /></Link>
+                            <Link href="/momen">Lihat semua <ChevronRight /></Link>
                         </Button>
                     </template>
-                    <ClipCatalogCard
+                    <MomenCatalogCard
                         v-for="c in communityClips"
                         :key="`clip-${c.id}`"
                         :clip="c"
@@ -691,7 +691,7 @@ onMounted(() => {
         <TacticalChatDrawer />
 
         <!-- Clipper Beta Claim Access Modal -->
-        <ClipperClaimModal
+        <ClipStudioAccessModal
             :show="showClipperClaimModal"
             @close="showClipperClaimModal = false"
         />

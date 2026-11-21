@@ -160,12 +160,12 @@ const getDeptCount = (deptId) => {
             <div class="flex items-center space-x-2 shrink-0">
                 <Button as-child variant="outline" size="sm">
                     <Link
-                        href="/action-clips"
+                        href="/momen"
                         class="text-xs font-bold font-mono gap-1.5"
-                        title="Buka TacClips — Galeri Momen Aksi Kepolisian"
+                        title="Buka Momen Aksi — Galeri Momen Kepolisian"
                     >
                         <Video class="size-3.5 text-primary" />
-                        <span class="hidden sm:inline">TacClips</span>
+                        <span class="hidden sm:inline">Momen Aksi</span>
                     </Link>
                 </Button>
                 <UserAccountMenu />
