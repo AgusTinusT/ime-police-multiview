@@ -483,7 +483,7 @@ onMounted(() => {
     </Head>
 
     <div
-        class="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex flex-col antialiased relative overflow-hidden"
+        class="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-primary-foreground flex flex-col antialiased relative overflow-x-clip"
     >
         <!-- Crisp Minimalist Grid Overlay -->
         <div
