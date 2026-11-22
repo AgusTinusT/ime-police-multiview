@@ -8,6 +8,7 @@ import WatchMomenDialog from "@/Components/WatchMomenDialog.vue";
 import WatchMomenList from "@/Components/WatchMomenList.vue";
 import WatchSideItem from "@/Components/WatchSideItem.vue";
 import { useWatchPlayer } from "@/Composables/useWatchPlayer";
+import { useAnalytics } from "@/Composables/useAnalytics";
 import { DeptBadge, LiveBadge, OfficerAvatar } from "@/Components/tactical";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
@@ -41,7 +42,30 @@ const playerSrc = computed(
         `&origin=${encodeURIComponent(window.location.origin)}`,
 );
 const playerEl = ref(null);
-const { getCurrentTime, seekTo } = useWatchPlayer(playerEl);
+const { getCurrentTime, isPlaying, seekTo } = useWatchPlayer(playerEl);
+
+// GA4: which stream is watched (select_stream on open/switch) and a 2-minute
+// stream_heartbeat with the stream metadata while the video is playing. The
+// generic heartbeat in app.js is paused on this page to avoid double counting.
+const { trackSelectStream, trackHeartbeat } = useAnalytics();
+const HEARTBEAT_MS = 120_000;
+let heartbeatTimer = null;
+
+const sendWatchHeartbeat = () => {
+    // Skip when the player reports paused/ended; unknown state (API not ready) still counts.
+    if (isPlaying() === false) return;
+    trackHeartbeat({
+        activeStreamsCount: 1,
+        focusedStreamId: props.stream.video_id,
+        focusedOfficer: officerName.value,
+        selectedDepartment: officer.value?.department || "UNIT",
+    });
+};
+
+watch(
+    () => props.stream.video_id,
+    () => trackSelectStream(props.stream),
+);
 
 // Momen Aksi: local copy so a freshly saved clip shows up without a reload.
 const momentClips = ref([...props.clips]);
@@ -122,6 +146,10 @@ onMounted(() => {
     syncMq();
     mq.addEventListener("change", syncMq);
     // Keep the "more live" list fresh without touching the player.
+    window.__pageStreamHeartbeat = true;
+    trackSelectStream(props.stream);
+    heartbeatTimer = setInterval(sendWatchHeartbeat, HEARTBEAT_MS);
+
     refreshTimer = setInterval(() => {
         if (document.visibilityState === "visible") {
             router.reload({ only: ["liveStreams"] });
@@ -132,6 +160,8 @@ onMounted(() => {
 onUnmounted(() => {
     mq?.removeEventListener("change", syncMq);
     clearInterval(refreshTimer);
+    clearInterval(heartbeatTimer);
+    window.__pageStreamHeartbeat = false;
 });
 </script>
 
