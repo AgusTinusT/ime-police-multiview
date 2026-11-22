@@ -24,6 +24,9 @@ router.on("navigate", () => {
 const GA_HEARTBEAT_INTERVAL_MS = 120000; // 2 minutes
 
 setInterval(() => {
+    // Pages that send their own stream_heartbeat with stream metadata (e.g. /watch)
+    // set this flag so the same 2-minute beat is not counted twice.
+    if (window.__pageStreamHeartbeat) return;
     if (document.visibilityState === "visible") {
         if (typeof window.gtag === "function") {
             window.gtag("event", "stream_heartbeat", {
