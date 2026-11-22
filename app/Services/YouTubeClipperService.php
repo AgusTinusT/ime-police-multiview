@@ -107,15 +107,32 @@ class YouTubeClipperService
     {
         try {
             $ytDlpBin = $this->resolveYtDlpBinary();
-            $process = $this->createProcess([
+            // Same flags as the cutters: without the JS runtime / cookies, or with a
+            // tight timeout, this check failed on the VPS and the clip silently took
+            // the VOD path, which on a live stream records from the live edge.
+            $command = [
                 $ytDlpBin,
                 '--dump-json',
                 '--no-warnings',
                 '--skip-download',
-                $youtubeUrl
-            ], 15);
+                '--no-playlist',
+                '--no-cache-dir',
+                '--force-ipv4',
+                '--js-runtimes', $this->resolveJsRuntimeSpec(),
+            ];
+            $cookiesFile = storage_path('app/cookies.txt');
+            if (file_exists($cookiesFile)) {
+                array_push($command, '--cookies', $cookiesFile);
+            }
+            $command[] = $youtubeUrl;
+
+            $process = $this->createProcess($command, 60);
 
             $process->run();
+
+            if (! $process->isSuccessful()) {
+                Log::warning('YouTubeClipperService::getVideoStatus yt-dlp failed: ' . Str::limit($process->getErrorOutput() ?: $process->getOutput(), 300));
+            }
 
             if ($process->isSuccessful()) {
                 $data = json_decode($process->getOutput(), true);
@@ -192,14 +209,32 @@ class YouTubeClipperService
      */
     public function trimToFile(VideoClip $clip, string $outputPath): void
     {
-        $isLive = $this->isLiveStream($clip->youtube_url);
+        $status = $this->getVideoStatus($clip->youtube_url);
+        $isLive = (bool) $status['is_live'];
+        $unknown = ($status['live_status'] ?? '') === 'unknown';
 
         Log::info("YouTubeClipperService processing clip #{$clip->id}", [
             'url' => $clip->youtube_url,
             'start' => $clip->start_time,
             'end' => $clip->end_time,
             'is_live' => $isLive,
+            'live_status' => $status['live_status'] ?? null,
         ]);
+
+        // Status check failed (timeout, bot check): try DVR first. A VOD has no live
+        // manifest so DVR fails fast, and the VOD cutter refuses live streams anyway.
+        if ($unknown) {
+            try {
+                $this->trimLiveStreamDvr($clip, $outputPath);
+
+                return;
+            } catch (\Throwable $e) {
+                Log::info("Clip #{$clip->id}: live status unknown and DVR cut failed, trying the VOD cutter.", ['error' => $e->getMessage()]);
+                $this->trimStandardVod($clip, $outputPath);
+
+                return;
+            }
+        }
 
         if (! $isLive) {
             $this->trimStandardVod($clip, $outputPath);
@@ -573,10 +608,20 @@ class YouTubeClipperService
         $command[] = $outputPath;
         $command[] = '--no-playlist';
         $command[] = '--force-overwrites';
+        // Safety net: on a live stream yt-dlp ignores --download-sections and records
+        // from the live edge (footage after the chosen minute). Refuse live videos here;
+        // live cuts belong to trimLiveStreamDvr.
+        $command[] = '--match-filter';
+        $command[] = '!is_live';
         $command[] = $clip->youtube_url;
 
         $process = $this->createProcess($command, 600);
         $process->run();
+
+        $rejectedAsLive = str_contains($process->getOutput() . $process->getErrorOutput(), 'does not pass filter');
+        if ($rejectedAsLive || ($process->isSuccessful() && (! file_exists($outputPath) || filesize($outputPath) === 0))) {
+            throw new \RuntimeException('Video ini sedang live; potongan tidak diambil dari rekaman agar tidak merekam dari ujung live.');
+        }
 
         if (!$process->isSuccessful()) {
             $errorOutput = $process->getErrorOutput() ?: $process->getOutput();
