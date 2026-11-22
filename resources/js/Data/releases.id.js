@@ -1,9 +1,105 @@
 export const releasesId = [
     {
-        version: "v2.6.0",
-        date: "31 Oktober 2026",
+        version: "v2.7.0",
+        date: "22 November 2026",
         badge: "RILIS TERBARU",
         isLatest: true,
+        summary:
+            "Halaman tonton ala YouTube, Momen Aksi dengan arsip otomatis, nama Clip Studio yang seragam, header melayang baru, halaman Dukung yang transparan, serta perbaikan pemotongan siaran live.",
+        changes: [
+            {
+                type: "FEATURE",
+                tag: "Halaman Tonton",
+                tagColor: "bg-blue-950/70 text-blue-300 border-blue-500/40",
+                title: "Halaman Tonton ala YouTube (/watch)",
+                description:
+                    "Tonton satu perwira dengan player besar, live chat, daftar live lainnya, dan rekaman terbaru. Kartu di dashboard dan tile multiview kini membuka halaman ini.",
+            },
+            {
+                type: "FEATURE",
+                tag: "Momen Aksi",
+                tagColor: "bg-purple-950/70 text-purple-300 border-purple-500/40",
+                title: "TacClips Kini Bernama Momen Aksi (/momen)",
+                description:
+                    "Tandai momen langsung dari halaman tonton dengan tombol Tandai Momen. Setiap momen diarsipkan otomatis dalam 720p selama 30 hari, termasuk saat siaran masih live.",
+            },
+            {
+                type: "FEATURE",
+                tag: "Clip Studio",
+                tagColor: "bg-purple-950/70 text-purple-300 border-purple-500/40",
+                title: "Satu Nama: Clip Studio (/clip-studio)",
+                description:
+                    "Studio potong & unduh video kini memakai satu nama dan alamat. Tautan lama /clipper dan /action-clips tetap berfungsi.",
+            },
+            {
+                type: "FEATURE",
+                tag: "Tampilan",
+                tagColor: "bg-blue-950/70 text-blue-300 border-blue-500/40",
+                title: "Header Melayang & Menu Akun Baru",
+                description:
+                    "Header berubah menjadi kapsul melayang saat halaman digulir, dilengkapi menu Lainnya (Kirim masukan, Pembaruan, FAQ) dan menu akun yang lebih rapi.",
+            },
+            {
+                type: "FEATURE",
+                tag: "Komunitas",
+                tagColor: "bg-amber-950/70 text-amber-300 border-amber-500/40",
+                title: "Halaman Dukung (/dukung)",
+                description:
+                    "Rincian biaya operasional yang transparan, target berikutnya (hadiah event Top 1–3 patroli), dan cara mendukung lewat donasi, GitHub, atau masukan.",
+            },
+            {
+                type: "FEATURE",
+                tag: "Halaman Utama",
+                tagColor: "bg-blue-950/70 text-blue-300 border-blue-500/40",
+                title: "Dashboard Lebih Padat & Rapi",
+                description:
+                    "Officer baru bergabung ditandai selama 14 hari, Top 10 patroli dipindah ke atas, squad milik sendiri dan komunitas digabung tanpa duplikat, dan panah geser hanya muncul saat dibutuhkan.",
+            },
+            {
+                type: "FEATURE",
+                tag: "Perwira",
+                tagColor: "bg-amber-950/70 text-amber-300 border-amber-500/40",
+                title: "Buka Channel & Akun Bio-Link Non-Personel",
+                description:
+                    "Profil perwira kini punya tombol Buka Channel. Akun yang hanya memakai bio-link bisa disembunyikan dari daftar perwira tanpa mematikan bio-link-nya.",
+            },
+            {
+                type: "BUGFIX",
+                tag: "Clip Studio",
+                tagColor: "bg-emerald-950/70 text-emerald-300 border-emerald-500/40",
+                title: "Potong Siaran Live Tepat di Menit yang Dipilih",
+                description:
+                    "Memotong siaran yang masih live tidak lagi menghasilkan cuplikan sesudah menit yang dipilih. Potongan diambil dari buffer siaran, termasuk momen beberapa jam ke belakang.",
+            },
+            {
+                type: "BUGFIX",
+                tag: "Siaran Live",
+                tagColor: "bg-emerald-950/70 text-emerald-300 border-emerald-500/40",
+                title: "Siaran #imepolice Selalu Tampil di Sedang Live",
+                description:
+                    "Judul dengan #imepolice kini tampil di Sedang live walau mengandung kata seperti \"rampok\", dan siaran yang masih live tidak lagi muncul sebagai rekaman.",
+            },
+            {
+                type: "BUGFIX",
+                tag: "Halaman Tonton",
+                tagColor: "bg-emerald-950/70 text-emerald-300 border-emerald-500/40",
+                title: "Deskripsi Stream Tampil Penuh",
+                description:
+                    "Deskripsi yang pendek tapi banyak baris tidak lagi terpotong, dan tautan di deskripsi (misalnya donasi) bisa diklik.",
+            },
+            {
+                type: "BUGFIX",
+                tag: "Sistem",
+                tagColor: "bg-emerald-950/70 text-emerald-300 border-emerald-500/40",
+                title: "Perbaikan Navigasi, Admin & Keamanan",
+                description:
+                    "Header dashboard tetap menempel saat digulir, menu admin Rekomendasi Website bisa dibuka kembali, dan dependensi server diperbarui untuk menutup 11 celah keamanan.",
+            },
+        ],
+    },
+    {
+        version: "v2.6.0",
+        date: "31 Oktober 2026",
         summary:
             "Pembaruan arsitektur: Penghentian fitur Watchlist personal dan TAC Channel radio yang digantikan sepenuhnya oleh sistem Squad kustom dan preset komunitas yang lebih fleksibel.",
         changes: [
