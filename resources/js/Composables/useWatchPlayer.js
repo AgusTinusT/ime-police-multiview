@@ -80,6 +80,20 @@ export function useWatchPlayer(iframeRef) {
         }
     };
 
+    /**
+     * true while playing or buffering, false when paused/ended/unstarted,
+     * null when the player API is not ready yet (state unknown).
+     */
+    const isPlaying = () => {
+        try {
+            const state = player?.getPlayerState?.();
+            if (typeof state !== "number") return null;
+            return state === 1 || state === 3;
+        } catch {
+            return null;
+        }
+    };
+
     const seekTo = (seconds) => {
         try {
             player?.seekTo?.(Math.max(0, Number(seconds) || 0), true);
@@ -90,5 +104,5 @@ export function useWatchPlayer(iframeRef) {
         }
     };
 
-    return { isReady, getCurrentTime, getDuration, seekTo };
+    return { isReady, getCurrentTime, getDuration, isPlaying, seekTo };
 }
