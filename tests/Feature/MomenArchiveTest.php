@@ -38,14 +38,20 @@ class MomenArchiveTest extends TestCase
     /**
      * Real YouTubeClipperService::trimToFile policy with the network calls faked.
      *
-     * @param  array<bool>  $liveChecks  successive isLiveStream() answers
+     * @param  array<bool|string>  $liveChecks  successive live checks: true, false or 'unknown' (yt-dlp check failed)
      * @param  string|null  $dvrError  make the DVR cut throw this
      * @param  string|null  $vodError  make the VOD cut throw this
      */
     private function fakeClipper(array $liveChecks, ?string $dvrError = null, ?string $vodError = null, bool $expectDvr = false, bool $expectVod = false): void
     {
         $mock = Mockery::mock(YouTubeClipperService::class)->makePartial();
-        $mock->shouldReceive('isLiveStream')->andReturnValues($liveChecks);
+        $mock->shouldReceive('getVideoStatus')->andReturnValues(array_map(fn ($c) => [
+            'is_live' => $c === true,
+            'is_post_live' => false,
+            'live_status' => $c === 'unknown' ? 'unknown' : ($c ? 'is_live' : 'was_live'),
+            'duration' => null,
+            'title' => null,
+        ], $liveChecks));
 
         $cut = fn (?string $error) => function ($clip, string $path) use ($error) {
             if ($error) {
@@ -135,6 +141,22 @@ class MomenArchiveTest extends TestCase
     public function test_stream_that_ended_during_the_dvr_cut_is_cut_from_the_vod(): void
     {
         $this->fakeClipper([true, false], dvrError: 'stream ended', expectDvr: true, expectVod: true);
+
+        $this->assertSame(TacClip::ARCHIVE_STORED, $this->runJob($this->momen())->archive_status);
+    }
+
+    public function test_unknown_live_status_tries_the_dvr_cut_first(): void
+    {
+        // The yt-dlp status check failed (as on the VPS): a live stream must still be
+        // cut from DVR instead of the VOD cutter recording from the live edge.
+        $this->fakeClipper(['unknown'], expectDvr: true, expectVod: false);
+
+        $this->assertSame(TacClip::ARCHIVE_STORED, $this->runJob($this->momen())->archive_status);
+    }
+
+    public function test_unknown_live_status_falls_back_to_the_guarded_vod_cutter(): void
+    {
+        $this->fakeClipper(['unknown'], dvrError: 'no live manifest', expectDvr: true, expectVod: true);
 
         $this->assertSame(TacClip::ARCHIVE_STORED, $this->runJob($this->momen())->archive_status);
     }
