@@ -9,6 +9,8 @@ use App\Models\Officer;
 use App\Models\OfficerBioProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class SelfProfileTest extends TestCase
@@ -80,6 +82,11 @@ class SelfProfileTest extends TestCase
 
     public function test_owner_updates_profile_fields_successfully(): void
     {
+        Storage::fake('s3');
+        Http::fake(['yt3.ggpht.com/*' => Http::response(base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+        ), 200, ['Content-Type' => 'image/png'])]);
+
         $response = $this->actingAs($this->user)->putJson('/api/v1/officer/profile', [
             'officer_name' => 'James W Gordon',
             'streamer_name' => 'GordonLive',
@@ -98,7 +105,10 @@ class SelfProfileTest extends TestCase
         $this->assertEquals('102', $this->officer->callsign);
         $this->assertEquals('102', $this->officer->badge_number);
         $this->assertEquals('71', $this->officer->station);
-        $this->assertEquals('https://yt3.ggpht.com/avatar_valid.jpg', $this->officer->avatar_url);
+        // The link is copied to object storage; avatar_url points at the stored copy.
+        $this->assertEquals('https://yt3.ggpht.com/avatar_valid.jpg', $this->officer->avatar_source_url);
+        $this->assertStringContainsString('/media/avatars/', $this->officer->avatar_url);
+        Storage::disk('s3')->assertExists($this->officer->avatar_path);
         $this->assertTrue((bool) $this->officer->avatar_is_custom);
         $this->assertEquals($this->swatLspd->id, $this->officer->division_id);
 
