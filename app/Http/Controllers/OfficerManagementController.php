@@ -9,6 +9,7 @@ use App\Models\Division;
 use App\Models\Certification;
 use App\Models\ActiveStream;
 use App\Jobs\SyncOfficerStreamsJob;
+use App\Services\OfficerAvatarStore;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -140,6 +141,11 @@ class OfficerManagementController extends Controller
             $validated['avatar_is_custom'] = false;
         }
 
+        // Custom avatar links are copied to object storage instead of hotlinked.
+        if ($validated['avatar_is_custom'] && OfficerAvatarStore::shouldStore($request->input('avatar_url'))) {
+            $validated = array_merge($validated, app(OfficerAvatarStore::class)->store($request->input('avatar_url')));
+        }
+
         // Check if handle or channel_id already exists
         $existing = Officer::where('handle', $validated['handle'])
             ->orWhere('channel_id', $validated['channel_id'])
@@ -225,6 +231,14 @@ class OfficerManagementController extends Controller
             $validated['avatar_is_custom'] = $request->boolean('avatar_is_custom');
         } elseif (array_key_exists('avatar_url', $validated) && $validated['avatar_url'] !== $officer->avatar_url) {
             $validated['avatar_is_custom'] = true;
+        }
+
+        // A new custom avatar link is copied to object storage instead of hotlinked.
+        if (array_key_exists('avatar_url', $validated)
+            && $validated['avatar_url'] !== $officer->avatar_url
+            && ($validated['avatar_is_custom'] ?? $officer->avatar_is_custom)
+            && OfficerAvatarStore::shouldStore($validated['avatar_url'])) {
+            $validated = array_merge($validated, app(OfficerAvatarStore::class)->store($validated['avatar_url']));
         }
 
         $beforeState = [

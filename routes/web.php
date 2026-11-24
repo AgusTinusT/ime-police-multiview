@@ -14,6 +14,11 @@ use Inertia\Inertia;
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/sitemap', fn () => redirect('/sitemap.xml', 301));
 
+// Officer avatars stored in object storage (see config/avatars.php)
+Route::get('/media/avatars/{file}', [\App\Http\Controllers\OfficerAvatarController::class, 'show'])
+    ->where('file', '[a-z0-9]{24}\.(jpg|png|gif|webp)')
+    ->name('officer-avatar');
+
 // Main Police Tactical Command Center Dashboard
 Route::get('/', [PoliceCommandController::class, 'dashboard'])->name('home');
 Route::get('/dashboard', [PoliceCommandController::class, 'dashboard'])->name('dashboard');

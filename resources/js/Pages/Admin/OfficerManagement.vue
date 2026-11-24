@@ -2654,6 +2654,9 @@ onUnmounted(() => {
                                 placeholder="https://yt3.ggpht.com/..."
                                 class="text-xs font-mono"
                             />
+                            <p class="text-xs text-muted-foreground leading-tight">
+                                Tautan foto kustom diunduh dan disimpan di penyimpanan S3 saat disimpan, sehingga tidak bergantung pada tautan asal.
+                            </p>
                         </div>
                         <div class="flex items-start justify-between gap-3 pt-1">
                             <div class="space-y-0.5">
