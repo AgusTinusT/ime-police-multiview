@@ -27,6 +27,7 @@ import RecommendedSiteCard from "@/Components/Recommended/RecommendedSiteCard.vu
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
 import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
 import AppPromoBanner from "@/Components/AppPromoBanner.vue";
+import AppPromoSpotlight from "@/Components/AppPromoSpotlight.vue";
 import { LiveBadge, OfficerAvatar } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
@@ -686,6 +687,9 @@ onMounted(() => {
                     />
                 </CatalogRow>
             </div>
+
+            <!-- Permanent Bottom App Promo Spotlight (Non-dismissible) -->
+            <AppPromoSpotlight />
         </main>
 
         <!-- Full-Width Edge-to-Edge Tactical Footer -->

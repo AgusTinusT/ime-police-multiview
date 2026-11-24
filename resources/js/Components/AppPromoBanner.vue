@@ -4,17 +4,15 @@ import { Heart, X } from "@lucide/vue";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import ytChatOverlayIcon from "@/Components/Icons/yt-chat-overlay.png";
+import {
+    YT_CHAT_OVERLAY_STORE_URL,
+    YT_CHAT_OVERLAY_THANKED_OFFICERS,
+} from "@/Data/appPromo";
 
 const STORAGE_KEY = "ime_yt_chat_overlay_dismissed_until";
 const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const STORE_URL =
-    "https://apps.microsoft.com/detail/9NK2ZFN4Z9Z8?hl=en-us&gl=ID&ocid=pdpshare";
-
-// Tambahkan nama officer baru di sini jika ada yang ikut mencoba aplikasi.
-const THANKED_OFFICERS = [
-    "Officer Hanzo Tampol",
-    "Officer Aldof Reyz",
-];
+const STORE_URL = YT_CHAT_OVERLAY_STORE_URL;
+const THANKED_OFFICERS = YT_CHAT_OVERLAY_THANKED_OFFICERS;
 
 const isVisible = ref(false);
 const activeOfficerIndex = ref(0);
