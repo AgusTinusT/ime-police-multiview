@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { X } from "@lucide/vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { Heart, X } from "@lucide/vue";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import ytChatOverlayIcon from "@/Components/Icons/yt-chat-overlay.png";
@@ -10,7 +10,35 @@ const DISMISS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const STORE_URL =
     "https://apps.microsoft.com/detail/9NK2ZFN4Z9Z8?hl=en-us&gl=ID&ocid=pdpshare";
 
+// Tambahkan nama officer baru di sini jika ada yang ikut mencoba aplikasi.
+const THANKED_OFFICERS = [
+    "Officer Hanzo Tampol",
+    "Officer Aldof Reyz",
+];
+
 const isVisible = ref(false);
+const activeOfficerIndex = ref(0);
+let rotationTimer = null;
+
+const currentOfficer = computed(
+    () => THANKED_OFFICERS[activeOfficerIndex.value % THANKED_OFFICERS.length]
+);
+
+const startRotation = () => {
+    stopRotation();
+    if (THANKED_OFFICERS.length <= 1) return;
+    rotationTimer = setInterval(() => {
+        activeOfficerIndex.value =
+            (activeOfficerIndex.value + 1) % THANKED_OFFICERS.length;
+    }, 3500);
+};
+
+const stopRotation = () => {
+    if (rotationTimer) {
+        clearInterval(rotationTimer);
+        rotationTimer = null;
+    }
+};
 
 onMounted(() => {
     try {
@@ -19,10 +47,19 @@ onMounted(() => {
     } catch {
         isVisible.value = true;
     }
+
+    if (isVisible.value) {
+        startRotation();
+    }
+});
+
+onUnmounted(() => {
+    stopRotation();
 });
 
 const dismiss = () => {
     isVisible.value = false;
+    stopRotation();
     try {
         localStorage.setItem(STORAGE_KEY, String(Date.now() + DISMISS_TTL_MS));
     } catch {
@@ -37,6 +74,8 @@ const dismiss = () => {
         role="region"
         aria-label="Promosi aplikasi YT Chat Overlay"
         class="relative z-40 border-b border-border bg-card"
+        @mouseenter="stopRotation"
+        @mouseleave="startRotation"
     >
         <div
             class="mx-auto flex max-w-(--breakpoint-2xl) flex-col gap-2.5 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4 lg:px-8"
@@ -66,6 +105,26 @@ const dismiss = () => {
                             </span>
                             <Badge variant="secondary" class="text-xs">
                                 Windows
+                            </Badge>
+                            <Badge
+                                v-if="currentOfficer"
+                                variant="outline"
+                                class="border-success/25 bg-success/15 text-success text-xs overflow-hidden"
+                            >
+                                <Heart class="size-3 shrink-0 fill-current" />
+                                <Transition
+                                    mode="out-in"
+                                    enter-active-class="motion-safe:transition-all motion-safe:duration-300 motion-safe:ease-out"
+                                    enter-from-class="opacity-0 translate-y-1"
+                                    enter-to-class="opacity-100 translate-y-0"
+                                    leave-active-class="motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-in"
+                                    leave-from-class="opacity-100 translate-y-0"
+                                    leave-to-class="opacity-0 -translate-y-1"
+                                >
+                                    <span :key="currentOfficer" class="inline-block">
+                                        Terima kasih {{ currentOfficer }}
+                                    </span>
+                                </Transition>
                             </Badge>
                         </div>
                         <p class="hidden sm:block truncate text-xs text-muted-foreground">
