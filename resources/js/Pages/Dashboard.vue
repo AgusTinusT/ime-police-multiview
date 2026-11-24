@@ -26,6 +26,7 @@ import SquadSaveDialog from "@/Components/Squad/SquadSaveDialog.vue";
 import RecommendedSiteCard from "@/Components/Recommended/RecommendedSiteCard.vue";
 import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
 import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
+import AppPromoBanner from "@/Components/AppPromoBanner.vue";
 import { LiveBadge, OfficerAvatar } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
@@ -489,6 +490,9 @@ onMounted(() => {
         <div
             class="fixed inset-0 hud-grid opacity-20 pointer-events-none z-0"
         ></div>
+
+        <!-- Smart App Banner (YT Chat Overlay - Microsoft Store) -->
+        <AppPromoBanner />
 
         <!-- Refactored Tactical Header Bar Component -->
         <TacticalDashboardHeader
