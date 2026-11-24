@@ -82,6 +82,7 @@ class SelfProfileTest extends TestCase
 
     public function test_owner_updates_profile_fields_successfully(): void
     {
+        config(['avatars.enabled' => true, 'avatars.disk' => 's3']);
         Storage::fake('s3');
         Http::fake(['yt3.ggpht.com/*' => Http::response(base64_decode(
             'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
