@@ -468,6 +468,9 @@ const switchTab = (tab) => {
                                 <span>Gunakan Avatar Kustom (Kunci dari Overwrite Sync YouTube)</span>
                             </label>
                         </div>
+                        <p class="text-xs text-muted-foreground leading-tight">
+                            Gambar dari tautan diunduh lalu disimpan di server kami, jadi foto tetap tampil walau tautan asalnya kedaluwarsa.
+                        </p>
                     </div>
                 </div>
             </Card>

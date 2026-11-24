@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\OfficerAvatarStore;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -44,6 +45,9 @@ class Officer extends Model
         'subscriber_count',
         'subscriber_count_text',
         'avatar_url',
+        'avatar_disk',
+        'avatar_path',
+        'avatar_source_url',
         'is_active',
         'is_listed',
         'monthly_duty_minutes',
@@ -71,6 +75,36 @@ class Officer extends Model
     protected $appends = [
         'public_avatar_url',
     ];
+
+    protected $hidden = [
+        'avatar_disk',
+        'avatar_path',
+    ];
+
+    protected static function booted(): void
+    {
+        // A stored avatar belongs to avatar_url only while avatar_url still
+        // points at it. Any other avatar_url (YouTube sync, placeholder, null)
+        // detaches the stored file.
+        static::saving(function (Officer $officer) {
+            if ($officer->avatar_path && $officer->isDirty('avatar_url')
+                && ! OfficerAvatarStore::urlMatchesPath($officer->avatar_url, $officer->avatar_path)) {
+                $officer->avatar_disk = null;
+                $officer->avatar_path = null;
+                $officer->avatar_source_url = null;
+            }
+        });
+
+        static::updated(function (Officer $officer) {
+            if ($officer->wasChanged('avatar_path')) {
+                OfficerAvatarStore::delete($officer->getOriginal('avatar_disk'), $officer->getOriginal('avatar_path'));
+            }
+        });
+
+        static::deleted(function (Officer $officer) {
+            OfficerAvatarStore::delete($officer->avatar_disk, $officer->avatar_path);
+        });
+    }
 
     /**
      * Get the public-facing avatar URL (null if avatar_hidden is true).

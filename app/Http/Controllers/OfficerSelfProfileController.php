@@ -9,6 +9,7 @@ use App\Models\Officer;
 use App\Services\AuditLogger;
 use App\Services\BioProfileService;
 use App\Services\NameSkeleton;
+use App\Services\OfficerAvatarStore;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -107,6 +108,12 @@ class OfficerSelfProfileController extends Controller
             }
         }
 
+        // The form resends the current avatar, which may be a stored copy on
+        // this app's domain: unchanged, so it skips the link validation below.
+        if ($request->has('avatar_url') && $request->input('avatar_url') === $officer->avatar_url) {
+            $request->offsetUnset('avatar_url');
+        }
+
         // Whitelist validation of mutable fields only
         $validated = $request->validate([
             'officer_name' => 'nullable|string|min:3|max:150',
@@ -144,7 +151,29 @@ class OfficerSelfProfileController extends Controller
             }
         }
 
-        return DB::transaction(function () use ($officer, $validated, $user, $request) {
+        // Copy a new avatar link to object storage before the transaction, so a
+        // slow download does not hold the row lock.
+        $storedAvatar = null;
+        if (isset($validated['avatar_url'])
+            && $validated['avatar_url'] !== $officer->avatar_url
+            && OfficerAvatarStore::shouldStore($validated['avatar_url'])) {
+            $storedAvatar = app(OfficerAvatarStore::class)->store($validated['avatar_url']);
+        }
+
+        try {
+            return $this->applyUpdate($officer, $validated, $user, $storedAvatar);
+        } catch (\Throwable $e) {
+            // The update did not go through: drop the file uploaded for it.
+            if ($storedAvatar) {
+                OfficerAvatarStore::delete($storedAvatar['avatar_disk'], $storedAvatar['avatar_path']);
+            }
+            throw $e;
+        }
+    }
+
+    private function applyUpdate(Officer $officer, array $validated, $user, ?array $storedAvatar): JsonResponse
+    {
+        return DB::transaction(function () use ($officer, $validated, $user, $storedAvatar) {
             $lockedOfficer = Officer::where('id', $officer->id)->lockForUpdate()->firstOrFail();
 
             $beforeState = [
@@ -242,7 +271,10 @@ class OfficerSelfProfileController extends Controller
             }
 
             // 3. Avatar
-            if (isset($validated['avatar_url']) && $validated['avatar_url'] !== $lockedOfficer->avatar_url) {
+            if ($storedAvatar) {
+                $updateData = array_merge($updateData, $storedAvatar);
+                $updateData['avatar_is_custom'] = true;
+            } elseif (isset($validated['avatar_url']) && $validated['avatar_url'] !== $lockedOfficer->avatar_url) {
                 $updateData['avatar_url'] = $validated['avatar_url'];
                 $updateData['avatar_is_custom'] = true;
             }
