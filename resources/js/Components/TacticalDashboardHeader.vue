@@ -27,6 +27,7 @@ import {
 } from "@lucide/vue";
 import { cn } from "@/lib/utils";
 import UserAccountMenu from "@/Components/UserAccountMenu.vue";
+import NotificationBell from "@/Components/NotificationBell.vue";
 import TacticalMobileBottomNav from "@/Components/TacticalMobileBottomNav.vue";
 
 const props = defineProps({
@@ -352,6 +353,7 @@ onUnmounted(() => {
                     <Heart class="size-4 shrink-0 fill-current" />
                     <span class="hidden lg:inline">{{ $t("donate.short") }}</span>
                 </Link>
+                <NotificationBell />
                 <UserAccountMenu />
             </div>
         </div>

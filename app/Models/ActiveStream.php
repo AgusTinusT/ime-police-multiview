@@ -21,10 +21,12 @@ class ActiveStream extends Model
         'description',
         'viewers_count',
         'last_synced_at',
+        'live_notified_at',
     ];
 
     protected $casts = [
         'last_synced_at' => 'datetime',
+        'live_notified_at' => 'datetime',
         'viewers_count' => 'integer',
         'officer_id' => 'integer',
     ];
