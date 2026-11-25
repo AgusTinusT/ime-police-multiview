@@ -10,6 +10,26 @@ use Illuminate\Support\Str;
 
 class PushSubscriptionController extends Controller
 {
+    public function index(Request $request): JsonResponse
+    {
+        $devices = $request->user()
+            ->pushSubscriptions()
+            ->latest('last_used_at')
+            ->get()
+            ->map(fn (PushSubscription $sub) => [
+                'id' => $sub->id,
+                'endpoint_hash' => $sub->endpoint_hash,
+                'user_agent' => $sub->user_agent,
+                'last_used_at' => $sub->last_used_at?->toIso8601String(),
+                'created_at' => $sub->created_at?->toIso8601String(),
+            ])
+            ->values();
+
+        return response()->json([
+            'devices' => $devices,
+        ]);
+    }
+
     public function config(Request $request, WebPushService $webPush): JsonResponse
     {
         return response()->json([
@@ -66,6 +86,22 @@ class PushSubscriptionController extends Controller
 
         return response()->json([
             'message' => 'Notifikasi browser dinonaktifkan pada perangkat ini.',
+            'subscriptions_count' => $request->user()->pushSubscriptions()->count(),
+        ]);
+    }
+
+    public function destroyById(Request $request, PushSubscription $pushSubscription): JsonResponse
+    {
+        if ($pushSubscription->user_id !== $request->user()->id) {
+            return response()->json([
+                'message' => 'Akses ditolak.',
+            ], 403);
+        }
+
+        $pushSubscription->delete();
+
+        return response()->json([
+            'message' => 'Perangkat berhasil dihapus dari daftar notifikasi push.',
             'subscriptions_count' => $request->user()->pushSubscriptions()->count(),
         ]);
     }

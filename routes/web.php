@@ -421,6 +421,7 @@ Route::middleware(['auth', 'not_banned'])->prefix('api/v1')->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read_all');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 
+    Route::get('/push-subscriptions', [PushSubscriptionController::class, 'index'])->name('push_subscriptions.index');
     Route::get('/push-subscriptions/config', [PushSubscriptionController::class, 'config'])->name('push_subscriptions.config');
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])
         ->middleware('throttle:30,1')
@@ -428,6 +429,9 @@ Route::middleware(['auth', 'not_banned'])->prefix('api/v1')->group(function () {
     Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])
         ->middleware('throttle:30,1')
         ->name('push_subscriptions.destroy');
+    Route::delete('/push-subscriptions/{pushSubscription}', [PushSubscriptionController::class, 'destroyById'])
+        ->middleware('throttle:30,1')
+        ->name('push_subscriptions.destroy_by_id');
     Route::post('/push-subscriptions/test', [PushSubscriptionController::class, 'test'])
         ->middleware('throttle:5,1')
         ->name('push_subscriptions.test');

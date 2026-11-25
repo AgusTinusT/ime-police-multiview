@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import axios from "axios";
-import { Bell, BellRing, CheckCheck, Radio, Smartphone } from "@lucide/vue";
+import { Bell, BellRing, CheckCheck, Radio, Settings, Smartphone } from "@lucide/vue";
 import { toast } from "vue-sonner";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
@@ -257,6 +257,22 @@ onUnmounted(() => {
                         aria-hidden="true"
                     />
                 </button>
+            </div>
+
+            <Separator />
+
+            <!-- Footer: Manage followed officers & devices in Settings -->
+            <div class="bg-muted/30 px-3 py-2">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    class="w-full justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                    @click="open = false; router.visit('/settings?tab=notifications')"
+                >
+                    <Settings class="size-3.5" />
+                    <span>Kelola Perwira & Notifikasi</span>
+                </Button>
             </div>
         </PopoverContent>
     </Popover>

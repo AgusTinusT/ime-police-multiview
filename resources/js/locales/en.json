@@ -329,6 +329,7 @@
     "title": "Settings",
     "description": "Manage your account details, officer duty profile, and tactical bio-link.",
     "tab_account": "Account",
+    "tab_notifications": "Notifications",
     "tab_officer": "Officer profile",
     "tab_biolink": "Bio-link",
     "avatar_card_title": "Profile photo",

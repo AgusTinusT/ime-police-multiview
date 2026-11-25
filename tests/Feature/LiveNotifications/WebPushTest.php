@@ -60,6 +60,18 @@ class WebPushTest extends TestCase
         ]);
 
         $this->actingAs($user)
+            ->getJson('/api/v1/push-subscriptions')
+            ->assertOk()
+            ->assertJsonCount(1, 'devices');
+
+        $otherUser = User::factory()->create();
+        $subId = PushSubscription::first()->id;
+
+        $this->actingAs($otherUser)
+            ->deleteJson("/api/v1/push-subscriptions/{$subId}")
+            ->assertStatus(403);
+
+        $this->actingAs($user)
             ->deleteJson('/api/v1/push-subscriptions', [
                 'endpoint' => $endpoint,
             ])

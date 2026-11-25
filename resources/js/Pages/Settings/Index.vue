@@ -6,6 +6,7 @@ import { PageContainer, PageHeader } from "@/Components/tactical";
 import { Card, CardContent } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import AccountSettings from "@/Components/Settings/AccountSettings.vue";
+import NotificationSettings from "@/Components/Settings/NotificationSettings.vue";
 import OfficerSettings from "@/Components/Settings/OfficerSettings.vue";
 import BioLinkSettings from "@/Components/Settings/BioLinkSettings.vue";
 import BioExampleGallery from "@/Components/BioLink/BioExampleGallery.vue";
@@ -13,6 +14,7 @@ import LazyAdminDesignCard from "@/Components/BioLink/LazyAdminDesignCard.vue";
 import { cn } from "@/lib/utils";
 import {
     ArrowRight,
+    Bell,
     Link2,
     Mail,
     ShieldCheck,
@@ -70,6 +72,7 @@ const props = defineProps({
     bioAllowedDomains: { type: Object, default: () => ({}) },
     bioPlatforms: { type: Object, default: () => ({}) },
     bioStats: { type: Object, default: () => ({ total_views: 0, total_clicks: 0, links_count: 0 }) },
+    rosterOfficers: { type: Array, default: () => [] },
 });
 
 const page = usePage();
@@ -86,6 +89,12 @@ const navItems = computed(() => {
             label: "Akun",
             i18nKey: "settings.tab_account",
             icon: User,
+        },
+        {
+            id: "notifications",
+            label: "Notifikasi",
+            i18nKey: "settings.tab_notifications",
+            icon: Bell,
         },
     ];
 
@@ -231,6 +240,12 @@ onUnmounted(() => {
                         v-if="activeTab === 'account'"
                         :must-verify-email="mustVerifyEmail"
                         :status="status"
+                    />
+
+                    <!-- Tab 2: Live Notifications & Followed Officers -->
+                    <NotificationSettings
+                        v-else-if="activeTab === 'notifications'"
+                        :roster-officers="rosterOfficers"
                     />
 
                     <!-- Tab 2: Officer Duty Profile (Officer Only) -->

@@ -329,6 +329,7 @@
     "title": "Pengaturan",
     "description": "Kelola informasi akun, profil dinas perwira, dan bio-link taktis Anda.",
     "tab_account": "Akun",
+    "tab_notifications": "Notifikasi",
     "tab_officer": "Profil perwira",
     "tab_biolink": "Bio-link",
     "avatar_card_title": "Foto profil",
