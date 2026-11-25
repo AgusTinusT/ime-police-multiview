@@ -399,6 +399,7 @@ Route::middleware('auth')->prefix('api/v1/user/blocked-officers')->group(functio
 // 10. Officer Live Notifications (Follow, In-App, Web Push, WebSub)
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OfficerSubscriptionController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\YouTubeWebSubController;
 
 Route::get('/webhooks/youtube/websub/{officer}', [YouTubeWebSubController::class, 'verify'])
@@ -419,6 +420,17 @@ Route::middleware(['auth', 'not_banned'])->prefix('api/v1')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read_all');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+
+    Route::get('/push-subscriptions/config', [PushSubscriptionController::class, 'config'])->name('push_subscriptions.config');
+    Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])
+        ->middleware('throttle:30,1')
+        ->name('push_subscriptions.store');
+    Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])
+        ->middleware('throttle:30,1')
+        ->name('push_subscriptions.destroy');
+    Route::post('/push-subscriptions/test', [PushSubscriptionController::class, 'test'])
+        ->middleware('throttle:5,1')
+        ->name('push_subscriptions.test');
 });
 
 

@@ -6,6 +6,7 @@ use App\Models\ActiveStream;
 use App\Models\Officer;
 use App\Models\OfficerSubscription;
 use App\Notifications\OfficerLiveNotification;
+use App\Services\WebPushService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -20,7 +21,7 @@ class NotifyOfficerLiveJob implements ShouldQueue
         public readonly int $activeStreamId,
     ) {}
 
-    public function handle(): void
+    public function handle(WebPushService $webPush): void
     {
         $officer = Officer::find($this->officerId);
         $stream = ActiveStream::find($this->activeStreamId);
@@ -29,9 +30,11 @@ class NotifyOfficerLiveJob implements ShouldQueue
             return;
         }
 
+        $pushEnabled = $webPush->isConfigured();
+
         OfficerSubscription::where('officer_id', $officer->id)
-            ->with('user')
-            ->chunkById(200, function ($subscriptions) use ($officer, $stream): void {
+            ->with(['user.pushSubscriptions'])
+            ->chunkById(200, function ($subscriptions) use ($officer, $stream, $webPush, $pushEnabled): void {
                 foreach ($subscriptions as $subscription) {
                     $user = $subscription->user;
                     if (! $user || $user->isBanned()) {
@@ -40,6 +43,10 @@ class NotifyOfficerLiveJob implements ShouldQueue
 
                     if ($subscription->notify_in_app) {
                         $user->notify(new OfficerLiveNotification($officer, $stream));
+                    }
+
+                    if ($pushEnabled && $subscription->notify_web_push && $user->pushSubscriptions->isNotEmpty()) {
+                        $webPush->sendOfficerLiveNotification($user, $officer, $stream);
                     }
                 }
             });
