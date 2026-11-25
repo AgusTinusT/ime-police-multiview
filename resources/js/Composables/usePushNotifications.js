@@ -82,9 +82,10 @@ export function usePushNotifications() {
                 return false;
             }
 
-            const registration =
-                (await navigator.serviceWorker.getRegistration()) ||
-                (await navigator.serviceWorker.register("/sw.js"));
+            const registration = await navigator.serviceWorker.register(
+                "/service-worker",
+                { scope: "/", updateViaCache: "none" },
+            );
             try {
                 await registration.update();
             } catch {

@@ -14,6 +14,19 @@ use Inertia\Inertia;
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/sitemap', fn () => redirect('/sitemap.xml', 301));
 
+// PWA Service Worker served via Laravel without .js extension so nginx/Cloudflare
+// never apply immutable 1-year static JS caching to the push event handler.
+Route::get('/service-worker', function () {
+    $path = public_path('sw.js');
+    abort_unless(is_file($path), 404);
+
+    return response(file_get_contents($path), 200, [
+        'Content-Type' => 'application/javascript; charset=utf-8',
+        'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+        'Service-Worker-Allowed' => '/',
+    ]);
+})->name('service-worker');
+
 // Officer avatars stored in object storage (see config/avatars.php)
 Route::get('/media/avatars/{file}', [\App\Http\Controllers\OfficerAvatarController::class, 'show'])
     ->where('file', '[a-z0-9]{24}\.(jpg|png|gif|webp)')

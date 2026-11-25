@@ -194,4 +194,15 @@ class WebPushTest extends TestCase
 
         $this->assertSame(1, $user->notifications()->count());
     }
+
+    public function test_service_worker_route_is_served_uncached_with_push_handler(): void
+    {
+        $response = $this->get('/service-worker')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/javascript; charset=utf-8')
+            ->assertHeader('Service-Worker-Allowed', '/');
+
+        $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
+        $this->assertStringContainsString("addEventListener('push'", $response->getContent());
+    }
 }
