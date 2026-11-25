@@ -1,5 +1,5 @@
 // Service Worker for IME RP SASP Police Duty PWA
-const CACHE_NAME = 'ime-police-pwa-v2';
+const CACHE_NAME = 'ime-police-pwa-v3';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -36,10 +36,11 @@ self.addEventListener('push', (event) => {
   const title = payload.title || 'Perwira Sedang LIVE Patroli!';
   const options = {
     body: payload.body || 'Siaran langsung patroli kepolisian baru saja dimulai.',
-    icon: payload.icon || '/icons/icon-192x192.png',
-    badge: payload.badge || '/icons/icon-192x192.png',
+    icon: payload.icon || '/images/icons/icon-192.png',
+    badge: payload.badge || '/images/icons/icon-192.png',
     tag: payload.tag || 'officer-live-notification',
     renotify: true,
+    vibrate: [200, 100, 200],
     data: {
       url: payload.data?.url || '/dashboard',
     },

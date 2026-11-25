@@ -54,6 +54,10 @@ class WebPushService
                     'contentEncoding' => $sub->content_encoding ?: 'aes128gcm',
                 ]),
                 $jsonPayload !== false ? $jsonPayload : '{}',
+                [
+                    'TTL' => 3600,
+                    'urgency' => 'high',
+                ],
             );
         }
 
@@ -111,8 +115,8 @@ class WebPushService
         return $this->sendToSubscriptions($user->pushSubscriptions, [
             'title' => "{$officerLabel} sedang LIVE Patroli!",
             'body' => $stream->title ?: 'Siaran langsung patroli kepolisian baru saja dimulai.',
-            'icon' => $officer->public_avatar_url ?: '/icons/icon-192x192.png',
-            'badge' => '/icons/icon-192x192.png',
+            'icon' => $officer->public_avatar_url ?: '/images/icons/icon-192.png',
+            'badge' => '/images/icons/icon-192.png',
             'tag' => "officer-live-{$officer->id}-{$stream->video_id}",
             'data' => [
                 'url' => "/watch/{$stream->video_id}",
@@ -130,8 +134,8 @@ class WebPushService
         return $this->sendToSubscriptions($user->pushSubscriptions, [
             'title' => 'Notifikasi Live Patroli Aktif',
             'body' => 'Perangkat ini siap menerima peringatan real-time saat perwira yang kamu ikuti mulai live.',
-            'icon' => '/icons/icon-192x192.png',
-            'badge' => '/icons/icon-192x192.png',
+            'icon' => '/images/icons/icon-192.png',
+            'badge' => '/images/icons/icon-192.png',
             'tag' => 'live-notif-test',
             'data' => [
                 'url' => '/dashboard',

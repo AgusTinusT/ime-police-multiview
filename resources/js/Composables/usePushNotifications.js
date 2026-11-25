@@ -85,6 +85,11 @@ export function usePushNotifications() {
             const registration =
                 (await navigator.serviceWorker.getRegistration()) ||
                 (await navigator.serviceWorker.register("/sw.js"));
+            try {
+                await registration.update();
+            } catch {
+                // ignore update errors offline
+            }
             await navigator.serviceWorker.ready;
 
             let subscription = await registration.pushManager.getSubscription();
