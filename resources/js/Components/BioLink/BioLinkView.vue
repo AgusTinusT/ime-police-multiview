@@ -15,6 +15,7 @@ import {
     EmptyState,
 } from "@/Components/tactical";
 import VerifiedBadge from "@/Components/BioLink/VerifiedBadge.vue";
+import OfficerSubscribeButton from "@/Components/OfficerSubscribeButton.vue";
 import {
     ArrowLeft,
     Share2,
@@ -187,6 +188,12 @@ const blockNavigation = (event) => {
                 </Button>
 
                 <div class="flex items-center gap-2">
+                    <OfficerSubscribeButton
+                        v-if="!contained && !isUnclaimed && !isSuspended && officer?.id"
+                        :officer-id="officer.id"
+                        :officer-name="officer.officer_name"
+                        class="min-h-10 rounded-lg font-mono text-xs"
+                    />
                     <Button
                         variant="outline"
                         @click="copyProfileUrl"
