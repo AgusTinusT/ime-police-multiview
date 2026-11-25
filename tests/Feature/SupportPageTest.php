@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -66,5 +68,136 @@ class SupportPageTest extends TestCase
     {
         $this->get('/donate')->assertRedirect('/dukung');
         $this->get('/support')->assertRedirect('/dukung');
+    }
+
+    public function test_bagibagi_leaderboard_populates_supporters_and_active_goal(): void
+    {
+        Http::fake([
+            'https://bagibagi.co/api/partnerintegration/top-donator/streamkey*' => Http::response([
+                'data' => [
+                    ['userName' => 'Seseorang', 'amount' => 80000, 'isVerified' => false, 'isAnonymous' => true],
+                    ['userName' => 'SultanLSPD', 'amount' => 300000, 'isVerified' => true, 'isAnonymous' => false],
+                    ['userName' => '   ', 'amount' => 20000, 'isVerified' => false, 'isAnonymous' => true],
+                ],
+                'success' => true,
+                'message' => 'Success',
+            ], 200),
+        ]);
+
+        config([
+            'support.bagibagi.stream_key' => 'test_stream_key_123',
+            'support.goals' => [
+                ['key' => 'event-top-patrol', 'title' => 'Event Top 3', 'target' => 500000, 'collected' => 50000, 'status' => 'active'],
+                ['key' => 'next-goal', 'title' => 'Second Active', 'target' => 500000, 'collected' => 0, 'status' => 'active'],
+            ],
+            'support.supporters' => [
+                ['name' => 'ManualSponsor', 'note' => 'Sponsor awal'],
+            ],
+        ]);
+
+        $this->get('/dukung')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->component('Support')
+            ->where('leaderboardSynced', true)
+            ->where('goals.0.collected', 450000)
+            ->where('goals.0.percent', 90)
+            ->where('goals.1.collected', 0)
+            ->has('supporters', 4)
+            ->where('supporters.0.rank', 1)
+            ->where('supporters.0.name', 'SultanLSPD')
+            ->where('supporters.0.amount', 300000)
+            ->where('supporters.0.is_verified', true)
+            ->where('supporters.1.rank', 2)
+            ->where('supporters.1.name', 'Seseorang')
+            ->where('supporters.2.name', 'Seseorang')
+            ->where('supporters.3.rank', null)
+            ->where('supporters.3.name', 'ManualSponsor')
+            ->where('supporters.3.note', 'Sponsor awal'));
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://bagibagi.co/api/partnerintegration/top-donator/streamkey?streamkey=test_stream_key_123');
+    }
+
+    public function test_bagibagi_accepts_full_copied_endpoint_url_in_stream_key_env(): void
+    {
+        $fullUrl = 'https://bagibagi.co/api/partnerintegration/top-donator/streamkey?streamkey=copied_full_url_key';
+
+        Http::fake([
+            $fullUrl => Http::response([
+                'data' => [
+                    ['userName' => 'KomandanBudi', 'amount' => 150000, 'isVerified' => true, 'isAnonymous' => false],
+                ],
+                'success' => true,
+                'message' => 'Success',
+            ], 200),
+        ]);
+
+        config(['support.bagibagi.stream_key' => $fullUrl]);
+
+        $this->get('/dukung')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('leaderboardSynced', true)
+            ->where('supporters.0.name', 'KomandanBudi')
+            ->where('supporters.0.amount', 150000));
+
+        Http::assertSentCount(1);
+    }
+
+    public function test_bagibagi_validation_failure_or_error_gracefully_falls_back_to_config(): void
+    {
+        Http::fake([
+            'https://bagibagi.co/api/partnerintegration/top-donator/streamkey*' => Http::response([
+                'data' => null,
+                'success' => false,
+                'message' => 'Validation Failed',
+            ], 422),
+        ]);
+
+        config([
+            'support.bagibagi.stream_key' => 'invalid_key',
+            'support.updated_at' => '2026-11-21',
+            'support.goals' => [
+                ['key' => 'event-top-patrol', 'title' => 'Event Top 3', 'target' => 500000, 'collected' => 100000, 'status' => 'active'],
+            ],
+            'support.supporters' => [
+                ['name' => 'FallbackDonor'],
+            ],
+        ]);
+
+        $this->get('/dukung')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('leaderboardSynced', false)
+            ->where('updatedAt', '2026-11-21')
+            ->where('goals.0.collected', 100000)
+            ->has('supporters', 1)
+            ->where('supporters.0.name', 'FallbackDonor'));
+    }
+
+    public function test_bagibagi_serves_stale_cache_when_upstream_temporarily_fails(): void
+    {
+        Http::fakeSequence()
+            ->push([
+                'data' => [
+                    ['userName' => 'CachedDonor', 'amount' => 200000, 'isVerified' => true, 'isAnonymous' => false],
+                ],
+                'success' => true,
+                'message' => 'Success',
+            ], 200)
+            ->pushStatus(503);
+
+        config([
+            'support.bagibagi.stream_key' => 'stale_test_key',
+            'support.bagibagi.cache_ttl' => 60,
+        ]);
+
+        $this->get('/dukung')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('leaderboardSynced', true)
+            ->where('supporters.0.name', 'CachedDonor'));
+
+        // Simulate fresh cache expiry while keeping 24h stale cache intact.
+        $url = 'https://bagibagi.co/api/partnerintegration/top-donator/streamkey?streamkey=stale_test_key';
+        $hash = substr(sha1($url), 0, 16);
+        Cache::forget("bagibagi:leaderboard:fresh:{$hash}");
+
+        $this->get('/dukung')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('leaderboardSynced', true)
+            ->where('supporters.0.name', 'CachedDonor')
+            ->where('supporters.0.amount', 200000));
     }
 }

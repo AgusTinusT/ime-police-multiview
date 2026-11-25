@@ -22,6 +22,19 @@ return [
     'github_url' => 'https://github.com/AgusTinusT/ime-police-multiview',
     'discord_url' => 'https://discord.gg/gkaXxWpwhA',
 
+    // Integrasi otomatis Leaderboard BagiBagi (Stream Overlay > Integration Page).
+    // Cukup isi BAGIBAGI_STREAM_KEY di .env (boleh hanya streamKey-nya saja atau
+    // URL endpoint lengkapnya). Bila dikosongkan, halaman memakai data manual di bawah.
+    'bagibagi' => [
+        'stream_key' => env('BAGIBAGI_STREAM_KEY'),
+        'endpoint' => env(
+            'BAGIBAGI_LEADERBOARD_ENDPOINT',
+            'https://bagibagi.co/api/partnerintegration/top-donator/streamkey'
+        ),
+        'cache_ttl' => (int) env('BAGIBAGI_CACHE_TTL', 300),
+        'timeout' => (int) env('BAGIBAGI_TIMEOUT', 5),
+    ],
+
     // Tanggal terakhir angka di bawah diperbarui (YYYY-MM-DD).
     'updated_at' => '2026-11-21',
 
