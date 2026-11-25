@@ -981,11 +981,12 @@ class PoliceCommandController extends Controller
      */
     /**
      * Dedicated Page: support / donation with transparent costs and funding goals.
-     * All numbers come from config/support.php.
+     * Numbers come from config/support.php and optionally BagiBagi's leaderboard API.
      */
-    public function supportPage()
+    public function supportPage(\App\Services\BagibagiLeaderboardService $bagibagi)
     {
         $support = config('support');
+        $leaderboard = $bagibagi->getLeaderboard();
 
         $costs = collect($support['monthly_costs'] ?? [])->map(function ($c) {
             $sponsor = $c['sponsor'] ?? null;
@@ -1000,9 +1001,16 @@ class PoliceCommandController extends Controller
             ];
         })->values();
 
-        $goals = collect($support['goals'] ?? [])->map(function ($g) {
+        $appliedAutoCollect = false;
+        $goals = collect($support['goals'] ?? [])->map(function ($g) use ($leaderboard, &$appliedAutoCollect) {
             $target = isset($g['target']) ? (int) $g['target'] : null;
+            $status = in_array($g['status'] ?? '', ['active', 'planned', 'funded'], true) ? $g['status'] : 'planned';
             $collected = (int) ($g['collected'] ?? 0);
+
+            if (! $appliedAutoCollect && $status === 'active' && ($g['auto_collect'] ?? true)) {
+                $collected += $leaderboard['total_amount'];
+                $appliedAutoCollect = true;
+            }
 
             return [
                 'key' => $g['key'],
@@ -1011,7 +1019,7 @@ class PoliceCommandController extends Controller
                 'target' => $target,
                 'collected' => $collected,
                 'percent' => $target ? min(100, (int) floor($collected / $target * 100)) : null,
-                'status' => in_array($g['status'] ?? '', ['active', 'planned', 'funded'], true) ? $g['status'] : 'planned',
+                'status' => $status,
             ];
         })->values();
 
@@ -1020,11 +1028,30 @@ class PoliceCommandController extends Controller
             ? $costs->sum('amount')
             : null;
 
+        $liveSupporters = collect($leaderboard['donators'])->map(fn (array $d) => [
+            'rank' => $d['rank'],
+            'name' => $d['name'],
+            'amount' => $d['amount'],
+            'is_verified' => $d['is_verified'],
+            'is_anonymous' => $d['is_anonymous'],
+            'note' => null,
+        ]);
+
+        $manualSupporters = collect($support['supporters'] ?? [])->map(fn ($s) => [
+            'rank' => null,
+            'name' => $s['name'],
+            'amount' => isset($s['amount']) ? (int) $s['amount'] : null,
+            'is_verified' => (bool) ($s['is_verified'] ?? false),
+            'is_anonymous' => false,
+            'note' => $s['note'] ?? null,
+        ]);
+
         return Inertia::render('Support', [
             'donateUrl' => $support['donate_url'] ?? null,
             'githubUrl' => $support['github_url'] ?? null,
             'discordUrl' => $support['discord_url'] ?? null,
-            'updatedAt' => $support['updated_at'] ?? null,
+            'updatedAt' => $leaderboard['synced_date'] ?? ($support['updated_at'] ?? null),
+            'leaderboardSynced' => $leaderboard['synced'],
             'monthlyCosts' => $costs,
             'monthlyTotal' => $monthlyTotal,
             'costsNote' => $support['costs_note'] ?? null,
@@ -1035,10 +1062,7 @@ class PoliceCommandController extends Controller
                 'description' => $p['description'] ?? '',
                 'who' => $p['who'] ?? null,
             ])->values(),
-            'supporters' => collect($support['supporters'] ?? [])->map(fn ($s) => [
-                'name' => $s['name'],
-                'note' => $s['note'] ?? null,
-            ])->values(),
+            'supporters' => $liveSupporters->concat($manualSupporters)->values(),
             'meta' => [
                 'title' => 'Dukung IME Police Duty — Biaya, Target & Cara Berkontribusi',
                 'description' => 'Rincian biaya operasional, target pendanaan berikutnya, dan cara mendukung platform komunitas IME Police Duty: donasi, kontribusi GitHub, atau laporan masukan.',
