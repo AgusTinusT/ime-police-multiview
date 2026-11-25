@@ -4,6 +4,7 @@ import { ExternalLink, LayoutGrid, MessageSquareOff, Scissors } from "@lucide/vu
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
+import OfficerSubscribeButton from "@/Components/OfficerSubscribeButton.vue";
 import WatchMomenDialog from "@/Components/WatchMomenDialog.vue";
 import WatchMomenList from "@/Components/WatchMomenList.vue";
 import WatchSideItem from "@/Components/WatchSideItem.vue";
@@ -212,6 +213,12 @@ onUnmounted(() => {
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
+                            <OfficerSubscribeButton
+                                v-if="officer?.id"
+                                :officer-id="officer.id"
+                                :officer-name="officerName"
+                                rounded
+                            />
                             <Button size="sm" variant="secondary" class="rounded-full" @click="openClip">
                                 <Scissors /> {{ $t('watch_clips.clip') }}
                             </Button>

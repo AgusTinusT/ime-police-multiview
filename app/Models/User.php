@@ -147,6 +147,32 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Officer live-notification subscriptions for this user.
+     */
+    public function officerSubscriptions(): HasMany
+    {
+        return $this->hasMany(OfficerSubscription::class);
+    }
+
+    /**
+     * Officers followed by this user for live notifications.
+     */
+    public function subscribedOfficers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Officer::class, 'officer_subscriptions')
+            ->withPivot(['notify_in_app', 'notify_web_push'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Web Push browser/device subscriptions for this user.
+     */
+    public function pushSubscriptions(): HasMany
+    {
+        return $this->hasMany(PushSubscription::class);
+    }
+
+    /**
      * Get the user's created video clips.
      */
     public function videoClips(): \Illuminate\Database\Eloquent\Relations\HasMany

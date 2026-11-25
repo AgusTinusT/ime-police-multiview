@@ -1,5 +1,6 @@
 <script setup>
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
+import OfficerSubscribeButton from "@/Components/OfficerSubscribeButton.vue";
 import { Head, Link, usePage } from "@inertiajs/vue3";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -816,6 +817,12 @@ const liveInDept = computed(() =>
                         </div>
 
                         <div class="flex items-center space-x-1.5 shrink-0">
+                            <OfficerSubscribeButton
+                                :officer-id="officer.id"
+                                :officer-name="officer.officer_name"
+                                icon-only
+                                class="w-8 h-8"
+                            />
                             <!-- 1-Click YouTube Subscribe Popup -->
                             <Button
                                 type="button"
@@ -1297,6 +1304,14 @@ const liveInDept = computed(() =>
                             >
                                 {{ activeOfficer.callsign }} •
                                 {{ activeOfficer.rank }}
+                            </div>
+                            <div class="pt-1">
+                                <OfficerSubscribeButton
+                                    :officer-id="activeOfficer.id"
+                                    :officer-name="activeOfficer.officer_name"
+                                    size="sm"
+                                    class="h-8 text-xs font-mono"
+                                />
                             </div>
                         </div>
                     </Card>

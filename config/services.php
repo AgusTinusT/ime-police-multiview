@@ -43,4 +43,15 @@ return [
         'id' => env('GA_MEASUREMENT_ID', env('VITE_GA_MEASUREMENT_ID')),
     ],
 
+    'youtube_websub' => [
+        'secret' => env('YOUTUBE_WEBSUB_SECRET'),
+        'lease_seconds' => (int) env('YOUTUBE_WEBSUB_LEASE_SECONDS', 432000),
+    ],
+
+    'webpush' => [
+        'public_key' => env('VAPID_PUBLIC_KEY'),
+        'private_key' => env('VAPID_PRIVATE_KEY'),
+        'subject' => env('VAPID_SUBJECT', env('APP_URL', 'mailto:admin@example.com')),
+    ],
+
 ];

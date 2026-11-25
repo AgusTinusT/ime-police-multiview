@@ -37,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/v1/sync',
             'api/v1/telemetry',
             'api/v1/hero-slides/*/event',
+            'webhooks/youtube/websub/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

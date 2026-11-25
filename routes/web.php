@@ -96,6 +96,7 @@ Route::prefix('api/v1')->group(function () {
     Route::match(['get', 'post'], '/search-live', [PoliceCommandController::class, 'apiSearchLive'])->middleware('throttle:60,1');
     Route::get('/stream-details', [PoliceCommandController::class, 'apiStreamDetails'])->middleware('throttle:60,1');
     Route::match(['get', 'post'], '/telemetry', [PoliceCommandController::class, 'apiTelemetry'])->middleware('throttle:60,1');
+    Route::get('/support/highlight', [PoliceCommandController::class, 'apiSupportHighlight'])->middleware('throttle:60,1');
     Route::post('/feedback', [FeedbackController::class, 'submit'])->middleware('throttle:5,1');
     
     // TacClips Community Momen Aksi API
@@ -393,6 +394,43 @@ Route::middleware('auth')->prefix('api/v1/user/blocked-officers')->group(functio
     Route::post('/sync', [UserBlockedOfficerController::class, 'sync'])->name('user.blocked_officers.sync');
     Route::delete('/all', [UserBlockedOfficerController::class, 'destroyAll'])->name('user.blocked_officers.destroy_all');
     Route::delete('/{officer}', [UserBlockedOfficerController::class, 'destroy'])->name('user.blocked_officers.destroy');
+});
+
+// 10. Officer Live Notifications (Follow, In-App, Web Push, WebSub)
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OfficerSubscriptionController;
+use App\Http\Controllers\PushSubscriptionController;
+use App\Http\Controllers\YouTubeWebSubController;
+
+Route::get('/webhooks/youtube/websub/{officer}', [YouTubeWebSubController::class, 'verify'])
+    ->name('webhooks.youtube.websub.verify');
+Route::post('/webhooks/youtube/websub/{officer}', [YouTubeWebSubController::class, 'handle'])
+    ->middleware('throttle:120,1')
+    ->name('webhooks.youtube.websub.handle');
+
+Route::middleware(['auth', 'not_banned'])->prefix('api/v1')->group(function () {
+    Route::get('/subscriptions', [OfficerSubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::post('/officers/{officer}/subscribe', [OfficerSubscriptionController::class, 'store'])
+        ->middleware('throttle:60,1')
+        ->name('officers.subscribe');
+    Route::delete('/officers/{officer}/subscribe', [OfficerSubscriptionController::class, 'destroy'])
+        ->middleware('throttle:60,1')
+        ->name('officers.unsubscribe');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read_all');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+
+    Route::get('/push-subscriptions/config', [PushSubscriptionController::class, 'config'])->name('push_subscriptions.config');
+    Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])
+        ->middleware('throttle:30,1')
+        ->name('push_subscriptions.store');
+    Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])
+        ->middleware('throttle:30,1')
+        ->name('push_subscriptions.destroy');
+    Route::post('/push-subscriptions/test', [PushSubscriptionController::class, 'test'])
+        ->middleware('throttle:5,1')
+        ->name('push_subscriptions.test');
 });
 
 

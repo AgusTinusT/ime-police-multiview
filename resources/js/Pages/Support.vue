@@ -29,6 +29,7 @@ const props = defineProps({
     githubUrl: { type: String, default: null },
     discordUrl: { type: String, default: null },
     updatedAt: { type: String, default: null },
+    leaderboardSynced: { type: Boolean, default: false },
     monthlyCosts: { type: Array, default: () => [] },
     monthlyTotal: { type: Number, default: null },
     costsNote: { type: String, default: null },
@@ -36,6 +37,10 @@ const props = defineProps({
     perks: { type: Array, default: () => [] },
     supporters: { type: Array, default: () => [] },
 });
+
+const hasSupporterAmounts = computed(() =>
+    props.supporters.some((s) => typeof s.amount === "number" && s.amount > 0),
+);
 
 const rupiah = (n) =>
     new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
@@ -120,6 +125,82 @@ const otherWays = computed(() =>
                         </a>
                     </Button>
                     <span v-if="updatedLabel" class="text-xs text-muted-foreground">Angka diperbarui {{ updatedLabel }}</span>
+                </div>
+            </section>
+
+            <!-- Supporter wall -->
+            <section class="space-y-4">
+                <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                        <h2 class="flex items-center gap-2 text-xl font-bold text-foreground">
+                            <HandHeart class="size-5 text-live" /> Dinding Supporter
+                        </h2>
+                        <p class="text-sm text-muted-foreground">Terima kasih untuk semua yang sudah mendukung.</p>
+                    </div>
+                    <Badge v-if="leaderboardSynced" variant="secondary" class="gap-1">
+                        <BadgeCheck class="size-3 text-success" /> Tersinkron dari BagiBagi
+                    </Badge>
+                </div>
+
+                <div v-if="supporters.length && hasSupporterAmounts" class="grid gap-3 sm:grid-cols-2">
+                    <div
+                        v-for="(s, idx) in supporters"
+                        :key="`${s.rank ?? 'm'}-${s.name}-${idx}`"
+                        class="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3"
+                        :class="s.rank && s.rank <= 3 && 'border-primary/30'"
+                    >
+                        <div class="flex min-w-0 items-center gap-3">
+                            <span
+                                v-if="s.rank"
+                                class="flex size-8 shrink-0 items-center justify-center rounded-lg font-mono text-xs font-bold"
+                                :class="s.rank <= 3 ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'"
+                            >
+                                <Trophy v-if="s.rank === 1" class="size-4" />
+                                <template v-else>#{{ s.rank }}</template>
+                            </span>
+                            <span
+                                v-else
+                                class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-live/10 text-live"
+                            >
+                                <Heart class="size-4 fill-current" />
+                            </span>
+
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="truncate text-sm font-semibold text-foreground">{{ s.name }}</span>
+                                    <BadgeCheck
+                                        v-if="s.is_verified"
+                                        class="size-3.5 shrink-0 text-info"
+                                        aria-label="Akun BagiBagi terverifikasi"
+                                    />
+                                </div>
+                                <p v-if="s.note" class="truncate text-xs text-muted-foreground">{{ s.note }}</p>
+                            </div>
+                        </div>
+
+                        <span v-if="typeof s.amount === 'number' && s.amount > 0" class="shrink-0 font-mono text-sm font-semibold text-success">
+                            {{ rupiah(s.amount) }}
+                        </span>
+                    </div>
+                </div>
+
+                <div v-else-if="supporters.length" class="flex flex-wrap gap-2">
+                    <span
+                        v-for="(s, idx) in supporters"
+                        :key="`${s.name}-${idx}`"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm"
+                    >
+                        <Heart class="size-3.5 fill-current text-live" />
+                        <span class="font-semibold text-foreground">{{ s.name }}</span>
+                        <span v-if="s.note" class="text-xs text-muted-foreground">· {{ s.note }}</span>
+                    </span>
+                </div>
+
+                <div v-else class="rounded-xl border border-dashed border-border p-6 text-center">
+                    <p class="text-sm text-muted-foreground">Belum ada nama di sini. Jadilah pendukung pertama!</p>
+                    <Button v-if="donateUrl" as-child size="sm" class="mt-3 rounded-full">
+                        <a :href="donateUrl" target="_blank" rel="noopener noreferrer"><Heart class="fill-current" /> Donasi sekarang</a>
+                    </Button>
                 </div>
             </section>
 
@@ -264,33 +345,6 @@ const otherWays = computed(() =>
                             </p>
                         </div>
                     </component>
-                </div>
-            </section>
-
-            <!-- Supporter wall -->
-            <section class="space-y-4">
-                <div>
-                    <h2 class="flex items-center gap-2 text-xl font-bold text-foreground">
-                        <HandHeart class="size-5 text-live" /> Dinding Supporter
-                    </h2>
-                    <p class="text-sm text-muted-foreground">Terima kasih untuk semua yang sudah mendukung.</p>
-                </div>
-                <div v-if="supporters.length" class="flex flex-wrap gap-2">
-                    <span
-                        v-for="s in supporters"
-                        :key="s.name"
-                        class="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm"
-                    >
-                        <Heart class="size-3.5 fill-current text-live" />
-                        <span class="font-semibold text-foreground">{{ s.name }}</span>
-                        <span v-if="s.note" class="text-xs text-muted-foreground">· {{ s.note }}</span>
-                    </span>
-                </div>
-                <div v-else class="rounded-xl border border-dashed border-border p-6 text-center">
-                    <p class="text-sm text-muted-foreground">Belum ada nama di sini. Jadilah pendukung pertama!</p>
-                    <Button v-if="donateUrl" as-child size="sm" class="mt-3 rounded-full">
-                        <a :href="donateUrl" target="_blank" rel="noopener noreferrer"><Heart class="fill-current" /> Donasi sekarang</a>
-                    </Button>
                 </div>
             </section>
         </PageContainer>

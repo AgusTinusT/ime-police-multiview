@@ -38,3 +38,6 @@ Schedule::command('biolinks:prune-clicks --days=90')->dailyAt('03:00');
 Schedule::command('momen:archive')->everyFiveMinutes()->withoutOverlapping(10);
 Schedule::command('momen:prune-archives')->dailyAt('03:30');
 
+// YouTube WebSub: Subscribe new channels & renew expiring leases every 6 hours
+Schedule::command('websub:sync')->everySixHours()->withoutOverlapping(15);
+

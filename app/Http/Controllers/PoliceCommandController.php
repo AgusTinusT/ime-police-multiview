@@ -981,11 +981,12 @@ class PoliceCommandController extends Controller
      */
     /**
      * Dedicated Page: support / donation with transparent costs and funding goals.
-     * All numbers come from config/support.php.
+     * Numbers come from config/support.php and optionally BagiBagi's leaderboard API.
      */
-    public function supportPage()
+    public function supportPage(\App\Services\BagibagiLeaderboardService $bagibagi)
     {
         $support = config('support');
+        $resolved = $this->buildSupportData($bagibagi);
 
         $costs = collect($support['monthly_costs'] ?? [])->map(function ($c) {
             $sponsor = $c['sponsor'] ?? null;
@@ -1000,21 +1001,6 @@ class PoliceCommandController extends Controller
             ];
         })->values();
 
-        $goals = collect($support['goals'] ?? [])->map(function ($g) {
-            $target = isset($g['target']) ? (int) $g['target'] : null;
-            $collected = (int) ($g['collected'] ?? 0);
-
-            return [
-                'key' => $g['key'],
-                'title' => $g['title'],
-                'description' => $g['description'] ?? '',
-                'target' => $target,
-                'collected' => $collected,
-                'percent' => $target ? min(100, (int) floor($collected / $target * 100)) : null,
-                'status' => in_array($g['status'] ?? '', ['active', 'planned', 'funded'], true) ? $g['status'] : 'planned',
-            ];
-        })->values();
-
         // Total only when every line has a number; a partial sum would read as the full cost.
         $monthlyTotal = $costs->isNotEmpty() && $costs->every(fn ($c) => $c['amount'] !== null)
             ? $costs->sum('amount')
@@ -1024,21 +1010,19 @@ class PoliceCommandController extends Controller
             'donateUrl' => $support['donate_url'] ?? null,
             'githubUrl' => $support['github_url'] ?? null,
             'discordUrl' => $support['discord_url'] ?? null,
-            'updatedAt' => $support['updated_at'] ?? null,
+            'updatedAt' => $resolved['leaderboard']['synced_date'] ?? ($support['updated_at'] ?? null),
+            'leaderboardSynced' => $resolved['leaderboard']['synced'],
             'monthlyCosts' => $costs,
             'monthlyTotal' => $monthlyTotal,
             'costsNote' => $support['costs_note'] ?? null,
-            'goals' => $goals,
+            'goals' => $resolved['goals'],
             'perks' => collect($support['perks'] ?? [])->map(fn ($p) => [
                 'icon' => $p['icon'] ?? 'heart',
                 'title' => $p['title'],
                 'description' => $p['description'] ?? '',
                 'who' => $p['who'] ?? null,
             ])->values(),
-            'supporters' => collect($support['supporters'] ?? [])->map(fn ($s) => [
-                'name' => $s['name'],
-                'note' => $s['note'] ?? null,
-            ])->values(),
+            'supporters' => $resolved['supporters'],
             'meta' => [
                 'title' => 'Dukung IME Police Duty — Biaya, Target & Cara Berkontribusi',
                 'description' => 'Rincian biaya operasional, target pendanaan berikutnya, dan cara mendukung platform komunitas IME Police Duty: donasi, kontribusi GitHub, atau laporan masukan.',
@@ -1047,6 +1031,89 @@ class PoliceCommandController extends Controller
                 'type' => 'website',
             ],
         ]);
+    }
+
+    /**
+     * Lightweight JSON summary for the Dashboard community prize-pool highlight strip.
+     */
+    public function apiSupportHighlight(\App\Services\BagibagiLeaderboardService $bagibagi)
+    {
+        $resolved = $this->buildSupportData($bagibagi);
+        $activeGoal = $resolved['goals']->firstWhere('status', 'active') ?? $resolved['goals']->first();
+        $supporters = $resolved['supporters'];
+        $topSupporters = $supporters->take(3)->values();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'visible' => $activeGoal !== null || $supporters->isNotEmpty(),
+                'leaderboard_synced' => $resolved['leaderboard']['synced'],
+                'goal' => $activeGoal ? [
+                    'key' => $activeGoal['key'],
+                    'title' => $activeGoal['title'],
+                    'description' => $activeGoal['description'],
+                    'collected' => $activeGoal['collected'],
+                    'target' => $activeGoal['target'],
+                    'percent' => $activeGoal['percent'],
+                ] : null,
+                'top_supporters' => $topSupporters,
+                'total_supporters' => $supporters->count(),
+                'extra_supporters_count' => max(0, $supporters->count() - $topSupporters->count()),
+                'support_url' => '/dukung',
+            ],
+        ]);
+    }
+
+    private function buildSupportData(\App\Services\BagibagiLeaderboardService $bagibagi): array
+    {
+        $support = config('support');
+        $leaderboard = $bagibagi->getLeaderboard();
+
+        $appliedAutoCollect = false;
+        $goals = collect($support['goals'] ?? [])->map(function ($g) use ($leaderboard, &$appliedAutoCollect) {
+            $target = isset($g['target']) ? (int) $g['target'] : null;
+            $status = in_array($g['status'] ?? '', ['active', 'planned', 'funded'], true) ? $g['status'] : 'planned';
+            $collected = (int) ($g['collected'] ?? 0);
+
+            if (! $appliedAutoCollect && $status === 'active' && ($g['auto_collect'] ?? true)) {
+                $collected += $leaderboard['total_amount'];
+                $appliedAutoCollect = true;
+            }
+
+            return [
+                'key' => $g['key'],
+                'title' => $g['title'],
+                'description' => $g['description'] ?? '',
+                'target' => $target,
+                'collected' => $collected,
+                'percent' => $target ? min(100, (int) floor($collected / $target * 100)) : null,
+                'status' => $status,
+            ];
+        })->values();
+
+        $liveSupporters = collect($leaderboard['donators'])->map(fn (array $d) => [
+            'rank' => $d['rank'],
+            'name' => $d['name'],
+            'amount' => $d['amount'],
+            'is_verified' => $d['is_verified'],
+            'is_anonymous' => $d['is_anonymous'],
+            'note' => null,
+        ]);
+
+        $manualSupporters = collect($support['supporters'] ?? [])->map(fn ($s) => [
+            'rank' => null,
+            'name' => $s['name'],
+            'amount' => isset($s['amount']) ? (int) $s['amount'] : null,
+            'is_verified' => (bool) ($s['is_verified'] ?? false),
+            'is_anonymous' => false,
+            'note' => $s['note'] ?? null,
+        ]);
+
+        return [
+            'leaderboard' => $leaderboard,
+            'goals' => $goals,
+            'supporters' => $liveSupporters->concat($manualSupporters)->values(),
+        ];
     }
 
     public function feedbackPage(Request $request)

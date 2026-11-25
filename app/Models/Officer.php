@@ -239,6 +239,32 @@ class Officer extends Model
     }
 
     /**
+     * Live-notification subscriptions targeting this officer.
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(OfficerSubscription::class);
+    }
+
+    /**
+     * Users following this officer for live notifications.
+     */
+    public function subscribers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'officer_subscriptions')
+            ->withPivot(['notify_in_app', 'notify_web_push'])
+            ->withTimestamps();
+    }
+
+    /**
+     * YouTube WebSub lease record for this officer's channel.
+     */
+    public function webSubSubscription(): HasOne
+    {
+        return $this->hasOne(YouTubeWebSubSubscription::class);
+    }
+
+    /**
      * Scope a query to only include active monitored officers.
      */
     public function scopeActive($query)
