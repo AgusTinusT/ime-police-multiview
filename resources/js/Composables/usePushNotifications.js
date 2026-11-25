@@ -53,6 +53,22 @@ export function usePushNotifications() {
                 ? await registration.pushManager.getSubscription()
                 : null;
             isSubscribed.value = !!existing;
+
+            // Ensure browser's active subscription is always synced to the server DB
+            // (prevents UI showing "Active" when DB row was removed or never saved).
+            if (existing && serverEnabled.value && Notification.permission === "granted") {
+                const json = existing.toJSON();
+                if (json?.endpoint && json?.keys?.p256dh && json?.keys?.auth) {
+                    await axios.post("/api/v1/push-subscriptions", {
+                        endpoint: json.endpoint,
+                        keys: {
+                            p256dh: json.keys.p256dh,
+                            auth: json.keys.auth,
+                        },
+                        content_encoding: "aes128gcm",
+                    }).catch(() => {});
+                }
+            }
         } catch {
             isSubscribed.value = false;
         } finally {
