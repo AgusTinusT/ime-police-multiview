@@ -6,6 +6,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use App\Models\Officer;
 use App\Models\ActiveStream;
+use App\Services\LiveNotificationTriggerService;
 use App\Services\YouTubeScraperService;
 
 use Illuminate\Support\Facades\Cache;
@@ -28,7 +29,7 @@ class SyncOfficerStreamsJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(YouTubeScraperService $scraper): void
+    public function handle(YouTubeScraperService $scraper, LiveNotificationTriggerService $notificationTrigger): void
     {
         // Purge any active stream records belonging to disabled or unlisted
         // (non-personnel, bio-link only) officers.
@@ -71,7 +72,7 @@ class SyncOfficerStreamsJob implements ShouldQueue
 
                 if ($isPolicePatrol) {
                     // Update or create active stream with officer_id
-                    ActiveStream::updateOrCreate(
+                    $activeStream = ActiveStream::updateOrCreate(
                         [
                             'officer_id' => $officer->id,
                             'video_id' => $liveData['video_id'],
@@ -86,6 +87,8 @@ class SyncOfficerStreamsJob implements ShouldQueue
                             'last_synced_at' => now(),
                         ]
                     );
+
+                    $notificationTrigger->triggerIfNotNotified($officer, $activeStream);
 
                     $lastDuty = $officer->last_duty_at;
                     $currentTime = now();

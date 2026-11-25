@@ -396,6 +396,31 @@ Route::middleware('auth')->prefix('api/v1/user/blocked-officers')->group(functio
     Route::delete('/{officer}', [UserBlockedOfficerController::class, 'destroy'])->name('user.blocked_officers.destroy');
 });
 
+// 10. Officer Live Notifications (Follow, In-App, Web Push, WebSub)
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OfficerSubscriptionController;
+use App\Http\Controllers\YouTubeWebSubController;
+
+Route::get('/webhooks/youtube/websub/{officer}', [YouTubeWebSubController::class, 'verify'])
+    ->name('webhooks.youtube.websub.verify');
+Route::post('/webhooks/youtube/websub/{officer}', [YouTubeWebSubController::class, 'handle'])
+    ->middleware('throttle:120,1')
+    ->name('webhooks.youtube.websub.handle');
+
+Route::middleware(['auth', 'not_banned'])->prefix('api/v1')->group(function () {
+    Route::get('/subscriptions', [OfficerSubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::post('/officers/{officer}/subscribe', [OfficerSubscriptionController::class, 'store'])
+        ->middleware('throttle:60,1')
+        ->name('officers.subscribe');
+    Route::delete('/officers/{officer}/subscribe', [OfficerSubscriptionController::class, 'destroy'])
+        ->middleware('throttle:60,1')
+        ->name('officers.unsubscribe');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read_all');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+});
+
 
 
 
