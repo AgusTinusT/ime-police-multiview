@@ -112,18 +112,29 @@ class WebPushService
     {
         $officerLabel = trim(($officer->callsign ? "[{$officer->callsign}] " : '') . $officer->officer_name);
 
-        return $this->sendToSubscriptions($user->pushSubscriptions, [
+        $payload = [
             'title' => "{$officerLabel} sedang LIVE Patroli!",
             'body' => $stream->title ?: 'Siaran langsung patroli kepolisian baru saja dimulai.',
             'icon' => $officer->public_avatar_url ?: '/images/icons/icon-192.png',
             'badge' => '/images/icons/icon-192.png',
             'tag' => "officer-live-{$officer->id}-{$stream->video_id}",
+            'requireInteraction' => true,
+            'actions' => [
+                ['action' => 'watch', 'title' => 'Tonton Live'],
+                ['action' => 'dismiss', 'title' => 'Tutup'],
+            ],
             'data' => [
                 'url' => "/watch/{$stream->video_id}",
                 'officer_id' => $officer->id,
                 'video_id' => $stream->video_id,
             ],
-        ]);
+        ];
+
+        if (! empty($stream->thumbnail_url)) {
+            $payload['image'] = $stream->thumbnail_url;
+        }
+
+        return $this->sendToSubscriptions($user->pushSubscriptions, $payload);
     }
 
     /**
@@ -137,6 +148,11 @@ class WebPushService
             'icon' => '/images/icons/icon-192.png',
             'badge' => '/images/icons/icon-192.png',
             'tag' => 'live-notif-test',
+            'requireInteraction' => true,
+            'actions' => [
+                ['action' => 'open', 'title' => 'Buka Dashboard'],
+                ['action' => 'dismiss', 'title' => 'Tutup'],
+            ],
             'data' => [
                 'url' => '/dashboard',
             ],

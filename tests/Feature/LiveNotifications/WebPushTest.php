@@ -195,6 +195,81 @@ class WebPushTest extends TestCase
         $this->assertSame(1, $user->notifications()->count());
     }
 
+    public function test_officer_live_notification_includes_high_attention_payload(): void
+    {
+        config([
+            'services.webpush.public_key' => 'BPtestPublicKey123',
+            'services.webpush.private_key' => 'testPrivateKey123',
+        ]);
+
+        $officer = Officer::create([
+            'channel_id' => 'UC9999999999999999999999',
+            'handle' => '@livepush',
+            'streamer_name' => 'Live Streamer',
+            'officer_name' => 'Gegey Alvarez',
+            'callsign' => '71319',
+            'department' => 'SASP',
+            'rank' => 'Trooper',
+            'is_active' => true,
+            'is_listed' => true,
+        ]);
+        $stream = ActiveStream::create([
+            'officer_id' => $officer->id,
+            'channel_id' => $officer->channel_id,
+            'video_id' => 'abc123XYZ99',
+            'title' => 'Day 4 | Pasti Bisa #imeroleplay',
+            'thumbnail_url' => 'https://i.ytimg.com/vi/abc123XYZ99/hqdefault.jpg',
+            'status' => 'LIVE',
+            'viewers_count' => 100,
+            'last_synced_at' => now(),
+        ]);
+        $user = User::factory()->create();
+        $sub = PushSubscription::create([
+            'user_id' => $user->id,
+            'endpoint' => 'https://push.example.com/high-attention',
+            'endpoint_hash' => PushSubscription::hashEndpoint('https://push.example.com/high-attention'),
+            'public_key' => 'pub1',
+            'auth_token' => 'auth1',
+            'content_encoding' => 'aes128gcm',
+        ]);
+
+        $capturedPayload = null;
+        $successReport = Mockery::mock(MessageSentReport::class);
+        $successReport->shouldReceive('getEndpoint')->andReturn($sub->endpoint);
+        $successReport->shouldReceive('isSuccess')->andReturn(true);
+
+        $mockClient = Mockery::mock(WebPush::class);
+        $mockClient->shouldReceive('queueNotification')
+            ->once()
+            ->withArgs(function ($subscription, $jsonPayload, $options) use (&$capturedPayload) {
+                $capturedPayload = json_decode($jsonPayload, true);
+
+                return ($options['urgency'] ?? null) === 'high';
+            });
+        $mockClient->shouldReceive('flush')->once()->andReturn((function () use ($successReport) {
+            yield $successReport;
+        })());
+
+        $service = new class($mockClient) extends WebPushService
+        {
+            public function __construct(private readonly WebPush $client) {}
+
+            protected function makeWebPushClient(): WebPush
+            {
+                return $this->client;
+            }
+        };
+
+        $result = $service->sendOfficerLiveNotification($user, $officer, $stream);
+
+        $this->assertSame(['sent' => 1, 'expired' => 0, 'failed' => 0], $result);
+        $this->assertIsArray($capturedPayload);
+        $this->assertTrue($capturedPayload['requireInteraction']);
+        $this->assertSame($stream->thumbnail_url, $capturedPayload['image']);
+        $this->assertSame('watch', $capturedPayload['actions'][0]['action'] ?? null);
+        $this->assertSame('dismiss', $capturedPayload['actions'][1]['action'] ?? null);
+    }
+
     public function test_service_worker_route_is_served_uncached_with_push_handler(): void
     {
         $response = $this->get('/service-worker')
@@ -204,5 +279,7 @@ class WebPushTest extends TestCase
 
         $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
         $this->assertStringContainsString("addEventListener('push'", $response->getContent());
+        $this->assertStringContainsString('requireInteraction', $response->getContent());
+        $this->assertStringContainsString("event.action === 'dismiss'", $response->getContent());
     }
 }

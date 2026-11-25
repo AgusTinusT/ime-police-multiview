@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import axios from "axios";
 import { toast } from "vue-sonner";
+import { usePwaInstall } from "./usePwaInstall";
 
 function urlBase64ToUint8Array(base64String) {
     const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -128,7 +129,23 @@ export function usePushNotifications() {
             });
 
             isSubscribed.value = true;
-            toast.success("Notifikasi push browser aktif di perangkat ini.");
+            const { canPromptInstall, triggerInstall } = usePwaInstall();
+            if (canPromptInstall.value) {
+                toast.success(
+                    "Notifikasi push aktif! Pasang aplikasi agar alert tetap masuk saat browser ditutup.",
+                    {
+                        duration: 8000,
+                        action: {
+                            label: "Instal Aplikasi",
+                            onClick: () => {
+                                triggerInstall();
+                            },
+                        },
+                    },
+                );
+            } else {
+                toast.success("Notifikasi push browser aktif di perangkat ini.");
+            }
             return true;
         } catch (err) {
             const msg =

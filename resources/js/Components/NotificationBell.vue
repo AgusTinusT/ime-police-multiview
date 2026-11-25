@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import axios from "axios";
-import { Bell, BellRing, CheckCheck, Radio, Settings, Smartphone } from "@lucide/vue";
+import { Bell, BellRing, CheckCheck, Download, Radio, Settings, Smartphone, X } from "@lucide/vue";
 import { toast } from "vue-sonner";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
@@ -14,8 +14,10 @@ import {
     PopoverTrigger,
 } from "@/Components/ui/popover";
 import { OfficerAvatar } from "@/Components/tactical";
+import PwaIosInstallDialog from "@/Components/PwaIosInstallDialog.vue";
 import { cn } from "@/lib/utils";
 import { usePushNotifications } from "@/Composables/usePushNotifications";
+import { usePwaInstall } from "@/Composables/usePwaInstall";
 
 const page = usePage();
 const isAuthenticated = computed(() => !!page.props.auth?.user);
@@ -35,6 +37,29 @@ const {
     syncState: syncPushState,
     togglePush,
 } = usePushNotifications();
+
+const {
+    isInstalled: pwaInstalled,
+    isIosSafari,
+    shouldShowNudge: showPwaNudge,
+    triggerInstall: triggerPwaInstall,
+    dismissNudge: dismissPwaNudge,
+} = usePwaInstall();
+
+const iosDialogOpen = ref(false);
+
+const handlePwaInstallClick = async () => {
+    if (isIosSafari.value) {
+        open.value = false;
+        iosDialogOpen.value = true;
+        return;
+    }
+
+    const accepted = await triggerPwaInstall();
+    if (accepted) {
+        toast.success("Aplikasi berhasil dipasang di perangkat ini.");
+    }
+};
 
 const fetchNotifications = async () => {
     if (!isAuthenticated.value) return;
@@ -93,11 +118,14 @@ const formatRelativeTime = (isoString) => {
 };
 
 const pushHint = computed(() => {
+    if (isIosSafari.value && !pushSupported.value) return "Perlu instal ke Layar Utama (iOS).";
     if (!pushSupported.value) return "Browser tidak mendukung push.";
     if (!pushServerEnabled.value) return "Push server belum dikonfigurasi.";
     if (pushPermission.value === "denied") return "Izin notifikasi diblokir browser.";
     return pushSubscribed.value
-        ? "Aktif di perangkat ini."
+        ? pwaInstalled.value
+            ? "Aktif di aplikasi perangkat ini."
+            : "Aktif di perangkat ini."
         : "Terima alert saat perwira mulai live.";
 });
 
@@ -192,6 +220,46 @@ onUnmounted(() => {
                 />
             </div>
 
+            <!-- PWA Install Nudge -->
+            <template v-if="showPwaNudge">
+                <Separator />
+                <div class="bg-primary/10 px-4 py-2.5 space-y-2">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0 space-y-0.5">
+                            <p class="text-xs font-semibold text-foreground">
+                                {{ isIosSafari ? "Aktifkan Push di iPhone / iPad" : "Pasang sebagai Aplikasi (PWA)" }}
+                            </p>
+                            <p class="text-xs text-muted-foreground leading-snug">
+                                {{
+                                    isIosSafari
+                                        ? "Safari iOS mewajibkan Add to Home Screen untuk menerima notifikasi live."
+                                        : "Alert live tetap masuk meski browser ditutup."
+                                }}
+                            </p>
+                        </div>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            class="size-6 shrink-0 text-muted-foreground hover:text-foreground"
+                            aria-label="Tutup ajakan instal aplikasi"
+                            @click="dismissPwaNudge"
+                        >
+                            <X class="size-3.5" />
+                        </Button>
+                    </div>
+                    <Button
+                        type="button"
+                        size="sm"
+                        class="h-7 gap-1.5 text-xs"
+                        @click="handlePwaInstallClick"
+                    >
+                        <Download class="size-3.5" />
+                        <span>{{ isIosSafari ? "Lihat Cara Instal" : "Instal Aplikasi" }}</span>
+                    </Button>
+                </div>
+            </template>
+
             <Separator />
 
             <!-- Notification List -->
@@ -276,4 +344,6 @@ onUnmounted(() => {
             </div>
         </PopoverContent>
     </Popover>
+
+    <PwaIosInstallDialog v-model:open="iosDialogOpen" />
 </template>

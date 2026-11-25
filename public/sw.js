@@ -1,5 +1,5 @@
 // Service Worker for IME RP SASP Police Duty PWA
-const CACHE_NAME = 'ime-police-pwa-v3';
+const CACHE_NAME = 'ime-police-pwa-v4';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -40,17 +40,30 @@ self.addEventListener('push', (event) => {
     badge: payload.badge || '/images/icons/icon-192.png',
     tag: payload.tag || 'officer-live-notification',
     renotify: true,
+    requireInteraction: payload.requireInteraction !== false,
     vibrate: [200, 100, 200],
     data: {
       url: payload.data?.url || '/dashboard',
     },
   };
 
+  if (payload.image) {
+    options.image = payload.image;
+  }
+
+  if (Array.isArray(payload.actions) && payload.actions.length > 0) {
+    options.actions = payload.actions;
+  }
+
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+
+  if (event.action === 'dismiss') {
+    return;
+  }
 
   const targetPath = event.notification.data?.url || '/dashboard';
   const targetUrl = new URL(targetPath, self.location.origin).href;
