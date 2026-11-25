@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
 import {
     ArrowRight,
@@ -7,16 +7,20 @@ import {
     Coins,
     ExternalLink,
     HelpCircle,
+    Link2,
     Megaphone,
     Palette,
+    Search,
     ShieldCheck,
     Sparkles,
     Users,
 } from "@lucide/vue";
 import TacticalLayout from "@/Layouts/TacticalLayout.vue";
-import { PageContainer } from "@/Components/tactical";
+import { DeptBadge, LiveBadge, OfficerAvatar, PageContainer } from "@/Components/tactical";
+import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent } from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
 import {
     Accordion,
     AccordionContent,
@@ -25,7 +29,9 @@ import {
 } from "@/Components/ui/accordion";
 import BioExampleGallery from "@/Components/BioLink/BioExampleGallery.vue";
 import LazyAdminDesignCard from "@/Components/BioLink/LazyAdminDesignCard.vue";
+import VerifiedBadge from "@/Components/BioLink/VerifiedBadge.vue";
 import OfficerClaimModal from "@/Components/OfficerClaimModal.vue";
+import OfficerSubscribeButton from "@/Components/OfficerSubscribeButton.vue";
 
 const props = defineProps({
     themes: {
@@ -35,6 +41,10 @@ const props = defineProps({
     exampleSlug: {
         type: String,
         default: null,
+    },
+    activeBioLinks: {
+        type: Array,
+        default: () => [],
     },
     isOfficer: {
         type: Boolean,
@@ -47,6 +57,26 @@ const props = defineProps({
 });
 
 const showOfficerClaimModal = ref(false);
+const searchQuery = ref("");
+const selectedDept = ref("ALL");
+const departments = ["ALL", "LSPD", "BCSO", "SASP", "SAPR"];
+
+const filteredBioLinks = computed(() => {
+    const q = searchQuery.value.trim().toLowerCase();
+    return props.activeBioLinks.filter((item) => {
+        if (selectedDept.value !== "ALL" && item.department !== selectedDept.value) {
+            return false;
+        }
+        if (!q) return true;
+        return (
+            (item.officer_name || "").toLowerCase().includes(q) ||
+            (item.streamer_name || "").toLowerCase().includes(q) ||
+            (item.callsign || "").toLowerCase().includes(q) ||
+            (item.slug || "").toLowerCase().includes(q) ||
+            (item.department || "").toLowerCase().includes(q)
+        );
+    });
+});
 
 const handleOfficerCta = () => {
     if (!props.isAuthenticated) {
@@ -149,6 +179,137 @@ const verifyPoints = [
                         <ExternalLink class="size-3" />
                     </a>
                 </div>
+            </section>
+
+            <!-- 2B. ACTIVE OFFICER BIO-LINKS DIRECTORY -->
+            <section id="active-biolinks" class="space-y-6 scroll-mt-20">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div class="space-y-1">
+                        <div class="inline-flex items-center gap-1.5 text-primary text-xs font-mono font-semibold uppercase tracking-wider">
+                            <Link2 class="size-3.5" />
+                            <span>Direktori Bio-Link Aktif</span>
+                        </div>
+                        <h2 class="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                            Bio-Link Resmi Para Perwira
+                        </h2>
+                        <p class="text-sm text-muted-foreground">
+                            Kunjungi tautan resmi, sosial media, dan dukungan patroli dari para perwira terverifikasi.
+                        </p>
+                    </div>
+                    <Badge variant="secondary" class="w-fit font-mono">
+                        {{ activeBioLinks.length }} bio-link aktif
+                    </Badge>
+                </div>
+
+                <div v-if="activeBioLinks.length > 0" class="space-y-4">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div class="relative flex-1">
+                            <Search class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                v-model="searchQuery"
+                                type="text"
+                                placeholder="Cari nama perwira, callsign, atau /@slug..."
+                                class="pl-9"
+                            />
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <Button
+                                v-for="dept in departments"
+                                :key="dept"
+                                type="button"
+                                size="sm"
+                                :variant="selectedDept === dept ? 'default' : 'outline'"
+                                class="h-8 px-2.5 font-mono text-xs"
+                                @click="selectedDept = dept"
+                            >
+                                {{ dept === "ALL" ? "Semua" : dept }}
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div
+                        v-if="filteredBioLinks.length === 0"
+                        class="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground"
+                    >
+                        Tidak ada bio-link perwira yang cocok dengan pencarian Anda.
+                    </div>
+
+                    <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <Card
+                            v-for="item in filteredBioLinks"
+                            :key="item.id"
+                            class="flex flex-col justify-between p-4 transition-colors hover:border-primary/50"
+                        >
+                            <div class="space-y-3">
+                                <div class="flex items-start gap-3">
+                                    <OfficerAvatar
+                                        :src="item.avatar_url"
+                                        :name="item.officer_name"
+                                        :live="item.is_live"
+                                        size="md"
+                                        class="shrink-0"
+                                    />
+                                    <div class="min-w-0 flex-1 space-y-1">
+                                        <div class="flex items-center gap-1.5">
+                                            <Link
+                                                :href="`/@${item.slug}`"
+                                                class="truncate text-sm font-bold text-foreground hover:text-primary transition-colors"
+                                            >
+                                                {{ item.officer_name }}
+                                            </Link>
+                                            <VerifiedBadge class="size-4 shrink-0" />
+                                        </div>
+                                        <div class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                                            <DeptBadge v-if="item.department" :dept="item.department" />
+                                            <span v-if="item.callsign" class="font-mono">{{ item.callsign }}</span>
+                                            <LiveBadge v-if="item.is_live" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p
+                                    v-if="item.tagline"
+                                    class="line-clamp-2 text-xs text-muted-foreground leading-relaxed"
+                                >
+                                    {{ item.tagline }}
+                                </p>
+
+                                <div class="flex items-center justify-between text-xs font-mono text-muted-foreground">
+                                    <span class="truncate text-primary font-semibold">/@{{ item.slug }}</span>
+                                    <span class="shrink-0">{{ item.links_count }} tautan</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 flex items-center gap-2 border-t border-border pt-3">
+                                <Button
+                                    as-child
+                                    size="sm"
+                                    class="flex-1 gap-1.5 font-mono text-xs"
+                                >
+                                    <Link :href="`/@${item.slug}`">
+                                        <Link2 class="size-3.5" />
+                                        <span>Buka Bio-Link</span>
+                                    </Link>
+                                </Button>
+                                <OfficerSubscribeButton
+                                    :officer-id="item.officer_id"
+                                    :officer-name="item.officer_name"
+                                    icon-only
+                                    class="size-8 shrink-0"
+                                />
+                            </div>
+                        </Card>
+                    </div>
+                </div>
+
+                <Card v-else class="p-8 text-center border-dashed">
+                    <p class="text-sm font-medium text-foreground">
+                        Belum ada bio-link perwira yang aktif saat ini.
+                    </p>
+                    <p class="mt-1 text-xs text-muted-foreground">
+                        Perwira dapat mengklaim profil mereka untuk mengaktifkan halaman /@slug resmi.
+                    </p>
+                </Card>
             </section>
 
             <!-- 3. THREE COLUMNS FEATURES -->

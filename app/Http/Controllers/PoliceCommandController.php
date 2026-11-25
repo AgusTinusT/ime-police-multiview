@@ -651,7 +651,11 @@ class PoliceCommandController extends Controller
             ->get();
         $liveOfficerIds = $activeStreams->pluck('officer_id')->filter()->toArray();
 
-        $allOfficers = Officer::with(['rankRelation:id,rank_title,level', 'activeStream'])
+        $allOfficers = Officer::with([
+                'rankRelation:id,rank_title,level',
+                'activeStream',
+                'bioProfile:id,officer_id,slug,is_active,is_suspended',
+            ])
             ->roster()
             ->orderBy('department')
             ->orderBy('rank')
@@ -659,6 +663,9 @@ class PoliceCommandController extends Controller
             ->map(function ($officer) use ($liveOfficerIds, $activeStreams) {
                 $isLive = in_array($officer->id, $liveOfficerIds);
                 $liveStream = $isLive ? $activeStreams->firstWhere('officer_id', $officer->id) : null;
+                $bioSlug = ($officer->user_id !== null && $officer->bioProfile?->is_active && ! $officer->bioProfile?->is_suspended)
+                    ? $officer->bioProfile->slug
+                    : null;
 
                 return [
                     'id' => $officer->id,
@@ -679,6 +686,7 @@ class PoliceCommandController extends Controller
                     'is_online' => $isLive,
                     'is_hiatus' => (bool) $officer->is_hiatus,
                     'live_video_id' => $liveStream ? $liveStream->video_id : null,
+                    'bio_slug' => $bioSlug,
                 ];
             });
 

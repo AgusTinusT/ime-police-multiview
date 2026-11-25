@@ -13,6 +13,7 @@ import {
     UserPlus,
     Download,
     LayoutGrid,
+    Link2,
     Table as TableIcon,
     X,
 } from "@lucide/vue";
@@ -1305,13 +1306,25 @@ const liveInDept = computed(() =>
                                 {{ activeOfficer.callsign }} •
                                 {{ activeOfficer.rank }}
                             </div>
-                            <div class="pt-1">
+                            <div class="flex flex-wrap items-center gap-2 pt-1">
                                 <OfficerSubscribeButton
                                     :officer-id="activeOfficer.id"
                                     :officer-name="activeOfficer.officer_name"
                                     size="sm"
                                     class="h-8 text-xs font-mono"
                                 />
+                                <Button
+                                    v-if="activeOfficer.bio_slug"
+                                    as-child
+                                    variant="outline"
+                                    size="sm"
+                                    class="h-8 gap-1.5 text-xs font-mono"
+                                >
+                                    <Link :href="`/@${activeOfficer.bio_slug}`">
+                                        <Link2 class="size-3.5 text-primary" />
+                                        <span>/@{{ activeOfficer.bio_slug }}</span>
+                                    </Link>
+                                </Button>
                             </div>
                         </div>
                     </Card>

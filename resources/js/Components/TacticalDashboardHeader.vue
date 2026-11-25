@@ -69,25 +69,14 @@ const isUrlActive = (path) => {
 };
 
 // "More" menu: secondary pages. /feedback is pinned on top as the report entry.
-// Hide /bio-link from logged-in non-officer members (Opsi A: Bio-Link is for verified officers).
-const canSeeBioLinkMenu = computed(() => {
-    const user = page.props.auth?.user;
-    if (!user) return true;
-    return !!(user.is_officer || user.is_admin || user.role === "admin");
-});
-const moreLinks = computed(() => {
-    const items = [
-        { href: "/updates", label: "nav.updates", icon: Megaphone },
-        { href: "/faq", label: "nav.faq", icon: CircleQuestionMark },
-        { href: "/about", label: "nav.about", icon: Info },
-    ];
-    if (canSeeBioLinkMenu.value) {
-        items.push({ href: "/bio-link", label: "nav.bio_link", icon: Link2 });
-    }
-    return items;
-});
+const moreLinks = [
+    { href: "/updates", label: "nav.updates", icon: Megaphone },
+    { href: "/faq", label: "nav.faq", icon: CircleQuestionMark },
+    { href: "/about", label: "nav.about", icon: Info },
+    { href: "/bio-link", label: "nav.bio_link", icon: Link2 },
+];
 const moreActive = computed(() =>
-    ["/feedback", ...moreLinks.value.map((l) => l.href)].some((href) => isUrlActive(href)),
+    ["/feedback", ...moreLinks.map((l) => l.href)].some((href) => isUrlActive(href)),
 );
 
 // Bottom Sheet Mobile Drawer State
