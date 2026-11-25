@@ -145,7 +145,7 @@
     "sender_name": "Sender Name",
     "sender_name_ph": "Your Name / Callsign...",
     "email": "Email Address",
-    "email_ph": "name@email.com",
+    "email_ph": "name{'@'}email.com",
     "submit": "Submit Feedback",
     "submitting": "Submitting...",
     "success_toast": "Thank you! Your feedback report has been successfully submitted."
@@ -353,10 +353,10 @@
   },
   "biolink_promo": {
     "hero_title": "One link for everything you build.",
-    "hero_subtitle": "Share /@you on your live stream — donations, social links, and patrol partners all in one hub.",
+    "hero_subtitle": "Share /{'@'}you on your live stream — donations, social links, and patrol partners all in one hub.",
     "cta_officer": "I am an officer — start verification",
     "cta_example": "View examples",
-    "open_example": "Open /@{slug}",
+    "open_example": "Open /{'@'}{slug}",
     "features_title": "What can you share on your page?",
     "features_donation_title": "Support & Donations",
     "features_donation_desc": "Saweria, Trakteer, BagiBagi, Tako, Sociabuzz with prominent donation buttons.",
@@ -368,7 +368,7 @@
     "themes_subtitle": "Authentic law enforcement backdrops and accents engineered for high readability and contrast.",
     "verify_title": "Why do you need verification?",
     "verify_points": [
-      "Only you can update your bio at /@you — no impersonators.",
+      "Only you can update your bio at /{'@'}you — no impersonators.",
       "Official law enforcement badge displayed on the page as proof of identity.",
       "Patrol partners are verified officers linked directly across the network."
     ],
@@ -387,7 +387,7 @@
         "a": "Your public page is safely flagged as 'Unclaimed' and links are temporarily paused."
       },
       {
-        "q": "Can I change my /@ slug?",
+        "q": "Can I change my /{'@'} slug?",
         "a": "Yes, with SASP command approval, at most once every 90 days."
       }
     ],
