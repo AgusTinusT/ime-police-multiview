@@ -99,7 +99,7 @@ return [
             'key' => 'event-top-patrol',
             'title' => 'Event komunitas: hadiah Top 1–3 patroli',
             'description' => 'Hadiah bulanan untuk perwira peringkat 1–3 di "Top 10 patroli bulan ini", sebagai apresiasi bagi yang paling rajin bertugas dan siaran. Seluruh donasi saat ini dialokasikan ke hadiah event ini.',
-            'target' => null,
+            'target' => 100000,
             'collected' => 0,
             'status' => 'active',
         ],
