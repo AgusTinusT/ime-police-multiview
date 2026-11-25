@@ -96,6 +96,7 @@ Route::prefix('api/v1')->group(function () {
     Route::match(['get', 'post'], '/search-live', [PoliceCommandController::class, 'apiSearchLive'])->middleware('throttle:60,1');
     Route::get('/stream-details', [PoliceCommandController::class, 'apiStreamDetails'])->middleware('throttle:60,1');
     Route::match(['get', 'post'], '/telemetry', [PoliceCommandController::class, 'apiTelemetry'])->middleware('throttle:60,1');
+    Route::get('/support/highlight', [PoliceCommandController::class, 'apiSupportHighlight'])->middleware('throttle:60,1');
     Route::post('/feedback', [FeedbackController::class, 'submit'])->middleware('throttle:5,1');
     
     // TacClips Community Momen Aksi API

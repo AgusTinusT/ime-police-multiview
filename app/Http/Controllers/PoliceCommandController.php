@@ -986,7 +986,7 @@ class PoliceCommandController extends Controller
     public function supportPage(\App\Services\BagibagiLeaderboardService $bagibagi)
     {
         $support = config('support');
-        $leaderboard = $bagibagi->getLeaderboard();
+        $resolved = $this->buildSupportData($bagibagi);
 
         $costs = collect($support['monthly_costs'] ?? [])->map(function ($c) {
             $sponsor = $c['sponsor'] ?? null;
@@ -1000,6 +1000,74 @@ class PoliceCommandController extends Controller
                 'covered_by' => $c['covered_by'] ?? null,
             ];
         })->values();
+
+        // Total only when every line has a number; a partial sum would read as the full cost.
+        $monthlyTotal = $costs->isNotEmpty() && $costs->every(fn ($c) => $c['amount'] !== null)
+            ? $costs->sum('amount')
+            : null;
+
+        return Inertia::render('Support', [
+            'donateUrl' => $support['donate_url'] ?? null,
+            'githubUrl' => $support['github_url'] ?? null,
+            'discordUrl' => $support['discord_url'] ?? null,
+            'updatedAt' => $resolved['leaderboard']['synced_date'] ?? ($support['updated_at'] ?? null),
+            'leaderboardSynced' => $resolved['leaderboard']['synced'],
+            'monthlyCosts' => $costs,
+            'monthlyTotal' => $monthlyTotal,
+            'costsNote' => $support['costs_note'] ?? null,
+            'goals' => $resolved['goals'],
+            'perks' => collect($support['perks'] ?? [])->map(fn ($p) => [
+                'icon' => $p['icon'] ?? 'heart',
+                'title' => $p['title'],
+                'description' => $p['description'] ?? '',
+                'who' => $p['who'] ?? null,
+            ])->values(),
+            'supporters' => $resolved['supporters'],
+            'meta' => [
+                'title' => 'Dukung IME Police Duty — Biaya, Target & Cara Berkontribusi',
+                'description' => 'Rincian biaya operasional, target pendanaan berikutnya, dan cara mendukung platform komunitas IME Police Duty: donasi, kontribusi GitHub, atau laporan masukan.',
+                'url' => url('/dukung'),
+                'canonical' => url('/dukung'),
+                'type' => 'website',
+            ],
+        ]);
+    }
+
+    /**
+     * Lightweight JSON summary for the Dashboard community prize-pool highlight strip.
+     */
+    public function apiSupportHighlight(\App\Services\BagibagiLeaderboardService $bagibagi)
+    {
+        $resolved = $this->buildSupportData($bagibagi);
+        $activeGoal = $resolved['goals']->firstWhere('status', 'active') ?? $resolved['goals']->first();
+        $supporters = $resolved['supporters'];
+        $topSupporters = $supporters->take(3)->values();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'visible' => $activeGoal !== null || $supporters->isNotEmpty(),
+                'leaderboard_synced' => $resolved['leaderboard']['synced'],
+                'goal' => $activeGoal ? [
+                    'key' => $activeGoal['key'],
+                    'title' => $activeGoal['title'],
+                    'description' => $activeGoal['description'],
+                    'collected' => $activeGoal['collected'],
+                    'target' => $activeGoal['target'],
+                    'percent' => $activeGoal['percent'],
+                ] : null,
+                'top_supporters' => $topSupporters,
+                'total_supporters' => $supporters->count(),
+                'extra_supporters_count' => max(0, $supporters->count() - $topSupporters->count()),
+                'support_url' => '/dukung',
+            ],
+        ]);
+    }
+
+    private function buildSupportData(\App\Services\BagibagiLeaderboardService $bagibagi): array
+    {
+        $support = config('support');
+        $leaderboard = $bagibagi->getLeaderboard();
 
         $appliedAutoCollect = false;
         $goals = collect($support['goals'] ?? [])->map(function ($g) use ($leaderboard, &$appliedAutoCollect) {
@@ -1023,11 +1091,6 @@ class PoliceCommandController extends Controller
             ];
         })->values();
 
-        // Total only when every line has a number; a partial sum would read as the full cost.
-        $monthlyTotal = $costs->isNotEmpty() && $costs->every(fn ($c) => $c['amount'] !== null)
-            ? $costs->sum('amount')
-            : null;
-
         $liveSupporters = collect($leaderboard['donators'])->map(fn (array $d) => [
             'rank' => $d['rank'],
             'name' => $d['name'],
@@ -1046,31 +1109,11 @@ class PoliceCommandController extends Controller
             'note' => $s['note'] ?? null,
         ]);
 
-        return Inertia::render('Support', [
-            'donateUrl' => $support['donate_url'] ?? null,
-            'githubUrl' => $support['github_url'] ?? null,
-            'discordUrl' => $support['discord_url'] ?? null,
-            'updatedAt' => $leaderboard['synced_date'] ?? ($support['updated_at'] ?? null),
-            'leaderboardSynced' => $leaderboard['synced'],
-            'monthlyCosts' => $costs,
-            'monthlyTotal' => $monthlyTotal,
-            'costsNote' => $support['costs_note'] ?? null,
+        return [
+            'leaderboard' => $leaderboard,
             'goals' => $goals,
-            'perks' => collect($support['perks'] ?? [])->map(fn ($p) => [
-                'icon' => $p['icon'] ?? 'heart',
-                'title' => $p['title'],
-                'description' => $p['description'] ?? '',
-                'who' => $p['who'] ?? null,
-            ])->values(),
             'supporters' => $liveSupporters->concat($manualSupporters)->values(),
-            'meta' => [
-                'title' => 'Dukung IME Police Duty — Biaya, Target & Cara Berkontribusi',
-                'description' => 'Rincian biaya operasional, target pendanaan berikutnya, dan cara mendukung platform komunitas IME Police Duty: donasi, kontribusi GitHub, atau laporan masukan.',
-                'url' => url('/dukung'),
-                'canonical' => url('/dukung'),
-                'type' => 'website',
-            ],
-        ]);
+        ];
     }
 
     public function feedbackPage(Request $request)

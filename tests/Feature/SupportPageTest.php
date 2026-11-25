@@ -200,4 +200,60 @@ class SupportPageTest extends TestCase
             ->where('supporters.0.name', 'CachedDonor')
             ->where('supporters.0.amount', 200000));
     }
+
+    public function test_support_highlight_api_returns_active_goal_and_top_three_supporters(): void
+    {
+        Http::fake([
+            'https://bagibagi.co/api/partnerintegration/top-donator/streamkey*' => Http::response([
+                'data' => [
+                    ['userName' => 'DonorSatu', 'amount' => 150000, 'isVerified' => true, 'isAnonymous' => false],
+                    ['userName' => 'DonorDua', 'amount' => 75000, 'isVerified' => false, 'isAnonymous' => false],
+                    ['userName' => 'ucupmeletup', 'amount' => 25000, 'isVerified' => false, 'isAnonymous' => true],
+                    ['userName' => 'DonorEmpat', 'amount' => 10000, 'isVerified' => false, 'isAnonymous' => true],
+                ],
+                'success' => true,
+                'message' => 'Success',
+            ], 200),
+        ]);
+
+        config([
+            'support.bagibagi.stream_key' => 'highlight_key_123',
+            'support.goals' => [
+                ['key' => 'event-top-patrol', 'title' => 'Hadiah Top 1-3 Patroli', 'target' => 500000, 'collected' => 0, 'status' => 'active'],
+            ],
+            'support.supporters' => [
+                ['name' => 'DonorLima'],
+            ],
+        ]);
+
+        $this->getJson('/api/v1/support/highlight')
+            ->assertOk()
+            ->assertJsonPath('status', 'success')
+            ->assertJsonPath('data.visible', true)
+            ->assertJsonPath('data.leaderboard_synced', true)
+            ->assertJsonPath('data.goal.key', 'event-top-patrol')
+            ->assertJsonPath('data.goal.collected', 260000)
+            ->assertJsonPath('data.goal.percent', 52)
+            ->assertJsonCount(3, 'data.top_supporters')
+            ->assertJsonPath('data.top_supporters.0.name', 'DonorSatu')
+            ->assertJsonPath('data.top_supporters.2.name', 'ucupmeletup')
+            ->assertJsonPath('data.total_supporters', 5)
+            ->assertJsonPath('data.extra_supporters_count', 2)
+            ->assertJsonPath('data.support_url', '/dukung');
+    }
+
+    public function test_support_highlight_api_marks_invisible_when_no_goals_or_supporters_exist(): void
+    {
+        config([
+            'support.bagibagi.stream_key' => null,
+            'support.goals' => [],
+            'support.supporters' => [],
+        ]);
+
+        $this->getJson('/api/v1/support/highlight')
+            ->assertOk()
+            ->assertJsonPath('data.visible', false)
+            ->assertJsonPath('data.goal', null)
+            ->assertJsonCount(0, 'data.top_supporters');
+    }
 }

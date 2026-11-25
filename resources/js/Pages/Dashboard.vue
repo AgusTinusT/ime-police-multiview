@@ -28,6 +28,7 @@ import HeroCarousel from "@/Components/Hero/HeroCarousel.vue";
 import AnnouncementBanner from "@/Components/AnnouncementBanner.vue";
 import AppPromoBanner from "@/Components/AppPromoBanner.vue";
 import AppPromoSpotlight from "@/Components/AppPromoSpotlight.vue";
+import SupportHighlightStrip from "@/Components/SupportHighlightStrip.vue";
 import { LiveBadge, OfficerAvatar } from "@/Components/tactical";
 import { Button } from "@/Components/ui/button";
 import TacticalChatDrawer from "@/Components/TacticalChatDrawer.vue";
@@ -456,6 +457,18 @@ const fetchAnnouncements = async () => {
     }
 };
 
+const supportHighlight = ref(null);
+const fetchSupportHighlight = async () => {
+    try {
+        const res = await axios.get("/api/v1/support/highlight");
+        if (res.data?.status === "success" && res.data.data?.visible) {
+            supportHighlight.value = res.data.data;
+        }
+    } catch {
+        supportHighlight.value = null;
+    }
+};
+
 // recommendedSites arrives in the Inertia payload, so no extra request.
 const recommendedSites = computed(() => props.recommendedSites || []);
 
@@ -464,6 +477,7 @@ onMounted(() => {
     fetchMySquads();
     fetchPublicSquads();
     fetchAnnouncements();
+    fetchSupportHighlight();
 });
 </script>
 
@@ -611,6 +625,12 @@ onMounted(() => {
                         </span>
                     </a>
                 </CatalogRow>
+
+                <!-- Highlight dukungan komunitas & hadiah Top 1–3 patroli -->
+                <SupportHighlightStrip
+                    v-if="supportHighlight"
+                    :highlight="supportHighlight"
+                />
 
                 <!-- Website Rekomendasi (REC-01) -->
                 <CatalogRow
