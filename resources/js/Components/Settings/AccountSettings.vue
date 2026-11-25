@@ -1,6 +1,7 @@
 <script setup>
+import { computed } from "vue";
 import { usePage } from "@inertiajs/vue3";
-import { ShieldCheck, User } from "@lucide/vue";
+import { CheckCircle2, ShieldCheck, TriangleAlert, User } from "@lucide/vue";
 import { Card, CardContent } from "@/Components/ui/card";
 import { Badge } from "@/Components/ui/badge";
 import { OfficerAvatar } from "@/Components/tactical";
@@ -19,8 +20,12 @@ defineProps({
     },
 });
 
-const user = usePage().props.auth.user;
-const roleLabel = user.role === "admin" ? "Admin Dispatcher" : "Member";
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+const roleLabel = computed(() =>
+    user.value?.role === "admin" ? "Admin Dispatcher" : "Member",
+);
+const isEmailVerified = computed(() => !!user.value?.email_verified_at);
 </script>
 
 <template>
@@ -43,6 +48,22 @@ const roleLabel = user.role === "admin" ? "Admin Dispatcher" : "Member";
                             <ShieldCheck v-if="user.role === 'admin'" class="size-3.5 shrink-0" />
                             <User v-else class="size-3.5 shrink-0" />
                             <span>{{ roleLabel }}</span>
+                        </Badge>
+                        <Badge
+                            v-if="isEmailVerified"
+                            variant="success"
+                            class="gap-1"
+                        >
+                            <CheckCircle2 class="size-3.5 shrink-0" />
+                            <span>Email Terverifikasi</span>
+                        </Badge>
+                        <Badge
+                            v-else
+                            variant="warning"
+                            class="gap-1"
+                        >
+                            <TriangleAlert class="size-3.5 shrink-0" />
+                            <span>Belum Verifikasi</span>
                         </Badge>
                     </div>
                     <p class="text-sm text-muted-foreground truncate">

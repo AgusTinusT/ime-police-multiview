@@ -1,6 +1,9 @@
 <script setup>
-import { Link, useForm, usePage } from "@inertiajs/vue3";
-import { Check } from "@lucide/vue";
+import { computed, ref } from "vue";
+import { router, useForm, usePage } from "@inertiajs/vue3";
+import { Check, CheckCircle2, MailCheck, Send, TriangleAlert } from "@lucide/vue";
+import { toast } from "vue-sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
@@ -14,12 +17,38 @@ defineProps({
     },
 });
 
-const user = usePage().props.auth.user;
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+const isEmailVerified = computed(() => !!user.value?.email_verified_at);
+const sendingVerification = ref(false);
+const localVerificationSent = ref(false);
 
 const form = useForm({
-    name: user.name,
-    email: user.email,
+    name: user.value?.name || "",
+    email: user.value?.email || "",
 });
+
+const sendVerificationEmail = () => {
+    if (sendingVerification.value) return;
+    sendingVerification.value = true;
+    router.post(
+        route("verification.send"),
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                localVerificationSent.value = true;
+                toast.success("Link verifikasi baru telah dikirim ke email Anda.");
+            },
+            onError: () => {
+                toast.error("Gagal mengirim email verifikasi. Coba lagi beberapa saat.");
+            },
+            onFinish: () => {
+                sendingVerification.value = false;
+            },
+        },
+    );
+};
 </script>
 
 <template>
@@ -68,30 +97,64 @@ const form = useForm({
                 </p>
             </div>
 
-            <div v-if="mustVerifyEmail && user.email_verified_at === null" class="space-y-1.5 pt-1">
-                <p class="text-xs text-warning">
-                    Alamat email Anda belum diverifikasi.
-                    <Link
-                        :href="route('verification.send')"
-                        method="post"
-                        as="button"
-                        class="text-xs text-primary underline hover:text-primary/80 font-semibold ml-1"
-                    >
-                        Kirim ulang email verifikasi.
-                    </Link>
-                </p>
+            <!-- Email Verification Status Banner -->
+            <Alert
+                v-if="isEmailVerified"
+                class="border-success/30 bg-success/10 text-foreground"
+            >
+                <CheckCircle2 class="size-4 text-success" />
+                <AlertTitle class="text-xs font-semibold text-success">
+                    Email Sudah Terverifikasi
+                </AlertTitle>
+                <AlertDescription class="text-xs text-muted-foreground">
+                    Alamat email <span class="font-mono text-foreground">{{ user.email }}</span> telah terverifikasi dan siap digunakan untuk seluruh fitur akun.
+                </AlertDescription>
+            </Alert>
 
-                <p class="text-xs text-muted-foreground leading-relaxed">
-                    Email verifikasi resmi hanya dikirim dari: <span class="font-mono text-foreground">gusti.police.duty@12655999.brevosend.com</span> (cek folder Spam/Promosi jika tidak muncul di Inbox).
-                </p>
+            <Alert
+                v-else-if="mustVerifyEmail"
+                class="border-warning/40 bg-warning/10 text-foreground"
+            >
+                <TriangleAlert class="size-4 text-warning" />
+                <AlertTitle class="text-xs font-semibold text-warning">
+                    Email Belum Diverifikasi
+                </AlertTitle>
+                <AlertDescription class="space-y-3 text-xs text-muted-foreground">
+                    <p>
+                        Verifikasi alamat email Anda untuk mengamankan akun dan mengaktifkan fitur penuh. Email resmi hanya dikirim dari
+                        <span class="font-mono text-foreground">gusti.police.duty@12655999.brevosend.com</span>
+                        (cek folder Spam/Promosi jika belum muncul di Inbox).
+                    </p>
 
-                <div
-                    v-show="status === 'verification-link-sent'"
-                    class="mt-2 text-xs font-medium text-success"
-                >
-                    Link verifikasi baru telah dikirimkan ke email Anda.
-                </div>
-            </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            :disabled="sendingVerification"
+                            class="gap-1.5 border-warning/40 hover:bg-warning/15"
+                            @click="sendVerificationEmail"
+                        >
+                            <Send class="size-3.5" />
+                            <span>
+                                {{
+                                    sendingVerification
+                                        ? "Mengirim..."
+                                        : "Verifikasi Email"
+                                }}
+                            </span>
+                        </Button>
+
+                        <span
+                            v-if="status === 'verification-link-sent' || localVerificationSent"
+                            class="inline-flex items-center gap-1 text-xs font-semibold text-success"
+                        >
+                            <MailCheck class="size-3.5" />
+                            <span>Link verifikasi baru telah dikirim ke email Anda.</span>
+                        </span>
+                    </div>
+                </AlertDescription>
+            </Alert>
 
             <div class="flex items-center gap-4 pt-2">
                 <Button
