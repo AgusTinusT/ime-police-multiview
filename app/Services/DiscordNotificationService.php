@@ -193,10 +193,10 @@ class DiscordNotificationService
         return $this->sendDirectMessage($user, [
             'embeds' => [
                 [
-                    'title' => 'Notifikasi Discord DM Aktif (Beta)',
-                    'description' => 'Koneksi berhasil! Kamu akan menerima DM pribadi di sini setiap kali perwira yang kamu ikuti mulai LIVE patroli.',
+                    'title' => 'Notifikasi Discord DM Aktif',
+                    'description' => 'Koneksi berhasil! Kamu akan menerima DM pribadi di sini untuk pembaruan penting dan siaran live perwira yang kamu ikuti.',
                     'color' => 0x22C55E,
-                    'footer' => ['text' => 'IME RP · SASP Police Duty · Fitur Beta'],
+                    'footer' => ['text' => 'IME RP · SASP Police Duty'],
                     'timestamp' => now()->toIso8601String(),
                 ],
             ],
@@ -275,6 +275,13 @@ class DiscordNotificationService
     {
         $code = is_numeric($discordCode) ? (int) $discordCode : null;
 
+        if ($code === 50278) {
+            $reason = 'Kamu belum bergabung di server Discord komunitas (Error 50278). Gabung ke server Discord terlebih dahulu agar Bot dapat mengirim DM.';
+            $user->forceFill(['discord_dm_failed_reason' => $reason])->save();
+
+            return ['sent' => false, 'error_code' => 50278, 'message' => $reason];
+        }
+
         if ($code === 50007) {
             $reason = 'Bot tidak dapat mengirim DM (Error 50007). Pastikan kamu sudah bergabung di server Discord komunitas dan mengaktifkan "Allow direct messages from server members".';
             $user->forceFill(['discord_dm_failed_reason' => $reason])->save();
@@ -322,7 +329,7 @@ class DiscordNotificationService
                 ],
             ],
             'footer' => [
-                'text' => 'IME RP · SASP Police Duty · Notifikasi Live (Beta)',
+                'text' => 'IME RP · SASP Police Duty',
             ],
             'timestamp' => now()->toIso8601String(),
         ];

@@ -6,7 +6,6 @@ import {
     BellRing,
     CheckCircle2,
     ExternalLink,
-    FlaskConical,
     Link2,
     MessageCircle,
     Search,
@@ -390,24 +389,6 @@ onMounted(async () => {
 
 <template>
     <div class="space-y-6">
-        <!-- Beta / Experimental Notice -->
-        <div class="flex items-start gap-3 rounded-xl border border-warning/40 bg-warning/10 p-4">
-            <FlaskConical class="mt-0.5 size-4 shrink-0 text-warning" />
-            <div class="space-y-1 text-xs">
-                <div class="flex flex-wrap items-center gap-2">
-                    <p class="font-semibold text-foreground">
-                        Fitur Notifikasi Live Masih Tahap Beta / Uji Coba
-                    </p>
-                    <Badge variant="warning" class="font-mono text-xs">
-                        BETA
-                    </Badge>
-                </div>
-                <p class="text-muted-foreground leading-relaxed">
-                    Notifikasi Web Push, PWA, dan Discord DM/Channel sedang dalam pengembangan dan uji coba aktif di produksi. Tampilan atau perilaku pengiriman dapat berubah sewaktu-waktu seiring penyempurnaan.
-                </p>
-            </div>
-        </div>
-
         <!-- 1. Web Push & Devices Card -->
         <Card>
             <CardHeader>
@@ -418,7 +399,7 @@ onMounted(async () => {
                             <span>Web Push Browser & Perangkat</span>
                         </CardTitle>
                         <CardDescription>
-                            Terima notifikasi langsung di HP atau desktop saat perwira yang Anda ikuti mulai live patroli.
+                            Terima notifikasi real-time di HP atau desktop untuk pembaruan penting dan siaran live perwira yang Anda ikuti.
                         </CardDescription>
                     </div>
                     <Badge :variant="pushStatusMeta.variant" class="gap-1">
@@ -505,12 +486,9 @@ onMounted(async () => {
                         <CardTitle class="flex items-center gap-2 text-base">
                             <MessageCircle class="size-4 text-primary" />
                             <span>Notifikasi Discord DM Personal</span>
-                            <Badge variant="warning" class="font-mono text-xs">
-                                BETA
-                            </Badge>
                         </CardTitle>
                         <CardDescription>
-                            Terima Direct Message langsung dari Bot SASP saat perwira yang Anda ikuti mulai live — tetap masuk meski browser ditutup.
+                            Terima Direct Message langsung dari Bot untuk pembaruan penting dan siaran live perwira yang Anda ikuti — tetap masuk meski browser ditutup.
                         </CardDescription>
                     </div>
                     <Badge :variant="discordStatusMeta.variant" class="gap-1">

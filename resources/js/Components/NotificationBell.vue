@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import axios from "axios";
-import { Bell, BellRing, CheckCheck, Download, Radio, Settings, Smartphone, X } from "@lucide/vue";
+import { Bell, BellRing, CheckCheck, Download, Settings, Smartphone, X } from "@lucide/vue";
 import { toast } from "vue-sonner";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
@@ -126,7 +126,7 @@ const pushHint = computed(() => {
         ? pwaInstalled.value
             ? "Aktif di aplikasi perangkat ini."
             : "Aktif di perangkat ini."
-        : "Terima alert saat perwira mulai live.";
+        : "Terima notifikasi real-time di perangkat ini.";
 });
 
 watch(open, (isOpen) => {
@@ -156,8 +156,8 @@ onUnmounted(() => {
                 variant="ghost"
                 size="icon"
                 class="relative size-10 rounded-full text-foreground/80 hover:bg-foreground/10 hover:text-foreground"
-                aria-label="Notifikasi live perwira"
-                title="Notifikasi live perwira"
+                aria-label="Notifikasi"
+                title="Notifikasi"
             >
                 <BellRing v-if="unreadCount > 0" class="size-5 text-primary" />
                 <Bell v-else class="size-5" />
@@ -178,11 +178,8 @@ onUnmounted(() => {
             <!-- Header -->
             <div class="flex items-center justify-between px-4 py-3">
                 <div class="flex items-center gap-2">
-                    <Radio class="size-4 text-live" />
-                    <h3 class="text-sm font-bold text-foreground">Notifikasi Live</h3>
-                    <Badge variant="warning" class="font-mono text-xs">
-                        BETA
-                    </Badge>
+                    <Bell class="size-4 text-primary" />
+                    <h3 class="text-sm font-bold text-foreground">Notifikasi</h3>
                     <Badge v-if="unreadCount > 0" variant="secondary" class="font-mono text-xs">
                         {{ unreadCount }}
                     </Badge>
@@ -235,8 +232,8 @@ onUnmounted(() => {
                             <p class="text-xs text-muted-foreground leading-snug">
                                 {{
                                     isIosSafari
-                                        ? "Safari iOS mewajibkan Add to Home Screen untuk menerima notifikasi live."
-                                        : "Alert live tetap masuk meski browser ditutup."
+                                        ? "Safari iOS mewajibkan Add to Home Screen untuk menerima notifikasi push."
+                                        : "Notifikasi tetap masuk meski browser ditutup."
                                 }}
                             </p>
                         </div>
@@ -280,7 +277,7 @@ onUnmounted(() => {
                 >
                     <p class="text-sm font-medium text-foreground">Belum ada notifikasi</p>
                     <p class="text-xs text-muted-foreground">
-                        Klik tombol Ikuti pada perwira favoritmu untuk menerima alert saat mereka mulai live.
+                        Pembaruan penting dan siaran live perwira yang kamu ikuti akan muncul di sini.
                     </p>
                 </div>
 

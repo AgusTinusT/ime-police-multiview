@@ -143,8 +143,8 @@ class WebPushService
     public function sendTestNotification(User $user): array
     {
         return $this->sendToSubscriptions($user->pushSubscriptions, [
-            'title' => 'Notifikasi Live Patroli Aktif',
-            'body' => 'Perangkat ini siap menerima peringatan real-time saat perwira yang kamu ikuti mulai live.',
+            'title' => 'Notifikasi Push Aktif',
+            'body' => 'Perangkat ini siap menerima notifikasi real-time untuk pembaruan penting dan siaran live perwira.',
             'icon' => '/images/icons/icon-192.png',
             'badge' => '/images/icons/icon-192.png',
             'tag' => 'live-notif-test',

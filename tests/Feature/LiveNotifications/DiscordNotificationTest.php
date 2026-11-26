@@ -129,6 +129,36 @@ class DiscordNotificationTest extends TestCase
         $this->assertStringContainsString('50007', $user->discord_dm_failed_reason);
     }
 
+    public function test_discord_dm_50278_no_mutual_guilds_records_failure_reason(): void
+    {
+        config([
+            'services.discord.bot_token' => 'test-bot-token',
+        ]);
+
+        Http::fake([
+            'https://discord.com/api/v10/users/@me/channels' => Http::response(['id' => 'dm-chan-noguild'], 200),
+            'https://discord.com/api/v10/channels/dm-chan-noguild/messages' => Http::response([
+                'code' => 50278,
+                'message' => 'Cannot send messages to this user due to having no mutual guilds',
+            ], 403),
+        ]);
+
+        $user = User::factory()->create([
+            'discord_id' => '555444333222111999',
+            'discord_username' => 'no_guild_user',
+            'discord_connected_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->postJson('/api/v1/discord/test-dm')
+            ->assertStatus(422)
+            ->assertJson(['error_code' => 50278]);
+
+        $user->refresh();
+        $this->assertNotNull($user->discord_dm_failed_reason);
+        $this->assertStringContainsString('50278', $user->discord_dm_failed_reason);
+    }
+
     public function test_discord_oauth_callback_connects_account_and_rejects_duplicates(): void
     {
         config([
