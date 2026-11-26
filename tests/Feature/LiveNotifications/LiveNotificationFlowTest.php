@@ -10,7 +10,10 @@ use App\Models\OfficerSubscription;
 use App\Models\User;
 use App\Services\LiveNotificationTriggerService;
 use App\Services\YouTubeScraperService;
+use App\Services\YouTubeWebSubService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 use Mockery;
 use Tests\TestCase;
 
@@ -199,5 +202,91 @@ class LiveNotificationFlowTest extends TestCase
             ->postJson('/api/v1/notifications/read-all')
             ->assertOk()
             ->assertJson(['unread_count' => 0]);
+    }
+
+    public function test_webhook_job_schedules_recheck_when_upcoming_and_stops_after_max_attempts(): void
+    {
+        Queue::fake();
+
+        $officer = $this->createOfficer();
+
+        $upcomingScraper = Mockery::mock(YouTubeScraperService::class);
+        $upcomingScraper->shouldReceive('getBatchStreamsTelemetry')
+            ->with(['UpComingId1'])
+            ->andReturn(['UpComingId1' => ['status' => 'UPCOMING']]);
+
+        // Attempt 0 -> schedules attempt 1 with delay
+        (new VerifyAndProcessLiveWebhookJob($officer->id, 'UpComingId1', 'Patroli Baru', 0))
+            ->handle($upcomingScraper, app(LiveNotificationTriggerService::class));
+
+        Queue::assertPushed(VerifyAndProcessLiveWebhookJob::class, function ($job) use ($officer) {
+            return $job->officerId === $officer->id
+                && $job->videoId === 'UpComingId1'
+                && $job->recheckAttempt === 1
+                && $job->delay !== null;
+        });
+
+        // Final attempt (exhausted) -> does NOT schedule any further re-check
+        Queue::fake();
+        $maxAttempt = count(VerifyAndProcessLiveWebhookJob::RECHECK_DELAYS_SECONDS);
+        (new VerifyAndProcessLiveWebhookJob($officer->id, 'UpComingId1', 'Patroli Baru', $maxAttempt))
+            ->handle($upcomingScraper, app(LiveNotificationTriggerService::class));
+
+        Queue::assertNothingPushed();
+
+        // Regular OFFLINE video -> does NOT schedule re-check
+        $offlineScraper = Mockery::mock(YouTubeScraperService::class);
+        $offlineScraper->shouldReceive('getBatchStreamsTelemetry')
+            ->with(['RegularVod1'])
+            ->andReturn(['RegularVod1' => ['status' => 'OFFLINE']]);
+
+        (new VerifyAndProcessLiveWebhookJob($officer->id, 'RegularVod1', 'VOD', 0))
+            ->handle($offlineScraper, app(LiveNotificationTriggerService::class));
+
+        Queue::assertNothingPushed();
+    }
+
+    public function test_sync_job_auto_saves_uc_channel_id_subscribes_websub_and_respects_replay_cache(): void
+    {
+        $officer = $this->createOfficer([
+            'channel_id' => 'UC_placeholder_99',
+        ]);
+
+        Cache::put('cinema_hub_replays_cache', [['video_id' => 'cached12345']], 900);
+
+        $syncScraper = Mockery::mock(YouTubeScraperService::class);
+        $syncScraper->shouldReceive('syncAllActiveOfficers')->andReturn([
+            $officer->id => [
+                'video_id' => 'LiveVid1234',
+                'channel_id' => 'UCabcdef1234567890123456',
+                'detection_method' => 'HASHTAG_SCAN',
+                'title' => 'Patroli LSPD #imepolice',
+                'thumbnail_url' => 'https://i.ytimg.com/vi/LiveVid1234/hqdefault.jpg',
+                'viewers_count' => 120,
+                'description' => str_repeat('Patroli LSPD #imepolice ', 10),
+            ],
+        ]);
+        $syncScraper->shouldReceive('isPolicePatrolStream')->andReturn(true);
+        // Should NOT be called because cinema_hub_replays_cache is already warm
+        $syncScraper->shouldNotReceive('fetchLatestOfficerVideos');
+
+        $webSub = Mockery::mock(YouTubeWebSubService::class);
+        $webSub->shouldReceive('isEligibleChannel')
+            ->with('UCabcdef1234567890123456')
+            ->once()
+            ->andReturn(true);
+        $webSub->shouldReceive('subscribe')
+            ->once()
+            ->andReturn(null);
+
+        (new SyncOfficerStreamsJob())->handle($syncScraper, app(LiveNotificationTriggerService::class), $webSub);
+
+        $officer->refresh();
+        $this->assertSame('UCabcdef1234567890123456', $officer->channel_id);
+        $this->assertDatabaseHas('active_streams', [
+            'officer_id' => $officer->id,
+            'video_id' => 'LiveVid1234',
+            'status' => 'LIVE',
+        ]);
     }
 }

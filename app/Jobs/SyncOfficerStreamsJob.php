@@ -8,6 +8,7 @@ use App\Models\Officer;
 use App\Models\ActiveStream;
 use App\Services\LiveNotificationTriggerService;
 use App\Services\YouTubeScraperService;
+use App\Services\YouTubeWebSubService;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -29,8 +30,12 @@ class SyncOfficerStreamsJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(YouTubeScraperService $scraper, LiveNotificationTriggerService $notificationTrigger): void
-    {
+    public function handle(
+        YouTubeScraperService $scraper,
+        LiveNotificationTriggerService $notificationTrigger,
+        ?YouTubeWebSubService $webSub = null,
+    ): void {
+        $webSub ??= app(YouTubeWebSubService::class);
         // Purge any active stream records belonging to disabled or unlisted
         // (non-personnel, bio-link only) officers.
         ActiveStream::whereHas('officer', fn($q) => $q->where('is_active', false)->orWhere('is_listed', false))->delete();
@@ -47,9 +52,25 @@ class SyncOfficerStreamsJob implements ShouldQueue
             $liveData = $liveMap[$officer->id] ?? null;
 
             if ($liveData && !empty($liveData['video_id'])) {
-                // If officer missing channel_id, auto-save detected YouTube channel ID ONLY for direct handle/RSS detection
-                if ((empty($officer->channel_id) || str_starts_with($officer->channel_id, 'custom-') || str_starts_with($officer->channel_id, 'UC_')) && !empty($liveData['channel_id']) && in_array($liveData['detection_method'] ?? '', ['RSS_FEED'])) {
-                    $officer->update(['channel_id' => $liveData['channel_id']]);
+                // Auto-save valid UC... YouTube channel_id when officer is missing one (enables WebSub real-time push)
+                $detectedChannelId = trim((string) ($liveData['channel_id'] ?? ''));
+                $needsChannelId = empty($officer->channel_id)
+                    || str_starts_with($officer->channel_id, 'custom-')
+                    || str_starts_with($officer->channel_id, 'UC_');
+
+                if ($needsChannelId && $webSub->isEligibleChannel($detectedChannelId)) {
+                    $officer->update(['channel_id' => $detectedChannelId]);
+                    $officer->refresh();
+
+                    try {
+                        $webSub->subscribe($officer);
+                    } catch (\Throwable $e) {
+                        Log::warning('Auto WebSub subscribe after channel_id discovery failed', [
+                            'officer_id' => $officer->id,
+                            'channel_id' => $detectedChannelId,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
                 }
 
                 $channelId = $officer->channel_id ?: ($liveData['channel_id'] ?: 'ch-' . $officer->id);
@@ -138,21 +159,23 @@ class SyncOfficerStreamsJob implements ShouldQueue
             ->where('last_synced_at', '<', now()->subDays(3))
             ->delete();
 
-        // Warm up Cinema Hub replays cache in the background
-        try {
-            $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->toArray();
-            $unmatchedOfficers = Officer::roster()
-                ->whereNotIn('channel_id', $liveChannelIds)
-                ->get();
+        // Warm up Cinema Hub replays cache only when expired (keeps 1-minute sync fast & lightweight)
+        if (! Cache::has('cinema_hub_replays_cache')) {
+            try {
+                $liveChannelIds = ActiveStream::where('status', 'LIVE')->pluck('channel_id')->toArray();
+                $unmatchedOfficers = Officer::roster()
+                    ->whereNotIn('channel_id', $liveChannelIds)
+                    ->get();
 
-            if ($unmatchedOfficers->isNotEmpty()) {
-                $recentReplays = $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 100);
-                if (!empty($recentReplays)) {
-                    Cache::put('cinema_hub_replays_cache', $recentReplays, 1800);
+                if ($unmatchedOfficers->isNotEmpty()) {
+                    $recentReplays = $scraper->fetchLatestOfficerVideos($unmatchedOfficers, 100);
+                    if (!empty($recentReplays)) {
+                        Cache::put('cinema_hub_replays_cache', $recentReplays, 900);
+                    }
                 }
+            } catch (\Throwable $e) {
+                Log::error('Cinema Hub background cache warmup failed: ' . $e->getMessage());
             }
-        } catch (\Throwable $e) {
-            Log::error('Cinema Hub background cache warmup failed: ' . $e->getMessage());
         }
     }
 }

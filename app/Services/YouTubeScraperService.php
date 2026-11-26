@@ -314,15 +314,17 @@ class YouTubeScraperService
                         $concurrentViewers = (int) ($liveDetails['concurrentViewers'] ?? 0);
 
                         $isLive = ($liveBroadcastContent === 'live');
+                        $isUpcoming = ($liveBroadcastContent === 'upcoming');
+                        $status = $isLive ? 'LIVE' : ($isUpcoming ? 'UPCOMING' : 'OFFLINE');
                         $telemetry = [
                             'video_id' => $vId,
                             'viewers_count' => $concurrentViewers,
-                            'status' => $isLive ? 'LIVE' : 'OFFLINE',
+                            'status' => $status,
                             'title' => $item['snippet']['title'] ?? '',
                             'updated_at' => now()->toIso8601String(),
                         ];
 
-                        Cache::put("yt_telemetry_{$vId}", $telemetry, 30);
+                        Cache::put("yt_telemetry_{$vId}", $telemetry, $isUpcoming ? 10 : 30);
                         $results[$vId] = $telemetry;
                     }
 
@@ -350,16 +352,18 @@ class YouTubeScraperService
                 if ($res instanceof \Illuminate\Http\Client\Response && $res->successful()) {
                     $body = $res->body();
                     $isLiveNow = $this->isHtmlCurrentlyLive($body);
+                    $isUpcoming = ! $isLiveNow && $this->isHtmlUpcoming($body);
+                    $status = $isLiveNow ? 'LIVE' : ($isUpcoming ? 'UPCOMING' : 'OFFLINE');
                     $viewersCount = $isLiveNow ? $this->extractViewersCount($body) : 0;
 
                     $telemetry = [
                         'video_id' => $id,
                         'viewers_count' => $viewersCount,
-                        'status' => $isLiveNow ? 'LIVE' : 'OFFLINE',
+                        'status' => $status,
                         'updated_at' => now()->toIso8601String(),
                     ];
 
-                    Cache::put("yt_telemetry_{$id}", $telemetry, 30);
+                    Cache::put("yt_telemetry_{$id}", $telemetry, $isUpcoming ? 10 : 30);
                     $results[$id] = $telemetry;
                 } else {
                     $fallback = [
@@ -377,6 +381,21 @@ class YouTubeScraperService
         }
 
         return $results;
+    }
+
+    /**
+     * Detect whether a YouTube watch page is an upcoming/scheduled live broadcast
+     * that has not flipped to LIVE yet.
+     */
+    public function isHtmlUpcoming(string $body): bool
+    {
+        if (empty($body)) {
+            return false;
+        }
+
+        return str_contains($body, '"isUpcoming":true')
+            || str_contains($body, '"status":"UPCOMING"')
+            || str_contains($body, '"liveBroadcastContent":"upcoming"');
     }
 
     /**

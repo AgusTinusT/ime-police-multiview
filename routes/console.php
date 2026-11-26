@@ -11,8 +11,8 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('officer:sync')
-    ->everyFiveMinutes()
-    ->withoutOverlapping(10)
+    ->everyMinute()
+    ->withoutOverlapping(5)
     ->runInBackground();
 
 // Fetch subscriber counts every hour
