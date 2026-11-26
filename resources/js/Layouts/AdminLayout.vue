@@ -34,6 +34,7 @@ import {
     ArrowLeft,
     ShieldAlert,
     Globe,
+    Activity,
 } from "@lucide/vue";
 
 const props = defineProps({
@@ -83,6 +84,7 @@ const navGroups = [
         items: [
             { id: "agencies", label: "Agensi & Pangkat", icon: Building2 },
             { id: "users", label: "Akun Member", icon: Users },
+            { id: "latency", label: "Latensi Notifikasi", icon: Activity },
         ],
     },
 ];

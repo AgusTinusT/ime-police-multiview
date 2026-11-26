@@ -387,6 +387,7 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/squads')->group(funct
 
 // 8. Recommended Sites API (REC-01)
 use App\Http\Controllers\RecommendedSiteController;
+use App\Http\Controllers\AdminLiveLatencyController;
 
 Route::get('/api/v1/recommended-sites', [RecommendedSiteController::class, 'index'])->middleware('throttle:120,1');
 
@@ -397,6 +398,8 @@ Route::middleware(['auth', 'admin'])->prefix('api/v1/admin/recommended-sites')->
     Route::patch('/{site}/toggle', [RecommendedSiteController::class, 'toggleActive']);
     Route::delete('/{site}', [RecommendedSiteController::class, 'destroy']);
 });
+
+Route::middleware(['auth', 'admin'])->get('/api/v1/admin/live-latency', [AdminLiveLatencyController::class, 'index']);
 
 // 9. User Blocked / Hidden Officers API
 use App\Http\Controllers\UserBlockedOfficerController;

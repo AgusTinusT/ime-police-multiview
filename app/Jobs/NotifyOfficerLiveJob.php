@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\ActiveStream;
+use App\Models\LiveNotificationLog;
 use App\Models\Officer;
 use App\Models\OfficerSubscription;
 use App\Notifications\OfficerLiveNotification;
@@ -20,6 +21,7 @@ class NotifyOfficerLiveJob implements ShouldQueue
     public function __construct(
         public readonly int $officerId,
         public readonly int $activeStreamId,
+        public readonly ?int $notificationLogId = null,
     ) {}
 
     public function handle(WebPushService $webPush, ?DiscordNotificationService $discord = null): void
@@ -63,5 +65,32 @@ class NotifyOfficerLiveJob implements ShouldQueue
                     }
                 }
             });
+
+        $this->recordDeliveryTimestamp($stream);
+    }
+
+    private function recordDeliveryTimestamp(ActiveStream $stream): void
+    {
+        $log = $this->notificationLogId !== null
+            ? LiveNotificationLog::find($this->notificationLogId)
+            : LiveNotificationLog::where('video_id', $stream->video_id)->first();
+
+        if (! $log) {
+            return;
+        }
+
+        $notifiedAt = now();
+        $deliveryDelay = $log->detected_at
+            ? max(0, (int) $log->detected_at->diffInSeconds($notifiedAt, false))
+            : null;
+        $totalDelay = $log->youtube_started_at
+            ? max(0, (int) $log->youtube_started_at->diffInSeconds($notifiedAt, false))
+            : null;
+
+        $log->update([
+            'notified_at' => $notifiedAt,
+            'delivery_delay_seconds' => $deliveryDelay,
+            'total_delay_seconds' => $totalDelay,
+        ]);
     }
 }

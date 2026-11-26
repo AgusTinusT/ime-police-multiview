@@ -81,10 +81,23 @@ class SyncOfficerStreamsJob implements ShouldQueue
                     ->delete();
 
                 $streamDescription = $liveData['description'] ?? null;
-                if (!empty($liveData['video_id']) && (empty($streamDescription) || strlen($streamDescription) < 150)) {
+                $youtubeStartedAt = $liveData['started_at'] ?? null;
+                $needsDescription = empty($streamDescription) || strlen($streamDescription) < 150;
+                $needsStartedAt = empty($youtubeStartedAt)
+                    && ! ActiveStream::where('officer_id', $officer->id)
+                        ->where('video_id', $liveData['video_id'])
+                        ->whereNotNull('live_notified_at')
+                        ->exists();
+
+                if (!empty($liveData['video_id']) && ($needsDescription || $needsStartedAt)) {
                     $details = $scraper->scrapeVideoDetails($liveData['video_id']);
-                    if ($details && !empty($details['description'])) {
-                        $streamDescription = $details['description'];
+                    if ($details) {
+                        if (!empty($details['description']) && $needsDescription) {
+                            $streamDescription = $details['description'];
+                        }
+                        if (empty($youtubeStartedAt) && !empty($details['started_at'])) {
+                            $youtubeStartedAt = $details['started_at'];
+                        }
                     }
                 }
 
@@ -109,7 +122,15 @@ class SyncOfficerStreamsJob implements ShouldQueue
                         ]
                     );
 
-                    $notificationTrigger->triggerIfNotNotified($officer, $activeStream);
+                    $method = strtoupper((string) ($liveData['detection_method'] ?? ''));
+                    $detectionSource = match ($method) {
+                        'HASHTAG_SCAN' => 'sync_hashtag',
+                        'RSS_FEED' => 'sync_rss',
+                        'HANDLE_LIVE' => 'sync_handle',
+                        default => 'sync',
+                    };
+
+                    $notificationTrigger->triggerIfNotNotified($officer, $activeStream, $detectionSource, $youtubeStartedAt);
 
                     $lastDuty = $officer->last_duty_at;
                     $currentTime = now();

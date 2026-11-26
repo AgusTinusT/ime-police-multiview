@@ -321,6 +321,7 @@ class YouTubeScraperService
                             'viewers_count' => $concurrentViewers,
                             'status' => $status,
                             'title' => $item['snippet']['title'] ?? '',
+                            'started_at' => $liveDetails['actualStartTime'] ?? null,
                             'updated_at' => now()->toIso8601String(),
                         ];
 
@@ -360,6 +361,7 @@ class YouTubeScraperService
                         'video_id' => $id,
                         'viewers_count' => $viewersCount,
                         'status' => $status,
+                        'started_at' => $isLiveNow ? $this->extractStartedAt($body) : null,
                         'updated_at' => now()->toIso8601String(),
                     ];
 
@@ -749,12 +751,37 @@ class YouTubeScraperService
                 'title' => $title,
                 'description' => $description,
                 'viewers_count' => $viewersCount,
+                'started_at' => $this->extractStartedAt($body),
                 'thumbnail_url' => "https://i.ytimg.com/vi/{$cleanId}/hqdefault.jpg",
             ];
         } catch (\Throwable $e) {
             Log::error("Failed to scrape video details for {$cleanId}: " . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * Extract actual live broadcast start timestamp (ISO-8601) from YouTube watch page HTML.
+     */
+    public function extractStartedAt(string $html): ?string
+    {
+        if (empty($html)) {
+            return null;
+        }
+
+        if (preg_match('/ytInitialPlayerResponse\s*=\s*({.+?});/s', $html, $m)) {
+            $playerJson = json_decode($m[1], true);
+            $startTs = $playerJson['microformat']['playerMicroformatRenderer']['liveBroadcastDetails']['startTimestamp'] ?? null;
+            if (is_string($startTs) && trim($startTs) !== '') {
+                return trim($startTs);
+            }
+        }
+
+        if (preg_match('/"startTimestamp"\s*:\s*"([^"]+)"/', $html, $matches)) {
+            return trim($matches[1]);
+        }
+
+        return null;
     }
 
     /**

@@ -102,6 +102,9 @@ class VerifyAndProcessLiveWebhookJob implements ShouldQueue
                 'last_synced_at' => now(),
             ]);
 
-        $trigger->triggerIfNotNotified($officer, $activeStream);
+        $detectionSource = $this->recheckAttempt > 0 ? 'websub_recheck' : 'websub';
+        $youtubeStartedAt = $telemetry['started_at'] ?? ($details['started_at'] ?? null);
+
+        $trigger->triggerIfNotNotified($officer, $activeStream, $detectionSource, $youtubeStartedAt);
     }
 }

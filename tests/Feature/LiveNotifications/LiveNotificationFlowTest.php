@@ -263,6 +263,7 @@ class LiveNotificationFlowTest extends TestCase
                 'title' => 'Patroli LSPD #imepolice',
                 'thumbnail_url' => 'https://i.ytimg.com/vi/LiveVid1234/hqdefault.jpg',
                 'viewers_count' => 120,
+                'started_at' => now()->subSeconds(25)->utc()->toIso8601String(),
                 'description' => str_repeat('Patroli LSPD #imepolice ', 10),
             ],
         ]);

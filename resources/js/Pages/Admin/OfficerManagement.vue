@@ -10,6 +10,7 @@ import AdminChangeRequestsTab from "@/Components/Admin/AdminChangeRequestsTab.vu
 import HeroSlidesTab from "@/Components/Admin/HeroSlidesTab.vue";
 import SquadsTab from "@/Components/Admin/SquadsTab.vue";
 import RecommendedSitesTab from "@/Components/Admin/RecommendedSitesTab.vue";
+import LiveLatencyTab from "@/Components/Admin/LiveLatencyTab.vue";
 import OfficerBindingModal from "@/Components/Admin/OfficerBindingModal.vue";
 import OfficerDetailSheet from "@/Components/Admin/OfficerDetailSheet.vue";
 import {
@@ -544,6 +545,7 @@ const VALID_TABS = [
     "hero",
     "squads",
     "recommended",
+    "latency",
 ];
 
 const getTabFromUrl = () => {
@@ -2448,6 +2450,11 @@ onUnmounted(() => {
             <!-- TAB 11: RECOMMENDED SITES (REC-01) -->
             <div v-if="activeTab === 'recommended'">
                 <RecommendedSitesTab @toast="showToast" />
+            </div>
+
+            <!-- TAB 12: LIVE NOTIFICATION LATENCY -->
+            <div v-if="activeTab === 'latency'">
+                <LiveLatencyTab @toast="showToast" />
             </div>
         </PageContainer>
 
