@@ -1,7 +1,7 @@
 # Panduan Penggunaan Logo — Police Duty
 
 ## 1. Identitas Inti — PD Metro Badge
-Logo **Police Duty** menggabungkan siluet lencana kepolisian klasik bermahkota lengkung (*Metro Badge*) dengan inisial **PD** bersudut *chamfer* 45° yang tegas, satu bintang lencana di mahkota, dan *V-chevron* taktis di dasar perisai. Wordmark `POLICE DUTY` dibangun dari path geometris khusus (tanpa ketergantungan font) dengan titik aksen **Live Beacon Red** (`#EF4444`).
+Logo **Police Duty** menggabungkan siluet lencana kepolisian klasik bermahkota lengkung (*Metro Badge*) dengan inisial **PD** bersudut *chamfer* 45° yang tegas dan bersih (tanpa ornamen bintang maupun chevron tambahan) agar tampil maksimal dari `16 px` hingga ukuran besar. Wordmark `POLICE DUTY` dibangun dari path geometris khusus (tanpa ketergantungan font) dengan titik aksen **Live Beacon Red** (`#EF4444`).
 
 ---
 
