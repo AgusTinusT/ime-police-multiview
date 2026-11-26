@@ -37,6 +37,19 @@ return [
 
     'discord' => [
         'webhook_url' => env('DISCORD_FEEDBACK_WEBHOOK'),
+        'bot_token' => env('DISCORD_BOT_TOKEN'),
+        'client_id' => env('DISCORD_CLIENT_ID'),
+        'client_secret' => env('DISCORD_CLIENT_SECRET'),
+        'redirect_uri' => env('DISCORD_REDIRECT_URI', rtrim((string) env('APP_URL', ''), '/') . '/auth/discord/callback'),
+        'live_channel_id' => env('DISCORD_LIVE_CHANNEL_ID'),
+        'live_webhook_url' => env('DISCORD_LIVE_WEBHOOK_URL'),
+        'live_ping_role_id' => env('DISCORD_LIVE_PING_ROLE_ID'),
+        'dept_role_ids' => [
+            'LSPD' => env('DISCORD_ROLE_LSPD'),
+            'BCSO' => env('DISCORD_ROLE_BCSO'),
+            'SASP' => env('DISCORD_ROLE_SASP'),
+            'SAPR' => env('DISCORD_ROLE_SAPR'),
+        ],
     ],
 
     'google_analytics' => [

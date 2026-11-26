@@ -12,7 +12,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'status', 'banned_reason', 'banned_at', 'name_skeleton', 'clipper_tier'])]
+#[Fillable([
+    'name', 'email', 'password', 'role', 'status', 'banned_reason', 'banned_at', 'name_skeleton', 'clipper_tier',
+    'discord_id', 'discord_username', 'discord_avatar', 'discord_dm_channel_id', 'discord_connected_at', 'discord_dm_failed_reason',
+])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -103,7 +106,22 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'banned_at' => 'datetime',
+            'discord_connected_at' => 'datetime',
         ];
+    }
+
+    public function hasDiscordConnected(): bool
+    {
+        return ! empty($this->discord_id);
+    }
+
+    public function getDiscordAvatarUrlAttribute(): ?string
+    {
+        if (empty($this->discord_id) || empty($this->discord_avatar)) {
+            return null;
+        }
+
+        return "https://cdn.discordapp.com/avatars/{$this->discord_id}/{$this->discord_avatar}.png?size=128";
     }
 
     /**
@@ -160,7 +178,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function subscribedOfficers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Officer::class, 'officer_subscriptions')
-            ->withPivot(['notify_in_app', 'notify_web_push'])
+            ->withPivot(['notify_in_app', 'notify_web_push', 'notify_discord_dm'])
             ->withTimestamps();
     }
 

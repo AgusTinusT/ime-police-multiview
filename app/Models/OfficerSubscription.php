@@ -12,11 +12,13 @@ class OfficerSubscription extends Model
         'officer_id',
         'notify_in_app',
         'notify_web_push',
+        'notify_discord_dm',
     ];
 
     protected $casts = [
         'notify_in_app' => 'boolean',
         'notify_web_push' => 'boolean',
+        'notify_discord_dm' => 'boolean',
     ];
 
     public function user(): BelongsTo

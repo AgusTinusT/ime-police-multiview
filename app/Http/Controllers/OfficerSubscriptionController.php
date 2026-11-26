@@ -24,6 +24,7 @@ class OfficerSubscriptionController extends Controller
                 'officer_id' => $sub->officer_id,
                 'notify_in_app' => $sub->notify_in_app,
                 'notify_web_push' => $sub->notify_web_push,
+                'notify_discord_dm' => $sub->notify_discord_dm,
                 'created_at' => $sub->created_at?->toIso8601String(),
                 'officer' => $sub->officer ? [
                     'id' => $sub->officer->id,
@@ -48,6 +49,7 @@ class OfficerSubscriptionController extends Controller
         $validated = $request->validate([
             'notify_in_app' => ['sometimes', 'boolean'],
             'notify_web_push' => ['sometimes', 'boolean'],
+            'notify_discord_dm' => ['sometimes', 'boolean'],
         ]);
 
         $subscription = OfficerSubscription::updateOrCreate(
@@ -58,6 +60,7 @@ class OfficerSubscriptionController extends Controller
             [
                 'notify_in_app' => $validated['notify_in_app'] ?? true,
                 'notify_web_push' => $validated['notify_web_push'] ?? true,
+                'notify_discord_dm' => $validated['notify_discord_dm'] ?? true,
             ],
         );
 
@@ -71,6 +74,7 @@ class OfficerSubscriptionController extends Controller
                 'officer_id' => $subscription->officer_id,
                 'notify_in_app' => $subscription->notify_in_app,
                 'notify_web_push' => $subscription->notify_web_push,
+                'notify_discord_dm' => $subscription->notify_discord_dm,
             ],
             'subscribers_count' => $officer->subscriptions()->count(),
         ], $status);

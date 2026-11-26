@@ -180,6 +180,9 @@ onUnmounted(() => {
                 <div class="flex items-center gap-2">
                     <Radio class="size-4 text-live" />
                     <h3 class="text-sm font-bold text-foreground">Notifikasi Live</h3>
+                    <Badge variant="warning" class="font-mono text-xs">
+                        BETA
+                    </Badge>
                     <Badge v-if="unreadCount > 0" variant="secondary" class="font-mono text-xs">
                         {{ unreadCount }}
                     </Badge>

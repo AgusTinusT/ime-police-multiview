@@ -448,6 +448,24 @@ Route::middleware(['auth', 'not_banned'])->prefix('api/v1')->group(function () {
     Route::post('/push-subscriptions/test', [PushSubscriptionController::class, 'test'])
         ->middleware('throttle:5,1')
         ->name('push_subscriptions.test');
+
+    Route::get('/discord/status', [\App\Http\Controllers\DiscordAccountController::class, 'status'])
+        ->name('discord.status');
+    Route::post('/discord/test-dm', [\App\Http\Controllers\DiscordAccountController::class, 'testDm'])
+        ->middleware('throttle:5,1')
+        ->name('discord.test_dm');
+    Route::delete('/discord/disconnect', [\App\Http\Controllers\DiscordAccountController::class, 'disconnect'])
+        ->middleware('throttle:15,1')
+        ->name('discord.disconnect');
+});
+
+Route::middleware(['auth', 'not_banned'])->group(function () {
+    Route::get('/auth/discord/redirect', [\App\Http\Controllers\DiscordAccountController::class, 'redirect'])
+        ->middleware('throttle:15,1')
+        ->name('discord.redirect');
+    Route::get('/auth/discord/callback', [\App\Http\Controllers\DiscordAccountController::class, 'callback'])
+        ->middleware('throttle:15,1')
+        ->name('discord.callback');
 });
 
 

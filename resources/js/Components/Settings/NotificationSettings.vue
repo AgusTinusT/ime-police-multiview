@@ -5,11 +5,16 @@ import {
     Bell,
     BellRing,
     CheckCircle2,
+    ExternalLink,
+    FlaskConical,
+    Link2,
+    MessageCircle,
     Search,
     Send,
     Smartphone,
     Trash2,
     TriangleAlert,
+    Unlink,
     UserMinus,
     UserPlus,
 } from "@lucide/vue";
@@ -58,6 +63,22 @@ const busyOfficerIds = ref(new Set());
 const searchQuery = ref("");
 const selectedDept = ref("ALL");
 
+const discordStatus = ref({
+    oauth_enabled: false,
+    bot_enabled: false,
+    channel_enabled: false,
+    invite_url: null,
+    connected: false,
+    discord_id: null,
+    discord_username: null,
+    discord_avatar_url: null,
+    discord_connected_at: null,
+    dm_failed_reason: null,
+});
+const loadingDiscord = ref(true);
+const sendingDiscordTest = ref(false);
+const disconnectingDiscord = ref(false);
+
 const departments = ["ALL", "LSPD", "BCSO", "SASP", "SAPR"];
 
 const loadSubscriptions = async () => {
@@ -85,6 +106,75 @@ const loadDevices = async () => {
     } catch {
         // Silent fail
     }
+};
+
+const loadDiscordStatus = async () => {
+    loadingDiscord.value = true;
+    try {
+        const { data } = await axios.get("/api/v1/discord/status");
+        if (data && typeof data === "object") {
+            discordStatus.value = { ...discordStatus.value, ...data };
+        }
+    } catch {
+        // Silent fail
+    } finally {
+        loadingDiscord.value = false;
+    }
+};
+
+const handleConnectDiscord = () => {
+    window.location.href = "/auth/discord/redirect";
+};
+
+const handleTestDiscordDm = async () => {
+    if (sendingDiscordTest.value) return;
+    sendingDiscordTest.value = true;
+    try {
+        const { data } = await axios.post("/api/v1/discord/test-dm");
+        toast.success(data?.message || "DM uji coba berhasil dikirim ke Discord kamu.");
+        await loadDiscordStatus();
+    } catch (err) {
+        toast.error(
+            err?.response?.data?.message || "Gagal mengirim DM uji coba Discord.",
+        );
+        await loadDiscordStatus();
+    } finally {
+        sendingDiscordTest.value = false;
+    }
+};
+
+const handleDisconnectDiscord = async () => {
+    if (disconnectingDiscord.value) return;
+    disconnectingDiscord.value = true;
+    try {
+        const { data } = await axios.delete("/api/v1/discord/disconnect");
+        toast.info(data?.message || "Tautan akun Discord diputuskan.");
+        await loadDiscordStatus();
+    } catch {
+        toast.error("Gagal memutuskan tautan akun Discord.");
+    } finally {
+        disconnectingDiscord.value = false;
+    }
+};
+
+const handleDiscordOAuthFeedback = () => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    const status = url.searchParams.get("discord");
+    if (!status) return;
+
+    const messages = {
+        connected: () => toast.success("Akun Discord berhasil dihubungkan untuk DM live!"),
+        cancelled: () => toast.info("Penautan akun Discord dibatalkan."),
+        conflict: () => toast.error("Akun Discord ini sudah terhubung ke akun lain."),
+        invalid_state: () => toast.error("Sesi OAuth Discord tidak valid. Silakan coba lagi."),
+        unconfigured: () => toast.error("Integrasi Discord OAuth belum aktif di server."),
+        error: () => toast.error("Gagal menautkan akun Discord. Silakan coba lagi."),
+    };
+    (messages[status] || messages.error)();
+
+    url.searchParams.delete("discord");
+    window.history.replaceState({}, "", url.pathname + url.search + url.hash);
 };
 
 const handleTogglePush = async (nextVal) => {
@@ -140,12 +230,17 @@ const updateChannelPrefs = async (sub, patch) => {
             patch.notify_web_push !== undefined
                 ? patch.notify_web_push
                 : sub.notify_web_push,
+        notify_discord_dm:
+            patch.notify_discord_dm !== undefined
+                ? patch.notify_discord_dm
+                : (sub.notify_discord_dm ?? true),
     };
 
     try {
         await axios.post(`/api/v1/officers/${id}/subscribe`, payload);
         sub.notify_in_app = payload.notify_in_app;
         sub.notify_web_push = payload.notify_web_push;
+        sub.notify_discord_dm = payload.notify_discord_dm;
         toast.success("Preferensi notifikasi diperbarui.");
     } catch {
         toast.error("Gagal memperbarui preferensi notifikasi.");
@@ -162,6 +257,7 @@ const followOfficer = async (officer) => {
         const { data } = await axios.post(`/api/v1/officers/${id}/subscribe`, {
             notify_in_app: true,
             notify_web_push: true,
+            notify_discord_dm: true,
         });
         subscribedIds.add(id);
         const existing = subscriptions.value.find((s) => Number(s.officer_id) === id);
@@ -171,6 +267,7 @@ const followOfficer = async (officer) => {
                 officer_id: id,
                 notify_in_app: true,
                 notify_web_push: true,
+                notify_discord_dm: true,
                 officer,
             });
         }
@@ -267,13 +364,50 @@ const summarizeUserAgent = (ua) => {
     return os ? `${browser} (${os})` : browser;
 };
 
+const discordStatusMeta = computed(() => {
+    if (!discordStatus.value.oauth_enabled && !discordStatus.value.bot_enabled) {
+        return { variant: "secondary", label: "Belum Aktif di Server" };
+    }
+    if (discordStatus.value.connected && discordStatus.value.dm_failed_reason) {
+        return { variant: "warning", label: "DM Diblokir" };
+    }
+    if (discordStatus.value.connected) {
+        return { variant: "success", label: "Terhubung" };
+    }
+    return { variant: "outline", label: "Belum Terhubung" };
+});
+
 onMounted(async () => {
-    await Promise.all([syncPushState(), loadSubscriptions(), loadDevices()]);
+    handleDiscordOAuthFeedback();
+    await Promise.all([
+        syncPushState(),
+        loadSubscriptions(),
+        loadDevices(),
+        loadDiscordStatus(),
+    ]);
 });
 </script>
 
 <template>
     <div class="space-y-6">
+        <!-- Beta / Experimental Notice -->
+        <div class="flex items-start gap-3 rounded-xl border border-warning/40 bg-warning/10 p-4">
+            <FlaskConical class="mt-0.5 size-4 shrink-0 text-warning" />
+            <div class="space-y-1 text-xs">
+                <div class="flex flex-wrap items-center gap-2">
+                    <p class="font-semibold text-foreground">
+                        Fitur Notifikasi Live Masih Tahap Beta / Uji Coba
+                    </p>
+                    <Badge variant="warning" class="font-mono text-xs">
+                        BETA
+                    </Badge>
+                </div>
+                <p class="text-muted-foreground leading-relaxed">
+                    Notifikasi Web Push, PWA, dan Discord DM/Channel sedang dalam pengembangan dan uji coba aktif di produksi. Tampilan atau perilaku pengiriman dapat berubah sewaktu-waktu seiring penyempurnaan.
+                </p>
+            </div>
+        </div>
+
         <!-- 1. Web Push & Devices Card -->
         <Card>
             <CardHeader>
@@ -363,6 +497,154 @@ onMounted(async () => {
             </CardContent>
         </Card>
 
+        <!-- 1b. Discord DM Personal Card -->
+        <Card>
+            <CardHeader>
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="space-y-1">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <MessageCircle class="size-4 text-primary" />
+                            <span>Notifikasi Discord DM Personal</span>
+                            <Badge variant="warning" class="font-mono text-xs">
+                                BETA
+                            </Badge>
+                        </CardTitle>
+                        <CardDescription>
+                            Terima Direct Message langsung dari Bot SASP saat perwira yang Anda ikuti mulai live — tetap masuk meski browser ditutup.
+                        </CardDescription>
+                    </div>
+                    <Badge :variant="discordStatusMeta.variant" class="gap-1">
+                        <CheckCircle2 v-if="discordStatus.connected && !discordStatus.dm_failed_reason" class="size-3.5" />
+                        <TriangleAlert v-else-if="discordStatus.dm_failed_reason" class="size-3.5" />
+                        <span>{{ discordStatusMeta.label }}</span>
+                    </Badge>
+                </div>
+            </CardHeader>
+
+            <CardContent class="space-y-3">
+                <div v-if="loadingDiscord" class="py-4 text-xs text-muted-foreground">
+                    Memuat status koneksi Discord...
+                </div>
+
+                <div
+                    v-else-if="!discordStatus.connected"
+                    class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-muted/30 p-4"
+                >
+                    <div class="space-y-0.5">
+                        <p class="text-sm font-semibold text-foreground">
+                            Tautkan akun Discord Anda
+                        </p>
+                        <p class="text-xs text-muted-foreground">
+                            Pastikan Anda sudah bergabung di Server Discord komunitas agar Bot dapat mengirim DM pribadi.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <Button
+                            v-if="discordStatus.invite_url"
+                            as="a"
+                            :href="discordStatus.invite_url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            variant="outline"
+                            size="sm"
+                            class="gap-1.5"
+                        >
+                            <ExternalLink class="size-3.5" />
+                            <span>Gabung Server</span>
+                        </Button>
+                        <Button
+                            type="button"
+                            size="sm"
+                            :disabled="!discordStatus.oauth_enabled"
+                            class="gap-1.5"
+                            @click="handleConnectDiscord"
+                        >
+                            <Link2 class="size-3.5" />
+                            <span>Hubungkan Discord</span>
+                        </Button>
+                    </div>
+                </div>
+
+                <div v-else class="space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-muted/30 p-4">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <img
+                                v-if="discordStatus.discord_avatar_url"
+                                :src="discordStatus.discord_avatar_url"
+                                :alt="discordStatus.discord_username || 'Discord Avatar'"
+                                class="size-9 shrink-0 rounded-full border border-border object-cover"
+                            />
+                            <div
+                                v-else
+                                class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary"
+                            >
+                                DC
+                            </div>
+                            <div class="min-w-0">
+                                <p class="truncate text-sm font-semibold text-foreground">
+                                    {{ discordStatus.discord_username || "Akun Discord" }}
+                                </p>
+                                <p class="truncate font-mono text-xs text-muted-foreground">
+                                    ID: {{ discordStatus.discord_id }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                :disabled="!discordStatus.bot_enabled || sendingDiscordTest"
+                                class="gap-1.5"
+                                @click="handleTestDiscordDm"
+                            >
+                                <Send class="size-3.5" />
+                                <span>{{ sendingDiscordTest ? "Mengirim..." : "Tes Kirim DM" }}</span>
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                :disabled="disconnectingDiscord"
+                                class="gap-1.5 text-muted-foreground hover:text-destructive"
+                                @click="handleDisconnectDiscord"
+                            >
+                                <Unlink class="size-3.5" />
+                                <span>Putuskan</span>
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div
+                        v-if="discordStatus.dm_failed_reason"
+                        class="rounded-lg border border-warning/40 bg-warning/10 p-3.5 space-y-2 text-xs"
+                    >
+                        <p class="font-semibold text-warning">
+                            Pengiriman DM Discord Terhalang
+                        </p>
+                        <p class="text-muted-foreground leading-relaxed">
+                            {{ discordStatus.dm_failed_reason }}
+                        </p>
+                        <div v-if="discordStatus.invite_url" class="pt-1">
+                            <Button
+                                as="a"
+                                :href="discordStatus.invite_url"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                variant="outline"
+                                size="sm"
+                                class="h-7 gap-1.5 text-xs"
+                            >
+                                <ExternalLink class="size-3.5" />
+                                <span>Gabung Server Discord Komunitas</span>
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+
         <!-- 2. Followed Officers Card -->
         <Card>
             <CardHeader>
@@ -373,7 +655,7 @@ onMounted(async () => {
                             <span>Perwira yang Diikuti</span>
                         </CardTitle>
                         <CardDescription>
-                            Atur kanal notifikasi (In-App atau Web Push) untuk setiap perwira yang Anda ikuti.
+                            Atur kanal notifikasi (Lonceng In-App, Web Push, atau Discord DM) untuk setiap perwira yang Anda ikuti.
                         </CardDescription>
                     </div>
                     <Badge variant="secondary" class="font-mono">
@@ -445,6 +727,16 @@ onMounted(async () => {
                                     @update:model-value="(v) => updateChannelPrefs(sub, { notify_web_push: v })"
                                 />
                                 <span>Push</span>
+                            </label>
+
+                            <label class="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+                                <Switch
+                                    :model-value="sub.notify_discord_dm ?? true"
+                                    :disabled="busyOfficerIds.has(Number(sub.officer_id))"
+                                    aria-label="Notifikasi Discord DM"
+                                    @update:model-value="(v) => updateChannelPrefs(sub, { notify_discord_dm: v })"
+                                />
+                                <span>Discord</span>
                             </label>
 
                             <Button
