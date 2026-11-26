@@ -2,7 +2,7 @@
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { usePage, Link } from "@inertiajs/vue3";
 
-import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
+const logoPoliceDuty = "/images/brand/police-duty/masters/police-duty-symbol-color.svg";
 import { Badge } from "@/Components/ui/badge";
 import {
     DropdownMenu,
@@ -150,12 +150,12 @@ onUnmounted(() => {
                     :aria-label="$t('nav.dashboard')"
                 >
                     <div
-                        class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-card border border-border group-hover:border-primary/50 p-1 overflow-hidden transition"
+                        class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 shrink-0 transition group-hover:scale-105"
                     >
                         <img
-                            :src="logoSaspColor"
-                            class="w-full h-full object-contain rounded-full"
-                            alt="SASP Badge"
+                            :src="logoPoliceDuty"
+                            class="w-full h-full object-contain"
+                            alt="Police Duty Badge"
                         />
                     </div>
                     <div class="flex flex-col">

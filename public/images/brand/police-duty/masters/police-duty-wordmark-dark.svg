@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 777 140" width="777" height="140" role="img" aria-labelledby="title">
+  <title id="title">Police Duty wordmark (dark mode)</title>
+  <g id="wordmark" transform="translate(24 27) scale(1.2)">
+    <path fill="#F1F5F9" fill-rule="evenodd" d="M0 0 H36 L48 12 V34 L36 46 H14 V72 H0 Z M14 13 H30 L34 17 V29 L30 33 H14 Z"/>
+    <path fill="#F1F5F9" fill-rule="evenodd" d="M73 0 H97 L111 14 V58 L97 72 H73 L59 58 V14 Z M78 13 H92 L97 18 V54 L92 59 H78 L73 54 V18 Z"/>
+    <path fill="#F1F5F9" d="M124 0 H138 V59 H166 V72 H124 Z"/>
+    <path fill="#F1F5F9" d="M178 0 H192 V72 H178 Z"/>
+    <path fill="#F1F5F9" d="M219 0 H253 V13 H224 L219 18 V54 L224 59 H253 V72 H219 L205 58 V14 Z"/>
+    <path fill="#F1F5F9" d="M266 0 H310 V13 H280 V30 H304 V42 H280 V59 H310 V72 H266 Z"/>
+    <path fill="#F1F5F9" fill-rule="evenodd" d="M344 0 H380 L396 16 V56 L380 72 H344 Z M358 13 H375 L382 20 V52 L375 59 H358 Z"/>
+    <path fill="#F1F5F9" d="M409 0 H423 V54 L428 59 H440 L445 54 V0 H459 V58 L445 72 H423 L409 58 Z"/>
+    <path fill="#F1F5F9" d="M470 0 H520 V13 H502 V72 H488 V13 H470 Z"/>
+    <path fill="#F1F5F9" d="M527 0 H543 L553 25 L563 0 H579 L560 42 V72 H546 V42 Z"/>
+    <circle fill="#EF4444" cx="597" cy="62" r="10"/>
+  </g>
+</svg>

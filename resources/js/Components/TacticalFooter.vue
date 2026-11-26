@@ -1,7 +1,7 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
 import { useI18n } from "vue-i18n";
-import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
+const logoPoliceDuty = "/images/brand/police-duty/masters/police-duty-symbol-color.svg";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
 import { ExternalLink, Globe } from "@lucide/vue";
@@ -26,12 +26,12 @@ const toggleLanguage = () => {
                 <div class="md:col-span-4 space-y-3">
                     <div class="flex items-center space-x-3">
                         <div
-                            class="w-10 h-10 rounded-md bg-card border border-border p-1 overflow-hidden shrink-0"
+                            class="w-10 h-10 shrink-0 flex items-center justify-center"
                         >
                             <img
-                                :src="logoSaspColor"
-                                class="w-full h-full object-contain rounded-sm"
-                                alt="SASP Badge"
+                                :src="logoPoliceDuty"
+                                class="w-full h-full object-contain"
+                                alt="Police Duty Badge"
                             />
                         </div>
                         <div>

@@ -10,7 +10,7 @@
             $meta = $page['props']['meta'] ?? [];
             $metaTitle = $meta['title'] ?? 'IME RP — SASP Police Duty | Live Officer Bodycam & Multiview';
             $metaDesc = $meta['description'] ?? 'Pusat pemantauan taktis & live streaming bodycam perwira kepolisian IME Roleplay (LSPD, BCSO, SASP, SAPR). Pantau seluruh siaran langsung perwira patroli secara multiview interaktif.';
-            $metaImage = $meta['image'] ?? asset('images/icons/icon-512x512.png');
+            $metaImage = $meta['image'] ?? asset('images/icons/icon-512.png');
             $metaUrl = $meta['url'] ?? url()->current();
             $metaType = $meta['type'] ?? 'website';
             $canonicalUrl = $meta['canonical'] ?? url()->current();
@@ -27,7 +27,7 @@
                     '@type' => 'Organization',
                     'name' => 'SASP Tactical Command Center',
                     'url' => url('/'),
-                    'logo' => asset('images/icons/icon-512x512.png'),
+                    'logo' => asset('images/icons/icon-512.png'),
                 ],
                 'potentialAction' => [
                     '@type' => 'SearchAction',
@@ -78,13 +78,14 @@
         </script>
 
         <!-- Favicon / Browser Icon (With Cache Buster) -->
+        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v={{ filemtime(public_path('favicon.svg')) }}">
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ filemtime(public_path('favicon.ico')) }}">
         <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ filemtime(public_path('favicon.ico')) }}">
 
         <!-- PWA Web App Manifest & Mobile Integration -->
         <link rel="manifest" href="/manifest.json">
         <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png">
-        <meta name="theme-color" content="#0b1320">
+        <meta name="theme-color" content="#020617">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="IME Police">

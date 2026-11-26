@@ -7,7 +7,7 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { Alert, AlertDescription } from "@/Components/ui/alert";
-import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
+const logoPoliceDuty = "/images/brand/police-duty/masters/police-duty-symbol-color.svg";
 
 defineProps({
     canResetPassword: {
@@ -39,7 +39,7 @@ const submit = () => {
             <!-- Logo & Header -->
             <div class="text-center space-y-2.5">
                 <Link href="/" class="inline-block">
-                    <img :src="logoSaspColor" class="size-14 rounded-full mx-auto border border-border" alt="SASP Logo" />
+                    <img :src="logoPoliceDuty" class="size-14 object-contain mx-auto" alt="Police Duty Logo" />
                 </Link>
                 <div>
                     <h1 class="text-base font-bold text-foreground font-mono tracking-wider uppercase">

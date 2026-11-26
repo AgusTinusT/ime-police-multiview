@@ -1,7 +1,7 @@
 <script setup>
 import { Link } from "@inertiajs/vue3";
 
-import logoSaspColor from "@/Components/Icons/SASP_256.jpg";
+const logoPoliceDuty = "/images/brand/police-duty/masters/police-duty-symbol-color.svg";
 import iconLspd from "@/Components/Icons/LSPD_HD.svg";
 import iconBcso from "@/Components/Icons/Logo_LSCSD.svg";
 import iconSasp from "@/Components/Icons/SASP_HD.svg";
@@ -70,12 +70,12 @@ const getDeptCount = (deptId) => {
                 title="IME Roleplay — Police Duty Dashboard"
             >
                 <div
-                    class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-card border border-border group-hover:border-input p-1 overflow-hidden transition"
+                    class="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 shrink-0 transition group-hover:scale-105"
                 >
                     <img
-                        :src="logoSaspColor"
-                        class="w-full h-full object-contain rounded-sm"
-                        alt="Police Badge"
+                        :src="logoPoliceDuty"
+                        class="w-full h-full object-contain"
+                        alt="Police Duty Badge"
                     />
                 </div>
                 <div class="flex flex-col">

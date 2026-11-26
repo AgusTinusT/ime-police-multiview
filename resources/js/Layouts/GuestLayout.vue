@@ -1,5 +1,5 @@
 <script setup>
-import logoSaspColor from '@/Components/Icons/SASP_256.jpg';
+const logoPoliceDuty = '/images/brand/police-duty/masters/police-duty-symbol-color.svg';
 import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { ArrowLeft } from '@lucide/vue';
@@ -13,7 +13,7 @@ import { Link } from '@inertiajs/vue3';
         <div class="w-full max-w-md space-y-6">
             <div class="text-center space-y-2">
                 <Link href="/" class="inline-block">
-                    <img :src="logoSaspColor" class="w-14 h-14 rounded-full mx-auto" alt="SASP Logo" />
+                    <img :src="logoPoliceDuty" class="size-14 object-contain mx-auto" alt="Police Duty Logo" />
                 </Link>
                 <div>
                     <h1 class="text-base font-bold text-foreground font-mono tracking-wider uppercase">

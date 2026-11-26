@@ -4,8 +4,8 @@
   "description": "Community Tactical Officer Bodycam & Dispatch Portal for IME Roleplay",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#070b12",
-  "theme_color": "#0b1320",
+  "background_color": "#020617",
+  "theme_color": "#020617",
   "orientation": "any",
   "icons": [
     {
@@ -21,7 +21,7 @@
       "purpose": "any"
     },
     {
-      "src": "/images/icons/icon-512.png",
+      "src": "/images/icons/maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
