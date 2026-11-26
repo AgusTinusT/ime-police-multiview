@@ -19,7 +19,6 @@ import {
     House,
     Info,
     LayoutGrid,
-    Link2,
     Megaphone,
     MessageSquareWarning,
     Scissors,
@@ -73,7 +72,6 @@ const moreLinks = [
     { href: "/updates", label: "nav.updates", icon: Megaphone },
     { href: "/faq", label: "nav.faq", icon: CircleQuestionMark },
     { href: "/about", label: "nav.about", icon: Info },
-    { href: "/bio-link", label: "nav.bio_link", icon: Link2 },
 ];
 const moreActive = computed(() =>
     ["/feedback", ...moreLinks.map((l) => l.href)].some((href) => isUrlActive(href)),
@@ -227,7 +225,7 @@ onUnmounted(() => {
                         <span>{{ $t("nav.clips") }}</span>
                     </Link>
 
-                    <!-- Dropdown Menu Perwira (Direktori + Ranking) -->
+                    <!-- Dropdown Menu Perwira (Direktori + Ranking + Bio-Link) -->
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
                             <button
@@ -235,7 +233,7 @@ onUnmounted(() => {
                                 :class="
                                     cn(
                                         'px-2.5 py-1.5 text-xs lg:px-3.5 lg:py-2 lg:text-sm font-medium rounded-full transition shrink-0 flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-                                        isUrlActive('/officers') || isUrlActive('/ranking')
+                                        isUrlActive('/officers') || isUrlActive('/ranking') || isUrlActive('/bio-link')
                                             ? 'text-primary bg-primary/15 ring-1 ring-primary/60 font-bold'
                                             : 'text-foreground/80 hover:text-foreground hover:bg-foreground/10',
                                     )
@@ -262,6 +260,14 @@ onUnmounted(() => {
                                     class="w-full cursor-pointer flex items-center justify-between"
                                 >
                                     <span>{{ $t("nav.ranking") }}</span>
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem as-child>
+                                <Link
+                                    href="/bio-link"
+                                    class="w-full cursor-pointer flex items-center justify-between"
+                                >
+                                    <span>{{ $t("nav.bio_link") }}</span>
                                 </Link>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
