@@ -97,6 +97,15 @@ class YouTubeScraperService
                 $chName = strtolower(trim($stream['channel_name'] ?? ''));
                 $title = strtolower(trim($stream['title'] ?? ''));
 
+                // Never match a stream whose real YouTube channel_id conflicts with the officer's channel_id
+                if (
+                    self::isValidYouTubeChannelId($channelId)
+                    && self::isValidYouTubeChannelId($streamBrowseId)
+                    && $channelId !== $streamBrowseId
+                ) {
+                    continue;
+                }
+
                 // Match Priority 1: Exact YouTube Channel ID (browseId)
                 if (!empty($channelId) && !empty($streamBrowseId) && $channelId === $streamBrowseId) {
                     $matchedStream = $stream;
@@ -157,6 +166,9 @@ class YouTubeScraperService
                 $t = $telemetryMap[$vId] ?? null;
                 if ($t && ($t['status'] ?? '') === 'LIVE') {
                     $results[$officerId]['viewers_count'] = $t['viewers_count'] ?? $results[$officerId]['viewers_count'];
+                    if (!empty($t['started_at'])) {
+                        $results[$officerId]['started_at'] = $t['started_at'];
+                    }
                 } else {
                     unset($results[$officerId]);
                     $targetOfficer = $officerList->firstWhere('id', $officerId);
@@ -217,6 +229,7 @@ class YouTubeScraperService
                             'viewers_count' => $t['viewers_count'] ?? 0,
                             'description' => '',
                             'channel_id' => $cand['officer']->channel_id,
+                            'started_at' => $t['started_at'] ?? null,
                             'detection_method' => 'RSS_FEED',
                         ];
                         // Remove from unmatched
@@ -235,20 +248,41 @@ class YouTubeScraperService
                 $formattedHandle = str_starts_with($officer->handle, '@') ? $officer->handle : '@' . $officer->handle;
                 $directData = $directLiveResults[$officer->handle] ?? ($directLiveResults[$formattedHandle] ?? null);
 
-                if ($directData && $this->isPolicePatrolStream($directData['title'] ?? '', $directData['description'] ?? '', $officer)) {
-                    $results[$officer->id] = [
-                        'status' => 'LIVE',
-                        'video_id' => $directData['video_id'],
-                        'title' => $directData['title'],
-                        'thumbnail_url' => $directData['thumbnail_url'],
-                        'viewers_count' => $directData['viewers_count'] ?? 0,
-                        'description' => $directData['description'] ?? '',
-                        'channel_id' => $directData['channel_id'] ?? $officer->channel_id,
-                        'detection_method' => 'DIRECT_HANDLE',
-                    ];
-                } else {
-                    $results[$officer->id] = null;
+                if ($directData && !$this->isBlacklistedStream($directData)) {
+                    $officerChannelId = trim((string) ($officer->channel_id ?? ''));
+                    $streamChannelId = trim((string) ($directData['channel_id'] ?? ''));
+
+                    // Strict channel ownership guard: if the officer has a known UC... channel_id,
+                    // the scraped /@handle/live stream MUST belong to that exact channel.
+                    if (self::isValidYouTubeChannelId($officerChannelId) && $streamChannelId !== $officerChannelId) {
+                        Log::warning('Tier 3 handle live stream rejected due to channel_id mismatch', [
+                            'officer_id' => $officer->id,
+                            'handle' => $officer->handle,
+                            'expected_channel_id' => $officerChannelId,
+                            'scraped_channel_id' => $streamChannelId ?: null,
+                            'video_id' => $directData['video_id'] ?? null,
+                        ]);
+                        $results[$officer->id] = null;
+                        continue;
+                    }
+
+                    if ($this->isPolicePatrolStream($directData['title'] ?? '', $directData['description'] ?? '', $officer)) {
+                        $results[$officer->id] = [
+                            'status' => 'LIVE',
+                            'video_id' => $directData['video_id'],
+                            'title' => $directData['title'],
+                            'thumbnail_url' => $directData['thumbnail_url'],
+                            'viewers_count' => $directData['viewers_count'] ?? 0,
+                            'description' => $directData['description'] ?? '',
+                            'channel_id' => $directData['channel_id'] ?? $officer->channel_id,
+                            'started_at' => $directData['started_at'] ?? null,
+                            'detection_method' => 'DIRECT_HANDLE',
+                        ];
+                        continue;
+                    }
                 }
+
+                $results[$officer->id] = null;
             }
         }
 
@@ -401,6 +435,129 @@ class YouTubeScraperService
     }
 
     /**
+     * Check whether a string is a real 24-character YouTube UC... channel ID (not a placeholder like UC_...).
+     */
+    public static function isValidYouTubeChannelId(?string $channelId): bool
+    {
+        $clean = trim((string) $channelId);
+        if ($clean === '' || str_starts_with($clean, 'UC_')) {
+            return false;
+        }
+
+        return (bool) preg_match('/^UC[A-Za-z0-9_-]{22}$/', $clean);
+    }
+
+    /**
+     * Extract and decode ytInitialPlayerResponse JSON from a YouTube watch page HTML.
+     */
+    private function extractPlayerResponse(string $html): ?array
+    {
+        if (empty($html)) {
+            return null;
+        }
+
+        if (
+            preg_match('/var\s+ytInitialPlayerResponse\s*=\s*({.*?});\s*(?:var\s|<\/script>)/s', $html, $m)
+            || preg_match('/ytInitialPlayerResponse\s*=\s*({.+?});/s', $html, $m)
+        ) {
+            $decoded = json_decode($m[1], true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Strictly parse a YouTube /@handle/live response into live stream metadata.
+     * Rejects non-live channel pages, unrelated sidebar/recommended videoIds, and blank titles.
+     */
+    private function parseLiveWatchPage(string $body, string $effectiveUrl = ''): ?array
+    {
+        if (empty($body)) {
+            return null;
+        }
+
+        $playerJson = $this->extractPlayerResponse($body);
+
+        $videoId = null;
+        $channelId = null;
+        $title = null;
+        $startedAt = null;
+
+        if ($playerJson !== null) {
+            $videoDetails = $playerJson['videoDetails'] ?? [];
+            $micro = $playerJson['microformat']['playerMicroformatRenderer'] ?? [];
+            $liveDetails = $micro['liveBroadcastDetails'] ?? [];
+            $playabilityStatus = (string) ($playerJson['playabilityStatus']['status'] ?? '');
+
+            $isLiveNow = !empty($liveDetails['isLiveNow']) || !empty($videoDetails['isLive']);
+            $hasEndedTimestamp = !empty($liveDetails['endTimestamp']);
+            $isUpcoming = !empty($videoDetails['isUpcoming']);
+            $isOffline = $playabilityStatus === 'LIVE_STREAM_OFFLINE';
+
+            if (! $isLiveNow || $hasEndedTimestamp || $isUpcoming || $isOffline) {
+                return null;
+            }
+
+            $candidateVideoId = trim((string) ($videoDetails['videoId'] ?? ''));
+            if (preg_match('/^[A-Za-z0-9_-]{11}$/', $candidateVideoId)) {
+                $videoId = $candidateVideoId;
+            }
+
+            $candidateChannelId = trim((string) ($videoDetails['channelId'] ?? ($micro['externalChannelId'] ?? '')));
+            if (self::isValidYouTubeChannelId($candidateChannelId)) {
+                $channelId = $candidateChannelId;
+            }
+
+            $candidateTitle = trim((string) ($videoDetails['title'] ?? ($micro['title']['simpleText'] ?? '')));
+            if ($candidateTitle !== '' && strcasecmp($candidateTitle, 'YouTube') !== 0) {
+                $title = html_entity_decode($candidateTitle, ENT_QUOTES, 'UTF-8');
+            }
+
+            $startTs = $liveDetails['startTimestamp'] ?? null;
+            if (is_string($startTs) && trim($startTs) !== '') {
+                $startedAt = trim($startTs);
+            }
+        } else {
+            // Without ytInitialPlayerResponse, only accept pages that explicitly resolved to a watch?v=... URL
+            // (never grab arbitrary "videoId" strings from channel pages or recommendations).
+            if (preg_match('/watch\?v=([A-Za-z0-9_-]{11})/', $effectiveUrl, $matches)) {
+                $videoId = $matches[1];
+            } elseif (preg_match('/<link rel="canonical" href="[^"]*watch\?v=([A-Za-z0-9_-]{11})">/', $body, $matches)) {
+                $videoId = $matches[1];
+            }
+
+            if (!$videoId || !$this->isHtmlCurrentlyLive($body)) {
+                return null;
+            }
+        }
+
+        if (!$videoId) {
+            return null;
+        }
+
+        $title = $title ?? $this->extractTitle($body);
+        if ($title === null || trim($title) === '' || trim($title) === $videoId) {
+            return null;
+        }
+
+        $channelId = $channelId ?? $this->extractChannelId($body);
+
+        return [
+            'status' => 'LIVE',
+            'video_id' => $videoId,
+            'title' => $title,
+            'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
+            'viewers_count' => $this->extractViewersCount($body),
+            'description' => $this->extractDescription($body),
+            'channel_id' => $channelId,
+            'started_at' => $startedAt ?? $this->extractStartedAt($body),
+        ];
+    }
+
+    /**
      * Determine strictly if YouTube video HTML/JSON represents an active live stream right now.
      * Rejects ended streams (VODs), upcoming streams, and regular offline videos.
      */
@@ -410,25 +567,23 @@ class YouTubeScraperService
             return false;
         }
 
-        // 1. Check JSON structure from ytInitialPlayerResponse
-        if (preg_match('/ytInitialPlayerResponse\s*=\s*({.+?});/s', $body, $m)) {
-            $playerJson = json_decode($m[1], true);
-            if ($playerJson) {
-                $videoDetails = $playerJson['videoDetails'] ?? [];
-                $micro = $playerJson['microformat']['playerMicroformatRenderer'] ?? [];
-                $liveDetails = $micro['liveBroadcastDetails'] ?? [];
+        // 1. Authoritative JSON structure from ytInitialPlayerResponse (do NOT fall through if parsed)
+        $playerJson = $this->extractPlayerResponse($body);
+        if ($playerJson !== null) {
+            $videoDetails = $playerJson['videoDetails'] ?? [];
+            $micro = $playerJson['microformat']['playerMicroformatRenderer'] ?? [];
+            $liveDetails = $micro['liveBroadcastDetails'] ?? [];
+            $playabilityStatus = (string) ($playerJson['playabilityStatus']['status'] ?? '');
 
-                $isLiveNow = (!empty($liveDetails['isLiveNow']) || !empty($videoDetails['isLive']));
-                $hasEndedTimestamp = !empty($liveDetails['endTimestamp']);
-                $isUpcoming = !empty($videoDetails['isUpcoming']);
+            $isLiveNow = (!empty($liveDetails['isLiveNow']) || !empty($videoDetails['isLive']));
+            $hasEndedTimestamp = !empty($liveDetails['endTimestamp']);
+            $isUpcoming = !empty($videoDetails['isUpcoming']);
+            $isOffline = $playabilityStatus === 'LIVE_STREAM_OFFLINE';
 
-                if ($isLiveNow && !$hasEndedTimestamp && !$isUpcoming) {
-                    return true;
-                }
-            }
+            return ($isLiveNow && !$hasEndedTimestamp && !$isUpcoming && !$isOffline);
         }
 
-        // 2. Fallback regex checks
+        // 2. Fallback regex checks (only when ytInitialPlayerResponse JSON was not present)
         $hasLiveNow = (str_contains($body, '"isLiveNow":true') || str_contains($body, '"isLiveNow": true') || str_contains($body, '"isLive":true') || str_contains($body, '"isLive": true'));
         $hasEndTimestamp = str_contains($body, '"endTimestamp":');
         $isEnded = (str_contains($body, '"isEnded":true') || str_contains($body, '"isEnded": true'));
@@ -452,7 +607,7 @@ class YouTubeScraperService
 
         try {
             $url = "https://www.youtube.com/{$handle}/live";
-            
+
             $response = Http::withHeaders(self::getBrowserHeaders())->timeout(7)->get($url);
 
             if (!$response->successful()) {
@@ -460,39 +615,7 @@ class YouTubeScraperService
                 return null;
             }
 
-            $effectiveUrl = (string) $response->effectiveUri();
-            $body = $response->body();
-
-            $videoId = null;
-            if (preg_match('/watch\?v=([A-Za-z0-9_-]{11})/', $effectiveUrl, $matches)) {
-                $videoId = $matches[1];
-            } elseif (preg_match('/<link rel="canonical" href="[^"]*watch\?v=([A-Za-z0-9_-]{11})">/', $body, $matches)) {
-                $videoId = $matches[1];
-            } elseif (preg_match('/"videoId":"([A-Za-z0-9_-]{11})"/', $body, $matches)) {
-                $videoId = $matches[1];
-            }
-
-            if (!$videoId) {
-                return null; // Not live
-            }
-
-            // Strictly verify if stream is currently live now
-            if ($this->isHtmlCurrentlyLive($body)) {
-                $title = $this->extractTitle($body) ?? ($handle . " Police Patrol Live Feed");
-                $description = $this->extractDescription($body);
-                $viewersCount = $this->extractViewersCount($body);
-                $channelId = $this->extractChannelId($body);
-
-                return [
-                    'status' => 'LIVE',
-                    'video_id' => $videoId,
-                    'title' => $title,
-                    'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
-                    'viewers_count' => $viewersCount,
-                    'description' => $description,
-                    'channel_id' => $channelId,
-                ];
-            }
+            return $this->parseLiveWatchPage($response->body(), (string) $response->effectiveUri());
         } catch (\Throwable $e) {
             Log::error("YouTube scraping failed for handle {$handle}: " . $e->getMessage());
         }
@@ -521,7 +644,7 @@ class YouTubeScraperService
                     foreach ($chunk as $handle) {
                         $formattedHandle = str_starts_with($handle, '@') ? $handle : '@' . $handle;
                         $url = "https://www.youtube.com/{$formattedHandle}/live";
-                        
+
                         $pool->as($handle)->withHeaders(self::getBrowserHeaders())->timeout(7)->get($url);
                     }
                 });
@@ -532,38 +655,9 @@ class YouTubeScraperService
                         continue;
                     }
 
-                    $effectiveUrl = (string) $response->effectiveUri();
-                    $body = $response->body();
-
-                    $videoId = null;
-                    if (preg_match('/watch\?v=([A-Za-z0-9_-]{11})/', $effectiveUrl, $matches)) {
-                        $videoId = $matches[1];
-                    } elseif (preg_match('/<link rel="canonical" href="[^"]*watch\?v=([A-Za-z0-9_-]{11})">/', $body, $matches)) {
-                        $videoId = $matches[1];
-                    } elseif (preg_match('/"videoId":"([A-Za-z0-9_-]{11})"/', $body, $matches)) {
-                        $videoId = $matches[1];
-                    }
-
-                    if (!$videoId) {
-                        continue; // Not live
-                    }
-
-                    // Strictly verify if stream is currently live now
-                    if ($this->isHtmlCurrentlyLive($body)) {
-                        $title = $this->extractTitle($body) ?? ($handle . " Police Patrol");
-                        $description = $this->extractDescription($body);
-                        $viewersCount = $this->extractViewersCount($body);
-                        $channelId = $this->extractChannelId($body);
-
-                        $results[$handle] = [
-                            'status' => 'LIVE',
-                            'video_id' => $videoId,
-                            'title' => $title,
-                            'thumbnail_url' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.jpg",
-                            'viewers_count' => $viewersCount,
-                            'description' => $description,
-                            'channel_id' => $channelId,
-                        ];
+                    $parsed = $this->parseLiveWatchPage($response->body(), (string) $response->effectiveUri());
+                    if ($parsed !== null) {
+                        $results[$handle] = $parsed;
                     }
                 }
             } catch (\Throwable $e) {
@@ -742,12 +836,15 @@ class YouTubeScraperService
             }
 
             $body = $response->body();
-            $title = $this->extractTitle($body);
+            $playerJson = $this->extractPlayerResponse($body);
+            $title = trim((string) ($playerJson['videoDetails']['title'] ?? '')) ?: $this->extractTitle($body);
             $description = $this->extractDescription($body);
             $viewersCount = $this->extractViewersCount($body);
+            $channelId = trim((string) ($playerJson['videoDetails']['channelId'] ?? '')) ?: $this->extractChannelId($body);
 
             return [
                 'video_id' => $cleanId,
+                'channel_id' => self::isValidYouTubeChannelId($channelId) ? $channelId : null,
                 'title' => $title,
                 'description' => $description,
                 'viewers_count' => $viewersCount,
@@ -791,7 +888,10 @@ class YouTubeScraperService
     {
         if (preg_match('/<title>(.*?)<\/title>/', $html, $matches)) {
             $title = html_entity_decode($matches[1], ENT_QUOTES, 'UTF-8');
-            return trim(str_replace(' - YouTube', '', $title));
+            $clean = trim(preg_replace('/\s*-\s*YouTube$/i', '', $title));
+            if ($clean !== '' && strcasecmp($clean, 'YouTube') !== 0) {
+                return $clean;
+            }
         }
         return null;
     }
@@ -801,10 +901,15 @@ class YouTubeScraperService
      */
     private function extractChannelId(string $html): ?string
     {
-        if (preg_match('/"channelId":"(UC[A-Za-z0-9_-]{22})"/ ', $html, $matches) || preg_match('/"externalId":"(UC[A-Za-z0-9_-]{22})"/ ', $html, $matches)) {
-            return $matches[1];
+        $playerJson = $this->extractPlayerResponse($html);
+        $playerChannelId = trim((string) ($playerJson['videoDetails']['channelId'] ?? ($playerJson['microformat']['playerMicroformatRenderer']['externalChannelId'] ?? '')));
+        if (self::isValidYouTubeChannelId($playerChannelId)) {
+            return $playerChannelId;
         }
         if (preg_match('/<meta itemprop="channelId" content="(UC[A-Za-z0-9_-]{22})">/i', $html, $matches)) {
+            return $matches[1];
+        }
+        if (preg_match('/"channelId":"(UC[A-Za-z0-9_-]{22})"/', $html, $matches) || preg_match('/"externalId":"(UC[A-Za-z0-9_-]{22})"/', $html, $matches)) {
             return $matches[1];
         }
         return null;

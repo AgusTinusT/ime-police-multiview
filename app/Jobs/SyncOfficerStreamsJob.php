@@ -54,6 +54,24 @@ class SyncOfficerStreamsJob implements ShouldQueue
             if ($liveData && !empty($liveData['video_id'])) {
                 // Auto-save valid UC... YouTube channel_id when officer is missing one (enables WebSub real-time push)
                 $detectedChannelId = trim((string) ($liveData['channel_id'] ?? ''));
+                $officerChannelId = trim((string) ($officer->channel_id ?? ''));
+
+                // Defense-in-depth: never attach a stream from a different YouTube channel to this officer,
+                // and do not disturb any currently active stream of the officer when a mismatch occurs.
+                if (
+                    YouTubeScraperService::isValidYouTubeChannelId($officerChannelId)
+                    && YouTubeScraperService::isValidYouTubeChannelId($detectedChannelId)
+                    && $officerChannelId !== $detectedChannelId
+                ) {
+                    Log::warning('SyncOfficerStreamsJob skipped stream with mismatched channel_id', [
+                        'officer_id' => $officer->id,
+                        'expected_channel_id' => $officerChannelId,
+                        'detected_channel_id' => $detectedChannelId,
+                        'video_id' => $liveData['video_id'],
+                    ]);
+                    continue;
+                }
+
                 $needsChannelId = empty($officer->channel_id)
                     || str_starts_with($officer->channel_id, 'custom-')
                     || str_starts_with($officer->channel_id, 'UC_');
@@ -75,13 +93,10 @@ class SyncOfficerStreamsJob implements ShouldQueue
 
                 $channelId = $officer->channel_id ?: ($liveData['channel_id'] ?: 'ch-' . $officer->id);
 
-                // Clean up any other active stream record having this exact video_id for a different officer
-                ActiveStream::where('video_id', $liveData['video_id'])
-                    ->where('officer_id', '!=', $officer->id)
-                    ->delete();
-
+                $streamTitle = trim((string) ($liveData['title'] ?? ''));
                 $streamDescription = $liveData['description'] ?? null;
                 $youtubeStartedAt = $liveData['started_at'] ?? null;
+                $needsTitle = $streamTitle === '' || $streamTitle === $liveData['video_id'];
                 $needsDescription = empty($streamDescription) || strlen($streamDescription) < 150;
                 $needsStartedAt = empty($youtubeStartedAt)
                     && ! ActiveStream::where('officer_id', $officer->id)
@@ -89,9 +104,27 @@ class SyncOfficerStreamsJob implements ShouldQueue
                         ->whereNotNull('live_notified_at')
                         ->exists();
 
-                if (!empty($liveData['video_id']) && ($needsDescription || $needsStartedAt)) {
+                if (!empty($liveData['video_id']) && ($needsTitle || $needsDescription || $needsStartedAt)) {
                     $details = $scraper->scrapeVideoDetails($liveData['video_id']);
                     if ($details) {
+                        $detailsChannelId = trim((string) ($details['channel_id'] ?? ''));
+                        if (
+                            YouTubeScraperService::isValidYouTubeChannelId($officerChannelId)
+                            && YouTubeScraperService::isValidYouTubeChannelId($detailsChannelId)
+                            && $officerChannelId !== $detailsChannelId
+                        ) {
+                            Log::warning('SyncOfficerStreamsJob rejected stream after video details channel_id mismatch', [
+                                'officer_id' => $officer->id,
+                                'expected_channel_id' => $officerChannelId,
+                                'details_channel_id' => $detailsChannelId,
+                                'video_id' => $liveData['video_id'],
+                            ]);
+                            continue;
+                        }
+
+                        if ($needsTitle && !empty($details['title'])) {
+                            $streamTitle = trim((string) $details['title']);
+                        }
                         if (!empty($details['description']) && $needsDescription) {
                             $streamDescription = $details['description'];
                         }
@@ -101,8 +134,21 @@ class SyncOfficerStreamsJob implements ShouldQueue
                     }
                 }
 
+                if ($streamTitle === '' || $streamTitle === $liveData['video_id']) {
+                    Log::warning('SyncOfficerStreamsJob skipped stream with empty or video_id-only title', [
+                        'officer_id' => $officer->id,
+                        'video_id' => $liveData['video_id'],
+                    ]);
+                    continue;
+                }
+
+                // Clean up any other active stream record having this exact video_id for a different officer
+                ActiveStream::where('video_id', $liveData['video_id'])
+                    ->where('officer_id', '!=', $officer->id)
+                    ->delete();
+
                 // Check if stream is valid Police Duty 10-8 vs Badside/Civilian
-                $isPolicePatrol = $scraper->isPolicePatrolStream($liveData['title'] ?? '', $streamDescription ?? '', $officer);
+                $isPolicePatrol = $scraper->isPolicePatrolStream($streamTitle, $streamDescription ?? '', $officer);
 
                 if ($isPolicePatrol) {
                     // Update or create active stream with officer_id
@@ -113,7 +159,7 @@ class SyncOfficerStreamsJob implements ShouldQueue
                         ],
                         [
                             'channel_id' => $channelId,
-                            'title' => $liveData['title'],
+                            'title' => $streamTitle,
                             'thumbnail_url' => $liveData['thumbnail_url'],
                             'status' => 'LIVE',
                             'viewers_count' => $liveData['viewers_count'] ?? 0,
@@ -124,9 +170,9 @@ class SyncOfficerStreamsJob implements ShouldQueue
 
                     $method = strtoupper((string) ($liveData['detection_method'] ?? ''));
                     $detectionSource = match ($method) {
-                        'HASHTAG_SCAN' => 'sync_hashtag',
+                        'HASHTAG_SCAN', 'HASHTAG_SEARCH' => 'sync_hashtag',
                         'RSS_FEED' => 'sync_rss',
-                        'HANDLE_LIVE' => 'sync_handle',
+                        'HANDLE_LIVE', 'DIRECT_HANDLE' => 'sync_handle',
                         default => 'sync',
                     };
 
