@@ -5,4 +5,5 @@ export const YT_CHAT_OVERLAY_STORE_URL =
 export const YT_CHAT_OVERLAY_THANKED_OFFICERS = [
     "Officer Hanzo Tampol",
     "Officer Aldof Reyz",
+    "Officer Librae G Riley",
 ];
